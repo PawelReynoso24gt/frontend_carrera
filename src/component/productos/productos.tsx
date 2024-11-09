@@ -138,7 +138,7 @@ function Productos() {
               <th>ID</th>
               <th>Nombre Producto</th>
               <th>Talla</th>
-              <th>Precio</th>
+              <th>Precio (Q)</th>
               <th>Descripción</th>
               <th>Cantidad Mínima</th>
               <th>Cantidad Máxima</th>
