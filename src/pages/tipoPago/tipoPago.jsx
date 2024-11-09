@@ -11,6 +11,7 @@ function TipoPagoPage () {
     <Layout>
       <BreadCrumb title="Tipo Pago" link="/TipoPago" />
       <Wrapper>
+        <TipoPagoComponent/>
       </Wrapper>
     </Layout>
   );

@@ -98,7 +98,7 @@ function Departamentos() {
       <div className="row">
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">Departamentos Prueba</h3>
+            <h3 className="crancy-section__title">CRUD</h3>
             <p className="crancy-section__text">
             </p>
           </div>
