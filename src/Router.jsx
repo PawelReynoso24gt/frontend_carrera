@@ -44,7 +44,7 @@ import Sedes from "./pages/sedes/sedes";
 import Roles from "./pages/Roles/roles";
 import Departamentos from "./pages/departamentos/departamentos";
 import TipoPago from "./pages/tipoPago/tipoPago";
-
+import Stands from "./pages/stands/stands";
 
 
 const router = createBrowserRouter([
@@ -130,6 +130,10 @@ const router = createBrowserRouter([
       {
         path: "/tipoPago",
         element: <TipoPago />,
+      },
+      {
+        path: "/stands",
+        element: <Stands />,
       },
       {
         path: "/teams",
