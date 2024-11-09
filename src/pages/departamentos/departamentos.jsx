@@ -11,6 +11,7 @@ function DepartamentosPage () {
     <Layout>
       <BreadCrumb title="Departamentos" link="/Departamentos" />
       <Wrapper>
+        <DepartamentosComponent/>
       </Wrapper>
     </Layout>
   );
