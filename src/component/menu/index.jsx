@@ -177,6 +177,7 @@ function Menu({ toggleMenu, menu }) {
                   { link: "roles", title: "Roles" },
                   { link: "Departamentos", title: "Departamentos" },
                   { link: "TipoPago", title: "Tipo Pago" },
+                  { link: "tipoStands", title: "Tipo Stands" },
                 ]}
               />
               <Dropdown
