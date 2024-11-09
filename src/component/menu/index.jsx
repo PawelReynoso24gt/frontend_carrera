@@ -178,6 +178,9 @@ function Menu({ toggleMenu, menu }) {
                   { link: "Departamentos", title: "Departamentos" },
                   { link: "TipoPago", title: "Tipo Pago" },
                   { link: "tipoStands", title: "Tipo Stands" },
+                  { link: "horarios", title: "Horarios" },
+                  { link: "detallehorarios", title: "Asignacion de horarios" },
+                  { link: "fotosedes", title: "Ingreso de fotos" },
                 ]}
               />
               <Dropdown

@@ -45,6 +45,9 @@ import Roles from "./pages/Roles/roles";
 import Departamentos from "./pages/departamentos/departamentos";
 import TipoPago from "./pages/tipoPago/tipoPago";
 import TipoStands from "./pages/tipoStands/tipoStands";
+import Horarios from "./pages/horarios/horarios";
+import DetalleHorariosComponent from "./component/detallehorarios/detallehorarios";
+import FotoSedesPage from "./pages/fotosedes/fotosedes";
 
 
 
@@ -143,6 +146,18 @@ const router = createBrowserRouter([
       {
         path: "/tipoStands",
         element: <TipoStands/>,
+      },
+      {
+        path: "/horarios",
+        element: <Horarios/>,
+      },
+      {
+        path: "/detallehorarios",
+        element: <DetalleHorariosComponent/>,
+      },
+      {
+        path: "/fotosedes",
+        element: <FotoSedesPage/>,
       },
       {
         path: "/gallery",
