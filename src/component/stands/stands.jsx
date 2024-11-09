@@ -9,8 +9,8 @@ function Stand() {
   const [newStand, setNewStand] = useState({ nombreStand: '', direccion: '', estado: 1, idSede: '', idTipoStands: '' });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  const [sedes, setSedes] = useState([]); // Para almacenar los ID de sedes
-  const [tiposStands, setTiposStands] = useState([]); // Para almacenar los ID de tipos de stands
+  const [sedes, setSedes] = useState([]); 
+  const [tiposStands, setTiposStands] = useState([]); 
 
   useEffect(() => {
     fetchStands();
@@ -29,7 +29,7 @@ function Stand() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/sedes'); // Cambia esta URL a la ruta correcta para obtener las sedes
+      const response = await axios.get('http://localhost:5000/sedes'); 
       setSedes(response.data);
     } catch (error) {
       console.error('Error fetching sedes:', error);
@@ -38,7 +38,7 @@ function Stand() {
 
   const fetchTiposStands = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/tipo_stands'); // Cambia esta URL a la ruta correcta para obtener los tipos de stands
+      const response = await axios.get('http://localhost:5000/tipo_stands'); 
       setTiposStands(response.data);
     } catch (error) {
       console.error('Error fetching tipos de stands:', error);
@@ -83,11 +83,11 @@ function Stand() {
     e.preventDefault();
     try {
       if (editingStand) {
-        // Actualizar stand
+     
         await axios.put(`http://localhost:5000/stand/update/${editingStand.idStand}`, newStand);
         setAlertMessage('Stand actualizado con éxito');
       } else {
-        // Crear nuevo stand
+   
         await axios.post('http://localhost:5000/stand/create', newStand);
         setAlertMessage('Stand creado con éxito');
       }
@@ -116,7 +116,7 @@ function Stand() {
       <div className="row">
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD de Stands</h3>
+            <h3 className="crancy-section__title">CRUD</h3>
           </div>
         </div>
       </div>

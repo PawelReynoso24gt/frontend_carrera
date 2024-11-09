@@ -178,6 +178,7 @@ function Menu({ toggleMenu, menu }) {
                   { link: "Departamentos", title: "Departamentos" },
                   { link: "TipoPago", title: "Tipo Pago" },
                   { link: "Stands", title: "Stands" },
+                  { link: "Municipios", title: "Municipios" },
                 ]}
               />
               <Dropdown
