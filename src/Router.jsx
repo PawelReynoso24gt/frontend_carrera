@@ -40,6 +40,12 @@ import ChangePassword from "./pages/settings/change-password";
 import SettingsFaq from "./pages/settings/faq";
 import TermsAndCondition from "./pages/settings/terms-and-conditions";
 import SupportTicket from "./pages/support-ticket";
+import Sedes from "./pages/sedes/sedes";
+import Roles from "./pages/Roles/roles";
+import Departamentos from "./pages/departamentos/departamentos";
+import TipoPago from "./pages/tipoPago/tipoPago";
+
+
 
 const router = createBrowserRouter([
   {
@@ -112,9 +118,26 @@ const router = createBrowserRouter([
         path: "/pricing",
         element: <Pricing />,
       },
+      //rutas crud
+      {
+        path: "/sedes",
+        element: <Sedes />,
+      },
+      {
+        path: "/departamentos",
+        element: <Departamentos />,
+      },
+      {
+        path: "/tipoPago",
+        element: <TipoPago />,
+      },
       {
         path: "/teams",
         element: <Teams />,
+      },
+      {
+        path: "/roles",
+        element: <Roles />,
       },
       {
         path: "/gallery",
@@ -140,7 +163,6 @@ const router = createBrowserRouter([
         path: "/user",
         element: <Users />,
       },
-
       {
         path: "/history",
         element: <History />,

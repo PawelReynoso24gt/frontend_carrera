@@ -4,6 +4,7 @@ import SelectInput from "../form/SelectInput";
 import toggleIcon from "../../assets/img/toggle-icon2.svg";
 import { Link } from "react-router-dom";
 
+
 function Sidebar2() {
   return (
     <div className="col-xxl-4 col-xl-12 col-12 mg-top-30">
