@@ -62,7 +62,7 @@ function TipoPago() {
     try {
       if (editingTipoPago) {
         // Actualizar tipo de pago
-        await axios.put(`http://localhost:5000/tipospagos/${editingTipoPago.idTipoPago}`, newTipoPago);
+        await axios.put(`http://localhost:5000/tipopagos/${editingTipoPago.idTipoPago}`, newTipoPago);
         setAlertMessage('Tipo de pago actualizado con éxito');
       } else {
         // Crear nuevo tipo de pago
