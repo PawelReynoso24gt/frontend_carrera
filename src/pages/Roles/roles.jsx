@@ -11,6 +11,7 @@ function RolesPage () {
     <Layout>
       <BreadCrumb title="Roles" link="/roles" />
       <Wrapper>
+        <RolesComponent/>
       </Wrapper>
     </Layout>
   );
