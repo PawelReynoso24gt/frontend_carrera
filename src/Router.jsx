@@ -46,6 +46,13 @@ import Departamentos from "./pages/departamentos/departamentos";
 import TipoPago from "./pages/tipoPago/tipoPago";
 import Stands from "./pages/stands/stands";
 import Municipios from "./pages/municipios/municipios";
+import Categorias from "./pages/categoria/categoria";
+import Traslados from "./pages/traslados/traslados";
+import TipoTraslado from "./pages/tipoTraslado/tipoTraslado";
+import Eventos from "./component/eventos/eventos";
+import Pedidos from "./component/pedidos/pedidos";
+import CategoriaHorarios from "./component/categoriaHorarios/categoriaHorarios";
+import Permisos from "./component/permisos/permisos";
 
 const router = createBrowserRouter([
   {
@@ -120,7 +127,7 @@ const router = createBrowserRouter([
       },
       //rutas crud
       {
-        path: "/sedes",
+        path: "/Sedes",
         element: <Sedes />,
       },
       {
@@ -138,6 +145,34 @@ const router = createBrowserRouter([
       {
         path: "/municipios",
         element: <Municipios />,
+      },
+      {
+        path: "/categorias",
+        element: <Categorias />,
+      },
+      {
+        path: "/eventos",
+        element: <Eventos />,
+      },
+      {
+        path: "/tipoTraslado",
+        element: <TipoTraslado />,
+      },
+      {
+        path: "/traslados",
+        element: <Traslados />,
+      },
+      {
+        path: "/categoriaHorarios",
+        element: <CategoriaHorarios />,
+      },
+      {
+        path: "/pedidos",
+        element: <Pedidos />,
+      },
+      {
+        path: "/permisos",
+        element: <Permisos />,
       },
       {
         path: "/teams",
