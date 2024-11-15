@@ -2,19 +2,19 @@ import React from "react";
 import Layout from "../../component/home-two/Layout";
 import BreadCrumb from "../../component/home-two/BreadCrumb";
 import Wrapper from "../../component/pricing/Wrapper";
-import TipoPagoComponent  from "../../component/tipoPago/tipoPago";
+import MunicipiosComponents  from "../../component/municipios/municipios";
 import useMenu from "../../hooks/useMenu";
 
-function TipoPagoPage () {
+function MunicipiosPage () {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Tipo Pago" link="/TipoPago" />
+      <BreadCrumb title="Muicipios" link="/municipios" />
       <Wrapper>
-        <TipoPagoComponent/>
+        <MunicipiosComponents/>
       </Wrapper>
     </Layout>
   );
 }
 
-export default TipoPagoPage ;
+export default MunicipiosPage ;

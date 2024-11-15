@@ -61,11 +61,9 @@ function Departamentos() {
     e.preventDefault();
     try {
       if (editingDepartamento) {
-        // Actualizar departamento
         await axios.put(`http://localhost:5000/departamentos/${editingDepartamento.idDepartamento}`, newDepartamento);
         setAlertMessage('Departamento actualizado con éxito');
       } else {
-        // Crear nuevo departamento
         await axios.post('http://localhost:5000/departamentos/create', newDepartamento);
         setAlertMessage('Departamento creado con éxito');
       }
@@ -75,14 +73,13 @@ function Departamentos() {
     } catch (error) {
       console.error('Error submitting departamento:', error);
       if (error.response) {
-        console.error('Error response:', error.response.data);  // Muestra detalles del error desde el backend
+        console.error('Error response:', error.response.data);
       }
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
-      // Cambiar el estado a su opuesto
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
       await axios.put(`http://localhost:5000/departamentos/${id}`, { estado: nuevoEstado });
       fetchDepartamentos();
@@ -95,28 +92,61 @@ function Departamentos() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: 'center', marginBottom: '20px' }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">Departamentos Prueba</h3>
-            <p className="crancy-section__text">
-            </p>
-          </div>
+          <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>Gestión de Departamentos</h3>
         </div>
       </div>
 
-      {/* Botones para Filtrar Departamentos */}
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Departamento</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveDepartamentos}>Activos</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactiveDepartamentos}>Inactivos</Button>
+      <div className="container mt-4" style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            color: '#fff',
+            fontWeight: 'bold'
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Departamento
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            color: '#fff',
+            fontWeight: 'bold'
+          }}
+          onClick={fetchActiveDepartamentos}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            color: '#fff',
+            fontWeight: 'bold'
+          }}
+          onClick={fetchInactiveDepartamentos}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible style={{ marginTop: '20px', fontWeight: 'bold' }}>
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table striped bordered hover responsive className="mt-3" style={{ backgroundColor: '#ffffff', borderRadius: '8px', marginTop: '20px' }}>
+          <thead style={{ backgroundColor: '#007AC3', color: '#fff' }}>
             <tr>
               <th>ID</th>
               <th>Departamento</th>
@@ -131,9 +161,29 @@ function Departamentos() {
                 <td>{departamento.departamento}</td>
                 <td>{departamento.estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(departamento)}>Editar</Button>
                   <Button
-                    variant={departamento.estado ? "secondary" : "success"}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      color: '#fff',
+                      fontWeight: 'bold'
+                    }}
+                    onClick={() => handleShowModal(departamento)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: departamento.estado ? "#6c757d" : "#28a745",
+                      borderColor: departamento.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      color: '#fff',
+                      fontWeight: 'bold'
+                    }}
                     onClick={() => toggleEstado(departamento.idDepartamento, departamento.estado)}
                   >
                     {departamento.estado ? "Inactivar" : "Activar"}
@@ -144,15 +194,14 @@ function Departamentos() {
           </tbody>
         </Table>
 
-        {/* Modal para crear y editar departamentos */}
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
+          <Modal.Header closeButton style={{ backgroundColor: '#007AC3', color: '#fff' }}>
             <Modal.Title>{editingDepartamento ? 'Editar Departamento' : 'Agregar Departamento'}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="departamento">
-                <Form.Label>Departamento</Form.Label>
+                <Form.Label style={{ fontWeight: 'bold', color: '#333' }}>Departamento</Form.Label>
                 <Form.Control
                   type="text"
                   name="departamento"
@@ -162,7 +211,7 @@ function Departamentos() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: 'bold', color: '#333' }}>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -173,7 +222,17 @@ function Departamentos() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  color: '#fff',
+                  fontWeight: 'bold'
+                }}
+                type="submit"
+              >
                 {editingDepartamento ? 'Actualizar' : 'Crear'}
               </Button>
             </Form>

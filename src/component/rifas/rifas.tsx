@@ -1,96 +1,89 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import axios from 'axios';
+import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
 
-function TipoPago() {
-  const [tiposPago, setTiposPago] = useState([]);
+function Rifas() {
+  const [rifas, setRifas] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingTipoPago, setEditingTipoPago] = useState(null);
-  const [newTipoPago, setNewTipoPago] = useState({ tipo: "", estado: 1 });
+  const [editingRifa, setEditingRifa] = useState(null);
+  const [newRifa, setNewRifa] = useState({ nombreRifa: '', descripcion: '', idSede: '', estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
-    fetchTiposPago();
+    fetchRifas();
   }, []);
 
-  const fetchTiposPago = async () => {
+  const fetchRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipospagos");
-      setTiposPago(response.data);
+      const response = await axios.get('http://localhost:5000/rifas');
+      setRifas(response.data);
     } catch (error) {
-      console.error("Error fetching tipos de pago:", error);
+      console.error('Error fetching rifas:', error);
     }
   };
 
-  const fetchActiveTiposPago = async () => {
+  const fetchActiveRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipopago/activas");
-      setTiposPago(response.data);
+      const response = await axios.get('http://localhost:5000/rifas/activos');
+      setRifas(response.data);
     } catch (error) {
-      console.error("Error fetching active tipos de pago:", error);
+      console.error('Error fetching active rifas:', error);
     }
   };
 
-  const fetchInactiveTiposPago = async () => {
+  const fetchInactiveRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipopago/inactivas");
-      setTiposPago(response.data);
+      const response = await axios.get('http://localhost:5000/rifas/inactivos');
+      setRifas(response.data);
     } catch (error) {
-      console.error("Error fetching inactive tipos de pago:", error);
+      console.error('Error fetching inactive rifas:', error);
     }
   };
 
-  const handleShowModal = (tipoPago = null) => {
-    setEditingTipoPago(tipoPago);
-    setNewTipoPago(tipoPago || { tipo: "", estado: 1 });
+  const handleShowModal = (rifa = null) => {
+    setEditingRifa(rifa);
+    setNewRifa(rifa || { nombreRifa: '', descripcion: '', idSede: '', estado: 1 });
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingTipoPago(null);
+    setEditingRifa(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewTipoPago({ ...newTipoPago, [name]: value });
+    setNewRifa({ ...newRifa, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingTipoPago) {
-        await axios.put(
-          `http://localhost:5000/tipopagos/${editingTipoPago.idTipoPago}`,
-          newTipoPago
-        );
-        setAlertMessage("Tipo de pago actualizado con éxito");
+      if (editingRifa) {
+        await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, newRifa);
+        setAlertMessage('Rifa actualizada con éxito');
       } else {
-        await axios.post("http://localhost:5000/tipopagos/create", newTipoPago);
-        setAlertMessage("Tipo de pago creado con éxito");
+        await axios.post('http://localhost:5000/rifas', newRifa);
+        setAlertMessage('Rifa creada con éxito');
       }
-      fetchTiposPago();
+      fetchRifas();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting tipo de pago:", error);
+      console.error('Error submitting rifa:', error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/tipopagos/${id}`, {
-        estado: nuevoEstado,
-      });
-      fetchTiposPago();
-      setAlertMessage(
-        `Tipo de pago ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
-      );
+      await axios.put(`http://localhost:5000/rifas/${id}`, { estado: nuevoEstado });
+      fetchRifas();
+      setAlertMessage(`Rifa ${nuevoEstado === 1 ? 'activada' : 'inactivada'} con éxito`);
       setShowAlert(true);
     } catch (error) {
-      console.error("Error toggling estado:", error);
+      console.error('Error toggling estado:', error);
     }
   };
 
@@ -99,7 +92,7 @@ function TipoPago() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Tipos de Pago
+            Gestión de Rifas
           </h3>
         </div>
       </div>
@@ -125,7 +118,7 @@ function TipoPago() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Tipo de Pago
+          Agregar Rifa
         </Button>
         <Button
           style={{
@@ -137,9 +130,9 @@ function TipoPago() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveTiposPago}
+          onClick={fetchActiveRifas}
         >
-          Activos
+          Activas
         </Button>
         <Button
           style={{
@@ -150,9 +143,9 @@ function TipoPago() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveTiposPago}
+          onClick={fetchInactiveRifas}
         >
-          Inactivos
+          Inactivas
         </Button>
 
         <Alert
@@ -180,17 +173,21 @@ function TipoPago() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Tipo de Pago</th>
+              <th>Nombre Rifa</th>
+              <th>Descripción</th>
+              <th>Sede</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {tiposPago.map((tipoPago) => (
-              <tr key={tipoPago.idTipoPago}>
-                <td>{tipoPago.idTipoPago}</td>
-                <td>{tipoPago.tipo}</td>
-                <td>{tipoPago.estado ? "Activo" : "Inactivo"}</td>
+            {rifas.map((rifa) => (
+              <tr key={rifa.idRifa}>
+                <td>{rifa.idRifa}</td>
+                <td>{rifa.nombreRifa}</td>
+                <td>{rifa.descripcion}</td>
+                <td>{rifa.sede ? rifa.sede.nombreSede : 'Sin sede'}</td>
+                <td>{rifa.estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
                   <Button
                     style={{
@@ -202,24 +199,22 @@ function TipoPago() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(tipoPago)}
+                    onClick={() => handleShowModal(rifa)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: tipoPago.estado ? "#6c757d" : "#28a745",
-                      borderColor: tipoPago.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: rifa.estado ? "#6c757d" : "#28a745",
+                      borderColor: rifa.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() =>
-                      toggleEstado(tipoPago.idTipoPago, tipoPago.estado)
-                    }
+                    onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
                   >
-                    {tipoPago.estado ? "Inactivar" : "Activar"}
+                    {rifa.estado ? "Inactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -233,21 +228,43 @@ function TipoPago() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingTipoPago
-                ? "Editar Tipo de Pago"
-                : "Agregar Tipo de Pago"}
+              {editingRifa ? "Editar Rifa" : "Agregar Rifa"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="tipo">
+              <Form.Group controlId="nombreRifa">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Tipo de Pago
+                  Nombre de la Rifa
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  name="tipo"
-                  value={newTipoPago.tipo}
+                  name="nombreRifa"
+                  value={newRifa.nombreRifa}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="descripcion">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Descripción
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="descripcion"
+                  value={newRifa.descripcion}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="idSede">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Sede
+                </Form.Label>
+                <Form.Control
+                  type="number"
+                  name="idSede"
+                  value={newRifa.idSede}
                   onChange={handleChange}
                   required
                 />
@@ -259,7 +276,7 @@ function TipoPago() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newTipoPago.estado}
+                  value={newRifa.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -277,7 +294,7 @@ function TipoPago() {
                 }}
                 type="submit"
               >
-                {editingTipoPago ? "Actualizar" : "Crear"}
+                {editingRifa ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -287,4 +304,4 @@ function TipoPago() {
   );
 }
 
-export default TipoPago;
+export default Rifas;

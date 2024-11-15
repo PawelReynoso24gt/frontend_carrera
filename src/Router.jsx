@@ -48,8 +48,13 @@ import TipoStands from "./pages/tipoStands/tipoStands";
 import Horarios from "./pages/horarios/horarios";
 import DetalleHorariosComponent from "./component/detallehorarios/detallehorarios";
 import FotoSedesPage from "./pages/fotosedes/fotosedes";
-
-
+import TipoPublico from "./pages/tipo_publicos/tipo_publicos"
+import Stands from "./pages/stands/stands";
+import Municipios from "./pages/municipios/municipios";
+import CategoriaBitacoras from "./pages/categoria_bitacoras/categoria_bitacoras";
+import Rifas from "./pages/rifas/rifas";
+import Productos from "./pages/productos/productos";
+import Personas from "./pages/personas/personas";
 
 const router = createBrowserRouter([
   {
@@ -134,6 +139,34 @@ const router = createBrowserRouter([
       {
         path: "/tipoPago",
         element: <TipoPago />,
+      },
+      {
+        path: "/categoria_bitacoras",
+        element: <CategoriaBitacoras />,
+      },
+      {
+        path: "/tipo_publicos",
+        element: <TipoPublico />,
+      },
+      {
+        path: "/rifas",
+        element: <Rifas />,
+      },
+      {
+        path: "/productos",
+        element: <Productos />,
+      },
+      {
+        path: "/personas",
+        element: <Personas />,
+      },
+      {
+        path: "/stands",
+        element: <Stands />,
+      },
+      {
+        path: "/municipios",
+        element: <Municipios />,
       },
       {
         path: "/teams",

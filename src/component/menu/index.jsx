@@ -181,6 +181,13 @@ function Menu({ toggleMenu, menu }) {
                   { link: "horarios", title: "Horarios" },
                   { link: "detallehorarios", title: "Asignacion de horarios" },
                   { link: "fotosedes", title: "Ingreso de fotos" },
+                  { link: "tipo_publicos", title: "Tipo Público" },
+                  { link: "categoria_bitacoras", title: "Categoría Bitácora"},
+                  { link: "rifas", title: "Rifas"},
+                  { link: "productos", title: "Productos"},
+                  { link: "personas", title: "Personas"},
+                  { link: "Stands", title: "Stands" },
+                  { link: "Municipios", title: "Municipios" },
                 ]}
               />
               <Dropdown

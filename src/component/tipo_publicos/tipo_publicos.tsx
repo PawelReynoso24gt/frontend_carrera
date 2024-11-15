@@ -1,96 +1,89 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import axios from 'axios';
+import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
 
-function TipoPago() {
-  const [tiposPago, setTiposPago] = useState([]);
+function TipoPublicos() {
+  const [tipoPublicos, setTipoPublicos] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingTipoPago, setEditingTipoPago] = useState(null);
-  const [newTipoPago, setNewTipoPago] = useState({ tipo: "", estado: 1 });
+  const [editingTipoPublico, setEditingTipoPublico] = useState(null);
+  const [newTipoPublico, setNewTipoPublico] = useState({ nombreTipo: '', estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
-    fetchTiposPago();
+    fetchTipoPublicos();
   }, []);
 
-  const fetchTiposPago = async () => {
+  const fetchTipoPublicos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipospagos");
-      setTiposPago(response.data);
+      const response = await axios.get('http://localhost:5000/tipo_publicos');
+      setTipoPublicos(response.data);
     } catch (error) {
-      console.error("Error fetching tipos de pago:", error);
+      console.error('Error fetching tipo_publicos:', error);
     }
   };
 
-  const fetchActiveTiposPago = async () => {
+  const fetchActiveTipoPublicos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipopago/activas");
-      setTiposPago(response.data);
+      const response = await axios.get('http://localhost:5000/tipo_publicos/activos');
+      setTipoPublicos(response.data);
     } catch (error) {
-      console.error("Error fetching active tipos de pago:", error);
+      console.error('Error fetching active tipo_publicos:', error);
     }
   };
 
-  const fetchInactiveTiposPago = async () => {
+  const fetchInactiveTipoPublicos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipopago/inactivas");
-      setTiposPago(response.data);
+      const response = await axios.get('http://localhost:5000/tipo_publicos/inactivos');
+      setTipoPublicos(response.data);
     } catch (error) {
-      console.error("Error fetching inactive tipos de pago:", error);
+      console.error('Error fetching inactive tipo_publicos:', error);
     }
   };
 
-  const handleShowModal = (tipoPago = null) => {
-    setEditingTipoPago(tipoPago);
-    setNewTipoPago(tipoPago || { tipo: "", estado: 1 });
+  const handleShowModal = (tipoPublico = null) => {
+    setEditingTipoPublico(tipoPublico);
+    setNewTipoPublico(tipoPublico || { nombreTipo: '', estado: 1 });
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingTipoPago(null);
+    setEditingTipoPublico(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewTipoPago({ ...newTipoPago, [name]: value });
+    setNewTipoPublico({ ...newTipoPublico, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingTipoPago) {
-        await axios.put(
-          `http://localhost:5000/tipopagos/${editingTipoPago.idTipoPago}`,
-          newTipoPago
-        );
-        setAlertMessage("Tipo de pago actualizado con éxito");
+      if (editingTipoPublico) {
+        await axios.put(`http://localhost:5000/tipo_publicos/update/${editingTipoPublico.idTipoPublico}`, newTipoPublico);
+        setAlertMessage('Tipo de público actualizado con éxito');
       } else {
-        await axios.post("http://localhost:5000/tipopagos/create", newTipoPago);
-        setAlertMessage("Tipo de pago creado con éxito");
+        await axios.post('http://localhost:5000/tipo_publicos/create', newTipoPublico);
+        setAlertMessage('Tipo de público creado con éxito');
       }
-      fetchTiposPago();
+      fetchTipoPublicos();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting tipo de pago:", error);
+      console.error('Error submitting tipo_publico:', error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/tipopagos/${id}`, {
-        estado: nuevoEstado,
-      });
-      fetchTiposPago();
-      setAlertMessage(
-        `Tipo de pago ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
-      );
+      await axios.put(`http://localhost:5000/tipo_publicos/update/${id}`, { estado: nuevoEstado });
+      fetchTipoPublicos();
+      setAlertMessage(`Tipo de público ${nuevoEstado === 1 ? 'activado' : 'inactivado'} con éxito`);
       setShowAlert(true);
     } catch (error) {
-      console.error("Error toggling estado:", error);
+      console.error('Error toggling estado:', error);
     }
   };
 
@@ -99,7 +92,7 @@ function TipoPago() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Tipos de Pago
+            Gestión de Tipos de Públicos
           </h3>
         </div>
       </div>
@@ -125,7 +118,7 @@ function TipoPago() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Tipo de Pago
+          Agregar Tipo de Público
         </Button>
         <Button
           style={{
@@ -137,7 +130,7 @@ function TipoPago() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveTiposPago}
+          onClick={fetchActiveTipoPublicos}
         >
           Activos
         </Button>
@@ -150,7 +143,7 @@ function TipoPago() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveTiposPago}
+          onClick={fetchInactiveTipoPublicos}
         >
           Inactivos
         </Button>
@@ -180,17 +173,17 @@ function TipoPago() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Tipo de Pago</th>
+              <th>Nombre Tipo</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {tiposPago.map((tipoPago) => (
-              <tr key={tipoPago.idTipoPago}>
-                <td>{tipoPago.idTipoPago}</td>
-                <td>{tipoPago.tipo}</td>
-                <td>{tipoPago.estado ? "Activo" : "Inactivo"}</td>
+            {tipoPublicos.map((tipoPublico) => (
+              <tr key={tipoPublico.idTipoPublico}>
+                <td>{tipoPublico.idTipoPublico}</td>
+                <td>{tipoPublico.nombreTipo}</td>
+                <td>{tipoPublico.estado ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
                     style={{
@@ -202,24 +195,24 @@ function TipoPago() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(tipoPago)}
+                    onClick={() => handleShowModal(tipoPublico)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: tipoPago.estado ? "#6c757d" : "#28a745",
-                      borderColor: tipoPago.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: tipoPublico.estado ? "#6c757d" : "#28a745",
+                      borderColor: tipoPublico.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
                     onClick={() =>
-                      toggleEstado(tipoPago.idTipoPago, tipoPago.estado)
+                      toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)
                     }
                   >
-                    {tipoPago.estado ? "Inactivar" : "Activar"}
+                    {tipoPublico.estado ? "Inactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -233,21 +226,21 @@ function TipoPago() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingTipoPago
-                ? "Editar Tipo de Pago"
-                : "Agregar Tipo de Pago"}
+              {editingTipoPublico
+                ? "Editar Tipo de Público"
+                : "Agregar Tipo de Público"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="tipo">
+              <Form.Group controlId="nombreTipo">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Tipo de Pago
+                  Nombre del Tipo de Público
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  name="tipo"
-                  value={newTipoPago.tipo}
+                  name="nombreTipo"
+                  value={newTipoPublico.nombreTipo}
                   onChange={handleChange}
                   required
                 />
@@ -259,7 +252,7 @@ function TipoPago() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newTipoPago.estado}
+                  value={newTipoPublico.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -277,7 +270,7 @@ function TipoPago() {
                 }}
                 type="submit"
               >
-                {editingTipoPago ? "Actualizar" : "Crear"}
+                {editingTipoPublico ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -287,4 +280,4 @@ function TipoPago() {
   );
 }
 
-export default TipoPago;
+export default TipoPublicos;
