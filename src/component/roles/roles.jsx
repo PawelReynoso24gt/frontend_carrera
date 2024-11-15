@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 
 function Roles() {
   const [roles, setRoles] = useState([]);
+  const [filteredRoles, setFilteredRoles] = useState([]); // Para almacenar los roles filtrados
+  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
   const [showModal, setShowModal] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
   const [newRole, setNewRole] = useState({
@@ -21,6 +23,7 @@ function Roles() {
     try {
       const response = await axios.get("http://localhost:5000/roles");
       setRoles(response.data);
+      setFilteredRoles(response.data); // Inicialmente muestra todos los roles
     } catch (error) {
       console.error("Error fetching roles:", error);
     }
@@ -30,6 +33,7 @@ function Roles() {
     try {
       const response = await axios.get("http://localhost:5000/roles/activos");
       setRoles(response.data);
+      setFilteredRoles(response.data);
     } catch (error) {
       console.error("Error fetching active roles:", error);
     }
@@ -39,9 +43,19 @@ function Roles() {
     try {
       const response = await axios.get("http://localhost:5000/roles/inactivos");
       setRoles(response.data);
+      setFilteredRoles(response.data);
     } catch (error) {
       console.error("Error fetching inactive roles:", error);
     }
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    const filtered = roles.filter((role) =>
+      role.roles.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredRoles(filtered);
   };
 
   const handleShowModal = (role = null) => {
@@ -64,7 +78,10 @@ function Roles() {
     e.preventDefault();
     try {
       if (editingRole) {
-        await axios.put(`http://localhost:5000/roles/update/${editingRole.idRol}`, newRole);
+        await axios.put(
+          `http://localhost:5000/roles/update/${editingRole.idRol}`,
+          newRole
+        );
         setAlertMessage("Rol actualizado con éxito");
       } else {
         await axios.post("http://localhost:5000/roles/create", newRole);
@@ -85,21 +102,12 @@ function Roles() {
         estado: nuevoEstado,
       });
       fetchRoles();
-      setAlertMessage(`Rol ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`);
+      setAlertMessage(
+        `Rol ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
       console.error("Error toggling estado:", error);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/roles/delete/${id}`);
-      fetchRoles();
-      setAlertMessage("Rol eliminado con éxito");
-      setShowAlert(true);
-    } catch (error) {
-      console.error("Error deleting role:", error);
     }
   };
 
@@ -107,26 +115,94 @@ function Roles() {
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>Gestión de Roles</h3>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Roles
+          </h3>
         </div>
       </div>
 
-      <div className="container mt-4" style={{ backgroundColor: "#f8f9fa", padding: "20px", borderRadius: "8px", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)" }}>
-        <Button style={{ backgroundColor: "#743D90", borderColor: "#007AC3", padding: "5px 10px", width: "130px", marginRight: "10px", fontWeight: "bold", color: "#fff" }} onClick={() => handleShowModal()}>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        {/* Barra de Búsqueda */}
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar rol por nombre..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
           Agregar Rol
         </Button>
-        <Button style={{ backgroundColor: "#007AC3", borderColor: "#007AC3", padding: "5px 10px", width: "100px", marginRight: "10px", fontWeight: "bold", color: "#fff" }} onClick={fetchActiveRoles}>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveRoles}
+        >
           Activos
         </Button>
-        <Button style={{ backgroundColor: "#009B85", borderColor: "#007AC3", padding: "5px 10px", width: "100px", fontWeight: "bold", color: "#fff" }} onClick={fetchInactiveRoles}>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveRoles}
+        >
           Inactivos
         </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible style={{ marginTop: "20px", fontWeight: "bold" }}>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover responsive className="mt-3" style={{ backgroundColor: "#ffffff", borderRadius: "8px", marginTop: "20px" }}>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
@@ -136,16 +212,37 @@ function Roles() {
             </tr>
           </thead>
           <tbody>
-            {roles.map((role) => (
+            {filteredRoles.map((role) => (
               <tr key={role.idRol}>
                 <td>{role.idRol}</td>
                 <td>{role.roles}</td>
                 <td>{role.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button style={{ backgroundColor: "#007AC3", borderColor: "#007AC3", padding: "5px 10px", width: "100px", marginRight: "5px", fontWeight: "bold", color: "#fff" }} onClick={() => handleShowModal(role)}>
+                  <Button
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(role)}
+                  >
                     Editar
                   </Button>
-                  <Button style={{ backgroundColor: role.estado ? "#6c757d" : "#28a745", borderColor: role.estado ? "#6c757d" : "#28a745", padding: "5px 10px", width: "100px", fontWeight: "bold", color: "#fff" }} onClick={() => toggleEstado(role.idRol, role.estado)}>
+                  <Button
+                    style={{
+                      backgroundColor: role.estado ? "#6c757d" : "#28a745",
+                      borderColor: role.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => toggleEstado(role.idRol, role.estado)}
+                  >
                     {role.estado ? "Inactivar" : "Activar"}
                   </Button>
                 </td>
@@ -155,23 +252,53 @@ function Roles() {
         </Table>
 
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton style={{ backgroundColor: "#007AC3", color: "#fff" }}>
-            <Modal.Title>{editingRole ? "Editar Rol" : "Agregar Rol"}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingRole ? "Editar Rol" : "Agregar Rol"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="roles">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>Nombre del Rol</Form.Label>
-                <Form.Control type="text" name="roles" value={newRole.roles} onChange={handleChange} required />
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Nombre del Rol
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="roles"
+                  value={newRole.roles}
+                  onChange={handleChange}
+                  required
+                />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>Estado</Form.Label>
-                <Form.Control as="select" name="estado" value={newRole.estado} onChange={handleChange}>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="estado"
+                  value={newRole.estado}
+                  onChange={handleChange}
+                >
                   <option value={1}>Activo</option>
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button style={{ backgroundColor: "#007AC3", borderColor: "#007AC3", padding: "5px 10px", width: "100%", fontWeight: "bold", color: "#fff" }} type="submit">
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
                 {editingRole ? "Actualizar" : "Crear"}
               </Button>
             </Form>
@@ -183,3 +310,4 @@ function Roles() {
 }
 
 export default Roles;
+  
