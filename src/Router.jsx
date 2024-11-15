@@ -44,8 +44,13 @@ import Sedes from "./pages/sedes/sedes";
 import Roles from "./pages/Roles/roles";
 import Departamentos from "./pages/departamentos/departamentos";
 import TipoPago from "./pages/tipoPago/tipoPago";
+import TipoPublico from "./pages/tipo_publicos/tipo_publicos"
 import Stands from "./pages/stands/stands";
 import Municipios from "./pages/municipios/municipios";
+import CategoriaBitacoras from "./pages/categoria_bitacoras/categoria_bitacoras";
+import Rifas from "./pages/rifas/rifas";
+import Productos from "./pages/productos/productos";
+import Personas from "./pages/personas/personas";
 
 const router = createBrowserRouter([
   {
@@ -130,6 +135,26 @@ const router = createBrowserRouter([
       {
         path: "/tipoPago",
         element: <TipoPago />,
+      },
+      {
+        path: "/categoria_bitacoras",
+        element: <CategoriaBitacoras />,
+      },
+      {
+        path: "/tipo_publicos",
+        element: <TipoPublico />,
+      },
+      {
+        path: "/rifas",
+        element: <Rifas />,
+      },
+      {
+        path: "/productos",
+        element: <Productos />,
+      },
+      {
+        path: "/personas",
+        element: <Personas />,
       },
       {
         path: "/stands",
