@@ -96,15 +96,23 @@ function TipoPago() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">Gestión de tipos de pago</h3>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Tipos de Pago
+          </h3>
         </div>
       </div>
 
-      <div className="container mt-4">
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
         <Button
           style={{
             backgroundColor: "#743D90",
@@ -112,6 +120,8 @@ function TipoPago() {
             padding: "5px 10px",
             width: "130px",
             marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
           }}
           onClick={() => handleShowModal()}
         >
@@ -124,6 +134,8 @@ function TipoPago() {
             padding: "5px 10px",
             width: "100px",
             marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
           }}
           onClick={fetchActiveTiposPago}
         >
@@ -133,8 +145,10 @@ function TipoPago() {
           style={{
             backgroundColor: "#009B85",
             borderColor: "#007AC3",
-            padding: "3px 10px",
+            padding: "5px 10px",
             width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
           }}
           onClick={fetchInactiveTiposPago}
         >
@@ -146,12 +160,24 @@ function TipoPago() {
           show={showAlert}
           onClose={() => setShowAlert(false)}
           dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
         >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Tipo de Pago</th>
@@ -170,9 +196,11 @@ function TipoPago() {
                     style={{
                       backgroundColor: "#007AC3",
                       borderColor: "#007AC3",
-                      padding: "3px 10px",
+                      padding: "5px 10px",
                       width: "100px",
                       marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
                     }}
                     onClick={() => handleShowModal(tipoPago)}
                   >
@@ -180,10 +208,12 @@ function TipoPago() {
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "3px 10px",
+                      backgroundColor: tipoPago.estado ? "#6c757d" : "#28a745",
+                      borderColor: tipoPago.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
                       width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
                     }}
                     onClick={() =>
                       toggleEstado(tipoPago.idTipoPago, tipoPago.estado)
@@ -198,15 +228,22 @@ function TipoPago() {
         </Table>
 
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
             <Modal.Title>
-              {editingTipoPago ? "Editar Tipo de Pago" : "Agregar Tipo de Pago"}
+              {editingTipoPago
+                ? "Editar Tipo de Pago"
+                : "Agregar Tipo de Pago"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="tipo">
-                <Form.Label>Tipo de Pago</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Tipo de Pago
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="tipo"
@@ -216,7 +253,9 @@ function TipoPago() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -232,7 +271,9 @@ function TipoPago() {
                   backgroundColor: "#007AC3",
                   borderColor: "#007AC3",
                   padding: "5px 10px",
-                  width: "120px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
                 }}
                 type="submit"
               >

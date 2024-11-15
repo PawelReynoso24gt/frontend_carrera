@@ -61,11 +61,9 @@ function Rifas() {
     e.preventDefault();
     try {
       if (editingRifa) {
-        // Actualizar rifa
         await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, newRifa);
         setAlertMessage('Rifa actualizada con éxito');
       } else {
-        // Crear nueva rifa
         await axios.post('http://localhost:5000/rifas', newRifa);
         setAlertMessage('Rifa creada con éxito');
       }
@@ -74,9 +72,6 @@ function Rifas() {
       handleCloseModal();
     } catch (error) {
       console.error('Error submitting rifa:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-      }
     }
   };
 
@@ -94,26 +89,88 @@ function Rifas() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD Rifas</h3>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Rifas
+          </h3>
         </div>
       </div>
 
-      {/* Botones para Filtrar Rifas */}
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Rifa</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveRifas}>Activas</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactiveRifas}>Inactivas</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Rifa
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveRifas}
+        >
+          Activas
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveRifas}
+        >
+          Inactivas
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Nombre Rifa</th>
@@ -132,9 +189,29 @@ function Rifas() {
                 <td>{rifa.sede ? rifa.sede.nombreSede : 'Sin sede'}</td>
                 <td>{rifa.estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(rifa)}>Editar</Button>
                   <Button
-                    variant={rifa.estado ? "secondary" : "success"}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(rifa)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: rifa.estado ? "#6c757d" : "#28a745",
+                      borderColor: rifa.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
                     onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
                   >
                     {rifa.estado ? "Inactivar" : "Activar"}
@@ -145,15 +222,21 @@ function Rifas() {
           </tbody>
         </Table>
 
-        {/* Modal para crear y editar rifas */}
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingRifa ? 'Editar Rifa' : 'Agregar Rifa'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingRifa ? "Editar Rifa" : "Agregar Rifa"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombreRifa">
-                <Form.Label>Nombre de la Rifa</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Nombre de la Rifa
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="nombreRifa"
@@ -163,7 +246,9 @@ function Rifas() {
                 />
               </Form.Group>
               <Form.Group controlId="descripcion">
-                <Form.Label>Descripción</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Descripción
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="descripcion"
@@ -173,7 +258,9 @@ function Rifas() {
                 />
               </Form.Group>
               <Form.Group controlId="idSede">
-                <Form.Label>Sede</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Sede
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="idSede"
@@ -183,7 +270,9 @@ function Rifas() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -194,8 +283,18 @@ function Rifas() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingRifa ? 'Actualizar' : 'Crear'}
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingRifa ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>

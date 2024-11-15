@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import axios from "axios";
+import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
 
 function Municipio() {
   const [municipios, setMunicipios] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingMunicipio, setEditingMunicipio] = useState(null);
-  const [newMunicipio, setNewMunicipio] = useState({ municipio: '', estado: 1, idDepartamento: '' });
+  const [newMunicipio, setNewMunicipio] = useState({
+    municipio: "",
+    estado: 1,
+    idDepartamento: "",
+  });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [departamentos, setDepartamentos] = useState([]); // Para almacenar los ID de departamentos
+  const [alertMessage, setAlertMessage] = useState("");
+  const [departamentos, setDepartamentos] = useState([]);
 
   useEffect(() => {
     fetchMunicipios();
@@ -18,43 +22,49 @@ function Municipio() {
 
   const fetchMunicipios = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/municipios');
+      const response = await axios.get("http://localhost:5000/municipios");
       setMunicipios(response.data);
     } catch (error) {
-      console.error('Error fetching municipios:', error);
+      console.error("Error fetching municipios:", error);
     }
   };
 
   const fetchDepartamentos = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/departamentos'); // Cambia esta URL si es necesario
+      const response = await axios.get("http://localhost:5000/departamentos");
       setDepartamentos(response.data);
     } catch (error) {
-      console.error('Error fetching departamentos:', error);
+      console.error("Error fetching departamentos:", error);
     }
   };
 
   const fetchActiveMunicipios = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/municipios/activas');
+      const response = await axios.get("http://localhost:5000/municipios/activas");
       setMunicipios(response.data);
     } catch (error) {
-      console.error('Error fetching active municipios:', error);
+      console.error("Error fetching active municipios:", error);
     }
   };
 
   const fetchInactiveMunicipios = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/municipios/inactivas');
+      const response = await axios.get("http://localhost:5000/municipios/inactivas");
       setMunicipios(response.data);
     } catch (error) {
-      console.error('Error fetching inactive municipios:', error);
+      console.error("Error fetching inactive municipios:", error);
     }
   };
 
   const handleShowModal = (municipio = null) => {
     setEditingMunicipio(municipio);
-    setNewMunicipio(municipio || { municipio: '', estado: 1, idDepartamento: '' });
+    setNewMunicipio(
+      municipio || {
+        municipio: "",
+        estado: 1,
+        idDepartamento: "",
+      }
+    );
     setShowModal(true);
   };
 
@@ -72,59 +82,127 @@ function Municipio() {
     e.preventDefault();
     try {
       if (editingMunicipio) {
-        // Actualizar municipio
-        await axios.put(`http://localhost:5000/municipios/update/${editingMunicipio.idMunicipio}`, newMunicipio);
-        setAlertMessage('Municipio actualizado con éxito');
+        await axios.put(
+          `http://localhost:5000/municipios/update/${editingMunicipio.idMunicipio}`,
+          newMunicipio
+        );
+        setAlertMessage("Municipio actualizado con éxito");
       } else {
-        // Crear nuevo municipio
-        await axios.post('http://localhost:5000/municipios/create', newMunicipio);
-        setAlertMessage('Municipio creado con éxito');
+        await axios.post("http://localhost:5000/municipios/create", newMunicipio);
+        setAlertMessage("Municipio creado con éxito");
       }
       fetchMunicipios();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting municipio:', error);
+      console.error("Error submitting municipio:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/municipios/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/municipios/update/${id}`, {
+        estado: nuevoEstado,
+      });
       fetchMunicipios();
-      setAlertMessage(`Municipio ${nuevoEstado === 1 ? 'activado' : 'inactivado'} con éxito`);
+      setAlertMessage(
+        `Municipio ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
-      console.error('Error toggling estado:', error);
+      console.error("Error toggling estado:", error);
     }
   };
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD</h3>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Municipios
+          </h3>
         </div>
       </div>
 
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Municipio</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveMunicipios}>Activos</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactiveMunicipios}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Municipio
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveMunicipios}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveMunicipios}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Municipio</th>
-              <th>ID Departamento</th>
+              <th>Departamento</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -135,12 +213,36 @@ function Municipio() {
                 <td>{municipio.idMunicipio}</td>
                 <td>{municipio.municipio}</td>
                 <td>{municipio.idDepartamento}</td>
-                <td>{municipio.estado ? 'Activo' : 'Inactivo'}</td>
+                <td>{municipio.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(municipio)}>Editar</Button>
                   <Button
-                    variant={municipio.estado ? "secondary" : "success"}
-                    onClick={() => toggleEstado(municipio.idMunicipio, municipio.estado)}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(municipio)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: municipio.estado
+                        ? "#6c757d"
+                        : "#28a745",
+                      borderColor: municipio.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() =>
+                      toggleEstado(municipio.idMunicipio, municipio.estado)
+                    }
                   >
                     {municipio.estado ? "Inactivar" : "Activar"}
                   </Button>
@@ -151,13 +253,22 @@ function Municipio() {
         </Table>
 
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingMunicipio ? 'Editar Municipio' : 'Agregar Municipio'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingMunicipio
+                ? "Editar Municipio"
+                : "Agregar Municipio"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="municipio">
-                <Form.Label>Municipio</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Municipio
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="municipio"
@@ -167,7 +278,9 @@ function Municipio() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -179,7 +292,9 @@ function Municipio() {
                 </Form.Control>
               </Form.Group>
               <Form.Group controlId="idDepartamento">
-                <Form.Label>ID Departamento</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Departamento
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="idDepartamento"
@@ -189,12 +304,27 @@ function Municipio() {
                 >
                   <option value="">Seleccionar Departamento</option>
                   {departamentos.map((departamento) => (
-                    <option key={departamento.idDepartamento} value={departamento.idDepartamento}>{departamento.idDepartamento}</option>
+                    <option
+                      key={departamento.idDepartamento}
+                      value={departamento.idDepartamento}
+                    >
+                      {departamento.idDepartamento}
+                    </option>
                   ))}
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingMunicipio ? 'Actualizar' : 'Crear'}
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingMunicipio ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>

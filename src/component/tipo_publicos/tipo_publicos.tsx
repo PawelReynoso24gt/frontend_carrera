@@ -61,11 +61,9 @@ function TipoPublicos() {
     e.preventDefault();
     try {
       if (editingTipoPublico) {
-        // Actualizar tipo de público
         await axios.put(`http://localhost:5000/tipo_publicos/update/${editingTipoPublico.idTipoPublico}`, newTipoPublico);
         setAlertMessage('Tipo de público actualizado con éxito');
       } else {
-        // Crear nuevo tipo de público
         await axios.post('http://localhost:5000/tipo_publicos/create', newTipoPublico);
         setAlertMessage('Tipo de público creado con éxito');
       }
@@ -74,9 +72,6 @@ function TipoPublicos() {
       handleCloseModal();
     } catch (error) {
       console.error('Error submitting tipo_publico:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-      }
     }
   };
 
@@ -94,28 +89,88 @@ function TipoPublicos() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD Tipo de Públicos</h3>
-            <p className="crancy-section__text">
-            </p>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Tipos de Públicos
+          </h3>
         </div>
       </div>
 
-      {/* Botones para Filtrar Tipos de Público */}
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Tipo de Público</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveTipoPublicos}>Activos</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactiveTipoPublicos}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Tipo de Público
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveTipoPublicos}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveTipoPublicos}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Nombre Tipo</th>
@@ -128,12 +183,34 @@ function TipoPublicos() {
               <tr key={tipoPublico.idTipoPublico}>
                 <td>{tipoPublico.idTipoPublico}</td>
                 <td>{tipoPublico.nombreTipo}</td>
-                <td>{tipoPublico.estado ? 'Activo' : 'Inactivo'}</td>
+                <td>{tipoPublico.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(tipoPublico)}>Editar</Button>
                   <Button
-                    variant={tipoPublico.estado ? "secondary" : "success"}
-                    onClick={() => toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(tipoPublico)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: tipoPublico.estado ? "#6c757d" : "#28a745",
+                      borderColor: tipoPublico.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() =>
+                      toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)
+                    }
                   >
                     {tipoPublico.estado ? "Inactivar" : "Activar"}
                   </Button>
@@ -143,15 +220,23 @@ function TipoPublicos() {
           </tbody>
         </Table>
 
-        {/* Modal para crear y editar tipo de público */}
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingTipoPublico ? 'Editar Tipo de Público' : 'Agregar Tipo de Público'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingTipoPublico
+                ? "Editar Tipo de Público"
+                : "Agregar Tipo de Público"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombreTipo">
-                <Form.Label>Nombre del Tipo de Público</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Nombre del Tipo de Público
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="nombreTipo"
@@ -161,7 +246,9 @@ function TipoPublicos() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -172,8 +259,18 @@ function TipoPublicos() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingTipoPublico ? 'Actualizar' : 'Crear'}
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingTipoPublico ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>

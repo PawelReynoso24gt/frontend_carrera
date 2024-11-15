@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import axios from "axios";
+import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
 
 function Personas() {
   const [personas, setPersonas] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingPersona, setEditingPersona] = useState(null);
   const [newPersona, setNewPersona] = useState({
-    nombre: '',
-    fechaNacimiento: '',
-    telefono: '',
-    domicilio: '',
-    CUI: '',
-    correo: '',
-    idMunicipio: '',
-    estado: 1
+    nombre: "",
+    fechaNacimiento: "",
+    telefono: "",
+    domicilio: "",
+    CUI: "",
+    correo: "",
+    idMunicipio: "",
+    estado: 1,
   });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
     fetchPersonas();
@@ -25,28 +25,28 @@ function Personas() {
 
   const fetchPersonas = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/personas');
+      const response = await axios.get("http://localhost:5000/personas");
       setPersonas(response.data);
     } catch (error) {
-      console.error('Error fetching personas:', error);
+      console.error("Error fetching personas:", error);
     }
   };
 
   const fetchActivePersonas = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/personas/activos');
+      const response = await axios.get("http://localhost:5000/personas/activos");
       setPersonas(response.data);
     } catch (error) {
-      console.error('Error fetching active personas:', error);
+      console.error("Error fetching active personas:", error);
     }
   };
 
   const fetchInactivePersonas = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/personas/inactivos');
+      const response = await axios.get("http://localhost:5000/personas/inactivos");
       setPersonas(response.data);
     } catch (error) {
-      console.error('Error fetching inactive personas:', error);
+      console.error("Error fetching inactive personas:", error);
     }
   };
 
@@ -54,14 +54,14 @@ function Personas() {
     setEditingPersona(persona);
     setNewPersona(
       persona || {
-        nombre: '',
-        fechaNacimiento: '',
-        telefono: '',
-        domicilio: '',
-        CUI: '',
-        correo: '',
-        idMunicipio: '',
-        estado: 1
+        nombre: "",
+        fechaNacimiento: "",
+        telefono: "",
+        domicilio: "",
+        CUI: "",
+        correo: "",
+        idMunicipio: "",
+        estado: 1,
       }
     );
     setShowModal(true);
@@ -81,59 +81,123 @@ function Personas() {
     e.preventDefault();
     try {
       if (editingPersona) {
-        // Actualizar persona
-        await axios.put(`http://localhost:5000/personas/update/${editingPersona.idPersona}`, newPersona);
-        setAlertMessage('Persona actualizada con éxito');
+        await axios.put(
+          `http://localhost:5000/personas/update/${editingPersona.idPersona}`,
+          newPersona
+        );
+        setAlertMessage("Persona actualizada con éxito");
       } else {
-        // Crear nueva persona
-        await axios.post('http://localhost:5000/personas/create', newPersona);
-        setAlertMessage('Persona creada con éxito');
+        await axios.post("http://localhost:5000/personas/create", newPersona);
+        setAlertMessage("Persona creada con éxito");
       }
       fetchPersonas();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting persona:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-      }
+      console.error("Error submitting persona:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/personas/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/personas/update/${id}`, {
+        estado: nuevoEstado,
+      });
       fetchPersonas();
-      setAlertMessage(`Persona ${nuevoEstado === 1 ? 'activada' : 'inactivada'} con éxito`);
+      setAlertMessage(
+        `Persona ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
-      console.error('Error toggling estado:', error);
+      console.error("Error toggling estado:", error);
     }
   };
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD Personas</h3>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Personas
+          </h3>
         </div>
       </div>
 
-      {/* Botones para Filtrar Personas */}
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Persona</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActivePersonas}>Activas</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactivePersonas}>Inactivas</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Persona
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActivePersonas}
+        >
+          Activas
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactivePersonas}
+        >
+          Inactivas
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Nombre</th>
@@ -157,13 +221,41 @@ function Personas() {
                 <td>{persona.domicilio}</td>
                 <td>{persona.CUI}</td>
                 <td>{persona.correo}</td>
-                <td>{persona.municipio ? persona.municipio.municipio : 'Sin municipio'}</td>
-                <td>{persona.estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(persona)}>Editar</Button>
+                  {persona.municipio
+                    ? persona.municipio.municipio
+                    : "Sin municipio"}
+                </td>
+                <td>{persona.estado ? "Activo" : "Inactivo"}</td>
+                <td>
                   <Button
-                    variant={persona.estado ? "secondary" : "success"}
-                    onClick={() => toggleEstado(persona.idPersona, persona.estado)}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(persona)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: persona.estado
+                        ? "#6c757d"
+                        : "#28a745",
+                      borderColor: persona.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() =>
+                      toggleEstado(persona.idPersona, persona.estado)
+                    }
                   >
                     {persona.estado ? "Inactivar" : "Activar"}
                   </Button>
@@ -173,15 +265,21 @@ function Personas() {
           </tbody>
         </Table>
 
-        {/* Modal para crear y editar personas */}
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingPersona ? 'Editar Persona' : 'Agregar Persona'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingPersona ? "Editar Persona" : "Agregar Persona"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombre">
-                <Form.Label>Nombre</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Nombre
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="nombre"
@@ -191,7 +289,9 @@ function Personas() {
                 />
               </Form.Group>
               <Form.Group controlId="fechaNacimiento">
-                <Form.Label>Fecha de Nacimiento</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Fecha de Nacimiento
+                </Form.Label>
                 <Form.Control
                   type="date"
                   name="fechaNacimiento"
@@ -201,7 +301,9 @@ function Personas() {
                 />
               </Form.Group>
               <Form.Group controlId="telefono">
-                <Form.Label>Teléfono</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Teléfono
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="telefono"
@@ -211,7 +313,9 @@ function Personas() {
                 />
               </Form.Group>
               <Form.Group controlId="domicilio">
-                <Form.Label>Domicilio</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Domicilio
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="domicilio"
@@ -221,7 +325,9 @@ function Personas() {
                 />
               </Form.Group>
               <Form.Group controlId="CUI">
-                <Form.Label>CUI</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  CUI
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="CUI"
@@ -231,7 +337,9 @@ function Personas() {
                 />
               </Form.Group>
               <Form.Group controlId="correo">
-                <Form.Label>Correo</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Correo
+                </Form.Label>
                 <Form.Control
                   type="email"
                   name="correo"
@@ -241,7 +349,9 @@ function Personas() {
                 />
               </Form.Group>
               <Form.Group controlId="idMunicipio">
-                <Form.Label>Municipio</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Municipio
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="idMunicipio"
@@ -251,7 +361,9 @@ function Personas() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -262,8 +374,18 @@ function Personas() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingPersona ? 'Actualizar' : 'Crear'}
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingPersona ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>

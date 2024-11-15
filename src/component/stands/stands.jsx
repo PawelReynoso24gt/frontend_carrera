@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import axios from "axios";
+import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
 
 function Stand() {
   const [stands, setStands] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingStand, setEditingStand] = useState(null);
-  const [newStand, setNewStand] = useState({ nombreStand: '', direccion: '', estado: 1, idSede: '', idTipoStands: '' });
+  const [newStand, setNewStand] = useState({
+    nombreStand: "",
+    direccion: "",
+    estado: 1,
+    idSede: "",
+    idTipoStands: "",
+  });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [sedes, setSedes] = useState([]); 
-  const [tiposStands, setTiposStands] = useState([]); 
+  const [alertMessage, setAlertMessage] = useState("");
+  const [sedes, setSedes] = useState([]);
+  const [tiposStands, setTiposStands] = useState([]);
 
   useEffect(() => {
     fetchStands();
@@ -20,52 +26,60 @@ function Stand() {
 
   const fetchStands = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/stand');
+      const response = await axios.get("http://localhost:5000/stand");
       setStands(response.data);
     } catch (error) {
-      console.error('Error fetching stands:', error);
+      console.error("Error fetching stands:", error);
     }
   };
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/sedes'); 
+      const response = await axios.get("http://localhost:5000/sedes");
       setSedes(response.data);
     } catch (error) {
-      console.error('Error fetching sedes:', error);
+      console.error("Error fetching sedes:", error);
     }
   };
 
   const fetchTiposStands = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/tipo_stands'); 
+      const response = await axios.get("http://localhost:5000/tipo_stands");
       setTiposStands(response.data);
     } catch (error) {
-      console.error('Error fetching tipos de stands:', error);
+      console.error("Error fetching tipos de stands:", error);
     }
   };
 
   const fetchActiveStands = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/stand/activas');
+      const response = await axios.get("http://localhost:5000/stand/activas");
       setStands(response.data);
     } catch (error) {
-      console.error('Error fetching active stands:', error);
+      console.error("Error fetching active stands:", error);
     }
   };
 
   const fetchInactiveStands = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/stand/inactivas');
+      const response = await axios.get("http://localhost:5000/stand/inactivas");
       setStands(response.data);
     } catch (error) {
-      console.error('Error fetching inactive stands:', error);
+      console.error("Error fetching inactive stands:", error);
     }
   };
 
   const handleShowModal = (stand = null) => {
     setEditingStand(stand);
-    setNewStand(stand || { nombreStand: '', direccion: '', estado: 1, idSede: '', idTipoStands: '' });
+    setNewStand(
+      stand || {
+        nombreStand: "",
+        direccion: "",
+        estado: 1,
+        idSede: "",
+        idTipoStands: "",
+      }
+    );
     setShowModal(true);
   };
 
@@ -83,61 +97,129 @@ function Stand() {
     e.preventDefault();
     try {
       if (editingStand) {
-     
-        await axios.put(`http://localhost:5000/stand/update/${editingStand.idStand}`, newStand);
-        setAlertMessage('Stand actualizado con éxito');
+        await axios.put(
+          `http://localhost:5000/stand/update/${editingStand.idStand}`,
+          newStand
+        );
+        setAlertMessage("Stand actualizado con éxito");
       } else {
-   
-        await axios.post('http://localhost:5000/stand/create', newStand);
-        setAlertMessage('Stand creado con éxito');
+        await axios.post("http://localhost:5000/stand/create", newStand);
+        setAlertMessage("Stand creado con éxito");
       }
       fetchStands();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting stand:', error);
+      console.error("Error submitting stand:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/stand/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/stand/update/${id}`, {
+        estado: nuevoEstado,
+      });
       fetchStands();
-      setAlertMessage(`Stand ${nuevoEstado === 1 ? 'activado' : 'inactivado'} con éxito`);
+      setAlertMessage(
+        `Stand ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
-      console.error('Error toggling estado:', error);
+      console.error("Error toggling estado:", error);
     }
   };
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD</h3>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Stands
+          </h3>
         </div>
       </div>
 
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Stand</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveStands}>Activos</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactiveStands}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Stand
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveStands}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveStands}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Nombre Stand</th>
               <th>Dirección</th>
-              <th>ID Sede</th>
-              <th>ID Tipo Stand</th>
+              <th>Sede</th>
+              <th>Tipo Stand</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -150,12 +232,34 @@ function Stand() {
                 <td>{stand.direccion}</td>
                 <td>{stand.idSede}</td>
                 <td>{stand.idTipoStands}</td>
-                <td>{stand.estado ? 'Activo' : 'Inactivo'}</td>
+                <td>{stand.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(stand)}>Editar</Button>
                   <Button
-                    variant={stand.estado ? "secondary" : "success"}
-                    onClick={() => toggleEstado(stand.idStand, stand.estado)}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(stand)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: stand.estado ? "#6c757d" : "#28a745",
+                      borderColor: stand.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() =>
+                      toggleEstado(stand.idStand, stand.estado)
+                    }
                   >
                     {stand.estado ? "Inactivar" : "Activar"}
                   </Button>
@@ -166,13 +270,20 @@ function Stand() {
         </Table>
 
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingStand ? 'Editar Stand' : 'Agregar Stand'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingStand ? "Editar Stand" : "Agregar Stand"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombreStand">
-                <Form.Label>Nombre Stand</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Nombre Stand
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="nombreStand"
@@ -182,7 +293,9 @@ function Stand() {
                 />
               </Form.Group>
               <Form.Group controlId="direccion">
-                <Form.Label>Dirección</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Dirección
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="direccion"
@@ -192,7 +305,9 @@ function Stand() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -204,7 +319,9 @@ function Stand() {
                 </Form.Control>
               </Form.Group>
               <Form.Group controlId="idSede">
-                <Form.Label>ID Sede</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Sede
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="idSede"
@@ -214,12 +331,16 @@ function Stand() {
                 >
                   <option value="">Seleccionar Sede</option>
                   {sedes.map((sede) => (
-                    <option key={sede.idSede} value={sede.idSede}>{sede.idSede}</option>
+                    <option key={sede.idSede} value={sede.idSede}>
+                      {sede.idSede}
+                    </option>
                   ))}
                 </Form.Control>
               </Form.Group>
               <Form.Group controlId="idTipoStands">
-                <Form.Label>ID Tipo Stand</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Tipo Stand
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="idTipoStands"
@@ -229,12 +350,24 @@ function Stand() {
                 >
                   <option value="">Seleccionar Tipo Stand</option>
                   {tiposStands.map((tipo) => (
-                    <option key={tipo.idTipoStands} value={tipo.idTipoStands}>{tipo.idTipoStands}</option>
+                    <option key={tipo.idTipoStands} value={tipo.idTipoStands}>
+                      {tipo.idTipoStands}
+                    </option>
                   ))}
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingStand ? 'Actualizar' : 'Crear'}
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingStand ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>

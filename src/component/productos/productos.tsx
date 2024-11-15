@@ -81,11 +81,9 @@ function Productos() {
     e.preventDefault();
     try {
       if (editingProducto) {
-        // Actualizar producto
         await axios.put(`http://localhost:5000/productos/${editingProducto.idProducto}`, newProducto);
         setAlertMessage('Producto actualizado con éxito');
       } else {
-        // Crear nuevo producto
         await axios.post('http://localhost:5000/productos', newProducto);
         setAlertMessage('Producto creado con éxito');
       }
@@ -94,9 +92,6 @@ function Productos() {
       handleCloseModal();
     } catch (error) {
       console.error('Error submitting producto:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-      }
     }
   };
 
@@ -114,26 +109,88 @@ function Productos() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD Productos</h3>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Productos
+          </h3>
         </div>
       </div>
 
-      {/* Botones para Filtrar Productos */}
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Producto</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveProductos}>Activos</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactiveProductos}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Producto
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveProductos}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveProductos}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Nombre Producto</th>
@@ -160,9 +217,29 @@ function Productos() {
                 <td>{producto.categoria ? producto.categoria.nombreCategoria : 'Sin categoría'}</td>
                 <td>{producto.estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(producto)}>Editar</Button>
                   <Button
-                    variant={producto.estado ? "secondary" : "success"}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(producto)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: producto.estado ? "#6c757d" : "#28a745",
+                      borderColor: producto.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
                     onClick={() => toggleEstado(producto.idProducto, producto.estado)}
                   >
                     {producto.estado ? "Inactivar" : "Activar"}
@@ -173,15 +250,21 @@ function Productos() {
           </tbody>
         </Table>
 
-        {/* Modal para crear y editar productos */}
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingProducto ? 'Editar Producto' : 'Agregar Producto'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingProducto ? "Editar Producto" : "Agregar Producto"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombreProducto">
-                <Form.Label>Nombre del Producto</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Nombre del Producto
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="nombreProducto"
@@ -191,7 +274,9 @@ function Productos() {
                 />
               </Form.Group>
               <Form.Group controlId="talla">
-                <Form.Label>Talla</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Talla
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="talla"
@@ -201,7 +286,9 @@ function Productos() {
                 />
               </Form.Group>
               <Form.Group controlId="precio">
-                <Form.Label>Precio</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Precio (Q)
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="precio"
@@ -211,7 +298,9 @@ function Productos() {
                 />
               </Form.Group>
               <Form.Group controlId="descripcion">
-                <Form.Label>Descripción</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Descripción
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="descripcion"
@@ -221,7 +310,9 @@ function Productos() {
                 />
               </Form.Group>
               <Form.Group controlId="cantidadMinima">
-                <Form.Label>Cantidad Mínima</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Cantidad Mínima
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="cantidadMinima"
@@ -231,7 +322,9 @@ function Productos() {
                 />
               </Form.Group>
               <Form.Group controlId="cantidadMaxima">
-                <Form.Label>Cantidad Máxima</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Cantidad Máxima
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="cantidadMaxima"
@@ -241,7 +334,9 @@ function Productos() {
                 />
               </Form.Group>
               <Form.Group controlId="idCategoria">
-                <Form.Label>Categoría</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Categoría
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="idCategoria"
@@ -251,7 +346,9 @@ function Productos() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -262,8 +359,18 @@ function Productos() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingProducto ? 'Actualizar' : 'Crear'}
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingProducto ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
