@@ -51,6 +51,7 @@ import CategoriaBitacoras from "./pages/categoria_bitacoras/categoria_bitacoras"
 import Rifas from "./pages/rifas/rifas";
 import Productos from "./pages/productos/productos";
 import Personas from "./pages/personas/personas";
+import Talonarios from "./pages/talonarios/talonarios";
 
 const router = createBrowserRouter([
   {
@@ -171,6 +172,10 @@ const router = createBrowserRouter([
       {
         path: "/roles",
         element: <Roles />,
+      },
+      {
+        path: "/talonarios",
+        element: <Talonarios />,
       },
       {
         path: "/gallery",
