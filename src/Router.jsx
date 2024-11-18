@@ -56,6 +56,7 @@ import Rifas from "./pages/rifas/rifas";
 import Productos from "./pages/productos/productos";
 import Personas from "./pages/personas/personas";
 import Materiales from "./pages/materiales/materiales";
+import Administradores from "./pages/administradores/administradores";
 
 const router = createBrowserRouter([
   {
@@ -196,6 +197,10 @@ const router = createBrowserRouter([
       {
         path: "/materiales",
         element: <Materiales/>,
+      },
+      {
+        path: "/administradores",
+        element: <Administradores/>,
       },
       {
         path: "/gallery",

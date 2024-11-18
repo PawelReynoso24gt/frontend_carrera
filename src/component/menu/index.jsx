@@ -189,6 +189,7 @@ function Menu({ toggleMenu, menu }) {
                   { link: "Stands", title: "Stands" },
                   { link: "Municipios", title: "Municipios" },
                   { link: "Materiales", title: "Materiales" },
+                  { link: "Administradores", title: "Administradores" },
                 ]}
               />
               <Dropdown
