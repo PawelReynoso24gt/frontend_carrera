@@ -71,6 +71,15 @@ function Roles() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Validación para el campo 'roles'
+    if (name === "roles") {
+      const regex = /^[a-zA-Z\s]*$/; // Solo permite letras y espacios
+      if (!regex.test(value)) {
+        return; // Si no cumple, no actualiza el estado
+      }
+    }
+
     setNewRole({ ...newRole, [name]: value });
   };
 
@@ -310,4 +319,3 @@ function Roles() {
 }
 
 export default Roles;
-  

@@ -95,6 +95,19 @@ function Talonarios() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Validación para aceptar solo números en los campos específicos
+    if (
+      ["codigoTalonario", "cantidadBoletos", "correlativoInicio", "correlativoFinal"].includes(
+        name
+      )
+    ) {
+      const regex = /^[0-9]*$/; // Solo números
+      if (!regex.test(value)) {
+        return; // Si no cumple con la validación, no actualiza el estado
+      }
+    }
+
     setNewTalonario({ ...newTalonario, [name]: value });
   };
 
@@ -299,7 +312,7 @@ function Talonarios() {
               <Form.Group controlId="codigoTalonario">
                 <Form.Label>Código Talonario</Form.Label>
                 <Form.Control
-                  type="number"
+                  type="text"
                   name="codigoTalonario"
                   value={newTalonario.codigoTalonario}
                   onChange={handleChange}
@@ -309,7 +322,7 @@ function Talonarios() {
               <Form.Group controlId="cantidadBoletos">
                 <Form.Label>Cantidad de Boletos</Form.Label>
                 <Form.Control
-                  type="number"
+                  type="text"
                   name="cantidadBoletos"
                   value={newTalonario.cantidadBoletos}
                   onChange={handleChange}
@@ -319,7 +332,7 @@ function Talonarios() {
               <Form.Group controlId="correlativoInicio">
                 <Form.Label>Correlativo Inicio</Form.Label>
                 <Form.Control
-                  type="number"
+                  type="text"
                   name="correlativoInicio"
                   value={newTalonario.correlativoInicio}
                   onChange={handleChange}
@@ -329,7 +342,7 @@ function Talonarios() {
               <Form.Group controlId="correlativoFinal">
                 <Form.Label>Correlativo Final</Form.Label>
                 <Form.Control
-                  type="number"
+                  type="text"
                   name="correlativoFinal"
                   value={newTalonario.correlativoFinal}
                   onChange={handleChange}
