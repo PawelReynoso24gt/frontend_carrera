@@ -53,6 +53,8 @@ import Productos from "./pages/productos/productos";
 import Personas from "./pages/personas/personas";
 import Talonarios from "./pages/talonarios/talonarios";
 import Voluntarios from "./pages/voluntarios/voluntarios";
+import Comisiones from "./pages/comisiones/comisiones";
+import Actividades from "./pages/actividades/actividades";
 
 const router = createBrowserRouter([
   {
@@ -145,6 +147,14 @@ const router = createBrowserRouter([
       {
         path: "/tipo_publicos",
         element: <TipoPublico />,
+      },
+      {
+        path: "/comisiones",
+        element: <Comisiones />,
+      },
+      {
+        path: "/actividades",
+        element: <Actividades />,
       },
       {
         path: "/rifas",

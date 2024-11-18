@@ -176,6 +176,8 @@ function Menu({ toggleMenu, menu }) {
                   { link: "sedes", title: "Sedes" },
                   { link: "roles", title: "Roles" },
                   { link: "Departamentos", title: "Departamentos" },
+                  { link: "comisiones", title: "Comisiones" },
+                  { link: "actividades", title: "Actividades" },
                   { link: "TipoPago", title: "Tipo Pago" },
                   { link: "tipo_publicos", title: "Tipo Público" },
                   { link: "categoria_bitacoras", title: "Categoría Bitácora"},
