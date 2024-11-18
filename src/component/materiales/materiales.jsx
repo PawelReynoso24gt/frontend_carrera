@@ -4,6 +4,7 @@ import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from 'reac
 
 function MaterialesComponent() {
   const [materiales, setMateriales] = useState([]);
+  const [filteredMateriales, setFilteredMateriales] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState(null);
   const [newMaterial, setNewMaterial] = useState({ material: '', cantidad: '', descripcion: '', estado: 1, idComision: '' });
@@ -19,7 +20,9 @@ function MaterialesComponent() {
   const fetchActiveMateriales = async () => {
     try {
       const response = await axios.get('http://localhost:5000/materiales/all');
-      setMateriales(response.data.filter(material => material.estado === 1));
+      const activeMateriales = response.data.filter(material => material.estado === 1);
+      setMateriales(activeMateriales);
+      setFilteredMateriales(activeMateriales);
       setFilter('activos');
     } catch (error) {
       console.error('Error fetching active materiales:', error);
@@ -29,22 +32,22 @@ function MaterialesComponent() {
   const fetchInactiveMateriales = async () => {
     try {
       const response = await axios.get('http://localhost:5000/materiales/all');
-      setMateriales(response.data.filter(material => material.estado === 0));
+      const inactiveMateriales = response.data.filter(material => material.estado === 0);
+      setMateriales(inactiveMateriales);
+      setFilteredMateriales(inactiveMateriales);
       setFilter('inactivos');
     } catch (error) {
       console.error('Error fetching inactive materiales:', error);
     }
   };
 
-  const fetchMaterialesByName = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/materialesByName', {
-        params: { nombre: searchTerm }
-      });
-      setMateriales(response.data);
-    } catch (error) {
-      console.error('Error fetching materiales by name:', error);
-    }
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    const filtered = materiales.filter((material) =>
+      material.material.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredMateriales(filtered);
   };
 
   const handleShowModal = (material = null) => {
@@ -91,39 +94,6 @@ function MaterialesComponent() {
     } catch (error) {
       console.error('Error toggling estado of material:', error);
     }
-  };
-
-  const validateData = (datos) => {
-    if (datos.material !== undefined) {
-      const materialPattern = /^[a-zA-Z0-9À-ÿ\s]+$/;
-      if (!materialPattern.test(datos.material)) {
-        setAlertMessage('El campo material solo debe contener letras, números y espacios.');
-        setShowAlert(true);
-        return false;
-      }
-    }
-    if (datos.cantidad !== undefined) {
-      if (isNaN(datos.cantidad) || datos.cantidad < 0) {
-        setAlertMessage('El campo cantidad debe ser un número válido y mayor o igual a 0.');
-        setShowAlert(true);
-        return false;
-      }
-    }
-    if (datos.estado !== undefined) {
-      if (datos.estado !== 0 && datos.estado !== 1) {
-        setAlertMessage('El campo estado debe ser 0 o 1.');
-        setShowAlert(true);
-        return false;
-      }
-    }
-    if (datos.idComision !== undefined) {
-      if (isNaN(datos.idComision) || datos.idComision < 1) {
-        setAlertMessage('El campo idComision debe ser un número válido.');
-        setShowAlert(true);
-        return false;
-      }
-    }
-    return true;
   };
 
   return (
@@ -193,20 +163,8 @@ function MaterialesComponent() {
             aria-label="Buscar por nombre"
             aria-describedby="basic-addon2"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearch}
           />
-          <Button
-            variant="outline-secondary"
-            style={{
-              backgroundColor: "#007AC3",
-              borderColor: "#007AC3",
-              color: "#fff",
-              fontWeight: "bold",
-            }}
-            onClick={fetchMaterialesByName}
-          >
-            Buscar
-          </Button>
         </InputGroup>
 
         <Alert
@@ -243,7 +201,7 @@ function MaterialesComponent() {
             </tr>
           </thead>
           <tbody>
-            {materiales.map((material) => (
+            {filteredMateriales.map((material) => (
               <tr key={material.idMaterial}>
                 <td>{material.idMaterial}</td>
                 <td>{material.material}</td>

@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from 'react-bootstrap';
 
 function UsuariosAdminComponent() {
   const [usuarios, setUsuarios] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState(null);
-  const [newUsuario, setNewUsuario] = useState({ usuario: '', estado: 1, idRol: 1, idSede: '', idPersona: '' });
+  const [newUsuario, setNewUsuario] = useState({ usuario: '', estado: 1, idRol: 1, idSede: '', idPersona: '', contrasenia: '' });
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [filter, setFilter] = useState('activos');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredUsuarios, setFilteredUsuarios] = useState([]);
 
   useEffect(() => {
     fetchActiveUsuarios();
@@ -21,7 +23,9 @@ function UsuariosAdminComponent() {
   const fetchActiveUsuarios = async () => {
     try {
       const response = await axios.get('http://localhost:5000/usuarios/activos');
-      setUsuarios(response.data.filter(usuario => usuario.idRol === 1 && usuario.estado === 1));
+      const usuariosActivos = response.data.filter(usuario => usuario.idRol === 1 && usuario.estado === 1);
+      setUsuarios(usuariosActivos);
+      setFilteredUsuarios(usuariosActivos);
       setFilter('activos');
     } catch (error) {
       console.error('Error fetching active usuarios:', error);
@@ -33,16 +37,27 @@ function UsuariosAdminComponent() {
       const response = await axios.get('http://localhost:5000/usuarios', {
         params: { estado: 0 }
       });
-      setUsuarios(response.data.filter(usuario => usuario.idRol === 1 && usuario.estado === 0));
+      const usuariosInactivos = response.data.filter(usuario => usuario.idRol === 1 && usuario.estado === 0);
+      setUsuarios(usuariosInactivos);
+      setFilteredUsuarios(usuariosInactivos);
       setFilter('inactivos');
     } catch (error) {
       console.error('Error fetching inactive usuarios:', error);
     }
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    const filtered = usuarios.filter((usuario) =>
+      usuario.usuario.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredUsuarios(filtered);
+  };
+
   const handleShowModal = (usuario = null) => {
     setEditingUsuario(usuario);
-    setNewUsuario(usuario || { usuario: '', estado: 1, idRol: 1, idSede: '', idPersona: '' });
+    setNewUsuario(usuario || { usuario: '', estado: 1, idRol: 1, idSede: '', idPersona: '', contrasenia: '' });
     setShowModal(true);
   };
 
@@ -72,7 +87,7 @@ function UsuariosAdminComponent() {
     const { name, value } = e.target;
     if (name === 'currentPassword') {
       setCurrentPassword(value);
-    } else {
+    } else if (name === 'newPassword') {
       setNewPassword(value);
     }
   };
@@ -98,7 +113,7 @@ function UsuariosAdminComponent() {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:5000/usuarios/${editingUsuario.idUsuario}/contrasenia`, {
+      const response = await axios.put(`http://localhost:5000/usuarios/${editingUsuario.idUsuario}/contrasenia`, {
         currentPassword,
         newPassword
       });
@@ -106,7 +121,12 @@ function UsuariosAdminComponent() {
       setShowAlert(true);
       handleClosePasswordModal();
     } catch (error) {
-      console.error('Error updating password:', error);
+      if (error.response && error.response.status === 401) {
+        setAlertMessage('La contraseña actual es incorrecta');
+      } else {
+        setAlertMessage('Error al actualizar la contraseña');
+      }
+      setShowAlert(true);
     }
   };
 
@@ -143,6 +163,20 @@ function UsuariosAdminComponent() {
       >
         <Button
           style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "180px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Administrador
+        </Button>
+        <Button
+          style={{
             backgroundColor: "#007AC3",
             borderColor: "#007AC3",
             padding: "5px 10px",
@@ -168,6 +202,15 @@ function UsuariosAdminComponent() {
         >
           Inactivos
         </Button>
+
+        {/* Barra de Búsqueda */}
+        <InputGroup className="mb-3 mt-3">
+          <FormControl
+            placeholder="Buscar usuario por nombre..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
 
         <Alert
           variant="success"
@@ -201,7 +244,7 @@ function UsuariosAdminComponent() {
             </tr>
           </thead>
           <tbody>
-            {usuarios.map((usuario) => (
+            {filteredUsuarios.map((usuario) => (
               <tr key={usuario.idUsuario}>
                 <td>{usuario.idUsuario}</td>
                 <td>{usuario.usuario}</td>
@@ -255,6 +298,7 @@ function UsuariosAdminComponent() {
           </tbody>
         </Table>
 
+        {/* Modal para agregar o editar un administrador */}
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
             closeButton
@@ -276,6 +320,18 @@ function UsuariosAdminComponent() {
                   value={newUsuario.usuario}
                   onChange={handleChange}
                   required
+                />
+              </Form.Group>
+              <Form.Group controlId="contrasenia">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Contraseña
+                </Form.Label>
+                <Form.Control
+                  type="password"
+                  name="contrasenia"
+                  value={newUsuario.contrasenia}
+                  onChange={handleChange}
+                  required={!editingUsuario}
                 />
               </Form.Group>
               <Form.Group controlId="idSede">
@@ -333,6 +389,7 @@ function UsuariosAdminComponent() {
           </Modal.Body>
         </Modal>
 
+        {/* Modal para cambiar la contraseña */}
         <Modal show={showPasswordModal} onHide={handleClosePasswordModal}>
           <Modal.Header
             closeButton
