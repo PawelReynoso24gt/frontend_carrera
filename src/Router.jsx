@@ -55,6 +55,7 @@ import CategoriaBitacoras from "./pages/categoria_bitacoras/categoria_bitacoras"
 import Rifas from "./pages/rifas/rifas";
 import Productos from "./pages/productos/productos";
 import Personas from "./pages/personas/personas";
+import Materiales from "./pages/materiales/materiales";
 
 const router = createBrowserRouter([
   {
@@ -191,6 +192,10 @@ const router = createBrowserRouter([
       {
         path: "/fotosedes",
         element: <FotoSedesPage/>,
+      },
+      {
+        path: "/materiales",
+        element: <Materiales/>,
       },
       {
         path: "/gallery",
