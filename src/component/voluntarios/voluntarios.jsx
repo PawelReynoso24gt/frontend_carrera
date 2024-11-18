@@ -2,117 +2,134 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 
-function Roles() {
-  const [roles, setRoles] = useState([]);
-  const [filteredRoles, setFilteredRoles] = useState([]); // Para almacenar los roles filtrados
-  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
+function Voluntarios() {
+  const [voluntarios, setVoluntarios] = useState([]);
+  const [filteredVoluntarios, setFilteredVoluntarios] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingRole, setEditingRole] = useState(null);
-  const [newRole, setNewRole] = useState({
-    roles: "",
+  const [editingVoluntario, setEditingVoluntario] = useState(null);
+  const [newVoluntario, setNewVoluntario] = useState({
+    fechaRegistro: "",
+    fechaSalida: "",
     estado: 1,
+    idPersona: "",
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [personas, setPersonas] = useState([]);
 
   useEffect(() => {
-    fetchRoles();
+    fetchVoluntarios();
+    fetchPersonas();
   }, []);
 
-  const fetchRoles = async () => {
+  const fetchVoluntarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/roles");
-      setRoles(response.data);
-      setFilteredRoles(response.data); // Inicialmente muestra todos los roles
+      const response = await axios.get("http://localhost:5000/voluntarios");
+      setVoluntarios(response.data);
+      setFilteredVoluntarios(response.data);
     } catch (error) {
-      console.error("Error fetching roles:", error);
+      console.error("Error fetching voluntarios:", error);
     }
   };
 
-  const fetchActiveRoles = async () => {
+  const fetchPersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/roles/activos");
-      setRoles(response.data);
-      setFilteredRoles(response.data);
+      const response = await axios.get("http://localhost:5000/personas");
+      setPersonas(response.data);
     } catch (error) {
-      console.error("Error fetching active roles:", error);
+      console.error("Error fetching personas:", error);
     }
   };
 
-  const fetchInactiveRoles = async () => {
+  const fetchActiveVoluntarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/roles/inactivos");
-      setRoles(response.data);
-      setFilteredRoles(response.data);
+      const response = await axios.get("http://localhost:5000/voluntarios/activos");
+      setVoluntarios(response.data);
+      setFilteredVoluntarios(response.data);
     } catch (error) {
-      console.error("Error fetching inactive roles:", error);
+      console.error("Error fetching active voluntarios:", error);
+    }
+  };
+
+  const fetchInactiveVoluntarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/voluntarios/inactivos");
+      setVoluntarios(response.data);
+      setFilteredVoluntarios(response.data);
+    } catch (error) {
+      console.error("Error fetching inactive voluntarios:", error);
     }
   };
 
   const handleSearch = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    const filtered = roles.filter((role) =>
-      role.roles.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredRoles(filtered);
+
+    const filtered = voluntarios.filter((voluntario) => {
+      const persona = personas.find((p) => p.idPersona === voluntario.idPersona);
+      const personaNombre = persona ? persona.nombre.toLowerCase() : "";
+
+      return (
+        voluntario.fechaRegistro.toLowerCase().includes(value) || 
+        personaNombre.includes(value)
+      );
+    });
+
+    setFilteredVoluntarios(filtered);
   };
 
-  const handleShowModal = (role = null) => {
-    setEditingRole(role);
-    setNewRole(role || { roles: "", estado: 1 });
+  const handleShowModal = (voluntario = null) => {
+    setEditingVoluntario(voluntario);
+    setNewVoluntario(
+      voluntario || {
+        fechaRegistro: "",
+        fechaSalida: "",
+        estado: 1,
+        idPersona: "",
+      }
+    );
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingRole(null);
+    setEditingVoluntario(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Validación para el campo 'roles'
-    if (name === "roles") {
-      const regex = /^[a-zA-Z\s]*$/; // Solo permite letras y espacios
-      if (!regex.test(value)) {
-        return; // Si no cumple, no actualiza el estado
-      }
-    }
-
-    setNewRole({ ...newRole, [name]: value });
+    setNewVoluntario({ ...newVoluntario, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingRole) {
+      if (editingVoluntario) {
         await axios.put(
-          `http://localhost:5000/roles/update/${editingRole.idRol}`,
-          newRole
+          `http://localhost:5000/voluntarios/update/${editingVoluntario.idVoluntario}`,
+          newVoluntario
         );
-        setAlertMessage("Rol actualizado con éxito");
+        setAlertMessage("Voluntario actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/roles/create", newRole);
-        setAlertMessage("Rol creado con éxito");
+        await axios.post("http://localhost:5000/voluntarios/create", newVoluntario);
+        setAlertMessage("Voluntario creado con éxito");
       }
-      fetchRoles();
+      fetchVoluntarios();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting role:", error);
+      console.error("Error submitting voluntario:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/roles/update/${id}`, {
-        estado: nuevoEstado,
-      });
-      fetchRoles();
+      await axios.put(`http://localhost:5000/voluntarios/update/${id}`, { estado: nuevoEstado });
+      fetchVoluntarios();
       setAlertMessage(
-        `Rol ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+        `Voluntario ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
       );
       setShowAlert(true);
     } catch (error) {
@@ -125,7 +142,7 @@ function Roles() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Roles
+            Gestión de Voluntarios
           </h3>
         </div>
       </div>
@@ -139,10 +156,9 @@ function Roles() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        {/* Barra de Búsqueda */}
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar rol por nombre..."
+            placeholder="Buscar por fecha de registro o nombre..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -160,7 +176,7 @@ function Roles() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Rol
+          Agregar Voluntario
         </Button>
         <Button
           style={{
@@ -172,7 +188,7 @@ function Roles() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveRoles}
+          onClick={fetchActiveVoluntarios}
         >
           Activos
         </Button>
@@ -185,7 +201,7 @@ function Roles() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveRoles}
+          onClick={fetchInactiveVoluntarios}
         >
           Inactivos
         </Button>
@@ -215,17 +231,24 @@ function Roles() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Rol</th>
+              <th>Fecha Registro</th>
+              <th>Fecha Salida</th>
+              <th>Persona</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRoles.map((role) => (
-              <tr key={role.idRol}>
-                <td>{role.idRol}</td>
-                <td>{role.roles}</td>
-                <td>{role.estado === 1 ? "Activo" : "Inactivo"}</td>
+            {filteredVoluntarios.map((voluntario) => (
+              <tr key={voluntario.idVoluntario}>
+                <td>{voluntario.idVoluntario}</td>
+                <td>{voluntario.fechaRegistro}</td>
+                <td>{voluntario.fechaSalida}</td>
+                <td>
+                  {personas.find((persona) => persona.idPersona === voluntario.idPersona)?.nombre ||
+                    "Desconocido"}
+                </td>
+                <td>{voluntario.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
                     style={{
@@ -237,22 +260,22 @@ function Roles() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(role)}
+                    onClick={() => handleShowModal(voluntario)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: role.estado ? "#6c757d" : "#28a745",
-                      borderColor: role.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: voluntario.estado ? "#6c757d" : "#28a745",
+                      borderColor: voluntario.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => toggleEstado(role.idRol, role.estado)}
+                    onClick={() => toggleEstado(voluntario.idVoluntario, voluntario.estado)}
                   >
-                    {role.estado ? "Inactivar" : "Activar"}
+                    {voluntario.estado ? "Inactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -266,31 +289,54 @@ function Roles() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingRole ? "Editar Rol" : "Agregar Rol"}
+              {editingVoluntario ? "Editar Voluntario" : "Agregar Voluntario"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="roles">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Nombre del Rol
-                </Form.Label>
+              <Form.Group controlId="fechaRegistro">
+                <Form.Label>Fecha Registro</Form.Label>
                 <Form.Control
-                  type="text"
-                  name="roles"
-                  value={newRole.roles}
+                  type="date"
+                  name="fechaRegistro"
+                  value={newVoluntario.fechaRegistro}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
+              <Form.Group controlId="fechaSalida">
+                <Form.Label>Fecha Salida</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="fechaSalida"
+                  value={newVoluntario.fechaSalida}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="idPersona">
+                <Form.Label>Persona</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idPersona"
+                  value={newVoluntario.idPersona}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar Persona</option>
+                  {personas.map((persona) => (
+                    <option key={persona.idPersona} value={persona.idPersona}>
+                      {persona.nombre}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
+                <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newRole.estado}
+                  value={newVoluntario.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -308,7 +354,7 @@ function Roles() {
                 }}
                 type="submit"
               >
-                {editingRole ? "Actualizar" : "Crear"}
+                {editingVoluntario ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -318,4 +364,4 @@ function Roles() {
   );
 }
 
-export default Roles;
+export default Voluntarios;

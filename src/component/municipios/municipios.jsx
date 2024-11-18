@@ -212,7 +212,13 @@ function Municipio() {
               <tr key={municipio.idMunicipio}>
                 <td>{municipio.idMunicipio}</td>
                 <td>{municipio.municipio}</td>
-                <td>{municipio.idDepartamento}</td>
+                <td>
+                  {
+                    departamentos.find(
+                      (d) => d.idDepartamento === municipio.idDepartamento
+                    )?.departamento || "Desconocido"
+                  }
+                </td>
                 <td>{municipio.estado ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
@@ -231,9 +237,7 @@ function Municipio() {
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: municipio.estado
-                        ? "#6c757d"
-                        : "#28a745",
+                      backgroundColor: municipio.estado ? "#6c757d" : "#28a745",
                       borderColor: municipio.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
@@ -258,9 +262,7 @@ function Municipio() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingMunicipio
-                ? "Editar Municipio"
-                : "Agregar Municipio"}
+              {editingMunicipio ? "Editar Municipio" : "Agregar Municipio"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -308,7 +310,7 @@ function Municipio() {
                       key={departamento.idDepartamento}
                       value={departamento.idDepartamento}
                     >
-                      {departamento.idDepartamento}
+                      {departamento.departamento}
                     </option>
                   ))}
                 </Form.Control>

@@ -188,6 +188,8 @@ function Menu({ toggleMenu, menu }) {
                   { link: "personas", title: "Personas"},
                   { link: "Stands", title: "Stands" },
                   { link: "Municipios", title: "Municipios" },
+                  { link: "talonarios", title: "Talonarios" },
+                  { link: "voluntarios", title: "Voluntarios" },
                   { link: "Materiales", title: "Materiales" },
                   { link: "Administradores", title: "Administradores" },
                 ]}
