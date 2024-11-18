@@ -15,19 +15,10 @@ function TipoStandsComponent() {
     fetchActiveTipoStands();
   }, []);
 
-  const fetchTipoStands = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/tipo_stands');
-      setTipoStands(response.data);
-    } catch (error) {
-      console.error('Error fetching tipoStands:', error);
-    }
-  };
-
   const fetchActiveTipoStands = async () => {
     try {
       const response = await axios.get('http://localhost:5000/tipo_stands/activos');
-      setTipoStands(response.data.filter(tipoStand => tipoStand.estado === 1));
+      setTipoStands(response.data);
       setFilter('activos');
     } catch (error) {
       console.error('Error fetching active tipoStands:', error);
@@ -66,11 +57,9 @@ function TipoStandsComponent() {
     e.preventDefault();
     try {
       if (editingTipoStand) {
-        // Actualizar tipo de stand
         await axios.put(`http://localhost:5000/tipo_stands/${editingTipoStand.idTipoStands}`, newTipoStand);
         setAlertMessage('Tipo de stand actualizado con éxito');
       } else {
-        // Crear nuevo tipo de stand
         await axios.post('http://localhost:5000/tipo_stands', newTipoStand);
         setAlertMessage('Tipo de stand creado con éxito');
       }
@@ -79,9 +68,6 @@ function TipoStandsComponent() {
       handleCloseModal();
     } catch (error) {
       console.error('Error submitting tipo de stand:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);  // Muestra detalles del error desde el backend
-      }
     }
   };
 
@@ -99,29 +85,88 @@ function TipoStandsComponent() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">TIPO STANDS</h3>
-            <p className="crancy-section__text">
-              Aquí puedes gestionar los tipos de stands disponibles.
-            </p>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Tipos de Stands
+          </h3>
         </div>
       </div>
 
-      {/* Botones para Filtrar Tipos de Stands */}
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Tipo de Stand</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveTipoStands}>Activos</Button>
-        <Button variant="secondary" className="ml-2" onClick={fetchInactiveTipoStands}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "180px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Tipo de Stand
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveTipoStands}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveTipoStands}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Tipo</th>
@@ -131,17 +176,36 @@ function TipoStandsComponent() {
             </tr>
           </thead>
           <tbody>
-            {tipoStands.filter(tipoStand => filter === 'activos' ? tipoStand.estado === 1 : tipoStand.estado === 0).map((tipoStand) => (
+            {tipoStands.map((tipoStand) => (
               <tr key={tipoStand.idTipoStands}>
                 <td>{tipoStand.idTipoStands}</td>
                 <td>{tipoStand.tipo}</td>
                 <td>{tipoStand.descripcion}</td>
-                <td>{tipoStand.estado ? 'Activo' : 'Inactivo'}</td>
+                <td>{tipoStand.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(tipoStand)}>Editar</Button>
                   <Button
-                    variant={tipoStand.estado ? "danger" : "success"}
-                    className="ml-2"
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(tipoStand)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: tipoStand.estado ? "#6c757d" : "#28a745",
+                      borderColor: tipoStand.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
                     onClick={() => toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado)}
                   >
                     {tipoStand.estado ? "Desactivar" : "Activar"}
@@ -152,15 +216,21 @@ function TipoStandsComponent() {
           </tbody>
         </Table>
 
-        {/* Modal para crear y editar tipos de stands */}
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingTipoStand ? 'Editar Tipo de Stand' : 'Agregar Tipo de Stand'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingTipoStand ? "Editar Tipo de Stand" : "Agregar Tipo de Stand"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="tipo">
-                <Form.Label>Tipo</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Tipo
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="tipo"
@@ -170,7 +240,9 @@ function TipoStandsComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="descripcion">
-                <Form.Label>Descripción</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Descripción
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="descripcion"
@@ -180,7 +252,9 @@ function TipoStandsComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -191,8 +265,18 @@ function TipoStandsComponent() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingTipoStand ? 'Actualizar' : 'Crear'}
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingTipoStand ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>

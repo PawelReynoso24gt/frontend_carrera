@@ -9,26 +9,15 @@ function FotosSedesComponent() {
   const [newFoto, setNewFoto] = useState({ foto: '', idSede: '', estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  const [filter, setFilter] = useState('activos');
 
   useEffect(() => {
     fetchActiveFotos();
   }, []);
 
-  const fetchFotos = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/fotos_sedes');
-      setFotos(response.data);
-    } catch (error) {
-      console.error('Error fetching fotos:', error);
-    }
-  };
-
   const fetchActiveFotos = async () => {
     try {
       const response = await axios.get('http://localhost:5000/fotos_sedes/activos');
-      setFotos(response.data.filter(foto => foto.estado === 1));
-      setFilter('activos');
+      setFotos(response.data);
     } catch (error) {
       console.error('Error fetching active fotos:', error);
     }
@@ -39,8 +28,8 @@ function FotosSedesComponent() {
       const response = await axios.get('http://localhost:5000/fotos_sedes', {
         params: { estado: 0 }
       });
-      setFotos(response.data.filter(foto => foto.estado === 0));
-      setFilter('inactivos');
+      const inactiveFotos = response.data.filter(foto => foto.estado === 0);
+      setFotos(inactiveFotos);
     } catch (error) {
       console.error('Error fetching inactive fotos:', error);
     }
@@ -77,71 +66,116 @@ function FotosSedesComponent() {
     e.preventDefault();
     try {
       if (editingFoto) {
-        // Actualizar foto de sede
         await axios.put(`http://localhost:5000/fotos_sedes/${editingFoto.idFotoSede}`, newFoto);
         setAlertMessage('Foto de sede actualizada con éxito');
       } else {
-        // Crear nueva foto de sede
         await axios.post('http://localhost:5000/fotos_sedes', newFoto);
         setAlertMessage('Foto de sede creada con éxito');
       }
-      filter === 'activos' ? fetchActiveFotos() : fetchInactiveFotos();
+      fetchActiveFotos();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
       console.error('Error submitting foto de sede:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);  // Muestra detalles del error desde el backend
-      }
     }
   };
 
   const toggleFotoEstado = async (id, currentEstado) => {
     try {
       const newEstado = currentEstado === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/fotos_sedes/${id}`, {
-        estado: newEstado
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      await axios.put(`http://localhost:5000/fotos_sedes/${id}`, { estado: newEstado });
       setAlertMessage(`Foto de sede ${newEstado === 1 ? 'activada' : 'desactivada'} con éxito`);
       setShowAlert(true);
-      filter === 'activos' ? fetchActiveFotos() : fetchInactiveFotos();
+      fetchActiveFotos();
     } catch (error) {
       console.error('Error toggling estado of foto de sede:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-      }
     }
   };
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">FOTOS SEDES</h3>
-            <p className="crancy-section__text">
-              Aquí puedes gestionar las fotos de las sedes.
-            </p>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Fotos de Sedes
+          </h3>
         </div>
       </div>
 
-      {/* Botones para Filtrar Fotos de Sedes */}
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Foto de Sede</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveFotos}>Activos</Button>
-        <Button variant="secondary" className="ml-2" onClick={fetchInactiveFotos}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "180px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Foto de Sede
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveFotos}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveFotos}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Foto</th>
@@ -151,17 +185,42 @@ function FotosSedesComponent() {
             </tr>
           </thead>
           <tbody>
-            {fotos.filter(foto => filter === 'activos' ? foto.estado === 1 : foto.estado === 0).map((foto) => (
+            {fotos.map((foto) => (
               <tr key={foto.idFotoSede}>
                 <td>{foto.idFotoSede}</td>
-                <td><img src={foto.foto} alt="Foto de Sede" style={{ width: '100px' }} /></td>
-                <td>{foto.idSede}</td>
-                <td>{foto.estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(foto)}>Editar</Button>
+                  <img
+                    src={foto.foto}
+                    alt="Foto de Sede"
+                    style={{ width: '100px' }}
+                  />
+                </td>
+                <td>{foto.idSede}</td>
+                <td>{foto.estado ? "Activo" : "Inactivo"}</td>
+                <td>
                   <Button
-                    variant={foto.estado ? "danger" : "success"}
-                    className="ml-2"
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(foto)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: foto.estado ? "#6c757d" : "#28a745",
+                      borderColor: foto.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
                     onClick={() => toggleFotoEstado(foto.idFotoSede, foto.estado)}
                   >
                     {foto.estado ? "Desactivar" : "Activar"}
@@ -172,15 +231,21 @@ function FotosSedesComponent() {
           </tbody>
         </Table>
 
-        {/* Modal para crear y editar fotos de sedes */}
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingFoto ? 'Editar Foto de Sede' : 'Agregar Foto de Sede'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingFoto ? "Editar Foto de Sede" : "Agregar Foto de Sede"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="foto">
-                <Form.Label>Foto</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Foto
+                </Form.Label>
                 <Form.Control
                   type="file"
                   name="foto"
@@ -189,7 +254,9 @@ function FotosSedesComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="idSede">
-                <Form.Label>ID Sede</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  ID Sede
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="idSede"
@@ -199,7 +266,9 @@ function FotosSedesComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -210,8 +279,18 @@ function FotosSedesComponent() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingFoto ? 'Actualizar' : 'Crear'}
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingFoto ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>

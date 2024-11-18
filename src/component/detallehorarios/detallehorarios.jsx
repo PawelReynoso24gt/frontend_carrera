@@ -15,19 +15,10 @@ function DetalleHorariosComponent() {
     fetchActiveDetalles();
   }, []);
 
-  const fetchDetalles = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/detalle_horarios');
-      setDetalles(response.data);
-    } catch (error) {
-      console.error('Error fetching detalles:', error);
-    }
-  };
-
   const fetchActiveDetalles = async () => {
     try {
       const response = await axios.get('http://localhost:5000/detalle_horarios/activos');
-      setDetalles(response.data.filter(detalle => detalle.estado === 1));
+      setDetalles(response.data);
       setFilter('activos');
     } catch (error) {
       console.error('Error fetching active detalles:', error);
@@ -66,11 +57,9 @@ function DetalleHorariosComponent() {
     e.preventDefault();
     try {
       if (editingDetalle) {
-        // Actualizar detalle de horario
         await axios.put(`http://localhost:5000/detalle_horarios/${editingDetalle.idDetalleHorario}`, newDetalle);
         setAlertMessage('Detalle de horario actualizado con éxito');
       } else {
-        // Crear nuevo detalle de horario
         await axios.post('http://localhost:5000/detalle_horarios', newDetalle);
         setAlertMessage('Detalle de horario creado con éxito');
       }
@@ -79,9 +68,6 @@ function DetalleHorariosComponent() {
       handleCloseModal();
     } catch (error) {
       console.error('Error submitting detalle de horario:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);  // Muestra detalles del error desde el backend
-      }
     }
   };
 
@@ -99,29 +85,88 @@ function DetalleHorariosComponent() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">DETALLE HORARIOS</h3>
-            <p className="crancy-section__text">
-              Aquí puedes gestionar los detalles de los horarios.
-            </p>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Detalles de Horarios
+          </h3>
         </div>
       </div>
 
-      {/* Botones para Filtrar Detalles de Horarios */}
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Detalle de Horario</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveDetalles}>Activos</Button>
-        <Button variant="secondary" className="ml-2" onClick={fetchInactiveDetalles}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "220px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Detalle de Horario
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveDetalles}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveDetalles}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Cantidad de Personas</th>
@@ -132,18 +177,37 @@ function DetalleHorariosComponent() {
             </tr>
           </thead>
           <tbody>
-            {detalles.filter(detalle => filter === 'activos' ? detalle.estado === 1 : detalle.estado === 0).map((detalle) => (
+            {detalles.map((detalle) => (
               <tr key={detalle.idDetalleHorario}>
                 <td>{detalle.idDetalleHorario}</td>
                 <td>{detalle.cantidadPersonas}</td>
                 <td>{detalle.idHorario}</td>
                 <td>{detalle.idCategoriaHorario}</td>
-                <td>{detalle.estado ? 'Activo' : 'Inactivo'}</td>
+                <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(detalle)}>Editar</Button>
                   <Button
-                    variant={detalle.estado ? "danger" : "success"}
-                    className="ml-2"
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(detalle)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: detalle.estado ? "#6c757d" : "#28a745",
+                      borderColor: detalle.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
                     onClick={() => toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado)}
                   >
                     {detalle.estado ? "Desactivar" : "Activar"}
@@ -154,15 +218,21 @@ function DetalleHorariosComponent() {
           </tbody>
         </Table>
 
-        {/* Modal para crear y editar detalles de horarios */}
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingDetalle ? 'Editar Detalle de Horario' : 'Agregar Detalle de Horario'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingDetalle ? "Editar Detalle de Horario" : "Agregar Detalle de Horario"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="cantidadPersonas">
-                <Form.Label>Cantidad de Personas</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Cantidad de Personas
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="cantidadPersonas"
@@ -172,7 +242,9 @@ function DetalleHorariosComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="idHorario">
-                <Form.Label>ID Horario</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  ID Horario
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="idHorario"
@@ -182,7 +254,9 @@ function DetalleHorariosComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="idCategoriaHorario">
-                <Form.Label>ID Categoría Horario</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  ID Categoría Horario
+                </Form.Label>
                 <Form.Control
                   type="number"
                   name="idCategoriaHorario"
@@ -192,7 +266,9 @@ function DetalleHorariosComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -203,8 +279,18 @@ function DetalleHorariosComponent() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingDetalle ? 'Actualizar' : 'Crear'}
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingDetalle ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
