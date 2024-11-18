@@ -1,133 +1,147 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import googleLogo from "../../assets/img/google-logo.png";
-import appleLogo from "../../assets/img/apple-logo.png";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import bg from "../../assets/img/credential-bg.svg";
+import logoW from "../../assets/img/logo-white.png";
+
 function SignUpForm() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:5000/usuarios", {
+        usuario,
+        contrasenia: password,
+        idRol: 1, // Puedes ajustar el rol según sea necesario
+      });
+
+      if (response.status === 201) {
+        // Si la cuenta se crea correctamente, redirigir al login
+        navigate("/login");
+      }
+    } catch (err) {
+      setError("No se pudo crear la cuenta. Por favor, intenta de nuevo.");
+    }
+  };
+
   return (
-    <>
-      <div className="crancy-wc__heading">
-        <h3 className="crancy-wc__form-title crancy-wc__form-title__one">
-          Create your account
-        </h3>
-      </div>
-      {/* <!-- Sign in Form --> */}
-      <form className="crancy-wc__form-main">
-        <div className="row">
-          <div className="col-lg-6 col-md-6 col-12">
-            {/* <!-- Form Group --> */}
+    <div className="body-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <section
+        className="crancy-wc crancy-wc__full crancy-bg-cover"
+        style={{ backgroundImage: `url(${bg})`, width: "100%", height: "100%" }}
+      >
+        <div className="container" style={{ maxWidth: "500px", padding: "40px", backgroundColor: "rgba(255, 255, 255, 0.95)", borderRadius: "16px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
+          <div className="text-center mb-4">
+            <img src={logoW} alt="Logo" style={{ width: "150px", marginBottom: "20px" }} />
+            <h4 style={{ color: "#333", fontWeight: "bold" }}>Crea tu cuenta</h4>
+          </div>
+          {/* Formulario de Registro */}
+          <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <div className="form-group__input">
-                <input
-                  className="crancy-wc__form-input"
-                  type="text"
-                  name="first-name"
-                  placeholder="First name"
-                  required="required"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="col-lg-6 col-md-6 col-12">
-            <div className="form-group">
-              <div className="form-group__input">
-                <input
-                  className="crancy-wc__form-input"
-                  type="text"
-                  name="last-name"
-                  placeholder="Last name"
-                  required="required"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* <!-- Form Group --> */}
-        <div className="form-group">
-          <div className="form-group__input">
-            <input
-              className="crancy-wc__form-input"
-              type="email"
-              name="email"
-              placeholder="Email"
-              required="required"
-            />
-          </div>
-        </div>
-        {/* <!-- Form Group --> */}
-        <div className="form-group">
-          <div className="form-group__input">
-            <input
-              className="crancy-wc__form-input"
-              placeholder="Password"
-              id="password-field"
-              type="password"
-              name="password"
-              maxLength="8"
-              required="required"
-            />
-            <span className="crancy-wc__toggle">
-              <i className="fas fa-eye" id="toggle-icon"></i>
-            </span>
-          </div>
-        </div>
-        {/* <!-- Form Group --> */}
-        <div className="form-group">
-          <div className="crancy-wc__check-inline">
-            <div className="crancy-wc__checkbox">
+              <label htmlFor="firstName" style={{ color: "#333", fontWeight: "bold" }}>Nombre</label>
               <input
-                className="crancy-wc__form-check"
-                id="checkbox"
-                name="checkbox"
-                type="checkbox"
+                type="text"
+                className="form-control"
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                placeholder="Ingresa tu nombre"
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
               />
-              <label htmlFor="checkbox">
-                By proceeding, you agree to the{" "}
-                <a href="#">Terms and Conditions</a>
-              </label>
             </div>
-          </div>
-        </div>
-        {/* <!-- Form Group --> */}
-        <div className="form-group form-mg-top25">
-          <div className="crancy-wc__button">
-            <button className="ntfmax-wc__btn" type="submit">
-              Sign in with email
-            </button>
-          </div>
-          <div className="crancy-wc__form-login--label">
-            <span>Or sign up with</span>
-          </div>
-          <div className="crancy-wc__button--group">
-            <button
-              className="ntfmax-wc__btn ntfmax-wc__btn--two"
-              type="submit"
-            >
-              <div className="ntfmax-wc__btn-icon">
-                <img src={googleLogo} />
+            <div className="form-group mt-3">
+              <label htmlFor="lastName" style={{ color: "#333", fontWeight: "bold" }}>Apellido</label>
+              <input
+                type="text"
+                className="form-control"
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                placeholder="Ingresa tu apellido"
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
+              />
+            </div>
+            <div className="form-group mt-3">
+              <label htmlFor="email" style={{ color: "#333", fontWeight: "bold" }}>Correo Electrónico</label>
+              <input
+                type="email"
+                className="form-control"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="Ingresa tu correo"
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
+              />
+            </div>
+            <div className="form-group mt-3">
+              <label htmlFor="usuario" style={{ color: "#333", fontWeight: "bold" }}>Usuario</label>
+              <input
+                type="text"
+                className="form-control"
+                id="usuario"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
+                required
+                placeholder="Ingresa tu usuario"
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
+              />
+            </div>
+            <div className="form-group mt-3">
+              <label htmlFor="password" style={{ color: "#333", fontWeight: "bold" }}>Contraseña</label>
+              <input
+                type="password"
+                className="form-control"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Ingresa tu contraseña"
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
+              />
+            </div>
+            <div className="form-group mt-4">
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="terms"
+                  required
+                />
+                <label htmlFor="terms" className="form-check-label" style={{ color: "#333" }}>
+                  Acepto los <Link to="#">Términos y Condiciones</Link>
+                </label>
               </div>
-              Google
-            </button>
-            <button
-              className="ntfmax-wc__btn ntfmax-wc__btn--two"
-              type="submit"
-            >
-              <div className="ntfmax-wc__btn-icon">
-                <img src={appleLogo} />
+            </div>
+            {error && (
+              <div className="alert alert-danger mt-3" role="alert">
+                {error}
               </div>
-              Apple
+            )}
+            <button type="submit" className="btn btn-primary mt-4 w-100" style={{ padding: "12px", borderRadius: "8px", fontWeight: "bold", backgroundColor: "#007AC3", border: "none" }}>
+              Registrarse
             </button>
-          </div>
-        </div>
-        {/* <!-- Form Group --> */}
-        <div className="form-group form-mg-top30">
-          <div className="crancy-wc__bottom">
-            <p className="crancy-wc__text">
-              Already have an account ? <Link to="/login">Sign In</Link>
+          </form>
+          <div className="text-center mt-4">
+            <p style={{ color: "#333" }}>
+              ¿Ya tienes una cuenta?{" "}
+              <Link to="/login" style={{ color: "#007AC3", fontWeight: "bold" }}>
+                Inicia Sesión
+              </Link>
             </p>
           </div>
         </div>
-      </form>
-    </>
+      </section>
+    </div>
   );
 }
 
