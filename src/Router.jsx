@@ -52,6 +52,7 @@ import Rifas from "./pages/rifas/rifas";
 import Productos from "./pages/productos/productos";
 import Personas from "./pages/personas/personas";
 import Talonarios from "./pages/talonarios/talonarios";
+import Voluntarios from "./pages/voluntarios/voluntarios";
 
 const router = createBrowserRouter([
   {
@@ -176,6 +177,10 @@ const router = createBrowserRouter([
       {
         path: "/talonarios",
         element: <Talonarios />,
+      },
+      {
+        path: "/voluntarios",
+        element: <Voluntarios />,
       },
       {
         path: "/gallery",

@@ -2,87 +2,91 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 
-function Talonarios() {
-  const [talonarios, setTalonarios] = useState([]);
-  const [filteredTalonarios, setFilteredTalonarios] = useState([]);
+function Voluntarios() {
+  const [voluntarios, setVoluntarios] = useState([]);
+  const [filteredVoluntarios, setFilteredVoluntarios] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingTalonario, setEditingTalonario] = useState(null);
-  const [newTalonario, setNewTalonario] = useState({
-    codigoTalonario: "",
-    cantidadBoletos: "",
-    correlativoInicio: "",
-    correlativoFinal: "",
+  const [editingVoluntario, setEditingVoluntario] = useState(null);
+  const [newVoluntario, setNewVoluntario] = useState({
+    fechaRegistro: "",
+    fechaSalida: "",
     estado: 1,
-    idRifa: "",
+    idPersona: "",
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [rifas, setRifas] = useState([]);
+  const [personas, setPersonas] = useState([]);
 
   useEffect(() => {
-    fetchTalonarios();
-    fetchRifas();
+    fetchVoluntarios();
+    fetchPersonas();
   }, []);
 
-  const fetchTalonarios = async () => {
+  const fetchVoluntarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/talonarios");
-      setTalonarios(response.data);
-      setFilteredTalonarios(response.data);
+      const response = await axios.get("http://localhost:5000/voluntarios");
+      setVoluntarios(response.data);
+      setFilteredVoluntarios(response.data);
     } catch (error) {
-      console.error("Error fetching talonarios:", error);
+      console.error("Error fetching voluntarios:", error);
     }
   };
 
-  const fetchRifas = async () => {
+  const fetchPersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/rifas");
-      setRifas(response.data);
+      const response = await axios.get("http://localhost:5000/personas");
+      setPersonas(response.data);
     } catch (error) {
-      console.error("Error fetching rifas:", error);
+      console.error("Error fetching personas:", error);
     }
   };
 
-  const fetchActiveTalonarios = async () => {
+  const fetchActiveVoluntarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/talonarios/activos");
-      setTalonarios(response.data);
-      setFilteredTalonarios(response.data);
+      const response = await axios.get("http://localhost:5000/voluntarios/activos");
+      setVoluntarios(response.data);
+      setFilteredVoluntarios(response.data);
     } catch (error) {
-      console.error("Error fetching active talonarios:", error);
+      console.error("Error fetching active voluntarios:", error);
     }
   };
 
-  const fetchInactiveTalonarios = async () => {
+  const fetchInactiveVoluntarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/talonarios/inactivos");
-      setTalonarios(response.data);
-      setFilteredTalonarios(response.data);
+      const response = await axios.get("http://localhost:5000/voluntarios/inactivos");
+      setVoluntarios(response.data);
+      setFilteredVoluntarios(response.data);
     } catch (error) {
-      console.error("Error fetching inactive talonarios:", error);
+      console.error("Error fetching inactive voluntarios:", error);
     }
   };
 
   const handleSearch = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    const filtered = talonarios.filter((talonario) =>
-      talonario.codigoTalonario.toString().includes(value)
-    );
-    setFilteredTalonarios(filtered);
+
+    const filtered = voluntarios.filter((voluntario) => {
+      const persona = personas.find((p) => p.idPersona === voluntario.idPersona);
+      const personaNombre = persona ? persona.nombre.toLowerCase() : "";
+
+      return (
+        voluntario.fechaRegistro.toLowerCase().includes(value) || 
+        personaNombre.includes(value)
+      );
+    });
+
+    setFilteredVoluntarios(filtered);
   };
 
-  const handleShowModal = (talonario = null) => {
-    setEditingTalonario(talonario);
-    setNewTalonario(
-      talonario || {
-        codigoTalonario: "",
-        cantidadBoletos: "",
-        correlativoInicio: "",
-        correlativoFinal: "",
+  const handleShowModal = (voluntario = null) => {
+    setEditingVoluntario(voluntario);
+    setNewVoluntario(
+      voluntario || {
+        fechaRegistro: "",
+        fechaSalida: "",
         estado: 1,
-        idRifa: "",
+        idPersona: "",
       }
     );
     setShowModal(true);
@@ -90,42 +94,42 @@ function Talonarios() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingTalonario(null);
+    setEditingVoluntario(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewTalonario({ ...newTalonario, [name]: value });
+    setNewVoluntario({ ...newVoluntario, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingTalonario) {
+      if (editingVoluntario) {
         await axios.put(
-          `http://localhost:5000/talonarios/update/${editingTalonario.idTalonario}`,
-          newTalonario
+          `http://localhost:5000/voluntarios/update/${editingVoluntario.idVoluntario}`,
+          newVoluntario
         );
-        setAlertMessage("Talonario actualizado con éxito");
+        setAlertMessage("Voluntario actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/talonarios/create", newTalonario);
-        setAlertMessage("Talonario creado con éxito");
+        await axios.post("http://localhost:5000/voluntarios/create", newVoluntario);
+        setAlertMessage("Voluntario creado con éxito");
       }
-      fetchTalonarios();
+      fetchVoluntarios();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting talonario:", error);
+      console.error("Error submitting voluntario:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/talonarios/update/${id}`, { estado: nuevoEstado });
-      fetchTalonarios();
+      await axios.put(`http://localhost:5000/voluntarios/update/${id}`, { estado: nuevoEstado });
+      fetchVoluntarios();
       setAlertMessage(
-        `Talonario ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+        `Voluntario ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
       );
       setShowAlert(true);
     } catch (error) {
@@ -138,7 +142,7 @@ function Talonarios() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Talonarios
+            Gestión de Voluntarios
           </h3>
         </div>
       </div>
@@ -154,7 +158,7 @@ function Talonarios() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar talonario por código..."
+            placeholder="Buscar por fecha de registro o nombre..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -172,7 +176,7 @@ function Talonarios() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Talonario
+          Agregar Voluntario
         </Button>
         <Button
           style={{
@@ -184,7 +188,7 @@ function Talonarios() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveTalonarios}
+          onClick={fetchActiveVoluntarios}
         >
           Activos
         </Button>
@@ -197,7 +201,7 @@ function Talonarios() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveTalonarios}
+          onClick={fetchInactiveVoluntarios}
         >
           Inactivos
         </Button>
@@ -227,30 +231,24 @@ function Talonarios() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Código</th>
-              <th>Cantidad</th>
-              <th>Inicio</th>
-              <th>Final</th>
-              <th>Rifa</th>
+              <th>Fecha Registro</th>
+              <th>Fecha Salida</th>
+              <th>Persona</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTalonarios.map((talonario) => (
-              <tr key={talonario.idTalonario}>
-                <td>{talonario.idTalonario}</td>
-                <td>{talonario.codigoTalonario}</td>
-                <td>{talonario.cantidadBoletos}</td>
-                <td>{talonario.correlativoInicio}</td>
-                <td>{talonario.correlativoFinal}</td>
+            {filteredVoluntarios.map((voluntario) => (
+              <tr key={voluntario.idVoluntario}>
+                <td>{voluntario.idVoluntario}</td>
+                <td>{voluntario.fechaRegistro}</td>
+                <td>{voluntario.fechaSalida}</td>
                 <td>
-                  {
-                    rifas.find((rifa) => rifa.idRifa === talonario.idRifa)
-                      ?.nombreRifa || "Desconocido"
-                  }
+                  {personas.find((persona) => persona.idPersona === voluntario.idPersona)?.nombre ||
+                    "Desconocido"}
                 </td>
-                <td>{talonario.estado === 1 ? "Activo" : "Inactivo"}</td>
+                <td>{voluntario.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
                     style={{
@@ -262,22 +260,22 @@ function Talonarios() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(talonario)}
+                    onClick={() => handleShowModal(voluntario)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: talonario.estado ? "#6c757d" : "#28a745",
-                      borderColor: talonario.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: voluntario.estado ? "#6c757d" : "#28a745",
+                      borderColor: voluntario.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => toggleEstado(talonario.idTalonario, talonario.estado)}
+                    onClick={() => toggleEstado(voluntario.idVoluntario, voluntario.estado)}
                   >
-                    {talonario.estado ? "Inactivar" : "Activar"}
+                    {voluntario.estado ? "Inactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -291,64 +289,44 @@ function Talonarios() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingTalonario ? "Editar Talonario" : "Agregar Talonario"}
+              {editingVoluntario ? "Editar Voluntario" : "Agregar Voluntario"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="codigoTalonario">
-                <Form.Label>Código Talonario</Form.Label>
+              <Form.Group controlId="fechaRegistro">
+                <Form.Label>Fecha Registro</Form.Label>
                 <Form.Control
-                  type="number"
-                  name="codigoTalonario"
-                  value={newTalonario.codigoTalonario}
+                  type="date"
+                  name="fechaRegistro"
+                  value={newVoluntario.fechaRegistro}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="cantidadBoletos">
-                <Form.Label>Cantidad de Boletos</Form.Label>
+              <Form.Group controlId="fechaSalida">
+                <Form.Label>Fecha Salida</Form.Label>
                 <Form.Control
-                  type="number"
-                  name="cantidadBoletos"
-                  value={newTalonario.cantidadBoletos}
+                  type="date"
+                  name="fechaSalida"
+                  value={newVoluntario.fechaSalida}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="correlativoInicio">
-                <Form.Label>Correlativo Inicio</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="correlativoInicio"
-                  value={newTalonario.correlativoInicio}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="correlativoFinal">
-                <Form.Label>Correlativo Final</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="correlativoFinal"
-                  value={newTalonario.correlativoFinal}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="idRifa">
-                <Form.Label>Rifa</Form.Label>
+              <Form.Group controlId="idPersona">
+                <Form.Label>Persona</Form.Label>
                 <Form.Control
                   as="select"
-                  name="idRifa"
-                  value={newTalonario.idRifa}
+                  name="idPersona"
+                  value={newVoluntario.idPersona}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccionar Rifa</option>
-                  {rifas.map((rifa) => (
-                    <option key={rifa.idRifa} value={rifa.idRifa}>
-                      {rifa.nombreRifa}
+                  <option value="">Seleccionar Persona</option>
+                  {personas.map((persona) => (
+                    <option key={persona.idPersona} value={persona.idPersona}>
+                      {persona.nombre}
                     </option>
                   ))}
                 </Form.Control>
@@ -358,7 +336,7 @@ function Talonarios() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newTalonario.estado}
+                  value={newVoluntario.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -376,7 +354,7 @@ function Talonarios() {
                 }}
                 type="submit"
               >
-                {editingTalonario ? "Actualizar" : "Crear"}
+                {editingVoluntario ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -386,4 +364,4 @@ function Talonarios() {
   );
 }
 
-export default Talonarios;
+export default Voluntarios;
