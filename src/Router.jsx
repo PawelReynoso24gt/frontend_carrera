@@ -55,6 +55,7 @@ import Talonarios from "./pages/talonarios/talonarios";
 import Voluntarios from "./pages/voluntarios/voluntarios";
 import Comisiones from "./pages/comisiones/comisiones";
 import Actividades from "./pages/actividades/actividades";
+import Publicaciones from "./pages/publicaciones/publicaciones";
 
 const router = createBrowserRouter([
   {
@@ -131,6 +132,10 @@ const router = createBrowserRouter([
       {
         path: "/sedes",
         element: <Sedes />,
+      },
+      {
+        path: "/publicaciones",
+        element: <Publicaciones />,
       },
       {
         path: "/departamentos",

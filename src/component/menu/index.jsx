@@ -174,6 +174,7 @@ function Menu({ toggleMenu, menu }) {
                 }
                 options={[
                   { link: "sedes", title: "Sedes" },
+                  { link: "publicaciones", title: "Publicaciones" },
                   { link: "roles", title: "Roles" },
                   { link: "Departamentos", title: "Departamentos" },
                   { link: "comisiones", title: "Comisiones" },
