@@ -44,6 +44,10 @@ import Sedes from "./pages/sedes/sedes";
 import Roles from "./pages/Roles/roles";
 import Departamentos from "./pages/departamentos/departamentos";
 import TipoPago from "./pages/tipoPago/tipoPago";
+import TipoStands from "./pages/tipoStands/tipoStands";
+import Horarios from "./pages/horarios/horarios";
+import DetalleHorariosComponent from "./component/detallehorarios/detallehorarios";
+import FotoSedesPage from "./pages/fotosedes/fotosedes";
 import TipoPublico from "./pages/tipo_publicos/tipo_publicos"
 import Stands from "./pages/stands/stands";
 import Municipios from "./pages/municipios/municipios";
@@ -56,6 +60,8 @@ import Voluntarios from "./pages/voluntarios/voluntarios";
 import Comisiones from "./pages/comisiones/comisiones";
 import Actividades from "./pages/actividades/actividades";
 import Publicaciones from "./pages/publicaciones/publicaciones";
+import Materiales from "./pages/materiales/materiales";
+import Administradores from "./pages/administradores/administradores";
 
 const router = createBrowserRouter([
   {
@@ -196,6 +202,30 @@ const router = createBrowserRouter([
       {
         path: "/voluntarios",
         element: <Voluntarios />,
+      },
+      {
+        path: "/tipoStands",
+        element: <TipoStands/>,
+      },
+      {
+        path: "/horarios",
+        element: <Horarios/>,
+      },
+      {
+        path: "/detallehorarios",
+        element: <DetalleHorariosComponent/>,
+      },
+      {
+        path: "/fotosedes",
+        element: <FotoSedesPage/>,
+      },
+      {
+        path: "/materiales",
+        element: <Materiales/>,
+      },
+      {
+        path: "/administradores",
+        element: <Administradores/>,
       },
       {
         path: "/gallery",

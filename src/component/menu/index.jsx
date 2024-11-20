@@ -180,6 +180,10 @@ function Menu({ toggleMenu, menu }) {
                   { link: "comisiones", title: "Comisiones" },
                   { link: "actividades", title: "Actividades" },
                   { link: "TipoPago", title: "Tipo Pago" },
+                  { link: "tipoStands", title: "Tipo Stands" },
+                  { link: "horarios", title: "Horarios" },
+                  { link: "detallehorarios", title: "Asignacion de horarios" },
+                  { link: "fotosedes", title: "Ingreso de fotos" },
                   { link: "tipo_publicos", title: "Tipo Público" },
                   { link: "categoria_bitacoras", title: "Categoría Bitácora"},
                   { link: "rifas", title: "Rifas"},
@@ -189,6 +193,8 @@ function Menu({ toggleMenu, menu }) {
                   { link: "Municipios", title: "Municipios" },
                   { link: "talonarios", title: "Talonarios" },
                   { link: "voluntarios", title: "Voluntarios" },
+                  { link: "Materiales", title: "Materiales" },
+                  { link: "Administradores", title: "Administradores" },
                 ]}
               />
               <Dropdown
