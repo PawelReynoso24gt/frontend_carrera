@@ -111,25 +111,88 @@ function Traslados() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD Traslados</h3>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Traslados
+          </h3>
         </div>
       </div>
 
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Traslado</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveTraslados}>Activos</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactiveTraslados}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Traslado
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveTraslados}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveTraslados}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Fecha</th>
@@ -146,11 +209,31 @@ function Traslados() {
                 <td>{traslado.fecha}</td>
                 <td>{traslado.descripcion}</td>
                 <td>{traslado.tipoTraslado?.tipo || 'Sin asignar'}</td>
-                <td>{traslado.estado ? 'Activo' : 'Inactivo'}</td>
+                <td>{traslado.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(traslado)}>Editar</Button>
                   <Button
-                    variant={traslado.estado ? "secondary" : "success"}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(traslado)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: traslado.estado ? "#6c757d" : "#28a745",
+                      borderColor: traslado.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
                     onClick={() => toggleEstado(traslado.idTraslado, traslado.estado)}
                   >
                     {traslado.estado ? "Inactivar" : "Activar"}
@@ -162,13 +245,18 @@ function Traslados() {
         </Table>
 
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingTraslado ? 'Editar Traslado' : 'Agregar Traslado'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingTraslado ? "Editar Traslado" : "Agregar Traslado"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="fecha">
-                <Form.Label>Fecha</Form.Label>
+                <Form.Label style={{ fontWeight: "bold" }}>Fecha</Form.Label>
                 <Form.Control
                   type="date"
                   name="fecha"
@@ -177,8 +265,9 @@ function Traslados() {
                   required
                 />
               </Form.Group>
+
               <Form.Group controlId="descripcion">
-                <Form.Label>Descripción</Form.Label>
+                <Form.Label style={{ fontWeight: "bold" }}>Descripción</Form.Label>
                 <Form.Control
                   type="text"
                   name="descripcion"
@@ -187,8 +276,9 @@ function Traslados() {
                   required
                 />
               </Form.Group>
+
               <Form.Group controlId="idTipoTraslado">
-                <Form.Label>Tipo de Traslado</Form.Label>
+                <Form.Label style={{ fontWeight: "bold" }}>Tipo de Traslado</Form.Label>
                 <Form.Control
                   as="select"
                   name="idTipoTraslado"
@@ -196,27 +286,30 @@ function Traslados() {
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccionar Tipo de Traslado</option>
+                  <option value="">Seleccionar</option>
                   {tipoTraslados.map((tipo) => (
-                    <option key={tipo.idTipoTraslado} value={tipo.idTipoTraslado}>{tipo.tipo}</option>
+                    <option key={tipo.idTipoTraslado} value={tipo.idTipoTraslado}>
+                      {tipo.tipo}
+                    </option>
                   ))}
                 </Form.Control>
               </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newTraslado.estado}
-                  onChange={handleChange}
+
+              <Modal.Footer>
+                <Button variant="secondary" onClick={handleCloseModal}>
+                  Cerrar
+                </Button>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  style={{
+                    backgroundColor: "#007AC3",
+                    borderColor: "#007AC3",
+                  }}
                 >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingTraslado ? 'Actualizar' : 'Crear'}
-              </Button>
+                  {editingTraslado ? "Actualizar" : "Guardar"}
+                </Button>
+              </Modal.Footer>
             </Form>
           </Modal.Body>
         </Modal>

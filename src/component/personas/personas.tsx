@@ -2,82 +2,66 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
 
-function Stand() {
-  const [stands, setStands] = useState([]);
+function Personas() {
+  const [personas, setPersonas] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingStand, setEditingStand] = useState(null);
-  const [newStand, setNewStand] = useState({
-    nombreStand: "",
-    direccion: "",
+  const [editingPersona, setEditingPersona] = useState(null);
+  const [newPersona, setNewPersona] = useState({
+    nombre: "",
+    fechaNacimiento: "",
+    telefono: "",
+    domicilio: "",
+    CUI: "",
+    correo: "",
+    idMunicipio: "",
     estado: 1,
-    idSede: "",
-    idTipoStands: "",
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [sedes, setSedes] = useState([]);
-  const [tiposStands, setTiposStands] = useState([]);
 
   useEffect(() => {
-    fetchStands();
-    fetchSedes();
-    fetchTiposStands();
+    fetchPersonas();
   }, []);
 
-  const fetchStands = async () => {
+  const fetchPersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/stand");
-      setStands(response.data);
+      const response = await axios.get("http://localhost:5000/personas");
+      setPersonas(response.data);
     } catch (error) {
-      console.error("Error fetching stands:", error);
+      console.error("Error fetching personas:", error);
     }
   };
 
-  const fetchSedes = async () => {
+  const fetchActivePersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes");
-      setSedes(response.data);
+      const response = await axios.get("http://localhost:5000/personas/activos");
+      setPersonas(response.data);
     } catch (error) {
-      console.error("Error fetching sedes:", error);
+      console.error("Error fetching active personas:", error);
     }
   };
 
-  const fetchTiposStands = async () => {
+  const fetchInactivePersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipo_stands");
-      setTiposStands(response.data);
+      const response = await axios.get("http://localhost:5000/personas/inactivos");
+      setPersonas(response.data);
     } catch (error) {
-      console.error("Error fetching tipos de stands:", error);
+      console.error("Error fetching inactive personas:", error);
     }
   };
 
-  const fetchActiveStands = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/stand/activas");
-      setStands(response.data);
-    } catch (error) {
-      console.error("Error fetching active stands:", error);
-    }
-  };
-
-  const fetchInactiveStands = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/stand/inactivas");
-      setStands(response.data);
-    } catch (error) {
-      console.error("Error fetching inactive stands:", error);
-    }
-  };
-
-  const handleShowModal = (stand = null) => {
-    setEditingStand(stand);
-    setNewStand(
-      stand || {
-        nombreStand: "",
-        direccion: "",
+  const handleShowModal = (persona = null) => {
+    setEditingPersona(persona);
+    setNewPersona(
+      persona || {
+        nombre: "",
+        fechaNacimiento: "",
+        telefono: "",
+        domicilio: "",
+        CUI: "",
+        correo: "",
+        idMunicipio: "",
         estado: 1,
-        idSede: "",
-        idTipoStands: "",
       }
     );
     setShowModal(true);
@@ -85,44 +69,44 @@ function Stand() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingStand(null);
+    setEditingPersona(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewStand({ ...newStand, [name]: value });
+    setNewPersona({ ...newPersona, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingStand) {
+      if (editingPersona) {
         await axios.put(
-          `http://localhost:5000/stand/update/${editingStand.idStand}`,
-          newStand
+          `http://localhost:5000/personas/update/${editingPersona.idPersona}`,
+          newPersona
         );
-        setAlertMessage("Stand actualizado con éxito");
+        setAlertMessage("Persona actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/stand/create", newStand);
-        setAlertMessage("Stand creado con éxito");
+        await axios.post("http://localhost:5000/personas/create", newPersona);
+        setAlertMessage("Persona creada con éxito");
       }
-      fetchStands();
+      fetchPersonas();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting stand:", error);
+      console.error("Error submitting persona:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/stand/update/${id}`, {
+      await axios.put(`http://localhost:5000/personas/update/${id}`, {
         estado: nuevoEstado,
       });
-      fetchStands();
+      fetchPersonas();
       setAlertMessage(
-        `Stand ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+        `Persona ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
       );
       setShowAlert(true);
     } catch (error) {
@@ -135,7 +119,7 @@ function Stand() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Stands
+            Gestión de Personas
           </h3>
         </div>
       </div>
@@ -161,7 +145,7 @@ function Stand() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Stand
+          Agregar Persona
         </Button>
         <Button
           style={{
@@ -173,9 +157,9 @@ function Stand() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveStands}
+          onClick={fetchActivePersonas}
         >
-          Activos
+          Activas
         </Button>
         <Button
           style={{
@@ -186,9 +170,9 @@ function Stand() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveStands}
+          onClick={fetchInactivePersonas}
         >
-          Inactivos
+          Inactivas
         </Button>
 
         <Alert
@@ -216,23 +200,33 @@ function Stand() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Nombre Stand</th>
-              <th>Dirección</th>
-              <th>Sede</th>
-              <th>Tipo Stand</th>
+              <th>Nombre</th>
+              <th>Fecha de Nacimiento</th>
+              <th>Teléfono</th>
+              <th>Domicilio</th>
+              <th>CUI</th>
+              <th>Correo</th>
+              <th>Municipio</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {stands.map((stand) => (
-              <tr key={stand.idStand}>
-                <td>{stand.idStand}</td>
-                <td>{stand.nombreStand}</td>
-                <td>{stand.direccion}</td>
-                <td>{stand.idSede}</td>
-                <td>{stand.idTipoStands}</td>
-                <td>{stand.estado ? "Activo" : "Inactivo"}</td>
+            {personas.map((persona) => (
+              <tr key={persona.idPersona}>
+                <td>{persona.idPersona}</td>
+                <td>{persona.nombre}</td>
+                <td>{new Date(persona.fechaNacimiento).toLocaleDateString()}</td>
+                <td>{persona.telefono}</td>
+                <td>{persona.domicilio}</td>
+                <td>{persona.CUI}</td>
+                <td>{persona.correo}</td>
+                <td>
+                  {persona.municipio
+                    ? persona.municipio.municipio
+                    : "Sin municipio"}
+                </td>
+                <td>{persona.estado ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
                     style={{
@@ -244,24 +238,26 @@ function Stand() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(stand)}
+                    onClick={() => handleShowModal(persona)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: stand.estado ? "#6c757d" : "#28a745",
-                      borderColor: stand.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: persona.estado
+                        ? "#6c757d"
+                        : "#28a745",
+                      borderColor: persona.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
                     onClick={() =>
-                      toggleEstado(stand.idStand, stand.estado)
+                      toggleEstado(persona.idPersona, persona.estado)
                     }
                   >
-                    {stand.estado ? "Inactivar" : "Activar"}
+                    {persona.estado ? "Inactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -275,31 +271,91 @@ function Stand() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingStand ? "Editar Stand" : "Agregar Stand"}
+              {editingPersona ? "Editar Persona" : "Agregar Persona"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="nombreStand">
+              <Form.Group controlId="nombre">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Nombre Stand
+                  Nombre
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  name="nombreStand"
-                  value={newStand.nombreStand}
+                  name="nombre"
+                  value={newPersona.nombre}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="direccion">
+              <Form.Group controlId="fechaNacimiento">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Dirección
+                  Fecha de Nacimiento
+                </Form.Label>
+                <Form.Control
+                  type="date"
+                  name="fechaNacimiento"
+                  value={newPersona.fechaNacimiento}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="telefono">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Teléfono
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  name="direccion"
-                  value={newStand.direccion}
+                  name="telefono"
+                  value={newPersona.telefono}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="domicilio">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Domicilio
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="domicilio"
+                  value={newPersona.domicilio}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="CUI">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  CUI
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="CUI"
+                  value={newPersona.CUI}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="correo">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Correo
+                </Form.Label>
+                <Form.Control
+                  type="email"
+                  name="correo"
+                  value={newPersona.correo}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="idMunicipio">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Municipio
+                </Form.Label>
+                <Form.Control
+                  type="number"
+                  name="idMunicipio"
+                  value={newPersona.idMunicipio}
                   onChange={handleChange}
                   required
                 />
@@ -311,49 +367,11 @@ function Stand() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newStand.estado}
+                  value={newPersona.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
                   <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idSede">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Sede
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idSede"
-                  value={newStand.idSede}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Sede</option>
-                  {sedes.map((sede) => (
-                    <option key={sede.idSede} value={sede.idSede}>
-                      {sede.idSede}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idTipoStands">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Tipo Stand
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idTipoStands"
-                  value={newStand.idTipoStands}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Tipo Stand</option>
-                  {tiposStands.map((tipo) => (
-                    <option key={tipo.idTipoStands} value={tipo.idTipoStands}>
-                      {tipo.idTipoStands}
-                    </option>
-                  ))}
                 </Form.Control>
               </Form.Group>
               <Button
@@ -367,7 +385,7 @@ function Stand() {
                 }}
                 type="submit"
               >
-                {editingStand ? "Actualizar" : "Crear"}
+                {editingPersona ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -377,4 +395,4 @@ function Stand() {
   );
 }
 
-export default Stand;
+export default Personas;

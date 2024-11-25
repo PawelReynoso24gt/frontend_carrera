@@ -61,7 +61,6 @@ function Eventos() {
     evento.nombreEvento.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
   const handleShowModal = (evento = null) => {
     setEditingEvento(evento);
     setNewEvento(evento || { nombreEvento: '', fechaHoraInicio: '', fechaHoraFin: '', descripcion: '', direccion: '', estado: 1, idSede: '' });
@@ -149,25 +148,77 @@ function Eventos() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD Eventos</h3>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Eventos
+          </h3>
         </div>
       </div>
 
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Evento</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveEventos}>Activos</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactiveEventos}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Evento
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveEventos}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveEventos}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-         {/* Buscador */}
-         <Form.Group controlId="searchSede" className="mt-3">
+        {/* Buscador */}
+        <Form.Group controlId="searchSede" className="mt-3">
           <Form.Control
             type="text"
             placeholder="Buscar evento por nombre..."
@@ -176,8 +227,19 @@ function Eventos() {
           />
         </Form.Group>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Evento</th>
@@ -199,111 +261,131 @@ function Eventos() {
                 <td>{evento.fechaHoraFin}</td>
                 <td>{evento.descripcion}</td>
                 <td>{evento.direccion}</td>
-                <td>{evento.estado ? 'Activo' : 'Inactivo'}</td>
-                <td>{evento.idSede}</td>
+                <td>{evento.estado ? "Activo" : "Inactivo"}</td>
+                <td>{evento.sede ? evento.sede.nombreSede : 'N/A'}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(evento)}>Editar</Button>
                   <Button
-                    variant={evento.estado ? "secondary" : "success"}
+                    style={{
+                      backgroundColor: evento.estado ? "#6c757d" : "#28a745",
+                      borderColor: evento.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
                     onClick={() => toggleEstado(evento.idEvento, evento.estado)}
                   >
-                    {evento.estado ? "Inactivar" : "Activar"}
+                    {evento.estado === 1 ? 'Activo' : 'Inactivo'}
+                  </Button>
+                  <Button
+                   style={{
+                    backgroundColor: "#007AC3",
+                    borderColor: "#007AC3",
+                    padding: "5px 10px",
+                    width: "100px",
+                    marginRight: "5px",
+                    fontWeight: "bold",
+                    color: "#fff",
+                  }}
+                    onClick={() => handleShowModal(evento)}
+                  >
+                    Editar
                   </Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
-
-        <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingEvento ? 'Editar Evento' : 'Agregar Evento'}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="nombreEvento">
-                <Form.Label>Nombre del Evento</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="nombreEvento"
-                  value={newEvento.nombreEvento}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="fechaHoraInicio">
-                <Form.Label>Fecha y Hora de Inicio</Form.Label>
-                <Form.Control
-                  type="datetime-local"
-                  name="fechaHoraInicio"
-                  value={newEvento.fechaHoraInicio}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="fechaHoraFin">
-                <Form.Label>Fecha y Hora de Fin</Form.Label>
-                <Form.Control
-                  type="datetime-local"
-                  name="fechaHoraFin"
-                  value={newEvento.fechaHoraFin}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="descripcion">
-                <Form.Label>Descripción</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="descripcion"
-                  value={newEvento.descripcion}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <Form.Group controlId="direccion">
-                <Form.Label>Dirección</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="direccion"
-                  value={newEvento.direccion}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="idSede">
-                <Form.Label>Sede</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idSede"
-                  value={newEvento.idSede}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Sede</option>
-                  {sedes.map((sede) => (
-                    <option key={sede.idSede} value={sede.idSede}>{sede.nombreSede}</option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newEvento.estado}
-                  onChange={handleChange}
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingEvento ? 'Actualizar' : 'Crear'}
-              </Button>
-            </Form>
-          </Modal.Body>
-        </Modal>
       </div>
+
+      {/* Modal */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>{editingEvento ? 'Editar Evento' : 'Nuevo Evento'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group controlId="nombreEvento">
+              <Form.Label>Nombre del Evento</Form.Label>
+              <Form.Control
+                type="text"
+                name="nombreEvento"
+                value={newEvento.nombreEvento}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group controlId="fechaHoraInicio">
+              <Form.Label>Fecha y Hora de Inicio</Form.Label>
+              <Form.Control
+                type="datetime-local"
+                name="fechaHoraInicio"
+                value={newEvento.fechaHoraInicio}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group controlId="fechaHoraFin">
+              <Form.Label>Fecha y Hora de Fin</Form.Label>
+              <Form.Control
+                type="datetime-local"
+                name="fechaHoraFin"
+                value={newEvento.fechaHoraFin}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group controlId="descripcion">
+              <Form.Label>Descripción</Form.Label>
+              <Form.Control
+                as="textarea"
+                name="descripcion"
+                value={newEvento.descripcion}
+                onChange={handleChange}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="direccion">
+              <Form.Label>Dirección</Form.Label>
+              <Form.Control
+                type="text"
+                name="direccion"
+                value={newEvento.direccion}
+                onChange={handleChange}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="idSede">
+              <Form.Label>Sede</Form.Label>
+              <Form.Control
+                as="select"
+                name="idSede"
+                value={newEvento.idSede}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccione una sede</option>
+                {sedes.map((sede) => (
+                  <option key={sede.idSede} value={sede.idSede}>
+                    {sede.nombreSede}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+
+            <Button
+              variant="primary"
+              type="submit"
+              style={{ backgroundColor: "#743D90" }}
+            >
+              {editingEvento ? 'Guardar Cambios' : 'Crear Evento'}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </>
   );
 }

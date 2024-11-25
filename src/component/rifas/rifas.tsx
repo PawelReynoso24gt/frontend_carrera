@@ -1,117 +1,89 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import axios from 'axios';
+import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
 
-function Municipio() {
-  const [municipios, setMunicipios] = useState([]);
+function Rifas() {
+  const [rifas, setRifas] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingMunicipio, setEditingMunicipio] = useState(null);
-  const [newMunicipio, setNewMunicipio] = useState({
-    municipio: "",
-    estado: 1,
-    idDepartamento: "",
-  });
+  const [editingRifa, setEditingRifa] = useState(null);
+  const [newRifa, setNewRifa] = useState({ nombreRifa: '', descripcion: '', idSede: '', estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [departamentos, setDepartamentos] = useState([]);
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
-    fetchMunicipios();
-    fetchDepartamentos();
+    fetchRifas();
   }, []);
 
-  const fetchMunicipios = async () => {
+  const fetchRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios");
-      setMunicipios(response.data);
+      const response = await axios.get('http://localhost:5000/rifas');
+      setRifas(response.data);
     } catch (error) {
-      console.error("Error fetching municipios:", error);
+      console.error('Error fetching rifas:', error);
     }
   };
 
-  const fetchDepartamentos = async () => {
+  const fetchActiveRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos");
-      setDepartamentos(response.data);
+      const response = await axios.get('http://localhost:5000/rifas/activos');
+      setRifas(response.data);
     } catch (error) {
-      console.error("Error fetching departamentos:", error);
+      console.error('Error fetching active rifas:', error);
     }
   };
 
-  const fetchActiveMunicipios = async () => {
+  const fetchInactiveRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios/activas");
-      setMunicipios(response.data);
+      const response = await axios.get('http://localhost:5000/rifas/inactivos');
+      setRifas(response.data);
     } catch (error) {
-      console.error("Error fetching active municipios:", error);
+      console.error('Error fetching inactive rifas:', error);
     }
   };
 
-  const fetchInactiveMunicipios = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/municipios/inactivas");
-      setMunicipios(response.data);
-    } catch (error) {
-      console.error("Error fetching inactive municipios:", error);
-    }
-  };
-
-  const handleShowModal = (municipio = null) => {
-    setEditingMunicipio(municipio);
-    setNewMunicipio(
-      municipio || {
-        municipio: "",
-        estado: 1,
-        idDepartamento: "",
-      }
-    );
+  const handleShowModal = (rifa = null) => {
+    setEditingRifa(rifa);
+    setNewRifa(rifa || { nombreRifa: '', descripcion: '', idSede: '', estado: 1 });
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingMunicipio(null);
+    setEditingRifa(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewMunicipio({ ...newMunicipio, [name]: value });
+    setNewRifa({ ...newRifa, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingMunicipio) {
-        await axios.put(
-          `http://localhost:5000/municipios/update/${editingMunicipio.idMunicipio}`,
-          newMunicipio
-        );
-        setAlertMessage("Municipio actualizado con éxito");
+      if (editingRifa) {
+        await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, newRifa);
+        setAlertMessage('Rifa actualizada con éxito');
       } else {
-        await axios.post("http://localhost:5000/municipios/create", newMunicipio);
-        setAlertMessage("Municipio creado con éxito");
+        await axios.post('http://localhost:5000/rifas', newRifa);
+        setAlertMessage('Rifa creada con éxito');
       }
-      fetchMunicipios();
+      fetchRifas();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting municipio:", error);
+      console.error('Error submitting rifa:', error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/municipios/update/${id}`, {
-        estado: nuevoEstado,
-      });
-      fetchMunicipios();
-      setAlertMessage(
-        `Municipio ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
-      );
+      await axios.put(`http://localhost:5000/rifas/${id}`, { estado: nuevoEstado });
+      fetchRifas();
+      setAlertMessage(`Rifa ${nuevoEstado === 1 ? 'activada' : 'inactivada'} con éxito`);
       setShowAlert(true);
     } catch (error) {
-      console.error("Error toggling estado:", error);
+      console.error('Error toggling estado:', error);
     }
   };
 
@@ -120,7 +92,7 @@ function Municipio() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Municipios
+            Gestión de Rifas
           </h3>
         </div>
       </div>
@@ -146,7 +118,7 @@ function Municipio() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Municipio
+          Agregar Rifa
         </Button>
         <Button
           style={{
@@ -158,9 +130,9 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveMunicipios}
+          onClick={fetchActiveRifas}
         >
-          Activos
+          Activas
         </Button>
         <Button
           style={{
@@ -171,9 +143,9 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveMunicipios}
+          onClick={fetchInactiveRifas}
         >
-          Inactivos
+          Inactivas
         </Button>
 
         <Alert
@@ -201,19 +173,21 @@ function Municipio() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Municipio</th>
-              <th>Departamento</th>
+              <th>Nombre Rifa</th>
+              <th>Descripción</th>
+              <th>Sede</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {municipios.map((municipio) => (
-              <tr key={municipio.idMunicipio}>
-                <td>{municipio.idMunicipio}</td>
-                <td>{municipio.municipio}</td>
-                <td>{municipio.idDepartamento}</td>
-                <td>{municipio.estado ? "Activo" : "Inactivo"}</td>
+            {rifas.map((rifa) => (
+              <tr key={rifa.idRifa}>
+                <td>{rifa.idRifa}</td>
+                <td>{rifa.nombreRifa}</td>
+                <td>{rifa.descripcion}</td>
+                <td>{rifa.sede ? rifa.sede.nombreSede : 'Sin sede'}</td>
+                <td>{rifa.estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
                   <Button
                     style={{
@@ -225,26 +199,22 @@ function Municipio() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(municipio)}
+                    onClick={() => handleShowModal(rifa)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: municipio.estado
-                        ? "#6c757d"
-                        : "#28a745",
-                      borderColor: municipio.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: rifa.estado ? "#6c757d" : "#28a745",
+                      borderColor: rifa.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() =>
-                      toggleEstado(municipio.idMunicipio, municipio.estado)
-                    }
+                    onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
                   >
-                    {municipio.estado ? "Inactivar" : "Activar"}
+                    {rifa.estado ? "Inactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -258,21 +228,43 @@ function Municipio() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingMunicipio
-                ? "Editar Municipio"
-                : "Agregar Municipio"}
+              {editingRifa ? "Editar Rifa" : "Agregar Rifa"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="municipio">
+              <Form.Group controlId="nombreRifa">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Municipio
+                  Nombre de la Rifa
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  name="municipio"
-                  value={newMunicipio.municipio}
+                  name="nombreRifa"
+                  value={newRifa.nombreRifa}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="descripcion">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Descripción
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="descripcion"
+                  value={newRifa.descripcion}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="idSede">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Sede
+                </Form.Label>
+                <Form.Control
+                  type="number"
+                  name="idSede"
+                  value={newRifa.idSede}
                   onChange={handleChange}
                   required
                 />
@@ -284,33 +276,11 @@ function Municipio() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newMunicipio.estado}
+                  value={newRifa.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
                   <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idDepartamento">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Departamento
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idDepartamento"
-                  value={newMunicipio.idDepartamento}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Departamento</option>
-                  {departamentos.map((departamento) => (
-                    <option
-                      key={departamento.idDepartamento}
-                      value={departamento.idDepartamento}
-                    >
-                      {departamento.idDepartamento}
-                    </option>
-                  ))}
                 </Form.Control>
               </Form.Group>
               <Button
@@ -324,7 +294,7 @@ function Municipio() {
                 }}
                 type="submit"
               >
-                {editingMunicipio ? "Actualizar" : "Crear"}
+                {editingRifa ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -334,4 +304,4 @@ function Municipio() {
   );
 }
 
-export default Municipio;
+export default Rifas;

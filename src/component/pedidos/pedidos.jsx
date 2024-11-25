@@ -122,25 +122,88 @@ function Pedidos() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD Pedidos</h3>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Pedidos
+          </h3>
         </div>
       </div>
 
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Pedido</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActivePedidos}>Ver Activos</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactivePedidos}>Ver Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Pedido
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActivePedidos}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactivePedidos}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Fecha</th>
@@ -161,9 +224,29 @@ function Pedidos() {
                 <td>{pedido.usuario ? pedido.usuario.nombreUsuario : pedido.idUsuario}</td>
                 <td>{pedido.estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(pedido)}>Editar</Button>
                   <Button
-                    variant={pedido.estado ? "secondary" : "success"}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(pedido)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: pedido.estado ? "#6c757d" : "#28a745",
+                      borderColor: pedido.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
                     onClick={() => toggleEstado(pedido.idPedido, pedido.estado)}
                   >
                     {pedido.estado ? "Desactivar" : "Activar"}
@@ -175,7 +258,7 @@ function Pedidos() {
         </Table>
 
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
+          <Modal.Header closeButton style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <Modal.Title>{editingPedido ? 'Editar Pedido' : 'Agregar Pedido'}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -242,7 +325,16 @@ function Pedidos() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  marginTop: "10px",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
                 {editingPedido ? 'Actualizar' : 'Crear'}
               </Button>
             </Form>

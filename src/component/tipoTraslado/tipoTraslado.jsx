@@ -17,7 +17,6 @@ function TipoTraslado() {
   const fetchTipoTraslados = async () => {
     try {
       const response = await axios.get('http://localhost:5000/tipoTraslados');
-      // Verifica si response.data es un arreglo antes de asignarlo
       if (Array.isArray(response.data)) {
         setTipoTraslados(response.data);
       } else {
@@ -115,26 +114,88 @@ function TipoTraslado() {
 
   return (
     <>
-      <div className="row">
+      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <div className="crancy-section-title mg-btm-10">
-            <h3 className="crancy-section__title">CRUD Tipo de Traslado</h3>
-            <p className="crancy-section__text"></p>
-          </div>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Tipo de Traslado
+          </h3>
         </div>
       </div>
 
-      <div className="container mt-4">
-        <Button variant="primary" onClick={() => handleShowModal()}>Agregar Tipo de Traslado</Button>
-        <Button variant="success" className="ml-2" onClick={fetchActiveTipoTraslados}>Activos</Button>
-        <Button variant="danger" className="ml-2" onClick={fetchInactiveTipoTraslados}>Inactivos</Button>
+      <div
+        className="container mt-4"
+        style={{
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <Button
+          style={{
+            backgroundColor: "#743D90",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Tipo de Traslado
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#007AC3",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveTipoTraslados}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveTipoTraslados}
+        >
+          Inactivos
+        </Button>
 
-        <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert
+          variant="success"
+          show={showAlert}
+          onClose={() => setShowAlert(false)}
+          dismissible
+          style={{ marginTop: "20px", fontWeight: "bold" }}
+        >
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover className="mt-3">
-          <thead>
+        <Table
+          striped
+          bordered
+          hover
+          responsive
+          className="mt-3"
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            marginTop: "20px",
+          }}
+        >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
               <th>Tipo</th>
@@ -147,12 +208,36 @@ function TipoTraslado() {
               <tr key={tipoTraslado.idTipoTraslado}>
                 <td>{tipoTraslado.idTipoTraslado}</td>
                 <td>{tipoTraslado.tipo}</td>
-                <td>{tipoTraslado.estado ? 'Activo' : 'Inactivo'}</td>
+                <td>{tipoTraslado.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleShowModal(tipoTraslado)}>Editar</Button>
                   <Button
-                    variant={tipoTraslado.estado ? "secondary" : "success"}
-                    onClick={() => toggleEstado(tipoTraslado.idTipoTraslado, tipoTraslado.estado)}
+                    style={{
+                      backgroundColor: "#007AC3",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "100px",
+                      marginRight: "5px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() => handleShowModal(tipoTraslado)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: tipoTraslado.estado
+                        ? "#6c757d"
+                        : "#28a745",
+                      borderColor: tipoTraslado.estado ? "#6c757d" : "#28a745",
+                      padding: "5px 10px",
+                      width: "100px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                    onClick={() =>
+                      toggleEstado(tipoTraslado.idTipoTraslado, tipoTraslado.estado)
+                    }
                   >
                     {tipoTraslado.estado ? "Inactivar" : "Activar"}
                   </Button>
@@ -163,8 +248,15 @@ function TipoTraslado() {
         </Table>
 
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{editingTipoTraslado ? 'Editar Tipo de Traslado' : 'Agregar Tipo de Traslado'}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingTipoTraslado
+                ? "Editar Tipo de Traslado"
+                : "Agregar Tipo de Traslado"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
@@ -175,10 +267,11 @@ function TipoTraslado() {
                   name="tipo"
                   value={newTipoTraslado.tipo}
                   onChange={handleChange}
+                  placeholder="Ingrese tipo de traslado"
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="estado">
+              <Form.Group controlId="estado" style={{ marginTop: "10px" }}>
                 <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
@@ -190,8 +283,17 @@ function TipoTraslado() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit">
-                {editingTipoTraslado ? 'Actualizar' : 'Crear'}
+              <Button
+                type="submit"
+                style={{
+                  marginTop: "20px",
+                  backgroundColor: "#007AC3",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  width: "100%",
+                }}
+              >
+                {editingTipoTraslado ? "Actualizar" : "Agregar"}
               </Button>
             </Form>
           </Modal.Body>
