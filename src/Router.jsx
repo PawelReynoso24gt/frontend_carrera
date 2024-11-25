@@ -44,9 +44,20 @@ import Sedes from "./pages/sedes/sedes";
 import Roles from "./pages/Roles/roles";
 import Departamentos from "./pages/departamentos/departamentos";
 import TipoPago from "./pages/tipoPago/tipoPago";
+import TipoStands from "./pages/tipoStands/tipoStands";
+import Horarios from "./pages/horarios/horarios";
+import DetalleHorariosComponent from "./component/detallehorarios/detallehorarios";
+import FotoSedesPage from "./pages/fotosedes/fotosedes";
 import TipoPublico from "./pages/tipo_publicos/tipo_publicos"
 import Stands from "./pages/stands/stands";
 import Municipios from "./pages/municipios/municipios";
+import Talonarios from "./pages/talonarios/talonarios";
+import Voluntarios from "./pages/voluntarios/voluntarios";
+import Comisiones from "./pages/comisiones/comisiones";
+import Actividades from "./pages/actividades/actividades";
+import Publicaciones from "./pages/publicaciones/publicaciones";
+import Materiales from "./pages/materiales/materiales";
+import Administradores from "./pages/administradores/administradores";
 import CategoriaBitacoras from "./pages/categoria_bitacoras/categoria_bitacoras";
 import Rifas from "./pages/rifas/rifas";
 import Productos from "./pages/productos/productos";
@@ -136,6 +147,10 @@ const router = createBrowserRouter([
         element: <Sedes />,
       },
       {
+        path: "/publicaciones",
+        element: <Publicaciones />,
+      },
+      {
         path: "/departamentos",
         element: <Departamentos />,
       },
@@ -150,6 +165,14 @@ const router = createBrowserRouter([
       {
         path: "/tipo_publicos",
         element: <TipoPublico />,
+      },
+      {
+        path: "/comisiones",
+        element: <Comisiones />,
+      },
+      {
+        path: "/actividades",
+        element: <Actividades />,
       },
       {
         path: "/rifas",
@@ -206,6 +229,38 @@ const router = createBrowserRouter([
       {
         path: "/roles",
         element: <Roles />,
+      },
+      {
+        path: "/talonarios",
+        element: <Talonarios />,
+      },
+      {
+        path: "/voluntarios",
+        element: <Voluntarios />,
+      },
+      {
+        path: "/tipoStands",
+        element: <TipoStands/>,
+      },
+      {
+        path: "/horarios",
+        element: <Horarios/>,
+      },
+      {
+        path: "/detallehorarios",
+        element: <DetalleHorariosComponent/>,
+      },
+      {
+        path: "/fotosedes",
+        element: <FotoSedesPage/>,
+      },
+      {
+        path: "/materiales",
+        element: <Materiales/>,
+      },
+      {
+        path: "/administradores",
+        element: <Administradores/>,
       },
       {
         path: "/gallery",

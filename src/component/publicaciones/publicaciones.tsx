@@ -1,68 +1,84 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 
-function Municipio() {
-  const [municipios, setMunicipios] = useState([]);
+function Publicaciones() {
+  const [publicaciones, setPublicaciones] = useState([]);
+  const [filteredPublicaciones, setFilteredPublicaciones] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sedes, setSedes] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingMunicipio, setEditingMunicipio] = useState(null);
-  const [newMunicipio, setNewMunicipio] = useState({
-    municipio: "",
+  const [editingPublicacion, setEditingPublicacion] = useState(null);
+  const [newPublicacion, setNewPublicacion] = useState({
+    nombrePublicacion: "",
+    descripcion: "",
+    fechaPublicacion: new Date().toISOString().split("T")[0],
     estado: 1,
-    idDepartamento: "",
+    idSede: "",
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [departamentos, setDepartamentos] = useState([]);
 
   useEffect(() => {
-    fetchMunicipios();
-    fetchDepartamentos();
+    fetchPublicaciones();
+    fetchSedes();
   }, []);
 
-  const fetchMunicipios = async () => {
+  const fetchPublicaciones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios");
-      setMunicipios(response.data);
+      const response = await axios.get("http://localhost:5000/publicaciones");
+      setPublicaciones(response.data);
+      setFilteredPublicaciones(response.data);
     } catch (error) {
-      console.error("Error fetching municipios:", error);
+      console.error("Error fetching publicaciones:", error);
     }
   };
 
-  const fetchDepartamentos = async () => {
+  const fetchSedes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos");
-      setDepartamentos(response.data);
+      const response = await axios.get("http://localhost:5000/sedes");
+      setSedes(response.data);
     } catch (error) {
-      console.error("Error fetching departamentos:", error);
+      console.error("Error fetching sedes:", error);
     }
   };
 
-  const fetchActiveMunicipios = async () => {
+  const fetchActivePublicaciones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios/activas");
-      setMunicipios(response.data);
+      const response = await axios.get("http://localhost:5000/publicaciones/activos");
+      setFilteredPublicaciones(response.data);
     } catch (error) {
-      console.error("Error fetching active municipios:", error);
+      console.error("Error fetching active publicaciones:", error);
     }
   };
 
-  const fetchInactiveMunicipios = async () => {
+  const fetchInactivePublicaciones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios/inactivas");
-      setMunicipios(response.data);
+      const response = await axios.get("http://localhost:5000/publicaciones/inactivos");
+      setFilteredPublicaciones(response.data);
     } catch (error) {
-      console.error("Error fetching inactive municipios:", error);
+      console.error("Error fetching inactive publicaciones:", error);
     }
   };
 
-  const handleShowModal = (municipio = null) => {
-    setEditingMunicipio(municipio);
-    setNewMunicipio(
-      municipio || {
-        municipio: "",
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    const filtered = publicaciones.filter((publicacion) =>
+      publicacion.nombrePublicacion.toLowerCase().includes(value)
+    );
+    setFilteredPublicaciones(filtered);
+  };
+
+  const handleShowModal = (publicacion = null) => {
+    setEditingPublicacion(publicacion);
+    setNewPublicacion(
+      publicacion || {
+        nombrePublicacion: "",
+        descripcion: "",
+        fechaPublicacion: new Date().toISOString().split("T")[0],
         estado: 1,
-        idDepartamento: "",
+        idSede: "",
       }
     );
     setShowModal(true);
@@ -70,45 +86,43 @@ function Municipio() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingMunicipio(null);
+    setEditingPublicacion(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewMunicipio({ ...newMunicipio, [name]: value });
+    setNewPublicacion({ ...newPublicacion, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingMunicipio) {
+      if (editingPublicacion) {
         await axios.put(
-          `http://localhost:5000/municipios/update/${editingMunicipio.idMunicipio}`,
-          newMunicipio
+          `http://localhost:5000/publicaciones/update/${editingPublicacion.idPublicacion}`,
+          newPublicacion
         );
-        setAlertMessage("Municipio actualizado con éxito");
+        setAlertMessage("Publicación actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/municipios/create", newMunicipio);
-        setAlertMessage("Municipio creado con éxito");
+        await axios.post("http://localhost:5000/publicaciones/create", newPublicacion);
+        setAlertMessage("Publicación creada con éxito");
       }
-      fetchMunicipios();
+      fetchPublicaciones();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting municipio:", error);
+      console.error("Error submitting publicacion:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/municipios/update/${id}`, {
+      await axios.put(`http://localhost:5000/publicaciones/update/${id}`, {
         estado: nuevoEstado,
       });
-      fetchMunicipios();
-      setAlertMessage(
-        `Municipio ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
-      );
+      fetchPublicaciones();
+      setAlertMessage(`Publicación ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
       setShowAlert(true);
     } catch (error) {
       console.error("Error toggling estado:", error);
@@ -120,7 +134,7 @@ function Municipio() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Municipios
+            Gestión de Publicaciones
           </h3>
         </div>
       </div>
@@ -134,6 +148,14 @@ function Municipio() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar publicación por nombre..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
         <Button
           style={{
             backgroundColor: "#743D90",
@@ -146,7 +168,7 @@ function Municipio() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Municipio
+          Agregar Publicación
         </Button>
         <Button
           style={{
@@ -158,9 +180,9 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveMunicipios}
+          onClick={fetchActivePublicaciones}
         >
-          Activos
+          Activas
         </Button>
         <Button
           style={{
@@ -171,9 +193,9 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveMunicipios}
+          onClick={fetchInactivePublicaciones}
         >
-          Inactivos
+          Inactivas
         </Button>
 
         <Alert
@@ -201,25 +223,23 @@ function Municipio() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Municipio</th>
-              <th>Departamento</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Fecha</th>
+              <th>Sede</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {municipios.map((municipio) => (
-              <tr key={municipio.idMunicipio}>
-                <td>{municipio.idMunicipio}</td>
-                <td>{municipio.municipio}</td>
-                <td>
-                  {
-                    departamentos.find(
-                      (d) => d.idDepartamento === municipio.idDepartamento
-                    )?.departamento || "Desconocido"
-                  }
-                </td>
-                <td>{municipio.estado ? "Activo" : "Inactivo"}</td>
+            {filteredPublicaciones.map((publicacion) => (
+              <tr key={publicacion.idPublicacion}>
+                <td>{publicacion.idPublicacion}</td>
+                <td>{publicacion.nombrePublicacion}</td>
+                <td>{publicacion.descripcion}</td>
+                <td>{publicacion.fechaPublicacion.split("T")[0]}</td>
+                <td>{publicacion.sede?.nombreSede || "No asignada"}</td>
+                <td>{publicacion.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
                     style={{
@@ -231,24 +251,22 @@ function Municipio() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(municipio)}
+                    onClick={() => handleShowModal(publicacion)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: municipio.estado ? "#6c757d" : "#28a745",
-                      borderColor: municipio.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: publicacion.estado ? "#6c757d" : "#28a745",
+                      borderColor: publicacion.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() =>
-                      toggleEstado(municipio.idMunicipio, municipio.estado)
-                    }
+                    onClick={() => toggleEstado(publicacion.idPublicacion, publicacion.estado)}
                   >
-                    {municipio.estado ? "Inactivar" : "Activar"}
+                    {publicacion.estado === 1 ? "Inactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -262,55 +280,62 @@ function Municipio() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingMunicipio ? "Editar Municipio" : "Agregar Municipio"}
+              {editingPublicacion ? "Editar Publicación" : "Agregar Publicación"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="municipio">
+              <Form.Group controlId="nombrePublicacion">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Municipio
+                  Nombre
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  name="municipio"
-                  value={newMunicipio.municipio}
+                  name="nombrePublicacion"
+                  value={newPublicacion.nombrePublicacion}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="estado">
+              <Form.Group controlId="descripcion">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
+                  Descripción
                 </Form.Label>
                 <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newMunicipio.estado}
+                  type="text"
+                  name="descripcion"
+                  value={newPublicacion.descripcion}
                   onChange={handleChange}
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
+                  required
+                />
               </Form.Group>
-              <Form.Group controlId="idDepartamento">
+              <Form.Group controlId="fechaPublicacion">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Departamento
+                  Fecha de Publicación
+                </Form.Label>
+                <Form.Control
+                  type="date"
+                  name="fechaPublicacion"
+                  value={newPublicacion.fechaPublicacion}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="idSede">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Sede
                 </Form.Label>
                 <Form.Control
                   as="select"
-                  name="idDepartamento"
-                  value={newMunicipio.idDepartamento}
+                  name="idSede"
+                  value={newPublicacion.idSede}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccionar Departamento</option>
-                  {departamentos.map((departamento) => (
-                    <option
-                      key={departamento.idDepartamento}
-                      value={departamento.idDepartamento}
-                    >
-                      {departamento.departamento}
+                  <option value="">Seleccionar sede</option>
+                  {sedes.map((sede) => (
+                    <option key={sede.idSede} value={sede.idSede}>
+                      {sede.nombreSede}
                     </option>
                   ))}
                 </Form.Control>
@@ -326,7 +351,7 @@ function Municipio() {
                 }}
                 type="submit"
               >
-                {editingMunicipio ? "Actualizar" : "Crear"}
+                {editingPublicacion ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -336,4 +361,4 @@ function Municipio() {
   );
 }
 
-export default Municipio;
+export default Publicaciones;

@@ -1,117 +1,85 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import axios from 'axios';
+import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
 
-function Municipio() {
-  const [municipios, setMunicipios] = useState([]);
+function HorariosComponent() {
+  const [horarios, setHorarios] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingMunicipio, setEditingMunicipio] = useState(null);
-  const [newMunicipio, setNewMunicipio] = useState({
-    municipio: "",
-    estado: 1,
-    idDepartamento: "",
-  });
+  const [editingHorario, setEditingHorario] = useState(null);
+  const [newHorario, setNewHorario] = useState({ horarioInicio: '', horarioFinal: '', estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [departamentos, setDepartamentos] = useState([]);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [filter, setFilter] = useState('activos');
 
   useEffect(() => {
-    fetchMunicipios();
-    fetchDepartamentos();
+    fetchActiveHorarios();
   }, []);
 
-  const fetchMunicipios = async () => {
+  const fetchActiveHorarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios");
-      setMunicipios(response.data);
+      const response = await axios.get('http://localhost:5000/horarios/activos');
+      setHorarios(response.data);
+      setFilter('activos');
     } catch (error) {
-      console.error("Error fetching municipios:", error);
+      console.error('Error fetching active horarios:', error);
     }
   };
 
-  const fetchDepartamentos = async () => {
+  const fetchInactiveHorarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos");
-      setDepartamentos(response.data);
+      const response = await axios.get('http://localhost:5000/horarios', {
+        params: { estado: 0 }
+      });
+      setHorarios(response.data.filter(horario => horario.estado === 0));
+      setFilter('inactivos');
     } catch (error) {
-      console.error("Error fetching departamentos:", error);
+      console.error('Error fetching inactive horarios:', error);
     }
   };
 
-  const fetchActiveMunicipios = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/municipios/activas");
-      setMunicipios(response.data);
-    } catch (error) {
-      console.error("Error fetching active municipios:", error);
-    }
-  };
-
-  const fetchInactiveMunicipios = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/municipios/inactivas");
-      setMunicipios(response.data);
-    } catch (error) {
-      console.error("Error fetching inactive municipios:", error);
-    }
-  };
-
-  const handleShowModal = (municipio = null) => {
-    setEditingMunicipio(municipio);
-    setNewMunicipio(
-      municipio || {
-        municipio: "",
-        estado: 1,
-        idDepartamento: "",
-      }
-    );
+  const handleShowModal = (horario = null) => {
+    setEditingHorario(horario);
+    setNewHorario(horario || { horarioInicio: '', horarioFinal: '', estado: 1 });
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingMunicipio(null);
+    setEditingHorario(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewMunicipio({ ...newMunicipio, [name]: value });
+    setNewHorario({ ...newHorario, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingMunicipio) {
-        await axios.put(
-          `http://localhost:5000/municipios/update/${editingMunicipio.idMunicipio}`,
-          newMunicipio
-        );
-        setAlertMessage("Municipio actualizado con éxito");
+      if (editingHorario) {
+        await axios.put(`http://localhost:5000/horarios/${editingHorario.idHorario}`, newHorario);
+        setAlertMessage('Horario actualizado con éxito');
       } else {
-        await axios.post("http://localhost:5000/municipios/create", newMunicipio);
-        setAlertMessage("Municipio creado con éxito");
+        await axios.post('http://localhost:5000/horarios', newHorario);
+        setAlertMessage('Horario creado con éxito');
       }
-      fetchMunicipios();
+      filter === 'activos' ? fetchActiveHorarios() : fetchInactiveHorarios();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting municipio:", error);
+      console.error('Error submitting horario:', error);
     }
   };
 
-  const toggleEstado = async (id, estadoActual) => {
+  const toggleHorarioEstado = async (id, currentEstado) => {
     try {
-      const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/municipios/update/${id}`, {
-        estado: nuevoEstado,
-      });
-      fetchMunicipios();
-      setAlertMessage(
-        `Municipio ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
-      );
+      const newEstado = currentEstado === 1 ? 0 : 1;
+      await axios.put(`http://localhost:5000/horarios/${id}`, { estado: newEstado });
+      setAlertMessage(`Horario ${newEstado === 1 ? 'activado' : 'desactivado'} con éxito`);
       setShowAlert(true);
+      filter === 'activos' ? fetchActiveHorarios() : fetchInactiveHorarios();
     } catch (error) {
-      console.error("Error toggling estado:", error);
+      console.error('Error toggling estado of horario:', error);
     }
   };
 
@@ -120,7 +88,7 @@ function Municipio() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Municipios
+            Gestión de Horarios
           </h3>
         </div>
       </div>
@@ -139,14 +107,14 @@ function Municipio() {
             backgroundColor: "#743D90",
             borderColor: "#007AC3",
             padding: "5px 10px",
-            width: "130px",
+            width: "180px",
             marginRight: "10px",
             fontWeight: "bold",
             color: "#fff",
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Municipio
+          Agregar Horario
         </Button>
         <Button
           style={{
@@ -158,7 +126,7 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveMunicipios}
+          onClick={fetchActiveHorarios}
         >
           Activos
         </Button>
@@ -171,7 +139,7 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveMunicipios}
+          onClick={fetchInactiveHorarios}
         >
           Inactivos
         </Button>
@@ -201,25 +169,19 @@ function Municipio() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Municipio</th>
-              <th>Departamento</th>
+              <th>Horario Inicio</th>
+              <th>Horario Final</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {municipios.map((municipio) => (
-              <tr key={municipio.idMunicipio}>
-                <td>{municipio.idMunicipio}</td>
-                <td>{municipio.municipio}</td>
-                <td>
-                  {
-                    departamentos.find(
-                      (d) => d.idDepartamento === municipio.idDepartamento
-                    )?.departamento || "Desconocido"
-                  }
-                </td>
-                <td>{municipio.estado ? "Activo" : "Inactivo"}</td>
+            {horarios.map((horario) => (
+              <tr key={horario.idHorario}>
+                <td>{horario.idHorario}</td>
+                <td>{horario.horarioInicio}</td>
+                <td>{horario.horarioFinal}</td>
+                <td>{horario.estado ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
                     style={{
@@ -231,24 +193,22 @@ function Municipio() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(municipio)}
+                    onClick={() => handleShowModal(horario)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: municipio.estado ? "#6c757d" : "#28a745",
-                      borderColor: municipio.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: horario.estado ? "#6c757d" : "#28a745",
+                      borderColor: horario.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() =>
-                      toggleEstado(municipio.idMunicipio, municipio.estado)
-                    }
+                    onClick={() => toggleHorarioEstado(horario.idHorario, horario.estado)}
                   >
-                    {municipio.estado ? "Inactivar" : "Activar"}
+                    {horario.estado ? "Desactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -262,19 +222,31 @@ function Municipio() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingMunicipio ? "Editar Municipio" : "Agregar Municipio"}
+              {editingHorario ? "Editar Horario" : "Agregar Horario"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="municipio">
+              <Form.Group controlId="horarioInicio">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Municipio
+                  Horario Inicio
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  name="municipio"
-                  value={newMunicipio.municipio}
+                  name="horarioInicio"
+                  value={newHorario.horarioInicio}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="horarioFinal">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Horario Final
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="horarioFinal"
+                  value={newHorario.horarioFinal}
                   onChange={handleChange}
                   required
                 />
@@ -286,33 +258,11 @@ function Municipio() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newMunicipio.estado}
+                  value={newHorario.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
                   <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idDepartamento">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Departamento
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idDepartamento"
-                  value={newMunicipio.idDepartamento}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Departamento</option>
-                  {departamentos.map((departamento) => (
-                    <option
-                      key={departamento.idDepartamento}
-                      value={departamento.idDepartamento}
-                    >
-                      {departamento.departamento}
-                    </option>
-                  ))}
                 </Form.Control>
               </Form.Group>
               <Button
@@ -326,7 +276,7 @@ function Municipio() {
                 }}
                 type="submit"
               >
-                {editingMunicipio ? "Actualizar" : "Crear"}
+                {editingHorario ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -336,4 +286,4 @@ function Municipio() {
   );
 }
 
-export default Municipio;
+export default HorariosComponent;

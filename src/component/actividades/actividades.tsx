@@ -1,114 +1,119 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 
-function Municipio() {
-  const [municipios, setMunicipios] = useState([]);
+function Actividades() {
+  const [actividades, setActividades] = useState([]);
+  const [filteredActividades, setFilteredActividades] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [comisiones, setComisiones] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingMunicipio, setEditingMunicipio] = useState(null);
-  const [newMunicipio, setNewMunicipio] = useState({
-    municipio: "",
+  const [editingActividad, setEditingActividad] = useState(null);
+  const [newActividad, setNewActividad] = useState({
+    actividad: "",
+    descripcion: "",
     estado: 1,
-    idDepartamento: "",
+    idComision: "",
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [departamentos, setDepartamentos] = useState([]);
 
   useEffect(() => {
-    fetchMunicipios();
-    fetchDepartamentos();
+    fetchActividades();
+    fetchComisiones();
   }, []);
 
-  const fetchMunicipios = async () => {
+  const fetchActividades = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios");
-      setMunicipios(response.data);
+      const response = await axios.get("http://localhost:5000/actividades");
+      setActividades(response.data);
+      setFilteredActividades(response.data);
     } catch (error) {
-      console.error("Error fetching municipios:", error);
+      console.error("Error fetching actividades:", error);
     }
   };
 
-  const fetchDepartamentos = async () => {
+  const fetchComisiones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos");
-      setDepartamentos(response.data);
+      const response = await axios.get("http://localhost:5000/comisiones");
+      setComisiones(response.data);
     } catch (error) {
-      console.error("Error fetching departamentos:", error);
+      console.error("Error fetching comisiones:", error);
     }
   };
 
-  const fetchActiveMunicipios = async () => {
+  const fetchActiveActividades = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios/activas");
-      setMunicipios(response.data);
+      const response = await axios.get("http://localhost:5000/actividades/activos");
+      setFilteredActividades(response.data);
     } catch (error) {
-      console.error("Error fetching active municipios:", error);
+      console.error("Error fetching active actividades:", error);
     }
   };
 
-  const fetchInactiveMunicipios = async () => {
+  const fetchInactiveActividades = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios/inactivas");
-      setMunicipios(response.data);
+      const response = await axios.get("http://localhost:5000/actividades/inactivos");
+      setFilteredActividades(response.data);
     } catch (error) {
-      console.error("Error fetching inactive municipios:", error);
+      console.error("Error fetching inactive actividades:", error);
     }
   };
 
-  const handleShowModal = (municipio = null) => {
-    setEditingMunicipio(municipio);
-    setNewMunicipio(
-      municipio || {
-        municipio: "",
-        estado: 1,
-        idDepartamento: "",
-      }
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    const filtered = actividades.filter((actividad) =>
+      actividad.actividad.toLowerCase().includes(value)
+    );
+    setFilteredActividades(filtered);
+  };
+
+  const handleShowModal = (actividad = null) => {
+    setEditingActividad(actividad);
+    setNewActividad(
+      actividad || { actividad: "", descripcion: "", estado: 1, idComision: "" }
     );
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingMunicipio(null);
+    setEditingActividad(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewMunicipio({ ...newMunicipio, [name]: value });
+    setNewActividad({ ...newActividad, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingMunicipio) {
+      if (editingActividad) {
         await axios.put(
-          `http://localhost:5000/municipios/update/${editingMunicipio.idMunicipio}`,
-          newMunicipio
+          `http://localhost:5000/actividades/update/${editingActividad.idActividad}`,
+          newActividad
         );
-        setAlertMessage("Municipio actualizado con éxito");
+        setAlertMessage("Actividad actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/municipios/create", newMunicipio);
-        setAlertMessage("Municipio creado con éxito");
+        await axios.post("http://localhost:5000/actividades/create", newActividad);
+        setAlertMessage("Actividad creada con éxito");
       }
-      fetchMunicipios();
+      fetchActividades();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting municipio:", error);
+      console.error("Error submitting actividad:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/municipios/update/${id}`, {
-        estado: nuevoEstado,
-      });
-      fetchMunicipios();
-      setAlertMessage(
-        `Municipio ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
-      );
+      await axios.put(`http://localhost:5000/actividades/update/${id}`, { estado: nuevoEstado });
+      fetchActividades();
+      setAlertMessage(`Actividad ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
       setShowAlert(true);
     } catch (error) {
       console.error("Error toggling estado:", error);
@@ -119,9 +124,7 @@ function Municipio() {
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Municipios
-          </h3>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>Gestión de Actividades</h3>
         </div>
       </div>
 
@@ -134,6 +137,15 @@ function Municipio() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
+        {/* Barra de Búsqueda */}
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar actividad por nombre..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
         <Button
           style={{
             backgroundColor: "#743D90",
@@ -146,7 +158,7 @@ function Municipio() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Municipio
+          Agregar Actividad
         </Button>
         <Button
           style={{
@@ -158,9 +170,9 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveMunicipios}
+          onClick={fetchActiveActividades}
         >
-          Activos
+          Activas
         </Button>
         <Button
           style={{
@@ -171,9 +183,9 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveMunicipios}
+          onClick={fetchInactiveActividades}
         >
-          Inactivos
+          Inactivas
         </Button>
 
         <Alert
@@ -201,25 +213,21 @@ function Municipio() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Municipio</th>
-              <th>Departamento</th>
+              <th>Actividad</th>
+              <th>Descripción</th>
+              <th>Comisión</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {municipios.map((municipio) => (
-              <tr key={municipio.idMunicipio}>
-                <td>{municipio.idMunicipio}</td>
-                <td>{municipio.municipio}</td>
-                <td>
-                  {
-                    departamentos.find(
-                      (d) => d.idDepartamento === municipio.idDepartamento
-                    )?.departamento || "Desconocido"
-                  }
-                </td>
-                <td>{municipio.estado ? "Activo" : "Inactivo"}</td>
+            {filteredActividades.map((actividad) => (
+              <tr key={actividad.idActividad}>
+                <td>{actividad.idActividad}</td>
+                <td>{actividad.actividad}</td>
+                <td>{actividad.descripcion}</td>
+                <td>{actividad.comision?.comision || "No asignada"}</td>
+                <td>{actividad.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
                     style={{
@@ -231,24 +239,22 @@ function Municipio() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(municipio)}
+                    onClick={() => handleShowModal(actividad)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: municipio.estado ? "#6c757d" : "#28a745",
-                      borderColor: municipio.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: actividad.estado ? "#6c757d" : "#28a745",
+                      borderColor: actividad.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() =>
-                      toggleEstado(municipio.idMunicipio, municipio.estado)
-                    }
+                    onClick={() => toggleEstado(actividad.idActividad, actividad.estado)}
                   >
-                    {municipio.estado ? "Inactivar" : "Activar"}
+                    {actividad.estado === 1 ? "Inactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -262,55 +268,50 @@ function Municipio() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingMunicipio ? "Editar Municipio" : "Agregar Municipio"}
+              {editingActividad ? "Editar Actividad" : "Agregar Actividad"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="municipio">
+              <Form.Group controlId="actividad">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Municipio
+                  Actividad
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  name="municipio"
-                  value={newMunicipio.municipio}
+                  name="actividad"
+                  value={newActividad.actividad}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="estado">
+              <Form.Group controlId="descripcion">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
+                  Descripción
                 </Form.Label>
                 <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newMunicipio.estado}
+                  type="text"
+                  name="descripcion"
+                  value={newActividad.descripcion}
                   onChange={handleChange}
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
+                  required
+                />
               </Form.Group>
-              <Form.Group controlId="idDepartamento">
+              <Form.Group controlId="idComision">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Departamento
+                  Comisión
                 </Form.Label>
                 <Form.Control
                   as="select"
-                  name="idDepartamento"
-                  value={newMunicipio.idDepartamento}
+                  name="idComision"
+                  value={newActividad.idComision}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccionar Departamento</option>
-                  {departamentos.map((departamento) => (
-                    <option
-                      key={departamento.idDepartamento}
-                      value={departamento.idDepartamento}
-                    >
-                      {departamento.departamento}
+                  <option value="">Seleccionar comisión</option>
+                  {comisiones.map((comision) => (
+                    <option key={comision.idComision} value={comision.idComision}>
+                      {comision.comision}
                     </option>
                   ))}
                 </Form.Control>
@@ -326,7 +327,7 @@ function Municipio() {
                 }}
                 type="submit"
               >
-                {editingMunicipio ? "Actualizar" : "Crear"}
+                {editingActividad ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -336,4 +337,4 @@ function Municipio() {
   );
 }
 
-export default Municipio;
+export default Actividades;

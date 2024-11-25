@@ -1,117 +1,85 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import axios from 'axios';
+import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
 
-function Municipio() {
-  const [municipios, setMunicipios] = useState([]);
+function TipoStandsComponent() {
+  const [tipoStands, setTipoStands] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingMunicipio, setEditingMunicipio] = useState(null);
-  const [newMunicipio, setNewMunicipio] = useState({
-    municipio: "",
-    estado: 1,
-    idDepartamento: "",
-  });
+  const [editingTipoStand, setEditingTipoStand] = useState(null);
+  const [newTipoStand, setNewTipoStand] = useState({ tipo: '', descripcion: '', estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [departamentos, setDepartamentos] = useState([]);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [filter, setFilter] = useState('activos');
 
   useEffect(() => {
-    fetchMunicipios();
-    fetchDepartamentos();
+    fetchActiveTipoStands();
   }, []);
 
-  const fetchMunicipios = async () => {
+  const fetchActiveTipoStands = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios");
-      setMunicipios(response.data);
+      const response = await axios.get('http://localhost:5000/tipo_stands/activos');
+      setTipoStands(response.data);
+      setFilter('activos');
     } catch (error) {
-      console.error("Error fetching municipios:", error);
+      console.error('Error fetching active tipoStands:', error);
     }
   };
 
-  const fetchDepartamentos = async () => {
+  const fetchInactiveTipoStands = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos");
-      setDepartamentos(response.data);
+      const response = await axios.get('http://localhost:5000/tipo_stands', {
+        params: { estado: 0 }
+      });
+      setTipoStands(response.data.filter(tipoStand => tipoStand.estado === 0));
+      setFilter('inactivos');
     } catch (error) {
-      console.error("Error fetching departamentos:", error);
+      console.error('Error fetching inactive tipoStands:', error);
     }
   };
 
-  const fetchActiveMunicipios = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/municipios/activas");
-      setMunicipios(response.data);
-    } catch (error) {
-      console.error("Error fetching active municipios:", error);
-    }
-  };
-
-  const fetchInactiveMunicipios = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/municipios/inactivas");
-      setMunicipios(response.data);
-    } catch (error) {
-      console.error("Error fetching inactive municipios:", error);
-    }
-  };
-
-  const handleShowModal = (municipio = null) => {
-    setEditingMunicipio(municipio);
-    setNewMunicipio(
-      municipio || {
-        municipio: "",
-        estado: 1,
-        idDepartamento: "",
-      }
-    );
+  const handleShowModal = (tipoStand = null) => {
+    setEditingTipoStand(tipoStand);
+    setNewTipoStand(tipoStand || { tipo: '', descripcion: '', estado: 1 });
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingMunicipio(null);
+    setEditingTipoStand(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewMunicipio({ ...newMunicipio, [name]: value });
+    setNewTipoStand({ ...newTipoStand, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingMunicipio) {
-        await axios.put(
-          `http://localhost:5000/municipios/update/${editingMunicipio.idMunicipio}`,
-          newMunicipio
-        );
-        setAlertMessage("Municipio actualizado con éxito");
+      if (editingTipoStand) {
+        await axios.put(`http://localhost:5000/tipo_stands/${editingTipoStand.idTipoStands}`, newTipoStand);
+        setAlertMessage('Tipo de stand actualizado con éxito');
       } else {
-        await axios.post("http://localhost:5000/municipios/create", newMunicipio);
-        setAlertMessage("Municipio creado con éxito");
+        await axios.post('http://localhost:5000/tipo_stands', newTipoStand);
+        setAlertMessage('Tipo de stand creado con éxito');
       }
-      fetchMunicipios();
+      filter === 'activos' ? fetchActiveTipoStands() : fetchInactiveTipoStands();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting municipio:", error);
+      console.error('Error submitting tipo de stand:', error);
     }
   };
 
-  const toggleEstado = async (id, estadoActual) => {
+  const toggleTipoStandEstado = async (id, currentEstado) => {
     try {
-      const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/municipios/update/${id}`, {
-        estado: nuevoEstado,
-      });
-      fetchMunicipios();
-      setAlertMessage(
-        `Municipio ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
-      );
+      const newEstado = currentEstado === 1 ? 0 : 1;
+      await axios.put(`http://localhost:5000/tipo_stands/${id}`, { estado: newEstado });
+      setAlertMessage(`Tipo de stand ${newEstado === 1 ? 'activado' : 'desactivado'} con éxito`);
       setShowAlert(true);
+      filter === 'activos' ? fetchActiveTipoStands() : fetchInactiveTipoStands();
     } catch (error) {
-      console.error("Error toggling estado:", error);
+      console.error('Error toggling estado of tipo de stand:', error);
     }
   };
 
@@ -120,7 +88,7 @@ function Municipio() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Municipios
+            Gestión de Tipos de Stands
           </h3>
         </div>
       </div>
@@ -139,14 +107,14 @@ function Municipio() {
             backgroundColor: "#743D90",
             borderColor: "#007AC3",
             padding: "5px 10px",
-            width: "130px",
+            width: "180px",
             marginRight: "10px",
             fontWeight: "bold",
             color: "#fff",
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Municipio
+          Agregar Tipo de Stand
         </Button>
         <Button
           style={{
@@ -158,7 +126,7 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveMunicipios}
+          onClick={fetchActiveTipoStands}
         >
           Activos
         </Button>
@@ -171,7 +139,7 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveMunicipios}
+          onClick={fetchInactiveTipoStands}
         >
           Inactivos
         </Button>
@@ -201,25 +169,19 @@ function Municipio() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Municipio</th>
-              <th>Departamento</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {municipios.map((municipio) => (
-              <tr key={municipio.idMunicipio}>
-                <td>{municipio.idMunicipio}</td>
-                <td>{municipio.municipio}</td>
-                <td>
-                  {
-                    departamentos.find(
-                      (d) => d.idDepartamento === municipio.idDepartamento
-                    )?.departamento || "Desconocido"
-                  }
-                </td>
-                <td>{municipio.estado ? "Activo" : "Inactivo"}</td>
+            {tipoStands.map((tipoStand) => (
+              <tr key={tipoStand.idTipoStands}>
+                <td>{tipoStand.idTipoStands}</td>
+                <td>{tipoStand.tipo}</td>
+                <td>{tipoStand.descripcion}</td>
+                <td>{tipoStand.estado ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
                     style={{
@@ -231,24 +193,22 @@ function Municipio() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(municipio)}
+                    onClick={() => handleShowModal(tipoStand)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: municipio.estado ? "#6c757d" : "#28a745",
-                      borderColor: municipio.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: tipoStand.estado ? "#6c757d" : "#28a745",
+                      borderColor: tipoStand.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() =>
-                      toggleEstado(municipio.idMunicipio, municipio.estado)
-                    }
+                    onClick={() => toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado)}
                   >
-                    {municipio.estado ? "Inactivar" : "Activar"}
+                    {tipoStand.estado ? "Desactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -262,19 +222,31 @@ function Municipio() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingMunicipio ? "Editar Municipio" : "Agregar Municipio"}
+              {editingTipoStand ? "Editar Tipo de Stand" : "Agregar Tipo de Stand"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="municipio">
+              <Form.Group controlId="tipo">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Municipio
+                  Tipo
                 </Form.Label>
                 <Form.Control
                   type="text"
-                  name="municipio"
-                  value={newMunicipio.municipio}
+                  name="tipo"
+                  value={newTipoStand.tipo}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="descripcion">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Descripción
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="descripcion"
+                  value={newTipoStand.descripcion}
                   onChange={handleChange}
                   required
                 />
@@ -286,33 +258,11 @@ function Municipio() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newMunicipio.estado}
+                  value={newTipoStand.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
                   <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idDepartamento">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Departamento
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idDepartamento"
-                  value={newMunicipio.idDepartamento}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Departamento</option>
-                  {departamentos.map((departamento) => (
-                    <option
-                      key={departamento.idDepartamento}
-                      value={departamento.idDepartamento}
-                    >
-                      {departamento.departamento}
-                    </option>
-                  ))}
                 </Form.Control>
               </Form.Group>
               <Button
@@ -326,7 +276,7 @@ function Municipio() {
                 }}
                 type="submit"
               >
-                {editingMunicipio ? "Actualizar" : "Crear"}
+                {editingTipoStand ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -336,4 +286,4 @@ function Municipio() {
   );
 }
 
-export default Municipio;
+export default TipoStandsComponent;

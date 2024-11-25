@@ -1,117 +1,94 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import axios from 'axios';
+import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
 
-function Municipio() {
-  const [municipios, setMunicipios] = useState([]);
+function FotosSedesComponent() {
+  const [fotos, setFotos] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingMunicipio, setEditingMunicipio] = useState(null);
-  const [newMunicipio, setNewMunicipio] = useState({
-    municipio: "",
-    estado: 1,
-    idDepartamento: "",
-  });
+  const [editingFoto, setEditingFoto] = useState(null);
+  const [newFoto, setNewFoto] = useState({ foto: '', idSede: '', estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [departamentos, setDepartamentos] = useState([]);
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
-    fetchMunicipios();
-    fetchDepartamentos();
+    fetchActiveFotos();
   }, []);
 
-  const fetchMunicipios = async () => {
+  const fetchActiveFotos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios");
-      setMunicipios(response.data);
+      const response = await axios.get('http://localhost:5000/fotos_sedes/activos');
+      setFotos(response.data);
     } catch (error) {
-      console.error("Error fetching municipios:", error);
+      console.error('Error fetching active fotos:', error);
     }
   };
 
-  const fetchDepartamentos = async () => {
+  const fetchInactiveFotos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos");
-      setDepartamentos(response.data);
+      const response = await axios.get('http://localhost:5000/fotos_sedes', {
+        params: { estado: 0 }
+      });
+      const inactiveFotos = response.data.filter(foto => foto.estado === 0);
+      setFotos(inactiveFotos);
     } catch (error) {
-      console.error("Error fetching departamentos:", error);
+      console.error('Error fetching inactive fotos:', error);
     }
   };
 
-  const fetchActiveMunicipios = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/municipios/activas");
-      setMunicipios(response.data);
-    } catch (error) {
-      console.error("Error fetching active municipios:", error);
-    }
-  };
-
-  const fetchInactiveMunicipios = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/municipios/inactivas");
-      setMunicipios(response.data);
-    } catch (error) {
-      console.error("Error fetching inactive municipios:", error);
-    }
-  };
-
-  const handleShowModal = (municipio = null) => {
-    setEditingMunicipio(municipio);
-    setNewMunicipio(
-      municipio || {
-        municipio: "",
-        estado: 1,
-        idDepartamento: "",
-      }
-    );
+  const handleShowModal = (foto = null) => {
+    setEditingFoto(foto);
+    setNewFoto(foto || { foto: '', idSede: '', estado: 1 });
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingMunicipio(null);
+    setEditingFoto(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewMunicipio({ ...newMunicipio, [name]: value });
+    setNewFoto({ ...newFoto, [name]: value });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewFoto({ ...newFoto, foto: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingMunicipio) {
-        await axios.put(
-          `http://localhost:5000/municipios/update/${editingMunicipio.idMunicipio}`,
-          newMunicipio
-        );
-        setAlertMessage("Municipio actualizado con éxito");
+      if (editingFoto) {
+        await axios.put(`http://localhost:5000/fotos_sedes/${editingFoto.idFotoSede}`, newFoto);
+        setAlertMessage('Foto de sede actualizada con éxito');
       } else {
-        await axios.post("http://localhost:5000/municipios/create", newMunicipio);
-        setAlertMessage("Municipio creado con éxito");
+        await axios.post('http://localhost:5000/fotos_sedes', newFoto);
+        setAlertMessage('Foto de sede creada con éxito');
       }
-      fetchMunicipios();
+      fetchActiveFotos();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting municipio:", error);
+      console.error('Error submitting foto de sede:', error);
     }
   };
 
-  const toggleEstado = async (id, estadoActual) => {
+  const toggleFotoEstado = async (id, currentEstado) => {
     try {
-      const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/municipios/update/${id}`, {
-        estado: nuevoEstado,
-      });
-      fetchMunicipios();
-      setAlertMessage(
-        `Municipio ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
-      );
+      const newEstado = currentEstado === 1 ? 0 : 1;
+      await axios.put(`http://localhost:5000/fotos_sedes/${id}`, { estado: newEstado });
+      setAlertMessage(`Foto de sede ${newEstado === 1 ? 'activada' : 'desactivada'} con éxito`);
       setShowAlert(true);
+      fetchActiveFotos();
     } catch (error) {
-      console.error("Error toggling estado:", error);
+      console.error('Error toggling estado of foto de sede:', error);
     }
   };
 
@@ -120,7 +97,7 @@ function Municipio() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Municipios
+            Gestión de Fotos de Sedes
           </h3>
         </div>
       </div>
@@ -139,14 +116,14 @@ function Municipio() {
             backgroundColor: "#743D90",
             borderColor: "#007AC3",
             padding: "5px 10px",
-            width: "130px",
+            width: "180px",
             marginRight: "10px",
             fontWeight: "bold",
             color: "#fff",
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Municipio
+          Agregar Foto de Sede
         </Button>
         <Button
           style={{
@@ -158,7 +135,7 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchActiveMunicipios}
+          onClick={fetchActiveFotos}
         >
           Activos
         </Button>
@@ -171,7 +148,7 @@ function Municipio() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={fetchInactiveMunicipios}
+          onClick={fetchInactiveFotos}
         >
           Inactivos
         </Button>
@@ -201,25 +178,25 @@ function Municipio() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Municipio</th>
-              <th>Departamento</th>
+              <th>Foto</th>
+              <th>ID Sede</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {municipios.map((municipio) => (
-              <tr key={municipio.idMunicipio}>
-                <td>{municipio.idMunicipio}</td>
-                <td>{municipio.municipio}</td>
+            {fotos.map((foto) => (
+              <tr key={foto.idFotoSede}>
+                <td>{foto.idFotoSede}</td>
                 <td>
-                  {
-                    departamentos.find(
-                      (d) => d.idDepartamento === municipio.idDepartamento
-                    )?.departamento || "Desconocido"
-                  }
+                  <img
+                    src={foto.foto}
+                    alt="Foto de Sede"
+                    style={{ width: '100px' }}
+                  />
                 </td>
-                <td>{municipio.estado ? "Activo" : "Inactivo"}</td>
+                <td>{foto.idSede}</td>
+                <td>{foto.estado ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
                     style={{
@@ -231,24 +208,22 @@ function Municipio() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(municipio)}
+                    onClick={() => handleShowModal(foto)}
                   >
                     Editar
                   </Button>
                   <Button
                     style={{
-                      backgroundColor: municipio.estado ? "#6c757d" : "#28a745",
-                      borderColor: municipio.estado ? "#6c757d" : "#28a745",
+                      backgroundColor: foto.estado ? "#6c757d" : "#28a745",
+                      borderColor: foto.estado ? "#6c757d" : "#28a745",
                       padding: "5px 10px",
                       width: "100px",
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() =>
-                      toggleEstado(municipio.idMunicipio, municipio.estado)
-                    }
+                    onClick={() => toggleFotoEstado(foto.idFotoSede, foto.estado)}
                   >
-                    {municipio.estado ? "Inactivar" : "Activar"}
+                    {foto.estado ? "Desactivar" : "Activar"}
                   </Button>
                 </td>
               </tr>
@@ -262,19 +237,30 @@ function Municipio() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingMunicipio ? "Editar Municipio" : "Agregar Municipio"}
+              {editingFoto ? "Editar Foto de Sede" : "Agregar Foto de Sede"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="municipio">
+              <Form.Group controlId="foto">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Municipio
+                  Foto
                 </Form.Label>
                 <Form.Control
-                  type="text"
-                  name="municipio"
-                  value={newMunicipio.municipio}
+                  type="file"
+                  name="foto"
+                  onChange={handleFileChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="idSede">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  ID Sede
+                </Form.Label>
+                <Form.Control
+                  type="number"
+                  name="idSede"
+                  value={newFoto.idSede}
                   onChange={handleChange}
                   required
                 />
@@ -286,33 +272,11 @@ function Municipio() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newMunicipio.estado}
+                  value={newFoto.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
                   <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idDepartamento">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Departamento
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idDepartamento"
-                  value={newMunicipio.idDepartamento}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Departamento</option>
-                  {departamentos.map((departamento) => (
-                    <option
-                      key={departamento.idDepartamento}
-                      value={departamento.idDepartamento}
-                    >
-                      {departamento.departamento}
-                    </option>
-                  ))}
                 </Form.Control>
               </Form.Group>
               <Button
@@ -326,7 +290,7 @@ function Municipio() {
                 }}
                 type="submit"
               >
-                {editingMunicipio ? "Actualizar" : "Crear"}
+                {editingFoto ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -336,4 +300,4 @@ function Municipio() {
   );
 }
 
-export default Municipio;
+export default FotosSedesComponent;

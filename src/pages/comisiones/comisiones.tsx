@@ -2,19 +2,19 @@ import React from "react";
 import Layout from "../../component/home-two/Layout";
 import BreadCrumb from "../../component/home-two/BreadCrumb";
 import Wrapper from "../../component/pricing/Wrapper";
-import RolesComponent  from "../../component/roles/roles";
+import ComisionComponent  from "../../component/comisiones/comisiones";
 import useMenu from "../../hooks/useMenu";
 
-function RolesPage () {
+function ComisionPage () {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Roles" link="/roles" />
-      <Wrapper>
-        <RolesComponent/>
-      </Wrapper>
+        <BreadCrumb title="Comisiones" link="/comisiones" />
+            <Wrapper>
+            <ComisionComponent/>
+            </Wrapper>
     </Layout>
-  );
+    );
 }
 
-export default RolesPage ;
+export default ComisionPage ;

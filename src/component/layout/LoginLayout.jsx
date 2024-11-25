@@ -1,70 +1,88 @@
-import React from "react";
-import { Link, Outlet } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import bg from "../../assets/img/credential-bg.svg";
 import logoW from "../../assets/img/logo-white.png";
-import welcomeImg from "../../assets/img/welcome-vector.png";
 
-function LoginLayout({ children }) {
+function LoginLayout() {
+  const [usuario, setUsuario] = useState(""); // Estado para el usuario
+  const [contrasenia, setContrasenia] = useState(""); // Estado para la contraseña
+  const [error, setError] = useState(null); // Estado para los mensajes de error
+  const navigate = useNavigate();
+
+  // Manejar la solicitud de inicio de sesión
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:5000/usuarios/login", {
+        usuario,
+        contrasenia,
+      });
+
+      // Si la autenticación es exitosa, guarda el token y redirige
+      const token = response.data.token;
+      localStorage.setItem("token", token); // Almacenar el token en localStorage
+      navigate("/dashboard-sass"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)
+    } catch (err) {
+      setError("Usuario o contraseña incorrectos. Por favor, intenta de nuevo.");
+    }
+  };
+
   return (
-    <div className="body-bg">
+    <div className="body-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <section
         className="crancy-wc crancy-wc__full crancy-bg-cover"
-        style={{ backgroundImage: `url(${bg})` }}
+        style={{ backgroundImage: `url(${bg})`, width: "100%", height: "100%" }}
       >
-        <div className="container">
-          <div className="row">
-            <div className="col-12">
-              <div className="crancy-wc__form">
-                {/* <!-- Welcome Banner --> */}
-                <div className="crancy-wc__form--middle">
-                  <div className="crancy-wc__banner">
-                    <div className="crancy-wc__logo">
-                      <Link to="/">
-                        <img src={logoW} alt="#" />
-                      </Link>
-                    </div>
-                    <img src={welcomeImg} alt="#" />
-                  </div>
-                  <div className="crancy-wc__form-inner">
-                    {/* <!-- Sign in Form --> */}
-                    {children}
-                    <Outlet />
-                    {/* <!-- End Sign in Form --> */}
-                  </div>
-                </div>
-                {/* <!-- End Welcome Banner --> */}
-                {/* <!-- Footer Top --> */}
-                <div className="crancy-wc__footer--top">
-                  <div className="crancy-wc__footer">
-                    <ul className="crancy-wc__footer--list list-none">
-                      <li>
-                        <Link to="#">Terms & Condition</Link>
-                      </li>
-                      <li>
-                        <Link to="#">Privacy Policy</Link>
-                      </li>
-                      <li>
-                        <Link to="#">Help</Link>
-                      </li>
-                    </ul>
-                    <div className="crancy-wc__footer--languages">
-                      <select
-                        className="crancy-wc__footer--language"
-                        defaultValue="English"
-                      >
-                        <option data-display="English">English</option>
-                        <option value="2">Bengali</option>
-                        <option value="3">Frances</option>
-                      </select>
-                    </div>
-                  </div>
-                  <p className="crancy-wc__footer--copyright">
-                    @ 2023 <a href="#">Dashra.</a> All Right Reserved.{" "}
-                  </p>
-                </div>
-                {/* <!-- End Footer Top --> */}
-              </div>
+        <div className="container" style={{ maxWidth: "400px", padding: "40px", backgroundColor: "rgba(255, 255, 255, 0.95)", borderRadius: "16px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
+          <div className="text-center mb-4">
+            <img src={logoW} alt="Logo" style={{ width: "150px", marginBottom: "20px" }} />
+            <h4 style={{ color: "#333", fontWeight: "bold" }}>Iniciar Sesión</h4>
+          </div>
+          {/* Formulario de Inicio de Sesión */}
+          <form onSubmit={handleLogin}>
+            <div className="form-group">
+              <label htmlFor="usuario" style={{ color: "#333", fontWeight: "bold" }}>Usuario</label>
+              <input
+                type="text"
+                className="form-control"
+                id="usuario"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
+                required
+                placeholder="Ingrese su usuario"
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
+              />
             </div>
+            <div className="form-group mt-3">
+              <label htmlFor="contrasenia" style={{ color: "#333", fontWeight: "bold" }}>Contraseña</label>
+              <input
+                type="password"
+                className="form-control"
+                id="contrasenia"
+                value={contrasenia}
+                onChange={(e) => setContrasenia(e.target.value)}
+                required
+                placeholder="Ingrese su contraseña"
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
+              />
+            </div>
+            {error && (
+              <div className="alert alert-danger mt-3" role="alert">
+                {error}
+              </div>
+            )}
+            <button type="submit" className="btn btn-primary mt-4 w-100" style={{ padding: "12px", borderRadius: "8px", fontWeight: "bold", backgroundColor: "#007AC3", border: "none" }}>
+              Iniciar Sesión
+            </button>
+          </form>
+          <div className="text-center mt-4">
+            <p style={{ color: "#333" }}>
+              ¿No tienes una cuenta?{" "}
+              <Link to="/create-account" style={{ color: "#007AC3", fontWeight: "bold" }}>
+                Regístrate aquí
+              </Link>
+            </p>
           </div>
         </div>
       </section>

@@ -173,10 +173,17 @@ function Menu({ toggleMenu, menu }) {
                   </svg>
                 }
                 options={[
-                  { link: "Sedes", title: "Sedes" },
+                  { link: "sedes", title: "Sedes" },
+                  { link: "publicaciones", title: "Publicaciones" },
                   { link: "roles", title: "Roles" },
                   { link: "Departamentos", title: "Departamentos" },
+                  { link: "comisiones", title: "Comisiones" },
+                  { link: "actividades", title: "Actividades" },
                   { link: "TipoPago", title: "Tipo Pago" },
+                  { link: "tipoStands", title: "Tipo Stands" },
+                  { link: "horarios", title: "Horarios" },
+                  { link: "detallehorarios", title: "Asignacion de horarios" },
+                  { link: "fotosedes", title: "Ingreso de fotos" },
                   { link: "tipo_publicos", title: "Tipo Público" },
                   { link: "categoria_bitacoras", title: "Categoría Bitácora"},
                   { link: "rifas", title: "Rifas"},
