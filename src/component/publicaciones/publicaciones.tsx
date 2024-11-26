@@ -15,7 +15,9 @@ function Publicaciones() {
     fechaPublicacion: new Date().toISOString().split("T")[0],
     estado: 1,
     idSede: "",
+    tipoPublicacion: "general", // Tipo de publicación (general, evento, rifa)
   });
+  const [files, setFiles] = useState([]); // Para manejar las fotos
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
@@ -79,8 +81,10 @@ function Publicaciones() {
         fechaPublicacion: new Date().toISOString().split("T")[0],
         estado: 1,
         idSede: "",
+        tipoPublicacion: "general",
       }
     );
+    setFiles([]);
     setShowModal(true);
   };
 
@@ -94,19 +98,57 @@ function Publicaciones() {
     setNewPublicacion({ ...newPublicacion, [name]: value });
   };
 
+  const handleFileChange = (e) => {
+    setFiles([...e.target.files]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("nombrePublicacion", newPublicacion.nombrePublicacion);
+    formData.append("descripcion", newPublicacion.descripcion);
+    formData.append("fechaPublicacion", newPublicacion.fechaPublicacion);
+    formData.append("estado", newPublicacion.estado);
+    formData.append("idSede", newPublicacion.idSede);
+    formData.append("tipoPublicacion", newPublicacion.tipoPublicacion);
+
+    // Agregar los archivos seleccionados al FormData
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    // Determinar el endpoint según el tipo de publicación
+    let endpointBase = "http://localhost:5000";
+    if (newPublicacion.tipoPublicacion === "general") {
+      endpointBase += "/publicacionesGeneral";
+    } else if (newPublicacion.tipoPublicacion === "evento") {
+      endpointBase += "/publicacionesEvento";
+    } else if (newPublicacion.tipoPublicacion === "rifa") {
+      endpointBase += "/publicacionesRifas";
+    }
+
     try {
-      if (editingPublicacion) {
-        await axios.put(
-          `http://localhost:5000/publicaciones/update/${editingPublicacion.idPublicacion}`,
-          newPublicacion
-        );
-        setAlertMessage("Publicación actualizada con éxito");
-      } else {
-        await axios.post("http://localhost:5000/publicaciones/create", newPublicacion);
-        setAlertMessage("Publicación creada con éxito");
-      }
+      const url = editingPublicacion
+        ? `${endpointBase}/update/${editingPublicacion.idPublicacion}`
+        : `${endpointBase}/create`;
+
+      const method = editingPublicacion ? "put" : "post";
+
+      await axios({
+        method,
+        url,
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setAlertMessage(
+        editingPublicacion
+          ? "Publicación actualizada con éxito"
+          : "Publicación creada con éxito"
+      );
       fetchPublicaciones();
       setShowAlert(true);
       handleCloseModal();
@@ -339,6 +381,33 @@ function Publicaciones() {
                     </option>
                   ))}
                 </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="tipoPublicacion">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Tipo de Publicación
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="tipoPublicacion"
+                  value={newPublicacion.tipoPublicacion}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="general">General</option>
+                  <option value="evento">Evento</option>
+                  <option value="rifa">Rifa</option>
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="foto">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Fotos
+                </Form.Label>
+                <Form.Control
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  required
+                />
               </Form.Group>
               <Button
                 style={{
