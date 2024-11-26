@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+
 
 function Voluntarios() {
   const [voluntarios, setVoluntarios] = useState([]);
@@ -285,7 +287,7 @@ function Voluntarios() {
           {alertMessage}
         </Alert>
   
-        <Table
+                <Table 
           striped
           bordered
           hover
@@ -297,60 +299,69 @@ function Voluntarios() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
-              <th>ID</th>
-              <th>Fecha Registro</th>
-              <th>Fecha Salida</th>
-              <th>Persona</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Fecha Registro</th>
+              <th style={{ textAlign: "center" }}>Fecha Salida</th>
+              <th style={{ textAlign: "center" }}>Persona</th>
+              <th style={{ textAlign: "center" }}>Estado</th>
+              <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {currentVoluntarios.map((voluntario) => (
               <tr key={voluntario.idVoluntario}>
-                <td>{voluntario.idVoluntario}</td>
-                <td>{voluntario.fechaRegistro}</td>
-                <td>{voluntario.fechaSalida}</td>
-                <td>
+                <td style={{ textAlign: "center" }}>{voluntario.idVoluntario}</td>
+                <td style={{ textAlign: "center" }}>{voluntario.fechaRegistro}</td>
+                <td style={{ textAlign: "center" }}>{voluntario.fechaSalida}</td>
+                <td style={{ textAlign: "center" }}>
                   {personas.find((persona) => persona.idPersona === voluntario.idPersona)?.nombre ||
                     "Desconocido"}
                 </td>
-                <td>{voluntario.estado === 1 ? "Activo" : "Inactivo"}</td>
-                <td>
-                  <Button
+                <td style={{ textAlign: "center" }}>
+                  {voluntario.estado === 1 ? "Activo" : "Inactivo"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(voluntario)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: voluntario.estado ? "#6c757d" : "#28a745",
-                      borderColor: voluntario.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleEstado(voluntario.idVoluntario, voluntario.estado)}
-                  >
-                    {voluntario.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {voluntario.estado ? (
+                    <FaToggleOn
+                      style={{ 
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(voluntario.idVoluntario, voluntario.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(voluntario.idVoluntario, voluntario.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
+
   
         {renderPagination()}
   
