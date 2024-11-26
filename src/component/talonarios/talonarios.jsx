@@ -96,15 +96,14 @@ function Talonarios() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Validación para aceptar solo números en los campos específicos
     if (
       ["codigoTalonario", "cantidadBoletos", "correlativoInicio", "correlativoFinal"].includes(
         name
       )
     ) {
-      const regex = /^[0-9]*$/; // Solo números
+      const regex = /^[0-9]*$/; 
       if (!regex.test(value)) {
-        return; // Si no cumple con la validación, no actualiza el estado
+        return; 
       }
     }
 

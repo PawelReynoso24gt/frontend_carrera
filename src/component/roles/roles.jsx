@@ -4,8 +4,8 @@ import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "reac
 
 function Roles() {
   const [roles, setRoles] = useState([]);
-  const [filteredRoles, setFilteredRoles] = useState([]); // Para almacenar los roles filtrados
-  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
+  const [filteredRoles, setFilteredRoles] = useState([]); 
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
   const [newRole, setNewRole] = useState({
@@ -23,7 +23,7 @@ function Roles() {
     try {
       const response = await axios.get("http://localhost:5000/roles");
       setRoles(response.data);
-      setFilteredRoles(response.data); // Inicialmente muestra todos los roles
+      setFilteredRoles(response.data); 
     } catch (error) {
       console.error("Error fetching roles:", error);
     }
@@ -72,11 +72,10 @@ function Roles() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Validación para el campo 'roles'
     if (name === "roles") {
-      const regex = /^[a-zA-Z\s]*$/; // Solo permite letras y espacios
+      const regex = /^[a-zA-Z\s]*$/; 
       if (!regex.test(value)) {
-        return; // Si no cumple, no actualiza el estado
+        return; 
       }
     }
 

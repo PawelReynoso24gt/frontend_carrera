@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
 
 function Voluntarios() {
   const [voluntarios, setVoluntarios] = useState([]);
@@ -17,6 +17,8 @@ function Voluntarios() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [personas, setPersonas] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10); 
 
   useEffect(() => {
     fetchVoluntarios();
@@ -71,12 +73,13 @@ function Voluntarios() {
       const personaNombre = persona ? persona.nombre.toLowerCase() : "";
 
       return (
-        voluntario.fechaRegistro.toLowerCase().includes(value) || 
+        voluntario.fechaRegistro.toLowerCase().includes(value) ||
         personaNombre.includes(value)
       );
     });
 
     setFilteredVoluntarios(filtered);
+    setCurrentPage(1); // Reinicia a la primera página tras la búsqueda
   };
 
   const handleShowModal = (voluntario = null) => {
@@ -137,6 +140,70 @@ function Voluntarios() {
     }
   };
 
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentVoluntarios = filteredVoluntarios.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(filteredVoluntarios.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+  
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1); 
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+  
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+  
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -146,7 +213,7 @@ function Voluntarios() {
           </h3>
         </div>
       </div>
-
+  
       <div
         className="container mt-4"
         style={{
@@ -163,49 +230,51 @@ function Voluntarios() {
             onChange={handleSearch}
           />
         </InputGroup>
-
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Voluntario
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveVoluntarios}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveVoluntarios}
-        >
-          Inactivos
-        </Button>
-
+  
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Voluntario
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveVoluntarios}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveVoluntarios}
+          >
+            Inactivos
+          </Button>
+        </div>
+  
         <Alert
           variant="success"
           show={showAlert}
@@ -215,7 +284,7 @@ function Voluntarios() {
         >
           {alertMessage}
         </Alert>
-
+  
         <Table
           striped
           bordered
@@ -239,7 +308,7 @@ function Voluntarios() {
             </tr>
           </thead>
           <tbody>
-            {filteredVoluntarios.map((voluntario) => (
+            {currentVoluntarios.map((voluntario) => (
               <tr key={voluntario.idVoluntario}>
                 <td>{voluntario.idVoluntario}</td>
                 <td>{voluntario.fechaRegistro}</td>
@@ -282,7 +351,9 @@ function Voluntarios() {
             ))}
           </tbody>
         </Table>
-
+  
+        {renderPagination()}
+  
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
             closeButton
