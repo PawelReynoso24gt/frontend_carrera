@@ -2,28 +2,19 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Button, Modal, Form, Alert } from "react-bootstrap";
 
-function PermisosComponent() {
-  const [usuarios, setUsuarios] = useState([]);
+function PermisosRolesComponent() {
   const [roles, setRoles] = useState([]);
+  const [permisos, setPermisos] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [assignedPermisos, setAssignedPermisos] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
-    fetchUsuarios();
     fetchRoles();
+    fetchPermisos();
   }, []);
-
-  const fetchUsuarios = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/usuarios");
-      setUsuarios(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching usuarios:", error);
-    }
-  };
 
   const fetchRoles = async () => {
     try {
@@ -34,54 +25,91 @@ function PermisosComponent() {
     }
   };
 
-  const handleShowModal = (usuario) => {
-    setSelectedUser(usuario);
-    setSelectedRole(usuario.idRol);
-    setShowModal(true);
+  const fetchPermisos = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/permisos");
+      setPermisos(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching permisos:", error);
+    }
+  };
+
+  const fetchAssignedPermisos = async (roleId) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/asignacionPermisos?roleId=${roleId}`
+      );
+  
+      // Almacena el estado original y el estado actual
+      setAssignedPermisos(
+        response.data.map((assignment) => ({
+          idPermiso: assignment.idPermiso,
+          estado: assignment.estado, // Estado actual (1 o 0)
+          originalEstado: assignment.estado, // Guarda el estado original
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching assigned permisos:", error);
+    }
+  };
+
+  const handleShowModal = (role) => {
+    setAssignedPermisos([]); // Limpia el estado de los permisos
+    setSelectedRole(role); // Cambia al nuevo rol seleccionado
+    fetchAssignedPermisos(role.idRol); // Carga los permisos del nuevo rol
+    setShowModal(true); // Muestra el modal
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedUser(null);
-    setSelectedRole("");
+    setSelectedRole(null);
+    setAssignedPermisos([]);
   };
 
-  const handleRoleChange = (e) => {
-    setSelectedRole(e.target.value);
-  };
-
-  const handleUpdateRole = async () => {
-    if (!selectedRole) {
-      setAlertMessage("Debe seleccionar un rol válido.");
-      setShowAlert(true);
-      return;
+  const handleCheckboxChange = (permisoId) => {
+    const permisoIndex = assignedPermisos.findIndex((p) => p.idPermiso === permisoId);
+  
+    if (permisoIndex >= 0) {
+      // Cambia el estado actual del permiso
+      const updatedPermisos = [...assignedPermisos];
+      updatedPermisos[permisoIndex].estado =
+        updatedPermisos[permisoIndex].estado === 1 ? 0 : 1; // Alternar estado
+      setAssignedPermisos(updatedPermisos);
+    } else {
+      // Si no está en la lista, agregarlo como activado
+      setAssignedPermisos([
+        ...assignedPermisos,
+        { idPermiso: permisoId, estado: 1, originalEstado: 0 }, // Asignación nueva
+      ]);
     }
+  };
 
+  const handleSaveChanges = async () => {
     try {
-      await axios.put(`http://localhost:5000/usuarios/${selectedUser.idUsuario}`, {
-        idRol: selectedRole,
+      const permisosToSend = assignedPermisos.filter(
+        (permiso) => permiso.estado !== permiso.originalEstado // Solo los permisos que cambiaron
+      );
+  
+      await axios.post(`http://localhost:5000/asignacionPermisos/update`, {
+        roleId: selectedRole.idRol,
+        permisos: permisosToSend,
       });
-      setAlertMessage("Rol actualizado con éxito.");
+  
+      // Refrescar permisos después de guardar cambios
+      await fetchAssignedPermisos(selectedRole.idRol);
+  
+      setAlertMessage("Permisos actualizados con éxito.");
       setShowAlert(true);
-      fetchUsuarios();
       handleCloseModal();
     } catch (error) {
-      console.error("Error updating role:", error);
-      setAlertMessage("Ocurrió un error al actualizar el rol.");
+      console.error("Error saving changes:", error);
+      setAlertMessage("Ocurrió un error al actualizar los permisos.");
       setShowAlert(true);
     }
   };
 
   return (
     <>
-      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
-        <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Usuarios y Roles
-          </h3>
-        </div>
-      </div>
-
       <div
         className="container mt-4"
         style={{
@@ -91,6 +119,10 @@ function PermisosComponent() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
+        <h3 className="text-center" style={{ fontWeight: "bold", color: "#333" }}>
+          Gestión de Roles y Permisos
+        </h3>
+
         <Alert
           variant="success"
           show={showAlert}
@@ -101,81 +133,57 @@ function PermisosComponent() {
           {alertMessage}
         </Alert>
 
-        <Table
-          striped
-          bordered
-          hover
-          responsive
-          className="mt-3"
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "8px",
-            marginTop: "20px",
-          }}
-        >
+        <Table striped bordered hover responsive className="mt-3">
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th>ID</th>
-              <th>Usuario</th>
-              <th>Estado</th>
               <th>Rol</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {usuarios.map((usuario) => (
-             <tr key={usuario.idUsuario}>
-             <td>{usuario.idUsuario}</td>
-             <td>{usuario.usuario}</td>
-             <td>{usuario.estado === 1 ? "Activo" : "Inactivo"}</td>
-             <td>{usuario.role ? usuario.role.roles : "Sin rol"}</td>
-             <td>
-               <Button variant="warning" onClick={() => handleShowModal(usuario)}>
-                 Editar Rol
-               </Button>
-             </td>
-           </tr>
+            {roles.map((role) => (
+              <tr key={role.idRol}>
+                <td>{role.idRol}</td>
+                <td>{role.roles}</td>
+                <td>
+                  <Button
+                    variant="info"
+                    onClick={() => handleShowModal(role)}
+                  >
+                    Gestionar Permisos
+                  </Button>
+                </td>
+              </tr>
             ))}
           </tbody>
         </Table>
       </div>
 
-      {/* Modal para editar rol */}
+      {/* Modal para gestionar permisos */}
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Actualizar Rol de Usuario</Modal.Title>
+          <Modal.Title>Permisos para el Rol: {selectedRole?.roles}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
-            <Form.Group controlId="rol">
-              <Form.Label>Seleccionar Nuevo Rol</Form.Label>
-              <Form.Control
-                as="select"
-                value={selectedRole}
-                onChange={handleRoleChange}
-              >
-                <option value="">Seleccione un rol</option>
-                {roles.map((roles) => (
-                  <option key={roles.idRol} value={roles.idRol}>
-                    {roles.roles}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-          </Form>
-        </Modal.Body>
+  {permisos.map((permiso) => {
+    const assigned = assignedPermisos.find((p) => p.idPermiso === permiso.idPermiso);
+    return (
+      <Form.Check
+        key={permiso.idPermiso}
+        type="checkbox"
+        label={permiso.nombrePermiso}
+        checked={assigned ? assigned.estado === 1 : false}
+        onChange={() => handleCheckboxChange(permiso.idPermiso)}
+      />
+    );
+  })}
+</Modal.Body>
         <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={handleCloseModal}
-          >
+          <Button variant="secondary" onClick={handleCloseModal}>
             Cancelar
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleUpdateRole}
-            style={{ backgroundColor: "#743D90" }}
-          >
+          <Button variant="primary" onClick={handleSaveChanges}>
             Guardar Cambios
           </Button>
         </Modal.Footer>
@@ -184,4 +192,4 @@ function PermisosComponent() {
   );
 }
 
-export default PermisosComponent;
+export default PermisosRolesComponent;
