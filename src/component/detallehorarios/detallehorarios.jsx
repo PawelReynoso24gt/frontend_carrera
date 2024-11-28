@@ -11,8 +11,7 @@ function DetalleHorariosComponent() {
   const [alertMessage, setAlertMessage] = useState('');
   const [filter, setFilter] = useState('activos');
 
-  useEffect(() => {
-    fetchActiveDetalles();
+  useEffect(() => { 1
   }, []);
 
   const fetchActiveDetalles = async () => {
