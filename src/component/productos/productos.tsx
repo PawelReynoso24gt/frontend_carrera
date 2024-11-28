@@ -8,7 +8,7 @@ function Productos() {
   const [editingProducto, setEditingProducto] = useState(null);
   const [newProducto, setNewProducto] = useState({
     talla: '',
-    precio: '',
+    precio:'',
     nombreProducto: '',
     descripcion: '',
     cantidadMinima: '',
@@ -208,9 +208,9 @@ function Productos() {
             {productos.map((producto) => (
               <tr key={producto.idProducto}>
                 <td>{producto.idProducto}</td>
-                <td>{producto.nombreProducto}</td>
                 <td>{producto.talla}</td>
                 <td>{producto.precio}</td>
+                <td>{producto.nombreProducto}</td>
                 <td>{producto.descripcion}</td>
                 <td>{producto.cantidadMinima}</td>
                 <td>{producto.cantidadMaxima}</td>
