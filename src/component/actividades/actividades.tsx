@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Actividades() {
@@ -20,6 +20,7 @@ function Actividades() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showValidationError, setShowValidationError] = useState(false);
 
   useEffect(() => {
     fetchActividades();
@@ -73,7 +74,7 @@ function Actividades() {
     );
 
     setFilteredActividades(filtered);
-    setCurrentPage(1); // Reinicia a la primera página tras la búsqueda
+    setCurrentPage(1);
   };
 
   const handleShowModal = (actividad = null) => {
@@ -87,6 +88,7 @@ function Actividades() {
       }
     );
     setShowModal(true);
+    setShowValidationError(false);
   };
 
   const handleCloseModal = () => {
@@ -96,20 +98,36 @@ function Actividades() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "actividad") {
+      const regexActividad = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+      if (!regexActividad.test(value)) {
+        setShowValidationError(true);
+      } else {
+        setShowValidationError(false);
+      }
+    }
+
     setNewActividad({ ...newActividad, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const data = {
+        ...newActividad,
+        estado: parseInt(newActividad.estado, 10),
+        idComision: parseInt(newActividad.idComision, 10),
+      };
+
       if (editingActividad) {
         await axios.put(
           `http://localhost:5000/actividades/update/${editingActividad.idActividad}`,
-          newActividad
+          data
         );
         setAlertMessage("Actividad actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/actividades/create", newActividad);
+        await axios.post("http://localhost:5000/actividades/create", data);
         setAlertMessage("Actividad creada con éxito");
       }
       fetchActividades();
@@ -374,6 +392,11 @@ function Actividades() {
                   onChange={handleChange}
                   required
                 />
+                {showValidationError && (
+                  <Alert variant="danger" style={{ marginTop: "10px", fontWeight: "bold" }}>
+                    El nombre de la actividad solo puede contener letras y espacios.
+                  </Alert>
+                )}
               </Form.Group>
               <Form.Group controlId="descripcion">
                 <Form.Label>Descripción</Form.Label>
