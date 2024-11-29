@@ -5,6 +5,7 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Personas() {
   const [personas, setPersonas] = useState([]);
+  const [municipios, setMunicipios] = useState([]); // Estado para almacenar los municipios
   const [filteredPersonas, setFilteredPersonas] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -23,9 +24,11 @@ function Personas() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showValidationError, setShowValidationError] = useState(null); // Nuevo estado para validaciones
 
   useEffect(() => {
     fetchPersonas();
+    fetchMunicipios();
   }, []);
 
   const fetchPersonas = async () => {
@@ -35,6 +38,15 @@ function Personas() {
       setFilteredPersonas(response.data);
     } catch (error) {
       console.error("Error fetching personas:", error);
+    }
+  };
+
+  const fetchMunicipios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/municipios");
+      setMunicipios(response.data);
+    } catch (error) {
+      console.error("Error fetching municipios:", error);
     }
   };
 
@@ -89,10 +101,33 @@ function Personas() {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingPersona(null);
+    setShowValidationError(null); // Reiniciar el mensaje de validación
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Validaciones
+    const regexNombre = /^[A-Za-záéíóúÁÉÍÓÚÑñ\s]+$/;
+    const regexTelefono = /^\d{8}$/;
+    const regexDomicilio = /^[A-Za-záéíóúÁÉÍÓÚÑñ0-9\s\.\-]+$/;
+    const regexCUI = /^\d{13}$/;
+    const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (name === "nombre" && !regexNombre.test(value)) {
+      setShowValidationError("El nombre solo puede contener letras y espacios.");
+    } else if (name === "telefono" && !regexTelefono.test(value)) {
+      setShowValidationError("El teléfono debe contener exactamente 8 dígitos.");
+    } else if (name === "domicilio" && !regexDomicilio.test(value)) {
+      setShowValidationError("El domicilio solo puede contener letras, dígitos, espacios, puntos y guiones.");
+    } else if (name === "CUI" && !regexCUI.test(value)) {
+      setShowValidationError("El CUI debe contener exactamente 13 dígitos.");
+    } else if (name === "correo" && !regexCorreo.test(value)) {
+      setShowValidationError("El correo electrónico no es válido.");
+    } else {
+      setShowValidationError(null);
+    }
+
     setNewPersona({ ...newPersona, [name]: value });
   };
 
@@ -430,12 +465,19 @@ function Personas() {
               <Form.Group controlId="idMunicipio">
                 <Form.Label>Municipio</Form.Label>
                 <Form.Control
-                  type="number"
+                  as="select"
                   name="idMunicipio"
                   value={newPersona.idMunicipio}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Seleccionar Municipio</option>
+                  {municipios.map((municipio) => (
+                    <option key={municipio.idMunicipio} value={municipio.idMunicipio}>
+                      {municipio.municipio}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
@@ -449,6 +491,11 @@ function Personas() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
+              {showValidationError && (
+                <Alert variant="danger" style={{ marginTop: "10px", fontWeight: "bold" }}>
+                  {showValidationError}
+                </Alert>
+              )}
               <Button
                 style={{
                   backgroundColor: "#007AC3",

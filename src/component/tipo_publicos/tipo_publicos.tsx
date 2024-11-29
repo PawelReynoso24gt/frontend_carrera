@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import axios from "axios";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function TipoPublicos() {
   const [tipoPublicos, setTipoPublicos] = useState([]);
+  const [filteredTipoPublicos, setFilteredTipoPublicos] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingTipoPublico, setEditingTipoPublico] = useState(null);
-  const [newTipoPublico, setNewTipoPublico] = useState({ nombreTipo: '', estado: 1 });
+  const [newTipoPublico, setNewTipoPublico] = useState({ nombreTipo: "", estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showValidationError, setShowValidationError] = useState(false); // Nuevo estado para validación
 
   useEffect(() => {
     fetchTipoPublicos();
@@ -16,34 +22,36 @@ function TipoPublicos() {
 
   const fetchTipoPublicos = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/tipo_publicos');
+      const response = await axios.get("http://localhost:5000/tipo_publicos");
       setTipoPublicos(response.data);
+      setFilteredTipoPublicos(response.data);
     } catch (error) {
-      console.error('Error fetching tipo_publicos:', error);
+      console.error("Error fetching tipo_publicos:", error);
     }
   };
 
   const fetchActiveTipoPublicos = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/tipo_publicos/activos');
-      setTipoPublicos(response.data);
+      const response = await axios.get("http://localhost:5000/tipo_publicos/activos");
+      setFilteredTipoPublicos(response.data);
     } catch (error) {
-      console.error('Error fetching active tipo_publicos:', error);
+      console.error("Error fetching active tipo_publicos:", error);
     }
   };
 
   const fetchInactiveTipoPublicos = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/tipo_publicos/inactivos');
-      setTipoPublicos(response.data);
+      const response = await axios.get("http://localhost:5000/tipo_publicos/inactivos");
+      setFilteredTipoPublicos(response.data);
     } catch (error) {
-      console.error('Error fetching inactive tipo_publicos:', error);
+      console.error("Error fetching inactive tipo_publicos:", error);
     }
   };
 
   const handleShowModal = (tipoPublico = null) => {
     setEditingTipoPublico(tipoPublico);
-    setNewTipoPublico(tipoPublico || { nombreTipo: '', estado: 1 });
+    setNewTipoPublico(tipoPublico || { nombreTipo: "", estado: 1 });
+    setShowValidationError(false); // Ocultar el mensaje de validación al abrir el modal
     setShowModal(true);
   };
 
@@ -54,25 +62,56 @@ function TipoPublicos() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewTipoPublico({ ...newTipoPublico, [name]: value });
+
+    // Convertir estado a número si es el campo "estado"
+    const updatedValue = name === "estado" ? parseInt(value, 10) : value;
+
+    setNewTipoPublico({ ...newTipoPublico, [name]: updatedValue });
+  };
+
+  // Nuevo manejador de evento para prevenir la entrada de números
+  const handleKeyPress = (e) => {
+    const regex = /^[A-Za-záéíóúÁÉÍÓÚÑñ\s]*$/;
+
+    if (!regex.test(e.key)) {
+      e.preventDefault(); // Evitar que se escriba el carácter inválido
+      setShowValidationError(true); // Mostrar mensaje de validación
+    } else {
+      setShowValidationError(false); // Ocultar mensaje de validación si es válido
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingTipoPublico) {
-        await axios.put(`http://localhost:5000/tipo_publicos/update/${editingTipoPublico.idTipoPublico}`, newTipoPublico);
-        setAlertMessage('Tipo de público actualizado con éxito');
+        await axios.put(
+          `http://localhost:5000/tipo_publicos/update/${editingTipoPublico.idTipoPublico}`,
+          newTipoPublico
+        );
+        setAlertMessage("Tipo de público actualizado con éxito");
       } else {
-        await axios.post('http://localhost:5000/tipo_publicos/create', newTipoPublico);
-        setAlertMessage('Tipo de público creado con éxito');
+        await axios.post("http://localhost:5000/tipo_publicos/create", newTipoPublico);
+        setAlertMessage("Tipo de público creado con éxito");
       }
       fetchTipoPublicos();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting tipo_publico:', error);
+      console.error("Error submitting tipo_publico:", error);
     }
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = tipoPublicos.filter((tipoPublico) =>
+      tipoPublico.nombreTipo.toLowerCase().includes(value)
+    );
+
+    setFilteredTipoPublicos(filtered);
+    setCurrentPage(1);
   };
 
   const toggleEstado = async (id, estadoActual) => {
@@ -80,10 +119,12 @@ function TipoPublicos() {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
       await axios.put(`http://localhost:5000/tipo_publicos/update/${id}`, { estado: nuevoEstado });
       fetchTipoPublicos();
-      setAlertMessage(`Tipo de público ${nuevoEstado === 1 ? 'activado' : 'inactivado'} con éxito`);
+      setAlertMessage(
+        `Tipo de público ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
-      console.error('Error toggling estado:', error);
+      console.error("Error toggling estado:", error);
     }
   };
 
@@ -92,7 +133,7 @@ function TipoPublicos() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Tipos de Públicos
+            Gestión de Tipos de Públicos para Venta de Mercancía
           </h3>
         </div>
       </div>
@@ -106,47 +147,57 @@ function TipoPublicos() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Tipo de Público
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveTipoPublicos}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveTipoPublicos}
-        >
-          Inactivos
-        </Button>
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar tipo de público por nombre..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Tipo de Público
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveTipoPublicos}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveTipoPublicos}
+          >
+            Inactivos
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -170,7 +221,7 @@ function TipoPublicos() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Nombre Tipo</th>
@@ -179,41 +230,49 @@ function TipoPublicos() {
             </tr>
           </thead>
           <tbody>
-            {tipoPublicos.map((tipoPublico) => (
+            {filteredTipoPublicos.map((tipoPublico) => (
               <tr key={tipoPublico.idTipoPublico}>
                 <td>{tipoPublico.idTipoPublico}</td>
                 <td>{tipoPublico.nombreTipo}</td>
-                <td>{tipoPublico.estado ? "Activo" : "Inactivo"}</td>
+                <td>{tipoPublico.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(tipoPublico)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: tipoPublico.estado ? "#6c757d" : "#28a745",
-                      borderColor: tipoPublico.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() =>
-                      toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)
-                    }
-                  >
-                    {tipoPublico.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {tipoPublico.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() =>
+                        toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)
+                      }
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() =>
+                        toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)
+                      }
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -226,29 +285,29 @@ function TipoPublicos() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingTipoPublico
-                ? "Editar Tipo de Público"
-                : "Agregar Tipo de Público"}
+              {editingTipoPublico ? "Editar Tipo de Público" : "Agregar Tipo de Público"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombreTipo">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Nombre del Tipo de Público
-                </Form.Label>
+                <Form.Label>Nombre del Tipo de Público</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombreTipo"
                   value={newTipoPublico.nombreTipo}
                   onChange={handleChange}
+                  onKeyPress={handleKeyPress} // Añadir el evento onKeyPress
                   required
                 />
+                {showValidationError && (
+                  <Alert variant="danger" style={{ marginTop: "10px", fontWeight: "bold" }}>
+                    Solamente letras
+                  </Alert>
+                )}
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
+                <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"

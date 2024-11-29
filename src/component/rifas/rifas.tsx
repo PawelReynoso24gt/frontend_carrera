@@ -5,6 +5,7 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Rifas() {
   const [rifas, setRifas] = useState([]);
+  const [sedes, setSedes] = useState([]);
   const [filteredRifas, setFilteredRifas] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -22,6 +23,7 @@ function Rifas() {
 
   useEffect(() => {
     fetchRifas();
+    fetchSedes();
   }, []);
 
   const fetchRifas = async () => {
@@ -31,6 +33,15 @@ function Rifas() {
       setFilteredRifas(response.data);
     } catch (error) {
       console.error("Error fetching rifas:", error);
+    }
+  };
+
+  const fetchSedes = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/sedes");
+      setSedes(response.data);
+    } catch (error) {
+      console.error("Error fetching sedes:", error);
     }
   };
 
@@ -91,11 +102,17 @@ function Rifas() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const data = {
+        ...newRifa,
+        estado: parseInt(newRifa.estado, 10),
+        idSede: parseInt(newRifa.idSede, 10),
+      };
+
       if (editingRifa) {
-        await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, newRifa);
+        await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, data);
         setAlertMessage("Rifa actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/rifas", newRifa);
+        await axios.post("http://localhost:5000/rifas", data);
         setAlertMessage("Rifa creada con éxito");
       }
       fetchRifas();
@@ -293,7 +310,11 @@ function Rifas() {
                 <td>{rifa.idRifa}</td>
                 <td>{rifa.nombreRifa}</td>
                 <td>{rifa.descripcion}</td>
-                <td>{rifa.sede ? rifa.sede.nombreSede : "Sin sede"}</td>
+                <td>
+                  {
+                    sedes.find((sede) => sede.idSede === rifa.idSede)?.nombreSede || "Sin sede"
+                  }
+                </td>
                 <td>{rifa.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                   <FaPencilAlt
@@ -371,12 +392,19 @@ function Rifas() {
               <Form.Group controlId="idSede">
                 <Form.Label>Sede</Form.Label>
                 <Form.Control
-                  type="number"
+                  as="select"
                   name="idSede"
                   value={newRifa.idSede}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Seleccionar Sede</option>
+                  {sedes.map((sede) => (
+                    <option key={sede.idSede} value={sede.idSede}>
+                      {sede.nombreSede}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
