@@ -1,14 +1,31 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import axios from "axios";
+import {
+  Button,
+  Form,
+  Table,
+  Modal,
+  Alert,
+  InputGroup,
+  FormControl,
+  Pagination,
+} from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function TipoTraslado() {
-  const [tipoTraslados, setTipoTraslados] = useState([]); // Inicializa como arreglo vacío
+  const [tipoTraslados, setTipoTraslados] = useState([]);
+  const [filteredTipoTraslados, setFilteredTipoTraslados] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingTipoTraslado, setEditingTipoTraslado] = useState(null);
-  const [newTipoTraslado, setNewTipoTraslado] = useState({ tipo: '', estado: 1 });
+  const [newTipoTraslado, setNewTipoTraslado] = useState({
+    tipo: "",
+    estado: 1,
+  });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchTipoTraslados();
@@ -16,54 +33,53 @@ function TipoTraslado() {
 
   const fetchTipoTraslados = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/tipoTraslados');
-      if (Array.isArray(response.data)) {
-        setTipoTraslados(response.data);
-      } else {
-        console.error('La respuesta de la API no es un arreglo:', response.data);
-        setTipoTraslados([]); // Establece como arreglo vacío si la respuesta no es un arreglo
-      }
+      const response = await axios.get("http://localhost:5000/tipoTraslados");
+      setTipoTraslados(response.data);
+      setFilteredTipoTraslados(response.data);
     } catch (error) {
-      console.error('Error fetching tipo traslados:', error);
-      setTipoTraslados([]); // Establece como arreglo vacío en caso de error
+      console.error("Error fetching tipo traslados:", error);
     }
   };
 
   const fetchActiveTipoTraslados = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/tipoTraslados/activas');
-      if (Array.isArray(response.data)) {
-        setTipoTraslados(response.data);
-      } else {
-        setTipoTraslados([]);
-      }
+      const response = await axios.get("http://localhost:5000/tipoTraslados/activas");
+      setFilteredTipoTraslados(response.data);
     } catch (error) {
-      console.error('Error fetching active tipo traslados:', error);
+      console.error("Error fetching active tipo traslados:", error);
     }
   };
 
   const fetchInactiveTipoTraslados = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/tipoTraslados/inactivas');
-      if (Array.isArray(response.data)) {
-        setTipoTraslados(response.data);
-      } else {
-        setTipoTraslados([]);
-      }
+      const response = await axios.get("http://localhost:5000/tipoTraslados/inactivas");
+      setFilteredTipoTraslados(response.data);
     } catch (error) {
-      console.error('Error fetching inactive tipo traslados:', error);
+      console.error("Error fetching inactive tipo traslados:", error);
     }
   };
 
   const handleShowModal = (tipoTraslado = null) => {
     setEditingTipoTraslado(tipoTraslado);
-    setNewTipoTraslado(tipoTraslado || { tipo: '', estado: 1 });
+    setNewTipoTraslado(tipoTraslado || { tipo: "", estado: 1 });
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingTipoTraslado(null);
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = tipoTraslados.filter((tipoTraslado) =>
+      tipoTraslado.tipo.toLowerCase().includes(value)
+    );
+
+    setFilteredTipoTraslados(filtered);
+    setCurrentPage(1);
   };
 
   const handleChange = (e) => {
@@ -76,27 +92,27 @@ function TipoTraslado() {
 
     const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
     if (!regex.test(newTipoTraslado.tipo)) {
-      setAlertMessage('El tipo de traslado solo debe contener letras y espacios.');
+      setAlertMessage("El tipo de traslado solo debe contener letras y espacios.");
       setShowAlert(true);
       return;
     }
 
     try {
       if (editingTipoTraslado) {
-        await axios.put(`http://localhost:5000/tipoTraslados/${editingTipoTraslado.idTipoTraslado}`, newTipoTraslado);
-        setAlertMessage('Tipo de traslado actualizado con éxito');
+        await axios.put(
+          `http://localhost:5000/tipoTraslados/${editingTipoTraslado.idTipoTraslado}`,
+          newTipoTraslado
+        );
+        setAlertMessage("Tipo de traslado actualizado con éxito");
       } else {
-        await axios.post('http://localhost:5000/tipoTraslados', newTipoTraslado);
-        setAlertMessage('Tipo de traslado creado con éxito');
+        await axios.post("http://localhost:5000/tipoTraslados", newTipoTraslado);
+        setAlertMessage("Tipo de traslado creado con éxito");
       }
       fetchTipoTraslados();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting tipo traslado:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-      }
+      console.error("Error submitting tipo traslado:", error);
     }
   };
 
@@ -105,19 +121,88 @@ function TipoTraslado() {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
       await axios.put(`http://localhost:5000/tipoTraslados/${id}`, { estado: nuevoEstado });
       fetchTipoTraslados();
-      setAlertMessage(`Tipo de traslado ${nuevoEstado === 1 ? 'activado' : 'inactivado'} con éxito`);
+      setAlertMessage(
+        `Tipo de traslado ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
-      console.error('Error toggling estado:', error);
+      console.error("Error toggling estado:", error);
     }
   };
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentTipoTraslados = filteredTipoTraslados.slice(
+    indexOfFirstRow,
+    indexOfLastRow
+  );
+
+  const totalPages = Math.ceil(filteredTipoTraslados.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
 
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Tipo de Traslado
+            Gestión de Tipos de Traslado
           </h3>
         </div>
       </div>
@@ -131,47 +216,57 @@ function TipoTraslado() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Tipo de Traslado
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveTipoTraslados}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveTipoTraslados}
-        >
-          Inactivos
-        </Button>
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar tipo de traslado..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Tipo de Traslado
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveTipoTraslados}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveTipoTraslados}
+          >
+            Inactivos
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -195,57 +290,65 @@ function TipoTraslado() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead
+            style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}
+          >
             <tr>
-              <th>ID</th>
-              <th>Tipo</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Tipo</th>
+              <th style={{ textAlign: "center" }}>Estado</th>
+              <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(tipoTraslados) && tipoTraslados.map((tipoTraslado) => (
+            {currentTipoTraslados.map((tipoTraslado) => (
               <tr key={tipoTraslado.idTipoTraslado}>
-                <td>{tipoTraslado.idTipoTraslado}</td>
-                <td>{tipoTraslado.tipo}</td>
-                <td>{tipoTraslado.estado ? "Activo" : "Inactivo"}</td>
-                <td>
-                  <Button
+                <td style={{ textAlign: "center" }}>{tipoTraslado.idTipoTraslado}</td>
+                <td style={{ textAlign: "center" }}>{tipoTraslado.tipo}</td>
+                <td style={{ textAlign: "center" }}>
+                  {tipoTraslado.estado === 1 ? "Activo" : "Inactivo"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(tipoTraslado)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: tipoTraslado.estado
-                        ? "#6c757d"
-                        : "#28a745",
-                      borderColor: tipoTraslado.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() =>
-                      toggleEstado(tipoTraslado.idTipoTraslado, tipoTraslado.estado)
-                    }
-                  >
-                    {tipoTraslado.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {tipoTraslado.estado === 1 ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(tipoTraslado.idTipoTraslado, tipoTraslado.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(tipoTraslado.idTipoTraslado, tipoTraslado.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
+
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
@@ -271,7 +374,7 @@ function TipoTraslado() {
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="estado" style={{ marginTop: "10px" }}>
+              <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
@@ -284,16 +387,18 @@ function TipoTraslado() {
                 </Form.Control>
               </Form.Group>
               <Button
-                type="submit"
                 style={{
-                  marginTop: "20px",
                   backgroundColor: "#007AC3",
-                  color: "#fff",
-                  fontWeight: "bold",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
                   width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                  marginTop: "10px",
                 }}
+                type="submit"
               >
-                {editingTipoTraslado ? "Actualizar" : "Agregar"}
+                {editingTipoTraslado ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>

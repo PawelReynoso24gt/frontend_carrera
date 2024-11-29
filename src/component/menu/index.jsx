@@ -164,6 +164,7 @@ function Menu({ toggleMenu, menu }) {
                   { link: "tipoTraslado", title: "Tipo Traslado" },
                   { link: "pedidos", title: "Pedidos" },
                   { link: "categoriaHorarios", title: "Categoria Horarios" },
+                  { link: "voluntarios", title: "Voluntarios" },
                 ]}
               />
                <Dropdown

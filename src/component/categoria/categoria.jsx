@@ -1,14 +1,31 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Table,
+  Modal,
+  Alert,
+  InputGroup,
+  FormControl,
+  Pagination,
+} from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Categorias() {
   const [categorias, setCategorias] = useState([]);
+  const [filteredCategorias, setFilteredCategorias] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingCategoria, setEditingCategoria] = useState(null);
-  const [newCategoria, setNewCategoria] = useState({ nombreCategoria: "", estado: 1 });
+  const [newCategoria, setNewCategoria] = useState({
+    nombreCategoria: "",
+    estado: 1,
+  });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchCategorias();
@@ -18,6 +35,7 @@ function Categorias() {
     try {
       const response = await axios.get("http://localhost:5000/categorias");
       setCategorias(response.data);
+      setFilteredCategorias(response.data);
     } catch (error) {
       console.error("Error fetching categorias:", error);
     }
@@ -25,8 +43,11 @@ function Categorias() {
 
   const fetchActiveCategorias = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/categorias/activas");
+      const response = await axios.get(
+        "http://localhost:5000/categorias/activas"
+      );
       setCategorias(response.data);
+      setFilteredCategorias(response.data);
     } catch (error) {
       console.error("Error fetching active categorias:", error);
     }
@@ -34,11 +55,26 @@ function Categorias() {
 
   const fetchInactiveCategorias = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/categorias/inactivas");
+      const response = await axios.get(
+        "http://localhost:5000/categorias/inactivas"
+      );
       setCategorias(response.data);
+      setFilteredCategorias(response.data);
     } catch (error) {
       console.error("Error fetching inactive categorias:", error);
     }
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = categorias.filter((categoria) =>
+      categoria.nombreCategoria.toLowerCase().includes(value)
+    );
+
+    setFilteredCategorias(filtered);
+    setCurrentPage(1);
   };
 
   const handleShowModal = (categoria = null) => {
@@ -62,14 +98,19 @@ function Categorias() {
 
     const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
     if (!regex.test(newCategoria.nombreCategoria)) {
-      setAlertMessage("El nombre de la categoría solo debe contener letras y espacios.");
+      setAlertMessage(
+        "El nombre de la categoría solo debe contener letras y espacios."
+      );
       setShowAlert(true);
       return;
     }
 
     try {
       if (editingCategoria) {
-        await axios.put(`http://localhost:5000/categorias/${editingCategoria.idCategoria}`, newCategoria);
+        await axios.put(
+          `http://localhost:5000/categorias/${editingCategoria.idCategoria}`,
+          newCategoria
+        );
         setAlertMessage("Categoría actualizada con éxito");
       } else {
         await axios.post("http://localhost:5000/categorias", newCategoria);
@@ -86,14 +127,85 @@ function Categorias() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/categorias/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/categorias/${id}`, {
+        estado: nuevoEstado,
+      });
       fetchCategorias();
-      setAlertMessage(`Categoría ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
+      setAlertMessage(
+        `Categoría ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
       console.error("Error toggling estado:", error);
     }
   };
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentCategorias = filteredCategorias.slice(
+    indexOfFirstRow,
+    indexOfLastRow
+  );
+
+  const totalPages = Math.ceil(filteredCategorias.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
 
   return (
     <>
@@ -114,47 +226,57 @@ function Categorias() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Categoría
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveCategorias}
-        >
-          Activas
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveCategorias}
-        >
-          Inactivas
-        </Button>
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar por nombre..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Categoría
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveCategorias}
+          >
+            Activas
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveCategorias}
+          >
+            Inactivas
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -178,64 +300,79 @@ function Categorias() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead
+            style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}
+          >
             <tr>
-              <th>ID</th>
-              <th>Categoría</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Categoría</th>
+              <th style={{ textAlign: "center" }}>Estado</th>
+              <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {categorias.map((categoria) => (
+            {currentCategorias.map((categoria) => (
               <tr key={categoria.idCategoria}>
-                <td>{categoria.idCategoria}</td>
-                <td>{categoria.nombreCategoria}</td>
-                <td>{categoria.estado ? "Activo" : "Inactivo"}</td>
-                <td>
-                  <Button
+                <td style={{ textAlign: "center" }}>{categoria.idCategoria}</td>
+                <td style={{ textAlign: "center" }}>{categoria.nombreCategoria}</td>
+                <td style={{ textAlign: "center" }}>
+                  {categoria.estado === 1 ? "Activo" : "Inactivo"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(categoria)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: categoria.estado ? "#6c757d" : "#28a745",
-                      borderColor: categoria.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleEstado(categoria.idCategoria, categoria.estado)}
-                  >
-                    {categoria.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {categoria.estado === 1 ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(categoria.idCategoria, categoria.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(categoria.idCategoria, categoria.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
 
+        {renderPagination()}
+
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header closeButton style={{ backgroundColor: "#007AC3", color: "#fff" }}>
-            <Modal.Title>{editingCategoria ? "Editar Categoría" : "Agregar Categoría"}</Modal.Title>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingCategoria ? "Editar Categoría" : "Agregar Categoría"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombreCategoria">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Nombre Categoría
-                </Form.Label>
+                <Form.Label>Nombre Categoría</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombreCategoria"
@@ -245,9 +382,7 @@ function Categorias() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
+                <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"

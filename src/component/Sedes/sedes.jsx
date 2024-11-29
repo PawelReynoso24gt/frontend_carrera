@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Table,
+  Modal,
+  Alert,
+  InputGroup,
+  FormControl,
+  Pagination,
+} from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Sedes() {
   const [sedes, setSedes] = useState([]);
+  const [filteredSedes, setFilteredSedes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingSede, setEditingSede] = useState(null);
   const [newSede, setNewSede] = useState({
@@ -13,7 +25,8 @@ function Sedes() {
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [searchTerm, setSearchTerm] = useState(""); // Estado para el buscador
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchSedes();
@@ -23,6 +36,7 @@ function Sedes() {
     try {
       const response = await axios.get("http://localhost:5000/sedes");
       setSedes(response.data);
+      setFilteredSedes(response.data);
     } catch (error) {
       console.error("Error fetching sedes:", error);
     }
@@ -31,7 +45,7 @@ function Sedes() {
   const fetchActiveSedes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/sedes/activas");
-      setSedes(response.data);
+      setFilteredSedes(response.data);
     } catch (error) {
       console.error("Error fetching active sedes:", error);
     }
@@ -40,7 +54,7 @@ function Sedes() {
   const fetchInactiveSedes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/sedes/inactivas");
-      setSedes(response.data);
+      setFilteredSedes(response.data);
     } catch (error) {
       console.error("Error fetching inactive sedes:", error);
     }
@@ -55,6 +69,18 @@ function Sedes() {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingSede(null);
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = sedes.filter((sede) =>
+      sede.nombreSede.toLowerCase().includes(value)
+    );
+
+    setFilteredSedes(filtered);
+    setCurrentPage(1);
   };
 
   const handleChange = (e) => {
@@ -74,10 +100,7 @@ function Sedes() {
 
     try {
       if (editingSede) {
-        await axios.put(
-          `http://localhost:5000/sedes/${editingSede.idSede}`,
-          newSede
-        );
+        await axios.put(`http://localhost:5000/sedes/${editingSede.idSede}`, newSede);
         setAlertMessage("Sede actualizada con éxito");
       } else {
         await axios.post("http://localhost:5000/sedes", newSede);
@@ -88,9 +111,6 @@ function Sedes() {
       handleCloseModal();
     } catch (error) {
       console.error("Error submitting sede:", error);
-      if (error.response) {
-        console.error("Error response:", error.response.data);
-      }
     }
   };
 
@@ -99,19 +119,77 @@ function Sedes() {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
       await axios.put(`http://localhost:5000/sedes/${id}`, { estado: nuevoEstado });
       fetchSedes();
-      setAlertMessage(`Sede ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
+      setAlertMessage(
+        `Sede ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
       console.error("Error toggling estado:", error);
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentSedes = filteredSedes.slice(indexOfFirstRow, indexOfLastRow);
 
-  const filteredSedes = sedes.filter((sede) =>
-    sede.nombreSede.toLowerCase().includes(searchTerm.toLowerCase())
+  const totalPages = Math.ceil(filteredSedes.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
   );
 
   return (
@@ -133,47 +211,57 @@ function Sedes() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Sede
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveSedes}
-        >
-          Activas
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveSedes}
-        >
-          Inactivas
-        </Button>
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar sede por nombre..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Sede
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveSedes}
+          >
+            Activas
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveSedes}
+          >
+            Inactivas
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -184,16 +272,6 @@ function Sedes() {
         >
           {alertMessage}
         </Alert>
-
-        {/* Buscador */}
-        <Form.Group controlId="searchSede" className="mt-3">
-          <Form.Control
-            type="text"
-            placeholder="Buscar sede por nombre..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
-        </Form.Group>
 
         <Table
           striped
@@ -207,55 +285,67 @@ function Sedes() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead
+            style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}
+          >
             <tr>
-              <th>ID</th>
-              <th>Sede</th>
-              <th>Información</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Sede</th>
+              <th style={{ textAlign: "center" }}>Información</th>
+              <th style={{ textAlign: "center" }}>Estado</th>
+              <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredSedes.map((sede) => (
+            {currentSedes.map((sede) => (
               <tr key={sede.idSede}>
-                <td>{sede.idSede}</td>
-                <td>{sede.nombreSede}</td>
-                <td>{sede.informacion}</td>
-                <td>{sede.estado ? "Activo" : "Inactivo"}</td>
-                <td>
-                  <Button
+                <td style={{ textAlign: "center" }}>{sede.idSede}</td>
+                <td style={{ textAlign: "center" }}>{sede.nombreSede}</td>
+                <td style={{ textAlign: "center" }}>{sede.informacion}</td>
+                <td style={{ textAlign: "center" }}>
+                  {sede.estado === 1 ? "Activo" : "Inactivo"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(sede)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: sede.estado ? "#6c757d" : "#28a745",
-                      borderColor: sede.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleEstado(sede.idSede, sede.estado)}
-                  >
-                    {sede.estado ? "Desactivar" : "Activar"}
-                  </Button>
+                  />
+                  {sede.estado === 1 ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
+
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
@@ -269,9 +359,7 @@ function Sedes() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombreSede">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Nombre Sede
-                </Form.Label>
+                <Form.Label>Nombre Sede</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombreSede"
@@ -280,11 +368,8 @@ function Sedes() {
                   required
                 />
               </Form.Group>
-
-              <Form.Group controlId="informacion" className="mt-3">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Información
-                </Form.Label>
+              <Form.Group controlId="informacion">
+                <Form.Label>Información</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={3}
@@ -293,11 +378,8 @@ function Sedes() {
                   onChange={handleChange}
                 />
               </Form.Group>
-
-              <Form.Group controlId="estado" className="mt-3">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
+              <Form.Group controlId="estado">
+                <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -308,22 +390,19 @@ function Sedes() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-
-              <div className="mt-4 text-center">
-                <Button
-                  type="submit"
-                  style={{
-                    backgroundColor: "#743D90",
-                    borderColor: "#007AC3",
-                    padding: "5px 10px",
-                    width: "130px",
-                    fontWeight: "bold",
-                    color: "#fff",
-                  }}
-                >
-                  {editingSede ? "Actualizar" : "Crear"} Sede
-                </Button>
-              </div>
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
+              >
+                {editingSede ? "Actualizar" : "Crear"}
+              </Button>
             </Form>
           </Modal.Body>
         </Modal>

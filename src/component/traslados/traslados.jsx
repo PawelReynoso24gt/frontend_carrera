@@ -1,14 +1,30 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import axios from "axios";
+import {
+  Button,
+  Form,
+  Table,
+  Modal,
+  Alert,
+  InputGroup,
+  FormControl,
+} from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Traslados() {
   const [traslados, setTraslados] = useState([]);
+  const [filteredTraslados, setFilteredTraslados] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingTraslado, setEditingTraslado] = useState(null);
-  const [newTraslado, setNewTraslado] = useState({ fecha: '', descripcion: '', estado: 1, idTipoTraslado: '' });
+  const [newTraslado, setNewTraslado] = useState({
+    fecha: "",
+    descripcion: "",
+    estado: 1,
+    idTipoTraslado: "",
+  });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
   const [tipoTraslados, setTipoTraslados] = useState([]);
 
   useEffect(() => {
@@ -18,43 +34,71 @@ function Traslados() {
 
   const fetchTraslados = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/traslados');
-      setTraslados(Array.isArray(response.data) ? response.data : []);
+      const response = await axios.get("http://localhost:5000/traslados");
+      setTraslados(response.data);
+      setFilteredTraslados(response.data);
     } catch (error) {
-      console.error('Error fetching traslados:', error);
+      console.error("Error fetching traslados:", error);
     }
   };
 
   const fetchActiveTraslados = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/traslados/activas');
-      setTraslados(Array.isArray(response.data) ? response.data : []);
+      const response = await axios.get("http://localhost:5000/traslados/activas");
+      setTraslados(response.data);
+      setFilteredTraslados(response.data);
     } catch (error) {
-      console.error('Error fetching active traslados:', error);
+      console.error("Error fetching active traslados:", error);
     }
   };
 
   const fetchInactiveTraslados = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/traslados/inactivas');
-      setTraslados(Array.isArray(response.data) ? response.data : []);
+      const response = await axios.get("http://localhost:5000/traslados/inactivas");
+      setTraslados(response.data);
+      setFilteredTraslados(response.data);
     } catch (error) {
-      console.error('Error fetching inactive traslados:', error);
+      console.error("Error fetching inactive traslados:", error);
     }
   };
 
   const fetchTipoTraslados = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/tipoTraslados');
-      setTipoTraslados(Array.isArray(response.data) ? response.data : []);
+      const response = await axios.get("http://localhost:5000/tipoTraslados");
+      setTipoTraslados(response.data);
     } catch (error) {
-      console.error('Error fetching tipo traslados:', error);
+      console.error("Error fetching tipo traslados:", error);
     }
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = traslados.filter(
+      (traslado) =>
+        traslado.descripcion.toLowerCase().includes(value) ||
+        tipoTraslados
+          .find((tipo) => tipo.idTipoTraslado === traslado.idTipoTraslado)
+          ?.tipo.toLowerCase()
+          .includes(value)
+    );
+
+    setFilteredTraslados(filtered);
   };
 
   const handleShowModal = (traslado = null) => {
     setEditingTraslado(traslado);
-    setNewTraslado(traslado || { fecha: '', descripcion: '', estado: 1, idTipoTraslado: '' });
+
+    setNewTraslado(
+      traslado
+        ? {
+            ...traslado,
+            fecha: traslado.fecha ? traslado.fecha.split("T")[0] : "",
+          }
+        : { fecha: "", descripcion: "", estado: 1, idTipoTraslado: "" }
+    );
+
     setShowModal(true);
   };
 
@@ -73,27 +117,29 @@ function Traslados() {
 
     const regexDescripcion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
     if (!regexDescripcion.test(newTraslado.descripcion)) {
-      setAlertMessage('La descripción solo debe contener letras, números, espacios y los signos permitidos (.,-).');
+      setAlertMessage(
+        "La descripción solo debe contener letras, números, espacios y los signos permitidos (.,-)."
+      );
       setShowAlert(true);
       return;
     }
 
     try {
       if (editingTraslado) {
-        await axios.put(`http://localhost:5000/traslados/${editingTraslado.idTraslado}`, newTraslado);
-        setAlertMessage('Traslado actualizado con éxito');
+        await axios.put(
+          `http://localhost:5000/traslados/${editingTraslado.idTraslado}`,
+          newTraslado
+        );
+        setAlertMessage("Traslado actualizado con éxito");
       } else {
-        await axios.post('http://localhost:5000/traslados', newTraslado);
-        setAlertMessage('Traslado creado con éxito');
+        await axios.post("http://localhost:5000/traslados", newTraslado);
+        setAlertMessage("Traslado creado con éxito");
       }
       fetchTraslados();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting traslado:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-      }
+      console.error("Error submitting traslado:", error);
     }
   };
 
@@ -102,10 +148,12 @@ function Traslados() {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
       await axios.put(`http://localhost:5000/traslados/${id}`, { estado: nuevoEstado });
       fetchTraslados();
-      setAlertMessage(`Traslado ${nuevoEstado === 1 ? 'activado' : 'inactivado'} con éxito`);
+      setAlertMessage(
+        `Traslado ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
-      console.error('Error toggling estado:', error);
+      console.error("Error toggling estado:", error);
     }
   };
 
@@ -128,47 +176,57 @@ function Traslados() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Traslado
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveTraslados}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveTraslados}
-        >
-          Inactivos
-        </Button>
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar por descripción o tipo de traslado..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Traslado
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveTraslados}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveTraslados}
+          >
+            Inactivos
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -192,7 +250,7 @@ function Traslados() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Fecha</th>
@@ -203,41 +261,51 @@ function Traslados() {
             </tr>
           </thead>
           <tbody>
-            {traslados.map((traslado) => (
+            {filteredTraslados.map((traslado) => (
               <tr key={traslado.idTraslado}>
                 <td>{traslado.idTraslado}</td>
                 <td>{traslado.fecha}</td>
                 <td>{traslado.descripcion}</td>
-                <td>{traslado.tipoTraslado?.tipo || 'Sin asignar'}</td>
-                <td>{traslado.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  {tipoTraslados.find(
+                    (tipo) => tipo.idTipoTraslado === traslado.idTipoTraslado
+                  )?.tipo || "Sin asignar"}
+                </td>
+                <td>{traslado.estado === 1 ? "Activo" : "Inactivo"}</td>
+                <td>
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(traslado)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: traslado.estado ? "#6c757d" : "#28a745",
-                      borderColor: traslado.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleEstado(traslado.idTraslado, traslado.estado)}
-                  >
-                    {traslado.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {traslado.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(traslado.idTraslado, traslado.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(traslado.idTraslado, traslado.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -256,7 +324,7 @@ function Traslados() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="fecha">
-                <Form.Label style={{ fontWeight: "bold" }}>Fecha</Form.Label>
+                <Form.Label>Fecha</Form.Label>
                 <Form.Control
                   type="date"
                   name="fecha"
@@ -265,9 +333,8 @@ function Traslados() {
                   required
                 />
               </Form.Group>
-
               <Form.Group controlId="descripcion">
-                <Form.Label style={{ fontWeight: "bold" }}>Descripción</Form.Label>
+                <Form.Label>Descripción</Form.Label>
                 <Form.Control
                   type="text"
                   name="descripcion"
@@ -276,9 +343,8 @@ function Traslados() {
                   required
                 />
               </Form.Group>
-
               <Form.Group controlId="idTipoTraslado">
-                <Form.Label style={{ fontWeight: "bold" }}>Tipo de Traslado</Form.Label>
+                <Form.Label>Tipo de Traslado</Form.Label>
                 <Form.Control
                   as="select"
                   name="idTipoTraslado"
@@ -294,22 +360,20 @@ function Traslados() {
                   ))}
                 </Form.Control>
               </Form.Group>
-
-              <Modal.Footer>
-                <Button variant="secondary" onClick={handleCloseModal}>
-                  Cerrar
-                </Button>
-                <Button
-                  variant="primary"
-                  type="submit"
-                  style={{
-                    backgroundColor: "#007AC3",
-                    borderColor: "#007AC3",
-                  }}
-                >
-                  {editingTraslado ? "Actualizar" : "Guardar"}
-                </Button>
-              </Modal.Footer>
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                  marginTop: "10px",
+                }}
+                type="submit"
+              >
+                {editingTraslado ? "Actualizar" : "Crear"}
+              </Button>
             </Form>
           </Modal.Body>
         </Modal>
