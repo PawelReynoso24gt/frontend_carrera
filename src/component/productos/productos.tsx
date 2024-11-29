@@ -5,6 +5,7 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Productos() {
   const [productos, setProductos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [filteredProductos, setFilteredProductos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -21,11 +22,13 @@ function Productos() {
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [showValidationError, setShowValidationError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchProductos();
+    fetchCategorias();
   }, []);
 
   const fetchProductos = async () => {
@@ -35,6 +38,15 @@ function Productos() {
       setFilteredProductos(response.data);
     } catch (error) {
       console.error("Error fetching productos:", error);
+    }
+  };
+
+  const fetchCategorias = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/categorias");
+      setCategorias(response.data);
+    } catch (error) {
+      console.error("Error fetching categorias:", error);
     }
   };
 
@@ -67,7 +79,7 @@ function Productos() {
     );
 
     setFilteredProductos(filtered);
-    setCurrentPage(1); // Reinicia la página tras una nueva búsqueda
+    setCurrentPage(1);
   };
 
   const handleShowModal = (producto = null) => {
@@ -84,6 +96,7 @@ function Productos() {
         estado: 1,
       }
     );
+    setShowValidationError(false);
     setShowModal(true);
   };
 
@@ -94,17 +107,47 @@ function Productos() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "talla") {
+      const regexTalla = /^(?:\d+|S|M|L|XL|XXL|XXXL|NA)$/;
+      if (!regexTalla.test(value)) {
+        setShowValidationError(true);
+      } else {
+        setShowValidationError(false);
+      }
+    }
+
     setNewProducto({ ...newProducto, [name]: value });
+  };
+
+  const handleKeyPressOnlyLetters = (e) => {
+    const regex = /^[A-Za-záéíóúÁÉÍÓÚÑñ\s]*$/;
+
+    if (!regex.test(e.key)) {
+      e.preventDefault();
+      setShowValidationError(true);
+    } else {
+      setShowValidationError(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const data = {
+        ...newProducto,
+        precio: parseFloat(newProducto.precio),
+        cantidadMinima: parseInt(newProducto.cantidadMinima, 10),
+        cantidadMaxima: parseInt(newProducto.cantidadMaxima, 10),
+        idCategoria: parseInt(newProducto.idCategoria, 10),
+        estado: parseInt(newProducto.estado, 10), // Convertir estado a número
+      };
+
       if (editingProducto) {
-        await axios.put(`http://localhost:5000/productos/${editingProducto.idProducto}`, newProducto);
+        await axios.put(`http://localhost:5000/productos/${editingProducto.idProducto}`, data);
         setAlertMessage("Producto actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/productos", newProducto);
+        await axios.post("http://localhost:5000/productos", data);
         setAlertMessage("Producto creado con éxito");
       }
       fetchProductos();
@@ -160,7 +203,7 @@ function Productos() {
           value={rowsPerPage}
           onChange={(e) => {
             setRowsPerPage(Number(e.target.value));
-            setCurrentPage(1); // Reiniciar a la primera página al cambiar filas por página
+            setCurrentPage(1);
           }}
           style={{
             width: "100px",
@@ -310,7 +353,12 @@ function Productos() {
                 <td>{producto.descripcion}</td>
                 <td>{producto.cantidadMinima}</td>
                 <td>{producto.cantidadMaxima}</td>
-                <td>{producto.categoria ? producto.categoria.nombreCategoria : "Sin categoría"}</td>
+                <td>
+                  {
+                    categorias.find((categoria) => categoria.idCategoria === producto.idCategoria)
+                      ?.nombreCategoria || "Sin categoría"
+                  }
+                </td>
                 <td>{producto.estado ? "Activo" : "Inactivo"}</td>
                 <td style={{ textAlign: "center" }}>
                   <FaPencilAlt
@@ -372,8 +420,14 @@ function Productos() {
                   name="nombreProducto"
                   value={newProducto.nombreProducto}
                   onChange={handleChange}
+                  onKeyPress={handleKeyPressOnlyLetters} // Validación de solo letras
                   required
                 />
+                {showValidationError && (
+                  <Alert variant="danger" style={{ marginTop: "10px", fontWeight: "bold" }}>
+                    Solamente letras
+                  </Alert>
+                )}
               </Form.Group>
               <Form.Group controlId="talla">
                 <Form.Label>Talla</Form.Label>
@@ -384,6 +438,11 @@ function Productos() {
                   onChange={handleChange}
                   required
                 />
+                {showValidationError && (
+                  <Alert variant="danger" style={{ marginTop: "10px", fontWeight: "bold" }}>
+                    Solamente números o las tallas: S, M, L, XL, XXL, XXXL, NA
+                  </Alert>
+                )}
               </Form.Group>
               <Form.Group controlId="precio">
                 <Form.Label>Precio</Form.Label>
@@ -428,12 +487,19 @@ function Productos() {
               <Form.Group controlId="idCategoria">
                 <Form.Label>Categoría</Form.Label>
                 <Form.Control
-                  type="text"
+                  as="select"
                   name="idCategoria"
                   value={newProducto.idCategoria}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Seleccionar Categoría</option>
+                  {categorias.map((categoria) => (
+                    <option key={categoria.idCategoria} value={categoria.idCategoria}>
+                      {categoria.nombreCategoria}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
