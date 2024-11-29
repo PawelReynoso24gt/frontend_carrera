@@ -12,115 +12,145 @@ import {
 } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
-function Sedes() {
-  const [sedes, setSedes] = useState([]);
-  const [filteredSedes, setFilteredSedes] = useState([]);
+// Utilidad para formatear fechas
+const formatDate = (date) => {
+  const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+  return new Date(date).toLocaleDateString("es-ES", options);
+};
+
+function Pedidos() {
+  const [pedidos, setPedidos] = useState([]);
+  const [filteredPedidos, setFilteredPedidos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingSede, setEditingSede] = useState(null);
-  const [newSede, setNewSede] = useState({
-    nombreSede: "",
-    informacion: "",
+  const [editingPedido, setEditingPedido] = useState(null);
+  const [newPedido, setNewPedido] = useState({
+    fecha: "",
+    descripcion: "",
+    idSede: "",
+    idUsuario: "",
     estado: 1,
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [sedes, setSedes] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
+    fetchPedidos();
     fetchSedes();
+    fetchUsuarios();
   }, []);
+
+  const fetchPedidos = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/pedidos");
+      setPedidos(response.data);
+      setFilteredPedidos(response.data);
+    } catch (error) {
+      console.error("Error fetching pedidos:", error);
+    }
+  };
 
   const fetchSedes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/sedes");
       setSedes(response.data);
-      setFilteredSedes(response.data);
     } catch (error) {
       console.error("Error fetching sedes:", error);
     }
   };
 
-  const fetchActiveSedes = async () => {
+  const fetchUsuarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes/activas");
-      setFilteredSedes(response.data);
+      const response = await axios.get("http://localhost:5000/usuarios");
+      setUsuarios(response.data);
     } catch (error) {
-      console.error("Error fetching active sedes:", error);
+      console.error("Error fetching usuarios:", error);
     }
-  };
-
-  const fetchInactiveSedes = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/sedes/inactivas");
-      setFilteredSedes(response.data);
-    } catch (error) {
-      console.error("Error fetching inactive sedes:", error);
-    }
-  };
-
-  const handleShowModal = (sede = null) => {
-    setEditingSede(sede);
-    setNewSede(sede || { nombreSede: "", informacion: "", estado: 1 });
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingSede(null);
   };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
 
-    const filtered = sedes.filter((sede) =>
-      sede.nombreSede.toLowerCase().includes(value)
+    const filtered = pedidos.filter((pedido) =>
+      pedido.descripcion.toLowerCase().includes(value)
     );
 
-    setFilteredSedes(filtered);
+    setFilteredPedidos(filtered);
     setCurrentPage(1);
+  };
+
+  const handleShowModal = (pedido = null) => {
+    if (pedido) {
+      // Convertir fecha al formato compatible con datetime-local
+      pedido.fecha = new Date(pedido.fecha).toISOString().slice(0, 10);
+    }
+
+    setEditingPedido(pedido);
+    setNewPedido(
+      pedido || {
+        fecha: "",
+        descripcion: "",
+        idSede: "",
+        idUsuario: "",
+        estado: 1,
+      }
+    );
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingPedido(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewSede({ ...newSede, [name]: value });
+    setNewPedido({ ...newPedido, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
-    if (!regex.test(newSede.nombreSede)) {
-      setAlertMessage("El nombre de la sede solo debe contener letras y espacios.");
+    const regexDescripcion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
+    if (!regexDescripcion.test(newPedido.descripcion)) {
+      setAlertMessage(
+        "La descripción solo debe contener letras, números, espacios y los signos permitidos (.,-)."
+      );
       setShowAlert(true);
       return;
     }
 
     try {
-      if (editingSede) {
-        await axios.put(`http://localhost:5000/sedes/${editingSede.idSede}`, newSede);
-        setAlertMessage("Sede actualizada con éxito");
+      if (editingPedido) {
+        await axios.put(
+          `http://localhost:5000/pedidos/${editingPedido.idPedido}`,
+          newPedido
+        );
+        setAlertMessage("Pedido actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/sedes", newSede);
-        setAlertMessage("Sede creada con éxito");
+        await axios.post("http://localhost:5000/pedidos", newPedido);
+        setAlertMessage("Pedido creado con éxito");
       }
-      fetchSedes();
+      fetchPedidos();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting sede:", error);
+      console.error("Error submitting pedido:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/sedes/${id}`, { estado: nuevoEstado });
-      fetchSedes();
+      await axios.put(`http://localhost:5000/pedidos/${id}`, { estado: nuevoEstado });
+      fetchPedidos();
       setAlertMessage(
-        `Sede ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+        `Pedido ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
       );
       setShowAlert(true);
     } catch (error) {
@@ -130,9 +160,9 @@ function Sedes() {
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentSedes = filteredSedes.slice(indexOfFirstRow, indexOfLastRow);
+  const currentPedidos = filteredPedidos.slice(indexOfFirstRow, indexOfLastRow);
 
-  const totalPages = Math.ceil(filteredSedes.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredPedidos.length / rowsPerPage);
 
   const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
@@ -197,7 +227,7 @@ function Sedes() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Sedes
+            Gestión de Pedidos
           </h3>
         </div>
       </div>
@@ -213,7 +243,7 @@ function Sedes() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar sede por nombre..."
+            placeholder="Buscar pedido por descripción..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -232,7 +262,7 @@ function Sedes() {
             }}
             onClick={() => handleShowModal()}
           >
-            Agregar Sede
+            Agregar Pedido
           </Button>
           <Button
             style={{
@@ -244,9 +274,9 @@ function Sedes() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchActiveSedes}
+            onClick={fetchPedidos}
           >
-            Activas
+            Activos
           </Button>
           <Button
             style={{
@@ -257,9 +287,9 @@ function Sedes() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchInactiveSedes}
+            onClick={fetchPedidos}
           >
-            Inactivas
+            Inactivos
           </Button>
         </div>
 
@@ -290,20 +320,30 @@ function Sedes() {
           >
             <tr>
               <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Fecha</th>
+              <th style={{ textAlign: "center" }}>Descripción</th>
               <th style={{ textAlign: "center" }}>Sede</th>
-              <th style={{ textAlign: "center" }}>Información</th>
+              <th style={{ textAlign: "center" }}>Usuario</th>
               <th style={{ textAlign: "center" }}>Estado</th>
               <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {currentSedes.map((sede) => (
-              <tr key={sede.idSede}>
-                <td style={{ textAlign: "center" }}>{sede.idSede}</td>
-                <td style={{ textAlign: "center" }}>{sede.nombreSede}</td>
-                <td style={{ textAlign: "center" }}>{sede.informacion}</td>
+            {currentPedidos.map((pedido) => (
+              <tr key={pedido.idPedido}>
+                <td style={{ textAlign: "center" }}>{pedido.idPedido}</td>
+                <td style={{ textAlign: "center" }}>{formatDate(pedido.fecha)}</td>
+                <td style={{ textAlign: "center" }}>{pedido.descripcion}</td>
                 <td style={{ textAlign: "center" }}>
-                  {sede.estado === 1 ? "Activo" : "Inactivo"}
+                  {sedes.find((sede) => sede.idSede === pedido.idSede)?.nombreSede ||
+                    "N/A"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {usuarios.find((usuario) => usuario.idUsuario === pedido.idUsuario)
+                    ?.usuario || "N/A"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {pedido.estado === 1 ? "Activo" : "Inactivo"}
                 </td>
                 <td style={{ textAlign: "center" }}>
                   <FaPencilAlt
@@ -314,9 +354,9 @@ function Sedes() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(sede)}
+                    onClick={() => handleShowModal(pedido)}
                   />
-                  {sede.estado === 1 ? (
+                  {pedido.estado === 1 ? (
                     <FaToggleOn
                       style={{
                         color: "#30c10c",
@@ -325,7 +365,7 @@ function Sedes() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                      onClick={() => toggleEstado(pedido.idPedido, pedido.estado)}
                     />
                   ) : (
                     <FaToggleOff
@@ -336,7 +376,7 @@ function Sedes() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                      onClick={() => toggleEstado(pedido.idPedido, pedido.estado)}
                     />
                   )}
                 </td>
@@ -353,41 +393,63 @@ function Sedes() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingSede ? "Editar Sede" : "Agregar Sede"}
+              {editingPedido ? "Editar Pedido" : "Agregar Pedido"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="nombreSede">
-                <Form.Label>Nombre Sede</Form.Label>
+              <Form.Group controlId="fecha">
+                <Form.Label>Fecha</Form.Label>
                 <Form.Control
-                  type="text"
-                  name="nombreSede"
-                  value={newSede.nombreSede}
+                  type="date"
+                  name="fecha"
+                  value={newPedido.fecha}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="informacion">
-                <Form.Label>Información</Form.Label>
+              <Form.Group controlId="descripcion">
+                <Form.Label>Descripción</Form.Label>
                 <Form.Control
-                  as="textarea"
-                  rows={3}
-                  name="informacion"
-                  value={newSede.informacion}
+                  type="text"
+                  name="descripcion"
+                  value={newPedido.descripcion}
                   onChange={handleChange}
+                  required
                 />
               </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
+              <Form.Group controlId="idSede">
+                <Form.Label>Sede</Form.Label>
                 <Form.Control
                   as="select"
-                  name="estado"
-                  value={newSede.estado}
+                  name="idSede"
+                  value={newPedido.idSede}
                   onChange={handleChange}
+                  required
                 >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
+                  <option value="">Seleccionar Sede</option>
+                  {sedes.map((sede) => (
+                    <option key={sede.idSede} value={sede.idSede}>
+                      {sede.nombreSede}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="idUsuario">
+                <Form.Label>Usuario</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idUsuario"
+                  value={newPedido.idUsuario}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar Usuario</option>
+                  {usuarios.map((usuario) => (
+                    <option key={usuario.idUsuario} value={usuario.idUsuario}>
+                      {usuario.usuario}
+                    </option>
+                  ))}
                 </Form.Control>
               </Form.Group>
               <Button
@@ -401,7 +463,7 @@ function Sedes() {
                 }}
                 type="submit"
               >
-                {editingSede ? "Actualizar" : "Crear"}
+                {editingPedido ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -411,4 +473,4 @@ function Sedes() {
   );
 }
 
-export default Sedes;
+export default Pedidos;

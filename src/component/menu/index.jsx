@@ -158,10 +158,41 @@ function Menu({ toggleMenu, menu }) {
                   { link: "personas", title: "Personas"},
                   { link: "Stands", title: "Stands" },
                   { link: "Municipios", title: "Municipios" },
-                  { link: "talonarios", title: "Talonarios" },
+                  { link: "Categorias", title: "Categorias" },
+                  { link: "Traslados", title: "Traslados" },
+                  { link: "Eventos", title: "Eventos" },
+                  { link: "tipoTraslado", title: "Tipo Traslado" },
+                  { link: "pedidos", title: "Pedidos" },
+                  { link: "categoriaHorarios", title: "Categoria Horarios" },
                   { link: "voluntarios", title: "Voluntarios" },
-                  { link: "Materiales", title: "Materiales" },
-                  { link: "Administradores", title: "Administradores" },
+                  { link: "talonarios", title: "Talonarios" },
+                  { link: "materiales", title: "Materiales" },
+                  { link: "administradores", title: "Administradores" },
+                ]}
+              />
+               <Dropdown
+                name="Permisos"
+                dropdown={dropdown}
+                setDropdown={handleDropdown}
+                img={
+                  <svg
+                    className="crancy-svg-icon"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M2 8L22 8M8 8V22M22 6V18C22 20.2091 20.2091 22 18 22H6C3.79086 22 2 20.2091 2 18L2 6C2 3.79086 3.79086 2 6 2L18 2C20.2091 2 22 3.79086 22 6Z"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                }
+                options={[
+                  { link: "permisos", title: "Asignación de permisos" }
                 ]}
               />
 

@@ -51,10 +51,6 @@ import FotoSedesPage from "./pages/fotosedes/fotosedes";
 import TipoPublico from "./pages/tipo_publicos/tipo_publicos"
 import Stands from "./pages/stands/stands";
 import Municipios from "./pages/municipios/municipios";
-import CategoriaBitacoras from "./pages/categoria_bitacoras/categoria_bitacoras";
-import Rifas from "./pages/rifas/rifas";
-import Productos from "./pages/productos/productos";
-import Personas from "./pages/personas/personas";
 import Talonarios from "./pages/talonarios/talonarios";
 import Voluntarios from "./pages/voluntarios/voluntarios";
 import Comisiones from "./pages/comisiones/comisiones";
@@ -62,6 +58,17 @@ import Actividades from "./pages/actividades/actividades";
 import Publicaciones from "./pages/publicaciones/publicaciones";
 import Materiales from "./pages/materiales/materiales";
 import Administradores from "./pages/administradores/administradores";
+import CategoriaBitacoras from "./pages/categoria_bitacoras/categoria_bitacoras";
+import Rifas from "./pages/rifas/rifas";
+import Productos from "./pages/productos/productos";
+import Personas from "./pages/personas/personas";
+import Categorias from "./pages/categoria/categoria";
+import Traslados from "./pages/traslados/traslados";
+import TipoTraslado from "./pages/tipoTraslado/tipoTraslado";
+import Eventos from "./component/eventos/eventos";
+import Pedidos from "./component/pedidos/pedidos";
+import CategoriaHorarios from "./component/categoriaHorarios/categoriaHorarios";
+import Permisos from "./component/permisos/permisos";
 
 const router = createBrowserRouter([
   {
@@ -136,7 +143,7 @@ const router = createBrowserRouter([
       },
       //rutas crud
       {
-        path: "/sedes",
+        path: "/Sedes",
         element: <Sedes />,
       },
       {
@@ -186,6 +193,34 @@ const router = createBrowserRouter([
       {
         path: "/municipios",
         element: <Municipios />,
+      },
+      {
+        path: "/categorias",
+        element: <Categorias />,
+      },
+      {
+        path: "/eventos",
+        element: <Eventos />,
+      },
+      {
+        path: "/tipoTraslado",
+        element: <TipoTraslado />,
+      },
+      {
+        path: "/traslados",
+        element: <Traslados />,
+      },
+      {
+        path: "/categoriaHorarios",
+        element: <CategoriaHorarios />,
+      },
+      {
+        path: "/pedidos",
+        element: <Pedidos />,
+      },
+      {
+        path: "/permisos",
+        element: <Permisos />,
       },
       {
         path: "/teams",
