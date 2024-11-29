@@ -165,6 +165,9 @@ function Menu({ toggleMenu, menu }) {
                   { link: "pedidos", title: "Pedidos" },
                   { link: "categoriaHorarios", title: "Categoria Horarios" },
                   { link: "voluntarios", title: "Voluntarios" },
+                  { link: "talonarios", title: "Talonarios" },
+                  { link: "materiales", title: "Materiales" },
+                  { link: "administradores", title: "Administradores" },
                 ]}
               />
                <Dropdown
