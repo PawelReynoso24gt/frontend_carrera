@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Comisiones() {
   const [comisiones, setComisiones] = useState([]);
@@ -18,6 +19,8 @@ function Comisiones() {
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchComisiones();
@@ -68,12 +71,19 @@ function Comisiones() {
       comision.comision.toLowerCase().includes(value)
     );
     setFilteredComisiones(filtered);
+    setCurrentPage(1);
   };
 
   const handleShowModal = (comision = null) => {
     setEditingComision(comision);
     setNewComision(
-      comision || { comision: "", descripcion: "", estado: 1, idEvento: "", idDetalleHorario: "" }
+      comision || {
+        comision: "",
+        descripcion: "",
+        estado: 1,
+        idEvento: "",
+        idDetalleHorario: "",
+      }
     );
     setShowModal(true);
   };
@@ -121,11 +131,77 @@ function Comisiones() {
     }
   };
 
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentComisiones = filteredComisiones.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(filteredComisiones.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>Gestión de Comisiones</h3>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Comisiones
+          </h3>
         </div>
       </div>
 
@@ -138,7 +214,6 @@ function Comisiones() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        {/* Barra de Búsqueda */}
         <InputGroup className="mb-3">
           <FormControl
             placeholder="Buscar comisión por nombre..."
@@ -147,47 +222,49 @@ function Comisiones() {
           />
         </InputGroup>
 
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Comisión
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveComisiones}
-        >
-          Activas
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveComisiones}
-        >
-          Inactivas
-        </Button>
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Comisión
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveComisiones}
+          >
+            Activas
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveComisiones}
+          >
+            Inactivas
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -211,7 +288,7 @@ function Comisiones() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Comisión</th>
@@ -223,47 +300,55 @@ function Comisiones() {
             </tr>
           </thead>
           <tbody>
-            {filteredComisiones.map((comision) => (
+            {currentComisiones.map((comision) => (
               <tr key={comision.idComision}>
                 <td>{comision.idComision}</td>
                 <td>{comision.comision}</td>
                 <td>{comision.descripcion}</td>
-                <td>{comision.evento?.nombreEvento || "No asignado"}</td>
+                <td>{eventos.find((evento) => evento.idEvento === comision.idEvento)?.nombreEvento || "No asignado"}</td>
                 <td>{comision.idDetalleHorario || "No asignado"}</td>
                 <td>{comision.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(comision)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: comision.estado ? "#6c757d" : "#28a745",
-                      borderColor: comision.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleEstado(comision.idComision, comision.estado)}
-                  >
-                    {comision.estado === 1 ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {comision.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(comision.idComision, comision.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(comision.idComision, comision.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
+
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
@@ -277,9 +362,7 @@ function Comisiones() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="comision">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Comisión
-                </Form.Label>
+                <Form.Label>Comisión</Form.Label>
                 <Form.Control
                   type="text"
                   name="comision"
@@ -289,9 +372,7 @@ function Comisiones() {
                 />
               </Form.Group>
               <Form.Group controlId="descripcion">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Descripción
-                </Form.Label>
+                <Form.Label>Descripción</Form.Label>
                 <Form.Control
                   type="text"
                   name="descripcion"
@@ -301,9 +382,7 @@ function Comisiones() {
                 />
               </Form.Group>
               <Form.Group controlId="idEvento">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Evento
-                </Form.Label>
+                <Form.Label>Evento</Form.Label>
                 <Form.Control
                   as="select"
                   name="idEvento"
@@ -311,7 +390,7 @@ function Comisiones() {
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccionar evento</option>
+                  <option value="">Seleccionar Evento</option>
                   {eventos.map((evento) => (
                     <option key={evento.idEvento} value={evento.idEvento}>
                       {evento.nombreEvento}
@@ -320,9 +399,7 @@ function Comisiones() {
                 </Form.Control>
               </Form.Group>
               <Form.Group controlId="idDetalleHorario">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Detalle Horario
-                </Form.Label>
+                <Form.Label>Detalle Horario</Form.Label>
                 <Form.Control
                   type="text"
                   name="idDetalleHorario"
@@ -330,6 +407,18 @@ function Comisiones() {
                   onChange={handleChange}
                   required
                 />
+              </Form.Group>
+              <Form.Group controlId="estado">
+                <Form.Label>Estado</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="estado"
+                  value={newComision.estado}
+                  onChange={handleChange}
+                >
+                  <option value={1}>Activo</option>
+                  <option value={0}>Inactivo</option>
+                </Form.Control>
               </Form.Group>
               <Button
                 style={{
