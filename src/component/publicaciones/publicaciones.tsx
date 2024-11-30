@@ -236,10 +236,10 @@ function Publicaciones() {
               <tr key={publicacion.idPublicacion}>
                 <td>{publicacion.idPublicacion}</td>
                 <td>{publicacion.nombrePublicacion}</td>
-                <td>{publicacion.descripcion}</td>
                 <td>{publicacion.fechaPublicacion.split("T")[0]}</td>
-                <td>{publicacion.sede?.nombreSede || "No asignada"}</td>
-                <td>{publicacion.estado === 1 ? "Activo" : "Inactivo"}</td>
+                <td>{publicacion.descripcion}</td>     
+                <td>{publicacion.estado === 1 ? "Activo" : "Inactivo"}</td>   
+                <td>{publicacion.sede?.nombreSede || "No asignada"}</td>               
                 <td>
                   <Button
                     style={{
