@@ -21,7 +21,10 @@ function LoginLayout() {
 
       // Si la autenticación es exitosa, guarda el token y redirige
       const token = response.data.token;
+      const userId = response.data.usuario.idUsuario;
       localStorage.setItem("token", token); // Almacenar el token en localStorage
+      localStorage.setItem("userId", userId);
+      
       navigate("/dashboard-sass"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)
     } catch (err) {
       setError("Usuario o contraseña incorrectos. Por favor, intenta de nuevo.");

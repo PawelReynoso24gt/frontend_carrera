@@ -7,7 +7,7 @@ import socialImg3 from "../../assets/img/social-3.png";
 import socialImg4 from "../../assets/img/social-4.png";
 import socialImg5 from "../../assets/img/social-5.png";
 
-function SidebarProfile({ userId }) {
+function SidebarProfile() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,32 +15,36 @@ function SidebarProfile({ userId }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:5000/usuarios/activos`
-        );
-  
-        // Validar si la respuesta contiene datos
-        if (response.data && response.data.length > 0) {
-          const loggedUser = response.data.find(user => user.idUsuario === userId);
-  
-          if (loggedUser) {
-            setUserData(loggedUser);
-          } else {
-            setError("Usuario no encontrado.");
-          }
+        // Obtener el userId desde el localStorage
+        const userId = Number(localStorage.getItem("userId"));
+        if (!userId) {
+          setError("No se ha iniciado sesión correctamente.");
+          setLoading(false);
+          return;
+        }
+
+        // Hacer la petición al backend
+        const response = await axios.get(`http://localhost:5000/usuarios/activos`);
+
+        console.log("Usuarios activos desde la API:", response.data); // Debug
+        // Buscar el usuario logueado en los datos retornados
+        const loggedUser = response.data.find((user) => user.idUsuario === userId);
+
+        if (loggedUser) {
+          setUserData(loggedUser);
         } else {
-          setError("No se encontraron usuarios activos.");
+          setError("Usuario no encontrado.");
         }
       } catch (err) {
-        console.error("Error fetching user data:", err);
+        console.error("Error al obtener los datos del usuario:", err);
         setError("Error al cargar los datos del usuario.");
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchUserData();
-  }, [userId]);  
+  }, []); // Solo se ejecuta una vez al montar el componente
 
   if (loading) {
     return <p>Cargando...</p>;
@@ -52,7 +56,7 @@ function SidebarProfile({ userId }) {
 
   if (!userData) {
     return <p>Usuario no encontrado.</p>;
-  }  
+  }
 
   return (
     <div className="col-lg-4 col-12 crancy-upinner__column1">
@@ -64,38 +68,26 @@ function SidebarProfile({ userId }) {
         <div className="crancy-upcard__heading">
           <h3 className="crancy-upcard__title">{userData.persona.nombre}</h3>
           <div className="crancy-upcard__location">
-            <svg
-              width="14"
-              height="19"
-              viewBox="0 0 14 19"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="..." />
-            </svg>
             <p className="crancy-upcard__text crancy-pcolor">
-              {userData.persona.domicilio} - Municipio ID: {userData.persona.idMunicipio}
+              {userData.persona.domicilio || "Dirección no disponible"}
             </p>
           </div>
         </div>
         <ul className="crancy-upcard__list">
           <li>
-            <b>Mobile :</b> <span>{userData.persona.telefono}</span>
+            <b>Teléfono:</b> <span>{userData.persona.telefono}</span>
           </li>
           <li>
-            <b>Email :</b> <span>{userData.persona.correo}</span>
+            <b>Email:</b> <span>{userData.persona.correo}</span>
           </li>
           <li>
-            <b>Gender :</b> <span>{userData.persona.genero || "N/A"}</span>
-          </li>
-          <li>
-            <b>Joining Date :</b>{" "}
+            <b>Fecha de registro:</b>{" "}
             <span className="crancy-pcolor crancy-upcard__list--label">
-              {new Date(userData.persona.fechaNacimiento).toLocaleDateString()}
+              {new Date(userData.persona.createdAt).toLocaleDateString()}
             </span>
           </li>
         </ul>
-        <ul className="crancy-upcard__social">
+        {/*<ul className="crancy-upcard__social">
           <li>
             <a href="#">
               <img src={socialImg} alt="Social 1" />
@@ -121,7 +113,7 @@ function SidebarProfile({ userId }) {
               <img src={socialImg5} alt="Social 5" />
             </a>
           </li>
-        </ul>
+        </ul>*/}
       </div>
       {/* End Profile Card */}
     </div>

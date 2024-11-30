@@ -12,7 +12,7 @@ function ProfileOverview({ children }) {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Profile Overview" link="profile-overview" />
+      <BreadCrumb title="Administrar mi perfil" link="profile-overview" />
       <Wrapper>
         <ProfileHeader />
         <div className="crancy-upinner">
