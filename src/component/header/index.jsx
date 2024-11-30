@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import logo from "../../assets/img/logo.png";
+import logo from "../../assets/img/LogoAYUVI_FullAzul.png";
 import logoWhite from "../../assets/img/logo-white.png";
 import logoIcon from "../../assets/img/logo-icon.png";
 import arrowIcon from "../../assets/img/arrow-icon.svg";
@@ -80,35 +80,14 @@ function Header({ toggleMenu, menu }) {
                   >
                     <img src={arrowIcon} />
                   </div>
-                  <SearchForm />
+       
                 </div>
                 <div className="crancy-header__right">
                   <div className="crancy-header__group">
                     <div className="crancy-header__group-two">
                       <div className="crancy-header__right">
-                        <Language
-                          subNav={subNav}
-                          setSubNav={setSubNav}
-                          title="language"
-                        />
-                        <Currency
-                          subNav={subNav}
-                          setSubNav={setSubNav}
-                          title="currency"
-                        />
                         {/* <!-- Header Zoom --> */}
-                        <FullScreenBtn />
                         <div className="crancy-header__options">
-                          <Alarm
-                            subMenu={subNav}
-                            setSubMenu={setSubNav}
-                            title="alarm"
-                          />
-                          <Message
-                            subNav={subNav}
-                            setSubNav={setSubNav}
-                            title="message"
-                          />
                           <div className="crancy-header__settings">
                             <button id="crancy-header__settings">
                               <Link to="/settings">

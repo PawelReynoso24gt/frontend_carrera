@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Publicaciones() {
   const [publicaciones, setPublicaciones] = useState([]);
@@ -15,7 +16,9 @@ function Publicaciones() {
     fechaPublicacion: new Date().toISOString().split("T")[0],
     estado: 1,
     idSede: "",
+    tipoPublicacion: "general", // Tipo de publicación (general, evento, rifa)
   });
+  const [files, setFiles] = useState([]); // Para manejar las fotos
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
@@ -79,8 +82,10 @@ function Publicaciones() {
         fechaPublicacion: new Date().toISOString().split("T")[0],
         estado: 1,
         idSede: "",
+        tipoPublicacion: "general",
       }
     );
+    setFiles([]);
     setShowModal(true);
   };
 
@@ -94,19 +99,28 @@ function Publicaciones() {
     setNewPublicacion({ ...newPublicacion, [name]: value });
   };
 
+  const handleFileChange = (e) => {
+    setFiles([...e.target.files]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    Object.entries(newPublicacion).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    files.forEach((file) => formData.append("files", file));
+
     try {
-      if (editingPublicacion) {
-        await axios.put(
-          `http://localhost:5000/publicaciones/update/${editingPublicacion.idPublicacion}`,
-          newPublicacion
-        );
-        setAlertMessage("Publicación actualizada con éxito");
-      } else {
-        await axios.post("http://localhost:5000/publicaciones/create", newPublicacion);
-        setAlertMessage("Publicación creada con éxito");
-      }
+      const endpoint = editingPublicacion
+        ? `http://localhost:5000/publicaciones/update/${editingPublicacion.idPublicacion}`
+        : "http://localhost:5000/publicaciones/create";
+
+      const method = editingPublicacion ? "put" : "post";
+      await axios({ method, url: endpoint, data: formData });
+      setAlertMessage(
+        editingPublicacion ? "Publicación actualizada con éxito" : "Publicación creada con éxito"
+      );
       fetchPublicaciones();
       setShowAlert(true);
       handleCloseModal();
@@ -118,9 +132,7 @@ function Publicaciones() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/publicaciones/update/${id}`, {
-        estado: nuevoEstado,
-      });
+      await axios.put(`http://localhost:5000/publicaciones/update/${id}`, { estado: nuevoEstado });
       fetchPublicaciones();
       setAlertMessage(`Publicación ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
       setShowAlert(true);
@@ -156,47 +168,49 @@ function Publicaciones() {
           />
         </InputGroup>
 
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Publicación
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActivePublicaciones}
-        >
-          Activas
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactivePublicaciones}
-        >
-          Inactivas
-        </Button>
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Publicación
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActivePublicaciones}
+          >
+            Activas
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactivePublicaciones}
+          >
+            Inactivas
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -220,7 +234,7 @@ function Publicaciones() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Nombre</th>
@@ -236,38 +250,44 @@ function Publicaciones() {
               <tr key={publicacion.idPublicacion}>
                 <td>{publicacion.idPublicacion}</td>
                 <td>{publicacion.nombrePublicacion}</td>
-                <td>{publicacion.descripcion}</td>
                 <td>{publicacion.fechaPublicacion.split("T")[0]}</td>
-                <td>{publicacion.sede?.nombreSede || "No asignada"}</td>
-                <td>{publicacion.estado === 1 ? "Activo" : "Inactivo"}</td>
+                <td>{publicacion.descripcion}</td>     
+                <td>{publicacion.estado === 1 ? "Activo" : "Inactivo"}</td>   
+                <td>{publicacion.sede?.nombreSede || "No asignada"}</td>               
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(publicacion)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: publicacion.estado ? "#6c757d" : "#28a745",
-                      borderColor: publicacion.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleEstado(publicacion.idPublicacion, publicacion.estado)}
-                  >
-                    {publicacion.estado === 1 ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {publicacion.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(publicacion.idPublicacion, publicacion.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(publicacion.idPublicacion, publicacion.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -339,6 +359,32 @@ function Publicaciones() {
                     </option>
                   ))}
                 </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="tipoPublicacion">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Tipo de Publicación
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="tipoPublicacion"
+                  value={newPublicacion.tipoPublicacion}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="general">General</option>
+                  <option value="evento">Evento</option>
+                  <option value="rifa">Rifa</option>
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="foto">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Fotos
+                </Form.Label>
+                <Form.Control
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                />
               </Form.Group>
               <Button
                 style={{
