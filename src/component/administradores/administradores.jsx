@@ -24,7 +24,7 @@ function UsuariosAdminComponent() {
   const fetchActiveUsuarios = async () => {
     try {
       const response = await axios.get('http://localhost:5000/usuarios/activos');
-      const usuariosActivos = response.data.filter(usuario => usuario.idRol === 1 && usuario.estado === 1);
+      const usuariosActivos = response.data.filter(usuario => usuario.estado === 1);
       setUsuarios(usuariosActivos);
       setFilteredUsuarios(usuariosActivos);
       setFilter('activos');
@@ -139,7 +139,7 @@ function UsuariosAdminComponent() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Administradores
+            Gestión de Usuarios
           </h3>
         </div>
       </div>
@@ -165,7 +165,7 @@ function UsuariosAdminComponent() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Administrador
+          Agregar Usuario
         </Button>
         <Button
           style={{

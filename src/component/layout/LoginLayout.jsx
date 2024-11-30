@@ -76,14 +76,6 @@ function LoginLayout() {
               Iniciar Sesión
             </button>
           </form>
-          <div className="text-center mt-4">
-            <p style={{ color: "#333" }}>
-              ¿No tienes una cuenta?{" "}
-              <Link to="/create-account" style={{ color: "#007AC3", fontWeight: "bold" }}>
-                Regístrate aquí
-              </Link>
-            </p>
-          </div>
         </div>
       </section>
     </div>
