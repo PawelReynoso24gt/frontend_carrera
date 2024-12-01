@@ -140,60 +140,29 @@ function Menu({ toggleMenu, menu }) {
                   </svg>
                 }
                 options={[
-                  { link: "sedes", title: "Sedes" },
-                  { link: "publicaciones", title: "Publicaciones" },
-                  { link: "roles", title: "Roles" },
-                  { link: "Departamentos", title: "Departamentos" },
-                  { link: "comisiones", title: "Comisiones" },
-                  { link: "actividades", title: "Actividades" },
-                  { link: "TipoPago", title: "Tipo Pago" },
-                  { link: "tipoStands", title: "Tipo Stands" },
-                  { link: "horarios", title: "Horarios" },
-                  { link: "detallehorarios", title: "Asignacion de horarios" },
-                  { link: "fotosedes", title: "Ingreso de fotos" },
-                  { link: "tipo_publicos", title: "Tipo Público" },
-                  { link: "categoria_bitacoras", title: "Categoría Bitácora"},
-                  { link: "rifas", title: "Rifas"},
-                  { link: "productos", title: "Productos"},
-                  { link: "personas", title: "Personas"},
-                  { link: "Stands", title: "Stands" },
-                  { link: "Municipios", title: "Municipios" },
-                  { link: "Categorias", title: "Categorias" },
-                  { link: "Traslados", title: "Traslados" },
-                  { link: "Eventos", title: "Eventos" },
-                  { link: "tipoTraslado", title: "Tipo Traslado" },
-                  { link: "pedidos", title: "Pedidos" },
-                  { link: "categoriaHorarios", title: "Categoria Horarios" },
-                  { link: "voluntarios", title: "Voluntarios" },
-                  { link: "talonarios", title: "Talonarios" },
-                  { link: "materiales", title: "Materiales" },
-                  { link: "administradores", title: "Administradores" },
+                  { link: "sedes", title: "Gestión Sedes" },
+                  { link: "publicaciones", title: "Gestión Publicaciones" },
+                  { link: "roles", title: "Gestión Roles" },
+                  { link: "Departamentos", title: "Gestión Departamentos" },
+                  { link: "comisiones", title: "Gestión Comisiones" },
+                  { link: "actividades", title: "Gestión Actividades" },
+                  { link: "TipoPago", title: "Gestión Tipo Pago" },
+                  { link: "tipoStands", title: "Gestión Tipo Stands" },
+                  { link: "horarios", title: "Gestión Horarios" },
+                  { link: "detallehorarios", title: "Gestión Asignacion de horarios" },
+                  { link: "fotosedes", title: "Gestión Ingreso de fotos" },
+                  { link: "tipo_publicos", title: "Gestión Tipo Público" },
+                  { link: "categoria_bitacoras", title: "Gestión Categoría Bitácora" },
+                  { link: "rifas", title: "Gestión Rifas" },
+                  { link: "productos", title: "Gestión Productos" },
+                  { link: "personas", title: "Gestión Personas" },
+                  { link: "Stands", title: "Gestión Stands" },
+                  { link: "Municipios", title: "Gestión Municipios" },
+                  { link: "talonarios", title: "Gestión Talonarios" },
+                  { link: "voluntarios", title: "Gestión Voluntarios" },
+                  { link: "Materiales", title: "Gestión Materiales" },
+                  { link: "Administradores", title: "Gestión Administradores" },
                   { link: "mercanciaVoluntarios", title: "Mercancía voluntarios" },
-                ]}
-              />
-               <Dropdown
-                name="Permisos"
-                dropdown={dropdown}
-                setDropdown={handleDropdown}
-                img={
-                  <svg
-                    className="crancy-svg-icon"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2 8L22 8M8 8V22M22 6V18C22 20.2091 20.2091 22 18 22H6C3.79086 22 2 20.2091 2 18L2 6C2 3.79086 3.79086 2 6 2L18 2C20.2091 2 22 3.79086 22 6Z"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                }
-                options={[
-                  { link: "permisos", title: "Asignación de permisos" }
                 ]}
               />
 
