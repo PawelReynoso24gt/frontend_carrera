@@ -9,8 +9,11 @@ function Voluntarios() {
   const [filteredVoluntarios, setFilteredVoluntarios] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [editingVoluntario, setEditingVoluntario] = useState(null);
   const [newVoluntario, setNewVoluntario] = useState({
+    codigoQR: "",
     fechaRegistro: "",
     fechaSalida: "",
     estado: 1,
@@ -105,6 +108,17 @@ function Voluntarios() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewVoluntario({ ...newVoluntario, [name]: value });
+  };
+
+  const handleShowQRModal = (codigoQR) => {
+    // Aquí puedes usar una URL de generación de QR como Google Chart API o algún servicio para mostrar el QR
+    // Supongamos que tienes un backend que genera la imagen del QR a partir del valor:
+    setQrCodeUrl(`http://localhost:5000/generateQR?data=${codigoQR}`);
+    setShowQRModal(true);
+  };
+  
+  const handleCloseQRModal = () => {
+    setShowQRModal(false);
   };
 
   const handleSubmit = async (e) => {
@@ -302,6 +316,7 @@ function Voluntarios() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Código QR</th>
               <th style={{ textAlign: "center" }}>Fecha Registro</th>
               <th style={{ textAlign: "center" }}>Fecha Salida</th>
               <th style={{ textAlign: "center" }}>Persona</th>
@@ -313,6 +328,14 @@ function Voluntarios() {
             {currentVoluntarios.map((voluntario) => (
               <tr key={voluntario.idVoluntario}>
                 <td style={{ textAlign: "center" }}>{voluntario.idVoluntario}</td>
+                <td style={{ textAlign: "center" }}>
+                  <span
+                    style={{ color: "#007AC3", cursor: "pointer", textDecoration: "underline" }}
+                    onClick={() => handleShowQRModal(voluntario.codigoQR)}
+                  >
+                    {voluntario.codigoQR}
+                  </span>
+                </td>
                 <td style={{ textAlign: "center" }}>{voluntario.fechaRegistro}</td>
                 <td style={{ textAlign: "center" }}>{voluntario.fechaSalida}</td>
                 <td style={{ textAlign: "center" }}>
@@ -364,7 +387,22 @@ function Voluntarios() {
 
   
         {renderPagination()}
-  
+        
+        <Modal show={showQRModal} onHide={handleCloseQRModal} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Código QR</Modal.Title>
+          </Modal.Header>
+          <Modal.Body style={{ textAlign: "center" }}>
+            {qrCodeUrl && (
+              <img
+                src={qrCodeUrl}
+                alt="Código QR"
+                style={{ width: "100%", maxWidth: "300px" }}
+              />
+            )}
+          </Modal.Body>
+        </Modal>
+
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
             closeButton
