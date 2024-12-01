@@ -12,15 +12,14 @@ import {
 } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
-function Sedes() {
-  const [sedes, setSedes] = useState([]);
-  const [filteredSedes, setFilteredSedes] = useState([]);
+function TipoTraslado() {
+  const [tipoTraslados, setTipoTraslados] = useState([]);
+  const [filteredTipoTraslados, setFilteredTipoTraslados] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingSede, setEditingSede] = useState(null);
-  const [newSede, setNewSede] = useState({
-    nombreSede: "",
-    informacion: "",
+  const [editingTipoTraslado, setEditingTipoTraslado] = useState(null);
+  const [newTipoTraslado, setNewTipoTraslado] = useState({
+    tipo: "",
     estado: 1,
   });
   const [showAlert, setShowAlert] = useState(false);
@@ -29,98 +28,101 @@ function Sedes() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchSedes();
+    fetchTipoTraslados();
   }, []);
 
-  const fetchSedes = async () => {
+  const fetchTipoTraslados = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes");
-      setSedes(response.data);
-      setFilteredSedes(response.data);
+      const response = await axios.get("http://localhost:5000/tipoTraslados");
+      setTipoTraslados(response.data);
+      setFilteredTipoTraslados(response.data);
     } catch (error) {
-      console.error("Error fetching sedes:", error);
+      console.error("Error fetching tipo traslados:", error);
     }
   };
 
-  const fetchActiveSedes = async () => {
+  const fetchActiveTipoTraslados = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes/activas");
-      setFilteredSedes(response.data);
+      const response = await axios.get("http://localhost:5000/tipoTraslados/activas");
+      setFilteredTipoTraslados(response.data);
     } catch (error) {
-      console.error("Error fetching active sedes:", error);
+      console.error("Error fetching active tipo traslados:", error);
     }
   };
 
-  const fetchInactiveSedes = async () => {
+  const fetchInactiveTipoTraslados = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes/inactivas");
-      setFilteredSedes(response.data);
+      const response = await axios.get("http://localhost:5000/tipoTraslados/inactivas");
+      setFilteredTipoTraslados(response.data);
     } catch (error) {
-      console.error("Error fetching inactive sedes:", error);
+      console.error("Error fetching inactive tipo traslados:", error);
     }
   };
 
-  const handleShowModal = (sede = null) => {
-    setEditingSede(sede);
-    setNewSede(sede || { nombreSede: "", informacion: "", estado: 1 });
+  const handleShowModal = (tipoTraslado = null) => {
+    setEditingTipoTraslado(tipoTraslado);
+    setNewTipoTraslado(tipoTraslado || { tipo: "", estado: 1 });
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingSede(null);
+    setEditingTipoTraslado(null);
   };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
 
-    const filtered = sedes.filter((sede) =>
-      sede.nombreSede.toLowerCase().includes(value)
+    const filtered = tipoTraslados.filter((tipoTraslado) =>
+      tipoTraslado.tipo.toLowerCase().includes(value)
     );
 
-    setFilteredSedes(filtered);
+    setFilteredTipoTraslados(filtered);
     setCurrentPage(1);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewSede({ ...newSede, [name]: value });
+    setNewTipoTraslado({ ...newTipoTraslado, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
-    if (!regex.test(newSede.nombreSede)) {
-      setAlertMessage("El nombre de la sede solo debe contener letras y espacios.");
+    if (!regex.test(newTipoTraslado.tipo)) {
+      setAlertMessage("El tipo de traslado solo debe contener letras y espacios.");
       setShowAlert(true);
       return;
     }
 
     try {
-      if (editingSede) {
-        await axios.put(`http://localhost:5000/sedes/${editingSede.idSede}`, newSede);
-        setAlertMessage("Sede actualizada con éxito");
+      if (editingTipoTraslado) {
+        await axios.put(
+          `http://localhost:5000/tipoTraslados/${editingTipoTraslado.idTipoTraslado}`,
+          newTipoTraslado
+        );
+        setAlertMessage("Tipo de traslado actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/sedes", newSede);
-        setAlertMessage("Sede creada con éxito");
+        await axios.post("http://localhost:5000/tipoTraslados", newTipoTraslado);
+        setAlertMessage("Tipo de traslado creado con éxito");
       }
-      fetchSedes();
+      fetchTipoTraslados();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting sede:", error);
+      console.error("Error submitting tipo traslado:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/sedes/${id}`, { estado: nuevoEstado });
-      fetchSedes();
+      await axios.put(`http://localhost:5000/tipoTraslados/${id}`, { estado: nuevoEstado });
+      fetchTipoTraslados();
       setAlertMessage(
-        `Sede ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+        `Tipo de traslado ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
       );
       setShowAlert(true);
     } catch (error) {
@@ -130,9 +132,12 @@ function Sedes() {
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentSedes = filteredSedes.slice(indexOfFirstRow, indexOfLastRow);
+  const currentTipoTraslados = filteredTipoTraslados.slice(
+    indexOfFirstRow,
+    indexOfLastRow
+  );
 
-  const totalPages = Math.ceil(filteredSedes.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredTipoTraslados.length / rowsPerPage);
 
   const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
@@ -197,7 +202,7 @@ function Sedes() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Sedes
+            Gestión de Tipos de Traslado
           </h3>
         </div>
       </div>
@@ -213,7 +218,7 @@ function Sedes() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar sede por nombre..."
+            placeholder="Buscar tipo de traslado..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -232,7 +237,7 @@ function Sedes() {
             }}
             onClick={() => handleShowModal()}
           >
-            Agregar Sede
+            Agregar Tipo de Traslado
           </Button>
           <Button
             style={{
@@ -244,9 +249,9 @@ function Sedes() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchActiveSedes}
+            onClick={fetchActiveTipoTraslados}
           >
-            Activas
+            Activos
           </Button>
           <Button
             style={{
@@ -257,9 +262,9 @@ function Sedes() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchInactiveSedes}
+            onClick={fetchInactiveTipoTraslados}
           >
-            Inactivas
+            Inactivos
           </Button>
         </div>
 
@@ -290,20 +295,18 @@ function Sedes() {
           >
             <tr>
               <th style={{ textAlign: "center" }}>ID</th>
-              <th style={{ textAlign: "center" }}>Sede</th>
-              <th style={{ textAlign: "center" }}>Información</th>
+              <th style={{ textAlign: "center" }}>Tipo</th>
               <th style={{ textAlign: "center" }}>Estado</th>
               <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {currentSedes.map((sede) => (
-              <tr key={sede.idSede}>
-                <td style={{ textAlign: "center" }}>{sede.idSede}</td>
-                <td style={{ textAlign: "center" }}>{sede.nombreSede}</td>
-                <td style={{ textAlign: "center" }}>{sede.informacion}</td>
+            {currentTipoTraslados.map((tipoTraslado) => (
+              <tr key={tipoTraslado.idTipoTraslado}>
+                <td style={{ textAlign: "center" }}>{tipoTraslado.idTipoTraslado}</td>
+                <td style={{ textAlign: "center" }}>{tipoTraslado.tipo}</td>
                 <td style={{ textAlign: "center" }}>
-                  {sede.estado === 1 ? "Activo" : "Inactivo"}
+                  {tipoTraslado.estado === 1 ? "Activo" : "Inactivo"}
                 </td>
                 <td style={{ textAlign: "center" }}>
                   <FaPencilAlt
@@ -314,9 +317,9 @@ function Sedes() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(sede)}
+                    onClick={() => handleShowModal(tipoTraslado)}
                   />
-                  {sede.estado === 1 ? (
+                  {tipoTraslado.estado === 1 ? (
                     <FaToggleOn
                       style={{
                         color: "#30c10c",
@@ -325,7 +328,7 @@ function Sedes() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                      onClick={() => toggleEstado(tipoTraslado.idTipoTraslado, tipoTraslado.estado)}
                     />
                   ) : (
                     <FaToggleOff
@@ -336,7 +339,7 @@ function Sedes() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                      onClick={() => toggleEstado(tipoTraslado.idTipoTraslado, tipoTraslado.estado)}
                     />
                   )}
                 </td>
@@ -353,29 +356,22 @@ function Sedes() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingSede ? "Editar Sede" : "Agregar Sede"}
+              {editingTipoTraslado
+                ? "Editar Tipo de Traslado"
+                : "Agregar Tipo de Traslado"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="nombreSede">
-                <Form.Label>Nombre Sede</Form.Label>
+              <Form.Group controlId="tipo">
+                <Form.Label>Tipo</Form.Label>
                 <Form.Control
                   type="text"
-                  name="nombreSede"
-                  value={newSede.nombreSede}
+                  name="tipo"
+                  value={newTipoTraslado.tipo}
                   onChange={handleChange}
+                  placeholder="Ingrese tipo de traslado"
                   required
-                />
-              </Form.Group>
-              <Form.Group controlId="informacion">
-                <Form.Label>Información</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  name="informacion"
-                  value={newSede.informacion}
-                  onChange={handleChange}
                 />
               </Form.Group>
               <Form.Group controlId="estado">
@@ -383,7 +379,7 @@ function Sedes() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newSede.estado}
+                  value={newTipoTraslado.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -398,10 +394,11 @@ function Sedes() {
                   width: "100%",
                   fontWeight: "bold",
                   color: "#fff",
+                  marginTop: "10px",
                 }}
                 type="submit"
               >
-                {editingSede ? "Actualizar" : "Crear"}
+                {editingTipoTraslado ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -411,4 +408,4 @@ function Sedes() {
   );
 }
 
-export default Sedes;
+export default TipoTraslado;

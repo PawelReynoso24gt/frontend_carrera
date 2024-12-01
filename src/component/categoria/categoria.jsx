@@ -12,15 +12,14 @@ import {
 } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
-function Sedes() {
-  const [sedes, setSedes] = useState([]);
-  const [filteredSedes, setFilteredSedes] = useState([]);
+function Categorias() {
+  const [categorias, setCategorias] = useState([]);
+  const [filteredCategorias, setFilteredCategorias] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingSede, setEditingSede] = useState(null);
-  const [newSede, setNewSede] = useState({
-    nombreSede: "",
-    informacion: "",
+  const [editingCategoria, setEditingCategoria] = useState(null);
+  const [newCategoria, setNewCategoria] = useState({
+    nombreCategoria: "",
     estado: 1,
   });
   const [showAlert, setShowAlert] = useState(false);
@@ -29,98 +28,111 @@ function Sedes() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchSedes();
+    fetchCategorias();
   }, []);
 
-  const fetchSedes = async () => {
+  const fetchCategorias = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes");
-      setSedes(response.data);
-      setFilteredSedes(response.data);
+      const response = await axios.get("http://localhost:5000/categorias");
+      setCategorias(response.data);
+      setFilteredCategorias(response.data);
     } catch (error) {
-      console.error("Error fetching sedes:", error);
+      console.error("Error fetching categorias:", error);
     }
   };
 
-  const fetchActiveSedes = async () => {
+  const fetchActiveCategorias = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes/activas");
-      setFilteredSedes(response.data);
+      const response = await axios.get(
+        "http://localhost:5000/categorias/activas"
+      );
+      setCategorias(response.data);
+      setFilteredCategorias(response.data);
     } catch (error) {
-      console.error("Error fetching active sedes:", error);
+      console.error("Error fetching active categorias:", error);
     }
   };
 
-  const fetchInactiveSedes = async () => {
+  const fetchInactiveCategorias = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes/inactivas");
-      setFilteredSedes(response.data);
+      const response = await axios.get(
+        "http://localhost:5000/categorias/inactivas"
+      );
+      setCategorias(response.data);
+      setFilteredCategorias(response.data);
     } catch (error) {
-      console.error("Error fetching inactive sedes:", error);
+      console.error("Error fetching inactive categorias:", error);
     }
-  };
-
-  const handleShowModal = (sede = null) => {
-    setEditingSede(sede);
-    setNewSede(sede || { nombreSede: "", informacion: "", estado: 1 });
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingSede(null);
   };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
 
-    const filtered = sedes.filter((sede) =>
-      sede.nombreSede.toLowerCase().includes(value)
+    const filtered = categorias.filter((categoria) =>
+      categoria.nombreCategoria.toLowerCase().includes(value)
     );
 
-    setFilteredSedes(filtered);
+    setFilteredCategorias(filtered);
     setCurrentPage(1);
+  };
+
+  const handleShowModal = (categoria = null) => {
+    setEditingCategoria(categoria);
+    setNewCategoria(categoria || { nombreCategoria: "", estado: 1 });
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingCategoria(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewSede({ ...newSede, [name]: value });
+    setNewCategoria({ ...newCategoria, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
-    if (!regex.test(newSede.nombreSede)) {
-      setAlertMessage("El nombre de la sede solo debe contener letras y espacios.");
+    if (!regex.test(newCategoria.nombreCategoria)) {
+      setAlertMessage(
+        "El nombre de la categoría solo debe contener letras y espacios."
+      );
       setShowAlert(true);
       return;
     }
 
     try {
-      if (editingSede) {
-        await axios.put(`http://localhost:5000/sedes/${editingSede.idSede}`, newSede);
-        setAlertMessage("Sede actualizada con éxito");
+      if (editingCategoria) {
+        await axios.put(
+          `http://localhost:5000/categorias/${editingCategoria.idCategoria}`,
+          newCategoria
+        );
+        setAlertMessage("Categoría actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/sedes", newSede);
-        setAlertMessage("Sede creada con éxito");
+        await axios.post("http://localhost:5000/categorias", newCategoria);
+        setAlertMessage("Categoría creada con éxito");
       }
-      fetchSedes();
+      fetchCategorias();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting sede:", error);
+      console.error("Error submitting categoria:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/sedes/${id}`, { estado: nuevoEstado });
-      fetchSedes();
+      await axios.put(`http://localhost:5000/categorias/${id}`, {
+        estado: nuevoEstado,
+      });
+      fetchCategorias();
       setAlertMessage(
-        `Sede ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+        `Categoría ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
       );
       setShowAlert(true);
     } catch (error) {
@@ -130,9 +142,12 @@ function Sedes() {
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentSedes = filteredSedes.slice(indexOfFirstRow, indexOfLastRow);
+  const currentCategorias = filteredCategorias.slice(
+    indexOfFirstRow,
+    indexOfLastRow
+  );
 
-  const totalPages = Math.ceil(filteredSedes.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredCategorias.length / rowsPerPage);
 
   const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
@@ -197,7 +212,7 @@ function Sedes() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Sedes
+            Gestión de Categorías
           </h3>
         </div>
       </div>
@@ -213,7 +228,7 @@ function Sedes() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar sede por nombre..."
+            placeholder="Buscar por nombre..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -232,7 +247,7 @@ function Sedes() {
             }}
             onClick={() => handleShowModal()}
           >
-            Agregar Sede
+            Agregar Categoría
           </Button>
           <Button
             style={{
@@ -244,7 +259,7 @@ function Sedes() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchActiveSedes}
+            onClick={fetchActiveCategorias}
           >
             Activas
           </Button>
@@ -257,7 +272,7 @@ function Sedes() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchInactiveSedes}
+            onClick={fetchInactiveCategorias}
           >
             Inactivas
           </Button>
@@ -290,20 +305,18 @@ function Sedes() {
           >
             <tr>
               <th style={{ textAlign: "center" }}>ID</th>
-              <th style={{ textAlign: "center" }}>Sede</th>
-              <th style={{ textAlign: "center" }}>Información</th>
+              <th style={{ textAlign: "center" }}>Categoría</th>
               <th style={{ textAlign: "center" }}>Estado</th>
               <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {currentSedes.map((sede) => (
-              <tr key={sede.idSede}>
-                <td style={{ textAlign: "center" }}>{sede.idSede}</td>
-                <td style={{ textAlign: "center" }}>{sede.nombreSede}</td>
-                <td style={{ textAlign: "center" }}>{sede.informacion}</td>
+            {currentCategorias.map((categoria) => (
+              <tr key={categoria.idCategoria}>
+                <td style={{ textAlign: "center" }}>{categoria.idCategoria}</td>
+                <td style={{ textAlign: "center" }}>{categoria.nombreCategoria}</td>
                 <td style={{ textAlign: "center" }}>
-                  {sede.estado === 1 ? "Activo" : "Inactivo"}
+                  {categoria.estado === 1 ? "Activo" : "Inactivo"}
                 </td>
                 <td style={{ textAlign: "center" }}>
                   <FaPencilAlt
@@ -314,9 +327,9 @@ function Sedes() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(sede)}
+                    onClick={() => handleShowModal(categoria)}
                   />
-                  {sede.estado === 1 ? (
+                  {categoria.estado === 1 ? (
                     <FaToggleOn
                       style={{
                         color: "#30c10c",
@@ -325,7 +338,7 @@ function Sedes() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                      onClick={() => toggleEstado(categoria.idCategoria, categoria.estado)}
                     />
                   ) : (
                     <FaToggleOff
@@ -336,7 +349,7 @@ function Sedes() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                      onClick={() => toggleEstado(categoria.idCategoria, categoria.estado)}
                     />
                   )}
                 </td>
@@ -353,29 +366,19 @@ function Sedes() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingSede ? "Editar Sede" : "Agregar Sede"}
+              {editingCategoria ? "Editar Categoría" : "Agregar Categoría"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="nombreSede">
-                <Form.Label>Nombre Sede</Form.Label>
+              <Form.Group controlId="nombreCategoria">
+                <Form.Label>Nombre Categoría</Form.Label>
                 <Form.Control
                   type="text"
-                  name="nombreSede"
-                  value={newSede.nombreSede}
+                  name="nombreCategoria"
+                  value={newCategoria.nombreCategoria}
                   onChange={handleChange}
                   required
-                />
-              </Form.Group>
-              <Form.Group controlId="informacion">
-                <Form.Label>Información</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  name="informacion"
-                  value={newSede.informacion}
-                  onChange={handleChange}
                 />
               </Form.Group>
               <Form.Group controlId="estado">
@@ -383,7 +386,7 @@ function Sedes() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newSede.estado}
+                  value={newCategoria.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -401,7 +404,7 @@ function Sedes() {
                 }}
                 type="submit"
               >
-                {editingSede ? "Actualizar" : "Crear"}
+                {editingCategoria ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -411,4 +414,4 @@ function Sedes() {
   );
 }
 
-export default Sedes;
+export default Categorias;
