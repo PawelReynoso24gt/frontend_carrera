@@ -120,6 +120,7 @@ function Menu({ toggleMenu, menu }) {
               {[
         { link: "sedes", title: "Gestión Sedes" },
         { link: "publicaciones", title: "Gestión Publicaciones" },
+        { link: "asistencia_eventos", title: "Asistencias a Eventos" },
         { link: "roles", title: "Gestión Roles" },
         { link: "Departamentos", title: "Gestión Departamentos" },
         { link: "comisiones", title: "Gestión Comisiones" },

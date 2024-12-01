@@ -62,6 +62,7 @@ import Actividades from "./pages/actividades/actividades";
 import Publicaciones from "./pages/publicaciones/publicaciones";
 import Materiales from "./pages/materiales/materiales";
 import Administradores from "./pages/administradores/administradores";
+import AsistenciaEventos from "./pages/asistencia_eventos/asistencia_eventos";
 
 const router = createBrowserRouter([
   {
@@ -146,6 +147,10 @@ const router = createBrowserRouter([
       {
         path: "/departamentos",
         element: <Departamentos />,
+      },
+      {
+        path: "/asistencia_eventos",
+        element: <AsistenciaEventos />,
       },
       {
         path: "/tipoPago",
