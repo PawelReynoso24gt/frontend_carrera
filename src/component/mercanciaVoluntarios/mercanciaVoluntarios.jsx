@@ -17,13 +17,9 @@ function mercanciaVoluntariosComponent() {
 
   const fetchProductosConDetalle = async () => {
     try {
-      // Obtener productos
       const responseProductos = await axios.get("http://localhost:5000/productos");
-
-      // Obtener detalle_stands
       const responseDetalles = await axios.get("http://localhost:5000/detalle_stands");
 
-      // Mapeamos los productos para combinar datos del detalle_stands
       const productosCombinados = responseProductos.data.map((producto) => {
         const detalle = responseDetalles.data.find(
           (detalle) => detalle.idProducto === producto.idProducto
@@ -38,7 +34,7 @@ function mercanciaVoluntariosComponent() {
       });
 
       setProductos(productosCombinados);
-      setProductosFiltrados(productosCombinados); // Inicialmente, todos los productos
+      setProductosFiltrados(productosCombinados);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching products or details:", err);
@@ -51,7 +47,6 @@ function mercanciaVoluntariosComponent() {
     const valorBusqueda = e.target.value.toLowerCase();
     setBusqueda(valorBusqueda);
 
-    // Filtrar productos basado en el filtro seleccionado
     const productosFiltrados = productos.filter((producto) => {
       if (filtro === "nombreProducto") {
         return producto.nombreProducto.toLowerCase().includes(valorBusqueda);
@@ -69,9 +64,9 @@ function mercanciaVoluntariosComponent() {
   };
 
   const handleFiltroChange = (e) => {
-    setFiltro(e.target.value); // Actualizar el filtro seleccionado
-    setBusqueda(""); // Limpiar la búsqueda al cambiar de filtro
-    setProductosFiltrados(productos); // Restablecer los productos filtrados
+    setFiltro(e.target.value);
+    setBusqueda("");
+    setProductosFiltrados(productos);
   };
 
   if (loading) {
@@ -92,25 +87,42 @@ function mercanciaVoluntariosComponent() {
   }
 
   return (
-    <div className="container mt-4">
+    <div
+  className="container mt-4"
+  style={{
+    marginLeft: "350px", // Margen izquierdo para respetar el sidebar
+    marginRight: "20px", // Espacio en el lado derecho
+    padding: "20px",
+    borderRadius: "8px",
+    backgroundColor: "#f8f9fa",
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+    maxWidth: "calc(100% - 270px)", // Ajusta el ancho dinámicamente basado en el sidebar
+    boxSizing: "border-box", // Asegura que el padding no rompa el diseño
+    overflowX: "hidden", // Evita el scroll horizontal
+  }}
+>
       <h2 className="text-center text-primary font-weight-bold">
         Mercancía para Voluntarios
       </h2>
       {/* Buscador con filtro */}
       <div className="search-container">
-        <select className="filter-dropdown" value={filtro} onChange={handleFiltroChange}>
-          <option value="nombreProducto">Nombre</option>
-          <option value="talla">Talla</option>
-          <option value="categoria">Categoría</option>
-          <option value="stock">Stock</option>
-        </select>
-        <input
-          type="text"
-          placeholder={`Buscar por ${filtro === "nombreProducto" ? "nombre" : filtro}`}
-          value={busqueda}
-          onChange={handleBusqueda}
-          className="search-input"
-        />
+    <select
+      className="filter-dropdown"
+      value={filtro}
+      onChange={handleFiltroChange}
+    >
+      <option value="nombreProducto">Nombre</option>
+      <option value="talla">Talla</option>
+      <option value="categoria">Categoría</option>
+      <option value="stock">Stock</option>
+    </select>
+    <input
+      type="text"
+      placeholder={`Buscar por ${filtro === "nombreProducto" ? "nombre" : filtro}`}
+      value={busqueda}
+      onChange={handleBusqueda}
+      className="search-input"
+    />
       </div>
       <div className="product-grid">
         {productosFiltrados.length > 0 ? (
