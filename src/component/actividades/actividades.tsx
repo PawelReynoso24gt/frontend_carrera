@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Actividades() {
   const [actividades, setActividades] = useState([]);
@@ -17,6 +18,9 @@ function Actividades() {
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showValidationError, setShowValidationError] = useState(false);
 
   useEffect(() => {
     fetchActividades();
@@ -63,18 +67,28 @@ function Actividades() {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
+
     const filtered = actividades.filter((actividad) =>
-      actividad.actividad.toLowerCase().includes(value)
+      actividad.actividad.toLowerCase().includes(value) ||
+      actividad.descripcion.toLowerCase().includes(value)
     );
+
     setFilteredActividades(filtered);
+    setCurrentPage(1);
   };
 
   const handleShowModal = (actividad = null) => {
     setEditingActividad(actividad);
     setNewActividad(
-      actividad || { actividad: "", descripcion: "", estado: 1, idComision: "" }
+      actividad || {
+        actividad: "",
+        descripcion: "",
+        estado: 1,
+        idComision: "",
+      }
     );
     setShowModal(true);
+    setShowValidationError(false);
   };
 
   const handleCloseModal = () => {
@@ -84,20 +98,36 @@ function Actividades() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "actividad") {
+      const regexActividad = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+      if (!regexActividad.test(value)) {
+        setShowValidationError(true);
+      } else {
+        setShowValidationError(false);
+      }
+    }
+
     setNewActividad({ ...newActividad, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const data = {
+        ...newActividad,
+        estado: parseInt(newActividad.estado, 10),
+        idComision: parseInt(newActividad.idComision, 10),
+      };
+
       if (editingActividad) {
         await axios.put(
           `http://localhost:5000/actividades/update/${editingActividad.idActividad}`,
-          newActividad
+          data
         );
         setAlertMessage("Actividad actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/actividades/create", newActividad);
+        await axios.post("http://localhost:5000/actividades/create", data);
         setAlertMessage("Actividad creada con éxito");
       }
       fetchActividades();
@@ -113,18 +143,86 @@ function Actividades() {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
       await axios.put(`http://localhost:5000/actividades/update/${id}`, { estado: nuevoEstado });
       fetchActividades();
-      setAlertMessage(`Actividad ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
+      setAlertMessage(
+        `Actividad ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
       console.error("Error toggling estado:", error);
     }
   };
 
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentActividades = filteredActividades.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(filteredActividades.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>Gestión de Actividades</h3>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Gestión de Actividades
+          </h3>
         </div>
       </div>
 
@@ -137,56 +235,57 @@ function Actividades() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        {/* Barra de Búsqueda */}
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar actividad por nombre..."
+            placeholder="Buscar actividad por nombre o descripción..."
             value={searchTerm}
             onChange={handleSearch}
           />
         </InputGroup>
 
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Actividad
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveActividades}
-        >
-          Activas
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveActividades}
-        >
-          Inactivas
-        </Button>
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Actividad
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveActividades}
+          >
+            Activas
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveActividades}
+          >
+            Inactivas
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -210,7 +309,7 @@ function Actividades() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Actividad</th>
@@ -221,46 +320,57 @@ function Actividades() {
             </tr>
           </thead>
           <tbody>
-            {filteredActividades.map((actividad) => (
+            {currentActividades.map((actividad) => (
               <tr key={actividad.idActividad}>
                 <td>{actividad.idActividad}</td>
                 <td>{actividad.actividad}</td>
                 <td>{actividad.descripcion}</td>
-                <td>{actividad.comision?.comision || "No asignada"}</td>
+                <td>
+                  {comisiones.find((comision) => comision.idComision === actividad.idComision)?.comision ||
+                    "Sin Comisión"}
+                </td>
                 <td>{actividad.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(actividad)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: actividad.estado ? "#6c757d" : "#28a745",
-                      borderColor: actividad.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleEstado(actividad.idActividad, actividad.estado)}
-                  >
-                    {actividad.estado === 1 ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {actividad.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(actividad.idActividad, actividad.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(actividad.idActividad, actividad.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
+
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
@@ -274,9 +384,7 @@ function Actividades() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="actividad">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Actividad
-                </Form.Label>
+                <Form.Label>Actividad</Form.Label>
                 <Form.Control
                   type="text"
                   name="actividad"
@@ -284,11 +392,14 @@ function Actividades() {
                   onChange={handleChange}
                   required
                 />
+                {showValidationError && (
+                  <Alert variant="danger" style={{ marginTop: "10px", fontWeight: "bold" }}>
+                    El nombre de la actividad solo puede contener letras y espacios.
+                  </Alert>
+                )}
               </Form.Group>
               <Form.Group controlId="descripcion">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Descripción
-                </Form.Label>
+                <Form.Label>Descripción</Form.Label>
                 <Form.Control
                   type="text"
                   name="descripcion"
@@ -298,9 +409,7 @@ function Actividades() {
                 />
               </Form.Group>
               <Form.Group controlId="idComision">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Comisión
-                </Form.Label>
+                <Form.Label>Comisión</Form.Label>
                 <Form.Control
                   as="select"
                   name="idComision"
@@ -308,12 +417,24 @@ function Actividades() {
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccionar comisión</option>
+                  <option value="">Seleccionar Comisión</option>
                   {comisiones.map((comision) => (
                     <option key={comision.idComision} value={comision.idComision}>
                       {comision.comision}
                     </option>
                   ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="estado">
+                <Form.Label>Estado</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="estado"
+                  value={newActividad.estado}
+                  onChange={handleChange}
+                >
+                  <option value={1}>Activo</option>
+                  <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
               <Button

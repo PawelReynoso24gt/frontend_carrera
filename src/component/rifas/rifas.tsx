@@ -1,49 +1,91 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import axios from "axios";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Rifas() {
   const [rifas, setRifas] = useState([]);
+  const [sedes, setSedes] = useState([]);
+  const [filteredRifas, setFilteredRifas] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingRifa, setEditingRifa] = useState(null);
-  const [newRifa, setNewRifa] = useState({ nombreRifa: '', descripcion: '', idSede: '', estado: 1 });
+  const [newRifa, setNewRifa] = useState({
+    nombreRifa: "",
+    descripcion: "",
+    idSede: "",
+    estado: 1,
+  });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchRifas();
+    fetchSedes();
   }, []);
 
   const fetchRifas = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/rifas');
+      const response = await axios.get("http://localhost:5000/rifas");
       setRifas(response.data);
+      setFilteredRifas(response.data);
     } catch (error) {
-      console.error('Error fetching rifas:', error);
+      console.error("Error fetching rifas:", error);
+    }
+  };
+
+  const fetchSedes = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/sedes");
+      setSedes(response.data);
+    } catch (error) {
+      console.error("Error fetching sedes:", error);
     }
   };
 
   const fetchActiveRifas = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/rifas/activos');
-      setRifas(response.data);
+      const response = await axios.get("http://localhost:5000/rifas/activos");
+      setFilteredRifas(response.data);
     } catch (error) {
-      console.error('Error fetching active rifas:', error);
+      console.error("Error fetching active rifas:", error);
     }
   };
 
   const fetchInactiveRifas = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/rifas/inactivos');
-      setRifas(response.data);
+      const response = await axios.get("http://localhost:5000/rifas/inactivos");
+      setFilteredRifas(response.data);
     } catch (error) {
-      console.error('Error fetching inactive rifas:', error);
+      console.error("Error fetching inactive rifas:", error);
     }
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = rifas.filter((rifa) =>
+      rifa.nombreRifa.toLowerCase().includes(value) ||
+      rifa.descripcion.toLowerCase().includes(value)
+    );
+
+    setFilteredRifas(filtered);
+    setCurrentPage(1);
   };
 
   const handleShowModal = (rifa = null) => {
     setEditingRifa(rifa);
-    setNewRifa(rifa || { nombreRifa: '', descripcion: '', idSede: '', estado: 1 });
+    setNewRifa(
+      rifa || {
+        nombreRifa: "",
+        descripcion: "",
+        idSede: "",
+        estado: 1,
+      }
+    );
     setShowModal(true);
   };
 
@@ -60,18 +102,24 @@ function Rifas() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const data = {
+        ...newRifa,
+        estado: parseInt(newRifa.estado, 10),
+        idSede: parseInt(newRifa.idSede, 10),
+      };
+
       if (editingRifa) {
-        await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, newRifa);
-        setAlertMessage('Rifa actualizada con éxito');
+        await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, data);
+        setAlertMessage("Rifa actualizada con éxito");
       } else {
-        await axios.post('http://localhost:5000/rifas', newRifa);
-        setAlertMessage('Rifa creada con éxito');
+        await axios.post("http://localhost:5000/rifas", data);
+        setAlertMessage("Rifa creada con éxito");
       }
       fetchRifas();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting rifa:', error);
+      console.error("Error submitting rifa:", error);
     }
   };
 
@@ -80,12 +128,78 @@ function Rifas() {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
       await axios.put(`http://localhost:5000/rifas/${id}`, { estado: nuevoEstado });
       fetchRifas();
-      setAlertMessage(`Rifa ${nuevoEstado === 1 ? 'activada' : 'inactivada'} con éxito`);
+      setAlertMessage(
+        `Rifa ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
-      console.error('Error toggling estado:', error);
+      console.error("Error toggling estado:", error);
     }
   };
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRifas = filteredRifas.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(filteredRifas.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
 
   return (
     <>
@@ -106,47 +220,57 @@ function Rifas() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Rifa
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveRifas}
-        >
-          Activas
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveRifas}
-        >
-          Inactivas
-        </Button>
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar rifa por nombre o descripción..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Rifa
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveRifas}
+          >
+            Activas
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveRifas}
+          >
+            Inactivas
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -170,7 +294,7 @@ function Rifas() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Nombre Rifa</th>
@@ -181,46 +305,58 @@ function Rifas() {
             </tr>
           </thead>
           <tbody>
-            {rifas.map((rifa) => (
+            {currentRifas.map((rifa) => (
               <tr key={rifa.idRifa}>
                 <td>{rifa.idRifa}</td>
                 <td>{rifa.nombreRifa}</td>
                 <td>{rifa.descripcion}</td>
-                <td>{rifa.sede ? rifa.sede.nombreSede : 'Sin sede'}</td>
-                <td>{rifa.estado ? 'Activo' : 'Inactivo'}</td>
                 <td>
-                  <Button
+                  {
+                    sedes.find((sede) => sede.idSede === rifa.idSede)?.nombreSede || "Sin sede"
+                  }
+                </td>
+                <td>{rifa.estado === 1 ? "Activo" : "Inactivo"}</td>
+                <td>
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(rifa)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: rifa.estado ? "#6c757d" : "#28a745",
-                      borderColor: rifa.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
-                  >
-                    {rifa.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {rifa.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
+
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
@@ -234,9 +370,7 @@ function Rifas() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombreRifa">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Nombre de la Rifa
-                </Form.Label>
+                <Form.Label>Nombre de la Rifa</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombreRifa"
@@ -246,9 +380,7 @@ function Rifas() {
                 />
               </Form.Group>
               <Form.Group controlId="descripcion">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Descripción
-                </Form.Label>
+                <Form.Label>Descripción</Form.Label>
                 <Form.Control
                   type="text"
                   name="descripcion"
@@ -258,21 +390,24 @@ function Rifas() {
                 />
               </Form.Group>
               <Form.Group controlId="idSede">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Sede
-                </Form.Label>
+                <Form.Label>Sede</Form.Label>
                 <Form.Control
-                  type="number"
+                  as="select"
                   name="idSede"
                   value={newRifa.idSede}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Seleccionar Sede</option>
+                  {sedes.map((sede) => (
+                    <option key={sede.idSede} value={sede.idSede}>
+                      {sede.nombreSede}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
+                <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
