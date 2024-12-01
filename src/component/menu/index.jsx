@@ -117,41 +117,57 @@ function Menu({ toggleMenu, menu }) {
                   </span>
                 </Link>
               </li>
-              {[
-        { link: "sedes", title: "Gestión Sedes" },
-        { link: "publicaciones", title: "Gestión Publicaciones" },
-        { link: "roles", title: "Gestión Roles" },
-        { link: "Departamentos", title: "Gestión Departamentos" },
-        { link: "comisiones", title: "Gestión Comisiones" },
-        { link: "actividades", title: "Gestión Actividades" },
-        { link: "TipoPago", title: "Gestión Tipo Pago" },
-        { link: "tipoStands", title: "Gestión Tipo Stands" },
-        { link: "horarios", title: "Gestión Horarios" },
-        { link: "detallehorarios", title: "Gestión Asignacion de horarios" },
-        { link: "fotosedes", title: "Gestión Ingreso de fotos" },
-        { link: "tipo_publicos", title: "Gestión Tipo Público" },
-        { link: "categoria_bitacoras", title: "Gestión Categoría Bitácora" },
-        { link: "rifas", title: "Gestión Rifas" },
-        { link: "productos", title: "Gestión Productos" },
-        { link: "personas", title: "Gestión Personas" },
-        { link: "Stands", title: "Gestión Stands" },
-        { link: "Municipios", title: "Gestión Municipios" },
-        { link: "talonarios", title: "Gestión Talonarios" },
-        { link: "voluntarios", title: "Gestión Voluntarios" },
-        { link: "Materiales", title: "Gestión Materiales" },
-        { link: "Administradores", title: "Gestión Administradores" },
-      ].map((item) => (
-        <li
-          key={item.link}
-          className={location.pathname === `/${item.link}` ? "active" : ""}
-        >
-            <Link to={`/${item.link}`}>
-            <span className="menu-bar__text">
-              <span className="menu-bar__name">{item.title}</span>
-            </span>
-          </Link>
-          </li>
-         ))}
+
+              <Dropdown
+                name="CRUD"
+                dropdown={dropdown}
+                setDropdown={handleDropdown}
+                img={
+                  <svg
+                    className="crancy-svg-icon"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M2 8L22 8M8 8V22M22 6V18C22 20.2091 20.2091 22 18 22H6C3.79086 22 2 20.2091 2 18L2 6C2 3.79086 3.79086 2 6 2L18 2C20.2091 2 22 3.79086 22 6Z"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                }
+                options={[
+                  { link: "sedes", title: "Gestión Sedes" },
+                  { link: "publicaciones", title: "Gestión Publicaciones" },
+                  { link: "roles", title: "Gestión Roles" },
+                  { link: "Departamentos", title: "Gestión Departamentos" },
+                  { link: "comisiones", title: "Gestión Comisiones" },
+                  { link: "actividades", title: "Gestión Actividades" },
+                  { link: "TipoPago", title: "Gestión Tipo Pago" },
+                  { link: "tipoStands", title: "Gestión Tipo Stands" },
+                  { link: "horarios", title: "Gestión Horarios" },
+                  { link: "detallehorarios", title: "Gestión Asignacion de horarios" },
+                  { link: "fotosedes", title: "Gestión Ingreso de fotos" },
+                  { link: "tipo_publicos", title: "Gestión Tipo Público" },
+                  { link: "categoria_bitacoras", title: "Gestión Categoría Bitácora" },
+                  { link: "rifas", title: "Gestión Rifas" },
+                  { link: "productos", title: "Gestión Productos" },
+                  { link: "personas", title: "Gestión Personas" },
+                  { link: "Stands", title: "Gestión Stands" },
+                  { link: "Municipios", title: "Gestión Municipios" },
+                  { link: "talonarios", title: "Gestión Talonarios" },
+                  { link: "voluntarios", title: "Gestión Voluntarios" },
+                  { link: "Materiales", title: "Gestión Materiales" },
+                  { link: "Administradores", title: "Gestión Administradores" },
+                  { link: "mercanciaVoluntarios", title: "Mercancía voluntarios" },
+                ]}
+              />
+
+              
+
 
             </ul>
           </div>
