@@ -51,13 +51,12 @@ function Menu({ toggleMenu, menu }) {
           <div className="menu-bar">
             <ul id="CrancyMenu" className="menu-bar__one crancy-dashboard-menu">
               <Dropdown
-                name="Dashboards"
+                name="Estadísticas"
                 dropdown={dropdown}
                 setDropdown={handleDropdown}
                 options={[
-                  { link: "", title: "Dashboard Sells" },
-                  { link: "home-analytics", title: "Dashboard Analytics" },
-                  { link: "dashboard-sass", title: "Dashboard Sass" },
+                 
+                  { link: "dashboard-sass", title: "General" },
                 ]}
                 img={
                   <svg
