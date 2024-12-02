@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Spinner, Alert } from "react-bootstrap";
+import { Table, Alert, Spinner, Breadcrumb } from "react-bootstrap";
 import "./mercancia.css";
 
 function mercanciaVoluntariosComponent() {
@@ -105,23 +105,38 @@ function mercanciaVoluntariosComponent() {
   }
 
   return (
-    <div
-      className="container mt-4"
-      style={{
-        marginLeft: "350px",
-        marginRight: "20px",
-        padding: "20px",
-        borderRadius: "8px",
-        backgroundColor: "#f8f9fa",
-        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-        maxWidth: "calc(100% - 270px)",
-        boxSizing: "border-box",
-        overflowX: "hidden",
-      }}
-    >
-      <h2 className="text-center text-primary font-weight-bold">
-        Mercancía para Voluntarios
-      </h2>
+
+    <div className="container mt-4">
+      {/* Título y Breadcrumb */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+        .
+        </h3>
+        <Breadcrumb>
+          <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+          <Breadcrumb.Item active>Asignación de Stands</Breadcrumb.Item>
+        </Breadcrumb>
+      </div>
+
+      {/* Contenedor Principal */}
+      <div
+        style={{
+          marginLeft: "350px",
+          marginRight: "20px",
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+           maxWidth: "calc(100% - 270px)"
+        }}
+      >
+       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
+           <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
+            <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Asignación de stands
+          </h3>
+        </div>
+        </div>
       {/* Buscador con filtro */}
       <div
         className="search-container"
@@ -180,6 +195,7 @@ function mercanciaVoluntariosComponent() {
           <p className="text-center">No se encontraron productos.</p>
         )}
       </div>
+    </div>
     </div>
   );
 }

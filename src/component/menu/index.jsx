@@ -142,6 +142,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "Materiales", title: "Gestión Materiales" },
         { link: "Administradores", title: "Gestión Administradores" },
         { link: "mercanciaVoluntarios", title: "Mercancía voluntarios" },
+        { link: "asignacionStand", title: "Asignación de Stands" },
       ].map((item) => (
         <li
           key={item.link}

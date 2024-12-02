@@ -71,6 +71,7 @@ import Pedidos from "./component/pedidos/pedidos";
 import CategoriaHorarios from "./component/categoriaHorarios/categoriaHorarios";
 import Permisos from "./component/permisos/permisos";
 import MercanciaVoluntarios from "./component/mercanciaVoluntarios/mercanciaVoluntarios";
+import AsignacionStands from "./component/asignacionStand/asignacionStand";
 
 const router = createBrowserRouter([
   {
@@ -271,6 +272,10 @@ const router = createBrowserRouter([
       {
         path: "/mercanciaVoluntarios",
         element: <MercanciaVoluntarios/>,
+      },
+      {
+        path: "/asignacionStand",
+        element: <AsignacionStands/>,
       },
       {
         path: "/gallery",
