@@ -42,9 +42,9 @@ function Sidebar() {
                 />
               </svg>
             </span>
-            <span className="crancy-psidebar__title">Personal Info</span>
+            <span className="crancy-psidebar__title">Mi información</span>
           </Link>
-          <Link
+          {/*<Link
             className={`list-group-item ${
               lastPath === "payment-method" ? "active" : ""
             }`}
@@ -77,7 +77,7 @@ function Sidebar() {
               </svg>
             </span>
             <span className="crancy-psidebar__title">Payment Method</span>
-          </Link>
+          </Link>*/}
           <Link
             className={`list-group-item ${
               lastPath === "notification-setting" ? "active" : ""
@@ -110,9 +110,9 @@ function Sidebar() {
                 />
               </svg>
             </span>
-            <span className="crancy-psidebar__title">Notification Setting</span>
+            <span className="crancy-psidebar__title">Notificaciones</span>
           </Link>
-          <Link
+          {/*<Link
             className={`list-group-item ${
               lastPath === "login-activity" ? "active" : ""
             }`}
@@ -137,7 +137,7 @@ function Sidebar() {
               </svg>
             </span>
             <span className="crancy-psidebar__title">Login Activity</span>
-          </Link>
+          </Link>*/}
           <Link
             className={`list-group-item ${
               lastPath === "change-password" ? "active" : ""
@@ -162,9 +162,9 @@ function Sidebar() {
                 />
               </svg>
             </span>
-            <span className="crancy-psidebar__title">Change Password</span>
+            <span className="crancy-psidebar__title">Cambiar contraseña</span>
           </Link>
-          <Link
+          {/*<Link
             className={`list-group-item ${lastPath === "faq" ? "active" : ""}`}
             to="faq"
           >
@@ -191,7 +191,7 @@ function Sidebar() {
               </svg>
             </span>
             <span className="crancy-psidebar__title">FAQ </span>
-          </Link>
+          </Link>*/}
           <Link
             className={`list-group-item ${
               lastPath === "terms-and-conditions" ? "active" : ""
@@ -220,7 +220,7 @@ function Sidebar() {
                 />
               </svg>
             </span>
-            <span className="crancy-psidebar__title">Terms and Conditions</span>
+            <span className="crancy-psidebar__title">Terminos y condiciones</span>
           </Link>
         </div>
       </div>
