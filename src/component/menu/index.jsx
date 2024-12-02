@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 // import logo from "../../assets/img/logo-dark.png";
 import logoWhite from "../../assets/img/logo-white.png";
 import logo from "../../assets/img/LogoAYUVI_FullAzul.png";
-import logoIcon from "../../assets/img/logo-icon.png";
+import logoIcon from "../../assets/img/LogoAYUVIicon.png";
 import arrowIcon from "../../assets/img/arrow-icon.svg";
 import inboxEdit from "../../assets/img/inbox-edit.svg";
 import inboxAuthor from "../../assets/img/inbox-author.png";
@@ -25,7 +25,7 @@ function Menu({ toggleMenu, menu }) {
         <div className="logo crancy-sidebar-padding pd-right-0">
           <Link className="crancy-logo" to="/">
             {/* <!-- Logo for Default --> */}
-            <img className="crancy-logo__main" src={logo} alt="#" />
+            <img className="crancy-logo__main" src={logo} alt="#"  style={{ width: "250px", height: "auto" }} />
             <img className="crancy-logo__main--dark" src={logoWhite} alt="#" />
             {/* <!-- Logo for Dark Version --> */}
             <img className="crancy-logo__main--small" src={logoIcon} alt="#" />
@@ -142,6 +142,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "Materiales", title: "Gestión Materiales" },
         { link: "Administradores", title: "Gestión Administradores" },
         { link: "mercanciaVoluntarios", title: "Mercancía voluntarios" },
+        { link: "inventarioMventas", title: "Inventario de mercancía para ventas" },
       ].map((item) => (
         <li
           key={item.link}
