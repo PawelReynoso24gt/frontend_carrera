@@ -115,6 +115,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "mercanciaVoluntarios", title: "Mercancía voluntarios" },
         { link: "inventarioMventas", title: "Inventario de mercancía para ventas" },
         { link: "autorizacionSolicitud", title: "Autorización de solicitudes" },
+        { link: "asignacionStand", title: "Asignación de Stands" },
       ].map((item) => (
         <li
           key={item.link}

@@ -11,13 +11,14 @@ function DashboardSass() {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Dashboard Sass" link="dashboard-sass" />
+      <BreadCrumb title="Estadísticas Recaudaciones" link="dashboard-sass" />
       <div className="row">
         <InnerWrapper>
-          <ProjectInfo />
-          <ActivitySection />
+          
+          {/*<ActivitySection />*/}
         </InnerWrapper>
-        <Sidebar />
+        <ProjectInfo />
+       {/* <Sidebar />*/}
       </div>
     </Layout>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Spinner, Alert } from "react-bootstrap";
+import { Table, Alert, Spinner, Breadcrumb } from "react-bootstrap";
 import "./mercancia.css";
 
 function mercanciaVoluntariosComponent() {
@@ -9,7 +9,7 @@ function mercanciaVoluntariosComponent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busqueda, setBusqueda] = useState("");
-  const [filtro, setFiltro] = useState("nombreProducto"); // Por defecto buscará por nombre
+  const [filtro, setFiltro] = useState("nombreProducto");
 
   useEffect(() => {
     fetchProductosConDetalle();
@@ -29,7 +29,7 @@ function mercanciaVoluntariosComponent() {
           ...producto,
           idDetalleStands: detalle?.idDetalleStands || null,
           cantidad: detalle?.cantidad || 0,
-          estadoDetalle: detalle?.estado || 0, // Estado del detalle_stands
+          estadoDetalle: detalle?.estado || 0,
         };
       });
 
@@ -40,6 +40,24 @@ function mercanciaVoluntariosComponent() {
       console.error("Error fetching products or details:", err);
       setError("Error al obtener productos o detalles del Stand Virtual.");
       setLoading(false);
+    }
+  };
+
+  const updateStock = async (idDetalleStands, nuevaCantidad) => {
+    if (!idDetalleStands || isNaN(nuevaCantidad)) {
+      alert("El ID del detalle o el valor ingresado no es válido.");
+      return;
+    }
+
+    try {
+      await axios.put(`http://localhost:5000/detalle_stands/update/${idDetalleStands}`, {
+        cantidad: nuevaCantidad,
+      });
+      alert("Stock actualizado con éxito.");
+      fetchProductosConDetalle(); // Actualizar productos después del cambio
+    } catch (err) {
+      console.error("Error updating stock:", err);
+      alert("Error al actualizar el stock.");
     }
   };
 
@@ -87,42 +105,59 @@ function mercanciaVoluntariosComponent() {
   }
 
   return (
-    <div
-  className="container mt-4"
-  style={{
-    marginLeft: "350px", // Margen izquierdo para respetar el sidebar
-    marginRight: "20px", // Espacio en el lado derecho
-    padding: "20px",
-    borderRadius: "8px",
-    backgroundColor: "#f8f9fa",
-    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-    maxWidth: "calc(100% - 270px)", // Ajusta el ancho dinámicamente basado en el sidebar
-    boxSizing: "border-box", // Asegura que el padding no rompa el diseño
-    overflowX: "hidden", // Evita el scroll horizontal
-  }}
->
-      <h2 className="text-center text-primary font-weight-bold">
-        Mercancía para Voluntarios
-      </h2>
+
+    <div className="container mt-4">
+      {/* Título y Breadcrumb */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+        .
+        </h3>
+        <Breadcrumb>
+          <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+          <Breadcrumb.Item active>Asignación de Stands</Breadcrumb.Item>
+        </Breadcrumb>
+      </div>
+
+      {/* Contenedor Principal */}
+      <div
+        style={{
+          marginLeft: "350px",
+          marginRight: "20px",
+          backgroundColor: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+           maxWidth: "calc(100% - 270px)"
+        }}
+      >
+       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
+           <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
+            <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+            Asignación de stands
+          </h3>
+        </div>
+        </div>
       {/* Buscador con filtro */}
-      <div className="search-container">
-    <select
-      className="filter-dropdown"
-      value={filtro}
-      onChange={handleFiltroChange}
-    >
-      <option value="nombreProducto">Nombre</option>
-      <option value="talla">Talla</option>
-      <option value="categoria">Categoría</option>
-      <option value="stock">Stock</option>
-    </select>
-    <input
-      type="text"
-      placeholder={`Buscar por ${filtro === "nombreProducto" ? "nombre" : filtro}`}
-      value={busqueda}
-      onChange={handleBusqueda}
-      className="search-input"
-    />
+      <div
+        className="search-container"
+        style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px" }}
+      >
+        <select
+          className="filter-dropdown"
+          value={filtro}
+          onChange={handleFiltroChange}
+        >
+          <option value="nombreProducto">Nombre</option>
+          <option value="talla">Talla</option>
+          <option value="categoria">Categoría</option>
+          <option value="stock">Stock</option>
+        </select>
+        <input
+          type="text"
+          placeholder={`Buscar por ${filtro === "nombreProducto" ? "nombre" : filtro}`}
+          value={busqueda}
+          onChange={handleBusqueda}
+        />
       </div>
       <div className="product-grid">
         {productosFiltrados.length > 0 ? (
@@ -160,6 +195,7 @@ function mercanciaVoluntariosComponent() {
           <p className="text-center">No se encontraron productos.</p>
         )}
       </div>
+    </div>
     </div>
   );
 }
