@@ -75,6 +75,9 @@ function SidebarProfile() {
         </div>
         <ul className="crancy-upcard__list">
           <li>
+            <b>Usuario:</b> <span>{userData.usuario}</span>
+          </li>
+          <li>
             <b>Teléfono:</b> <span>{userData.persona.telefono}</span>
           </li>
           <li>
