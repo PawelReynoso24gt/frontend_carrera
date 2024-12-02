@@ -222,7 +222,7 @@ const router = createBrowserRouter([
         element: <DetalleHorariosComponent />,
       },
       {
-        path: "/fotosedes",
+        path: "fotosedes",
         element: <FotoSedesPage />,
       },
       {
