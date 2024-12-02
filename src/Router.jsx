@@ -62,6 +62,7 @@ import Actividades from "./pages/actividades/actividades";
 import Publicaciones from "./pages/publicaciones/publicaciones";
 import Materiales from "./pages/materiales/materiales";
 import Administradores from "./pages/administradores/administradores";
+import InventarioMventas from "./pages/inventarioMventas/intentarioMventas";
 
 const router = createBrowserRouter([
   {
@@ -226,6 +227,10 @@ const router = createBrowserRouter([
       {
         path: "/administradores",
         element: <Administradores/>,
+      },
+      {
+        path: "/inventarioMventas",
+        element: <InventarioMventas/>,
       },
       {
         path: "/gallery",
