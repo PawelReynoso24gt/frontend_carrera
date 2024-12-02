@@ -270,6 +270,14 @@ const router = createBrowserRouter([
         element: <Administradores/>,
       },
       {
+        path: "/mercanciaVoluntarios",
+        element: <MercanciaVoluntarios/>,
+      },
+      {
+        path: "/inventarioMventas",
+        element: <InventarioMventas/>,
+      },
+      {
         path: "/gallery",
         element: <Gallery />,
       },
