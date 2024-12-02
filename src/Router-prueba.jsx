@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./pages/home";
 import HomeAnalytics from "./pages/home-analytics";
 import Layout from "./component/layout";
@@ -48,7 +48,7 @@ import TipoStands from "./pages/tipoStands/tipoStands";
 import Horarios from "./pages/horarios/horarios";
 import DetalleHorariosComponent from "./component/detallehorarios/detallehorarios";
 import FotoSedesPage from "./pages/fotosedes/fotosedes";
-import TipoPublico from "./pages/tipo_publicos/tipo_publicos";
+import TipoPublico from "./pages/tipo_publicos/tipo_publicos"
 import Stands from "./pages/stands/stands";
 import Municipios from "./pages/municipios/municipios";
 import CategoriaBitacoras from "./pages/categoria_bitacoras/categoria_bitacoras";
@@ -64,15 +64,10 @@ import Materiales from "./pages/materiales/materiales";
 import Administradores from "./pages/administradores/administradores";
 
 const router = createBrowserRouter([
-  // Rutas para autenticación
   {
     path: "/",
     Component: LoginLayout,
     children: [
-      {
-        index: true,
-        element: <Navigate to="/login" />, // Redirección automática a /login
-      },
       {
         path: "/login",
         element: <Login />,
@@ -90,7 +85,7 @@ const router = createBrowserRouter([
         element: <ConfirmPassword />,
       },
       {
-        path: "/verification",
+        path: "/verificaiton",
         element: <Verification />,
       },
       {
@@ -99,9 +94,8 @@ const router = createBrowserRouter([
       },
     ],
   },
-  // Rutas principales de la aplicación
   {
-    path: "/app",
+    path: "/",
     Component: Layout,
     children: [
       {
@@ -109,160 +103,160 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "home-analytics",
+        path: "//home-analytics",
         element: <HomeAnalytics />,
       },
       {
-        path: "dashboard-sass",
+        path: "/dashboard-sass",
         element: <DashboardSass />,
       },
       {
-        path: "statistics",
+        path: "/statistics",
         element: <Statistics />,
       },
       {
-        path: "inbox",
+        path: "/inbox",
         element: <Inbox />,
       },
       {
-        path: "email",
+        path: "/email",
         element: <Email />,
       },
       {
-        path: "to-dolist",
+        path: "/to-dolist",
         element: <ToDoList />,
       },
       {
-        path: "integrations",
+        path: "/integrations",
         element: <Integrations />,
       },
       {
-        path: "pricing",
+        path: "/pricing",
         element: <Pricing />,
       },
-      // Rutas CRUD
+      //rutas crud
       {
-        path: "sedes",
+        path: "/sedes",
         element: <Sedes />,
       },
       {
-        path: "publicaciones",
+        path: "/publicaciones",
         element: <Publicaciones />,
       },
       {
-        path: "departamentos",
+        path: "/departamentos",
         element: <Departamentos />,
       },
       {
-        path: "tipoPago",
+        path: "/tipoPago",
         element: <TipoPago />,
       },
       {
-        path: "categoria_bitacoras",
+        path: "/categoria_bitacoras",
         element: <CategoriaBitacoras />,
       },
       {
-        path: "tipo_publicos",
+        path: "/tipo_publicos",
         element: <TipoPublico />,
       },
       {
-        path: "comisiones",
+        path: "/comisiones",
         element: <Comisiones />,
       },
       {
-        path: "actividades",
+        path: "/actividades",
         element: <Actividades />,
       },
       {
-        path: "rifas",
+        path: "/rifas",
         element: <Rifas />,
       },
       {
-        path: "productos",
+        path: "/productos",
         element: <Productos />,
       },
       {
-        path: "personas",
+        path: "/personas",
         element: <Personas />,
       },
       {
-        path: "stands",
+        path: "/stands",
         element: <Stands />,
       },
       {
-        path: "municipios",
+        path: "/municipios",
         element: <Municipios />,
       },
       {
-        path: "teams",
+        path: "/teams",
         element: <Teams />,
       },
       {
-        path: "roles",
+        path: "/roles",
         element: <Roles />,
       },
       {
-        path: "talonarios",
+        path: "/talonarios",
         element: <Talonarios />,
       },
       {
-        path: "voluntarios",
+        path: "/voluntarios",
         element: <Voluntarios />,
       },
       {
-        path: "tipoStands",
-        element: <TipoStands />,
+        path: "/tipoStands",
+        element: <TipoStands/>,
       },
       {
-        path: "horarios",
-        element: <Horarios />,
+        path: "/horarios",
+        element: <Horarios/>,
       },
       {
-        path: "detallehorarios",
-        element: <DetalleHorariosComponent />,
+        path: "/detallehorarios",
+        element: <DetalleHorariosComponent/>,
       },
       {
         path: "/fotosedes",
-        element: <FotoSedesPage />,
+        element: <FotoSedesPage/>,
       },
       {
-        path: "materiales",
-        element: <Materiales />,
+        path: "/materiales",
+        element: <Materiales/>,
       },
       {
-        path: "administradores",
-        element: <Administradores />,
+        path: "/administradores",
+        element: <Administradores/>,
       },
       {
-        path: "gallery",
+        path: "/gallery",
         element: <Gallery />,
       },
       {
-        path: "faq",
+        path: "/faq",
         element: <Faq />,
       },
       {
-        path: "calendar",
+        path: "/calendar",
         element: <Calendar />,
       },
       {
-        path: "transaction",
+        path: "/transaction",
         element: <Transaction />,
       },
       {
-        path: "notifications",
+        path: "/notifications",
         element: <Notifications />,
       },
       {
-        path: "user",
+        path: "/user",
         element: <Users />,
       },
       {
-        path: "history",
+        path: "/history",
         element: <History />,
       },
       {
-        path: "profile-overview",
+        path: "/profile-overview",
         Component: ProfileOverview,
         children: [
           /*{
@@ -288,7 +282,7 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "settings",
+        path: "/settings",
         Component: Settings,
         children: [
           {
@@ -304,7 +298,7 @@ const router = createBrowserRouter([
             element: <NotificationSetting />,
           },
           {
-            path: "login-activity",
+            path: "login-Activity",
             element: <LoginActivity />,
           },
           {
@@ -322,12 +316,11 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "support-ticket",
+        path: "/support-ticket",
         element: <SupportTicket />,
       },
     ],
   },
-  // Ruta para errores
   {
     path: "/error-page",
     element: <Error />,
