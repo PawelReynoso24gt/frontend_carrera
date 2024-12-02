@@ -1,22 +1,114 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SelectInput from "../form/SelectInput";
-import SingleOrder from "../cards/SingleOrder";
-import orders from "../../data/orders";
-import calendarIcon from "../../assets/img/calendar-icon.svg";
-import SelectBox from "../form/SelectBox";
-import Pikaday from "../pikaday";
+import axios from "axios";
 
 function ActivitySection({ className }) {
+  const [asistencias, setAsistencias] = useState([]);
+  const [empleados, setEmpleados] = useState([]);
+  const [personas, setPersonas] = useState([]);
+  const [empleadoDestacado, setEmpleadoDestacado] = useState(null);
   const [page, setPage] = useState(1);
   const [show, setShow] = useState(4);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [asistenciasResponse, empleadosResponse, personasResponse] =
+        await Promise.all([
+          axios.get("http://localhost:5000/asistencia_eventos"),
+          axios.get("http://localhost:5000/empleados"),
+          axios.get("http://localhost:5000/personas"),
+        ]);
+
+      const asistenciasData = asistenciasResponse.data || [];
+      const empleadosData = empleadosResponse.data || [];
+      const personasData = personasResponse.data || [];
+
+      setAsistencias(asistenciasData);
+      setEmpleados(empleadosData);
+      setPersonas(personasData);
+
+      calcularEmpleadoDestacado(asistenciasData, empleadosData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setAsistencias([]);
+      setEmpleados([]);
+      setPersonas([]);
+    }
+  };
+
+  const calcularEmpleadoDestacado = (asistenciasData, empleadosData) => {
+    const asistenciaPorEmpleado = {};
+
+    // Contar las asistencias por empleado
+    asistenciasData.forEach((asistencia) => {
+      const key = `${asistencia.idEvento}-${asistencia.idEmpleado}`;
+      asistenciaPorEmpleado[key] = (asistenciaPorEmpleado[key] || 0) + 1;
+    });
+
+    // Buscar el empleado con más asistencias
+    let maxAsistencias = 0;
+    let destacado = null;
+
+    Object.keys(asistenciaPorEmpleado).forEach((key) => {
+      const [idEvento, idEmpleado] = key.split("-");
+      const asistencias = asistenciaPorEmpleado[key];
+
+      if (asistencias > maxAsistencias) {
+        maxAsistencias = asistencias;
+        destacado = { idEvento, idEmpleado, asistencias };
+      }
+    });
+
+    if (destacado) {
+      const empleado = empleadosData.find(
+        (empleado) => empleado.idEmpleado === parseInt(destacado.idEmpleado)
+      );
+      if (empleado) {
+        const persona = personas.find(
+          (persona) => persona.idPersona === empleado.idPersona
+        );
+        destacado.nombreEmpleado = persona ? persona.nombre : "Desconocido";
+      }
+    }
+
+    setEmpleadoDestacado(destacado);
+  };
+
+  const obtenerNombreEmpleado = (idEmpleado) => {
+    const empleado = empleados.find(
+      (empleado) => empleado.idEmpleado === idEmpleado
+    );
+    if (empleado) {
+      const persona = personas.find(
+        (persona) => persona.idPersona === empleado.idPersona
+      );
+      return persona ? persona.nombre : "Desconocido";
+    }
+    return "Desconocido";
+  };
+
   return (
     <div className={`${className ? className : "crancy-table"} mg-top-30`}>
       <div className="crancy-table__heading">
-        <h3 className="crancy-table__title mb-0">Recent Activity</h3>
+        <h3 className="crancy-table__title mb-0">Asistencia de Participantes</h3>
         <SelectInput
           options={[" Last 7 Days", " Last 15 Days", "Last Month"]}
         />
       </div>
+
+      {/* Empleado destacado */}
+      {empleadoDestacado && (
+        <div className="alert alert-info" role="alert">
+          <strong>Empleado destacado:</strong> El empleado{" "}
+          <strong>{empleadoDestacado.nombreEmpleado}</strong> tiene{" "}
+          <strong>{empleadoDestacado.asistencias}</strong> asistencias 
+        </div>
+      )}
+
       <div className="tab-content" id="myTabContent">
         <div
           className="tab-pane fade show active"
@@ -24,217 +116,32 @@ function ActivitySection({ className }) {
           role="tabpanel"
           aria-labelledby="table_1"
         >
-          {/* <!-- Table Filter --> */}
-          <div className="crancy-table-filter mg-btm-20">
-            <div className="row">
-              <div className="col-lg-3 col-md-6 col-12">
-                {/* <!-- Single Filter --> */}
-                <div className="crancy-table-filter__single crancy-table-filter__location">
-                  <label htmlFor="crancy-table-filter__label">Location</label>
-                  <SelectBox
-                    datas={[
-                      "State or Province",
-                      "New York",
-                      "Sydney",
-                      "Dhaka",
-                      "Victoria",
-                    ]}
-                    img={<i className="fa-solid fa-chevron-down"></i>}
-                  />
-                </div>
-                {/* <!-- End Single Filter --> */}
-              </div>
-              <div className="col-lg-3 col-md-6 col-12">
-                {/* <!-- Single Filter --> */}
-
-                <div className="crancy-table-filter__single crancy-table-filter__amount">
-                  <label htmlFor="crancy-table-filter__label">
-                    Amount Spent
-                  </label>
-                  <SelectBox
-                    datas={["$2,000", "$4,000", "$3,000", "$4,000", "$5,000"]}
-                    img={<i className="fa-solid fa-chevron-down"></i>}
-                  />
-                </div>
-                {/* <!-- End Single Filter --> */}
-              </div>
-              <div className="col-lg-3 col-md-6 col-12">
-                {/* <!-- Single Filter --> */}
-                <div className="crancy-table-filter__single crancy-table-filter__trans-date">
-                  <label htmlFor="crancy-table-filter__label">
-                    Transaction list Date
-                  </label>
-                  <div className="crancy-table-filter__group">
-                    <Pikaday />
-                    <span className="crancy-table-filter__icon">
-                      <img src={calendarIcon} />
-                    </span>
-                  </div>
-                </div>
-                {/* <!-- End Single Filter --> */}
-              </div>
-              <div className="col-lg-3 col-md-6 col-12">
-                {/* <!-- Single Filter --> */}
-                <div className="crancy-table-filter__single crancy-table-filter__trans">
-                  <label htmlFor="crancy-table-filter__label">
-                    Type of transaction
-                  </label>
-                  <SelectBox
-                    datas={["All transaction", "Paypal", "Stripe", "Payoneer"]}
-                    img={<i className="fa-solid fa-chevron-down"></i>}
-                  />
-                </div>
-                {/* <!-- End Single Filter --> */}
-              </div>
-            </div>
-          </div>
-          {/* <!-- End Table Filter --> */}
-
-          {/* <!-- crancy Table --> */}
+          {/* Tabla de asistencias */}
           <table
             id="crancy-table__main"
             className="crancy-table__main crancy-table__main-v1"
           >
-            {/* <!-- crancy Table Head --> */}
             <thead className="crancy-table__head">
               <tr>
-                <th className="crancy-table__column-1 crancy-table__h1">
-                  Order Id
-                </th>
-                <th className="crancy-table__column-2 crancy-table__h2">
-                  Prodcuts
-                </th>
-                <th className="crancy-table__column-3 crancy-table__h3">
-                  Date
-                </th>
-                <th className="crancy-table__column-4 crancy-table__h4">
-                  Customer
-                </th>
-                <th className="crancy-table__column-5 crancy-table__h5">
-                  Amount
-                </th>
-                <th className="crancy-table__column-6 crancy-table__h6">
-                  Payment by
-                </th>
-                <th className="crancy-table__column-7 crancy-table__h7">
-                  Status
-                </th>
+                <th>ID Asistencia</th>
+                <th>Estado</th>
+                <th>ID Inscripción</th>
+                <th>Empleado</th>
+                <th>Fecha</th>
               </tr>
             </thead>
-            {/* <!-- crancy Table Body --> */}
             <tbody className="crancy-table__body">
-              {orders?.map((order, index) => {
-                const current = page * show;
-                const previous = current - show;
-                if (
-                  previous > 0 &&
-                  index + 1 > previous &&
-                  index + 1 <= current
-                ) {
-                  return <SingleOrder order={order} key={order.id} />;
-                } else if (page == 1) {
-                  return (
-                    index < page * show && (
-                      <SingleOrder order={order} key={order.id} />
-                    )
-                  );
-                }
-              })}
+              {asistencias?.map((asistencia) => (
+                <tr key={asistencia.idAsistenciaEvento}>
+                  <td>{asistencia.idAsistenciaEvento}</td>
+                  <td>{asistencia.estado === 1 ? "Activo" : "Inactivo"}</td>
+                  <td>{asistencia.idInscripcionEvento}</td>
+                  <td>{obtenerNombreEmpleado(asistencia.idEmpleado)}</td>
+                  <td>{asistencia.createdAt}</td>
+                </tr>
+              ))}
             </tbody>
-            {/* <!-- End crancy Table Body --> */}
           </table>
-          <div className="crancy-table-bottom">
-            <div id="crancy-table__main_filter" className="dataTables_filter">
-              <label>
-                Search:
-                <input
-                  type="search"
-                  className="form-control form-control-sm"
-                  placeholder=""
-                  aria-controls="crancy-table__main"
-                />
-              </label>
-            </div>
-            <div className="dataTables_length" id="crancy-table__main_length">
-              <label>
-                Show result:
-                <select
-                  name="crancy-table__main_length"
-                  aria-controls="crancy-table__main"
-                  className="form-select form-select-sm"
-                  onChange={(e) => setShow(e.target.value)}
-                  defaultValue={4}
-                >
-                  <option value="4">4</option>
-                  <option value="10">10</option>
-                  <option value="25">25</option>
-                  <option value="50">50</option>
-                </select>
-              </label>
-            </div>
-            <div
-              className="dataTables_paginate paging_simple_numbers"
-              id="crancy-table__main_paginate"
-            >
-              <ul className="pagination">
-                <li
-                  className={`paginate_button page-item previous ${
-                    page === 1 ? "disabled" : ""
-                  }`}
-                  id="crancy-table__main_previous"
-                  onClick={() => page > 1 && setPage(page - 1)}
-                >
-                  <a
-                    aria-controls="crancy-table__main"
-                    data-dt-idx="previous"
-                    tabIndex="0"
-                    className="page-link"
-                  >
-                    <i className="fas fa-angle-left"></i>
-                  </a>
-                </li>
-                {Array.from(
-                  Array(Math.ceil(orders.length / show)).keys("n")
-                ).map((id, index) => (
-                  <li
-                    className={`paginate_button page-item ${
-                      page === index + 1 ? "active" : ""
-                    }`}
-                    onClick={() => setPage(index + 1)}
-                    key={index + "key"}
-                  >
-                    <a
-                      aria-controls="crancy-table__main"
-                      data-dt-idx="0"
-                      tabIndex="0"
-                      className="page-link"
-                    >
-                      {index + 1}
-                    </a>
-                  </li>
-                ))}
-                <li
-                  className={`paginate_button page-item next ${
-                    page === orders.length % show < 1 ? "disabled" : ""
-                  }`}
-                  id="crancy-table__main_next"
-                  onClick={() =>
-                    page < Math.ceil(orders.length / show) && setPage(page + 1)
-                  }
-                >
-                  <a
-                    aria-controls="crancy-table__main"
-                    data-dt-idx="next"
-                    tabIndex="0"
-                    className="page-link"
-                  >
-                    <i className="fas fa-angle-right"></i>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          {/* <!-- End crancy Table --> */}
         </div>
       </div>
     </div>

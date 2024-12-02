@@ -14,10 +14,10 @@ function DashboardSass() {
       <BreadCrumb title="Estadísticas Recaudaciones" link="dashboard-sass" />
       <div className="row">
         <InnerWrapper>
-          
-          {/*<ActivitySection />*/}
-        </InnerWrapper>
         <ProjectInfo />
+          <ActivitySection />
+        </InnerWrapper>
+        
        {/* <Sidebar />*/}
       </div>
     </Layout>
