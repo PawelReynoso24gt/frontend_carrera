@@ -88,7 +88,13 @@ function Header({ toggleMenu, menu }) {
                       <div className="crancy-header__right">
                         {/* <!-- Header Zoom --> */}
                         <div className="crancy-header__options">
+                        <Alarm
+                            subMenu={subNav}
+                            setSubMenu={setSubNav}
+                            title="alarm"
+                          />
                           <div className="crancy-header__settings">
+                            
                             <button id="crancy-header__settings">
                               <Link to="/settings">
                                 <svg

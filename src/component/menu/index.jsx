@@ -87,37 +87,9 @@ function Menu({ toggleMenu, menu }) {
                   </svg>
                 }
               />
-              <li
-                className={location.pathname === "/statistics" ? "active" : ""}
-              >
-                <Link className="collapsed" to="/statistics">
-                  <span className="menu-bar__text">
-                    <span className="crancy-menu-icon crancy-svg-icon__v1">
-                      <svg
-                        className="crancy-svg-icon"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M21.8025 10.0128C21.0104 6.08419 17.9158 2.98956 13.9872 2.19745C12.9045 1.97914 12 2.89543 12 4V10C12 11.1046 12.8954 12 14 12H20C21.1046 12 22.0209 11.0955 21.8025 10.0128Z"
-                          strokeWidth="1.5"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M9 4.22314C4.99202 5.1326 2 8.71695 2 13.0001C2 17.9707 6.02944 22.0001 11 22.0001C15.2832 22.0001 18.8675 19.0081 19.777 15.0001"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </span>
-                    <span className="menu-bar__name">Statistics</span>
-                  </span>
-                </Link>
-              </li>
-              {[
+   
+{/*statistics*/}            
+  {[
         { link: "sedes", title: "Gestión Sedes" },
         { link: "publicaciones", title: "Gestión Publicaciones" },
         { link: "asistencia_eventos", title: "Asistencias a Eventos" },
