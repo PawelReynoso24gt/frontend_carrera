@@ -11,7 +11,7 @@ function Sidebar() {
   return (
     <div className="col-lg-3 col-md-2 col-12 crancy-personals__list mg-top-30">
       <div className="crancy-psidebar">
-        <h2 className="crancy-psidebar__heading">Personal Info</h2>
+        <h2 className="crancy-psidebar__heading">Información personal</h2>
         {/* <!-- Features Tab List --> */}
         <div
           className="list-group crancy-psidebar__list"

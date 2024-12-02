@@ -12,24 +12,24 @@ function PersonalInfo() {
               <div className="crancy-ptabs__form-main">
                 <div className="crancy__item-group">
                   <h4 className="crancy__item-group__title">
-                    Update Parsonal Info
+                    Actualizar mi información
                   </h4>
                   <div className="crancy__item-form--group">
                     <div className="row">
                       <div className="col-lg-6 col-12">
                         <div className="crancy__item-form--group mg-top-form-20">
                           <label className="crancy__item-label">
-                            Frist Name{" "}
+                            Nombre{" "}
                           </label>
                           <input
                             className="crancy__item-input"
                             type="text"
-                            placeholder="Demo Name"
+                            placeholder="Ingresar nombre"
                             required="required"
                           />
                         </div>
                       </div>
-                      <div className="col-lg-6 col-12">
+                      {/*<div className="col-lg-6 col-12">
                         <div className="crancy__item-form--group mg-top-form-20">
                           <label className="crancy__item-label">
                             Last Name{" "}
@@ -41,16 +41,16 @@ function PersonalInfo() {
                             required="required"
                           />
                         </div>
-                      </div>
+                      </div>*/}
                     </div>
                   </div>
 
                   <div className="crancy__item-form--group mg-top-form-20">
-                    <label className="crancy__item-label">Email Address</label>
+                    <label className="crancy__item-label">Email</label>
                     <input
                       className="crancy__item-input"
                       type="email"
-                      placeholder="demo3243@gmail.com"
+                      placeholder="tucorreo@gmail.com"
                       required="required"
                     />
                   </div>
@@ -59,16 +59,16 @@ function PersonalInfo() {
                     <div className="row">
                       <div className="col-lg-6 col-12">
                         <div className="crancy__item-form--group mg-top-form-20">
-                          <label className="crancy__item-label">Mobile</label>
+                          <label className="crancy__item-label">Teléfono</label>
                           <input
                             className="crancy__item-input"
                             type="text"
-                            placeholder="+98 000 000 0000"
+                            placeholder="+502 12345678"
                             required="required"
                           />
                         </div>
                       </div>
-                      <div className="col-lg-6 col-12">
+                      {/*<div className="col-lg-6 col-12">
                         <div className="crancy__item-form--group mg-top-form-20">
                           <label className="crancy__item-label">Fax</label>
                           <input
@@ -78,10 +78,10 @@ function PersonalInfo() {
                             required="required"
                           />
                         </div>
-                      </div>
+                      </div>*/}
                     </div>
                   </div>
-                  <div className="crancy__item-form--group  mg-top-form-20">
+                  {/*<div className="crancy__item-form--group  mg-top-form-20">
                     <label className="crancy__item-label">Select Gender</label>
                     <select
                       className="form-select crancy__item-input"
@@ -93,23 +93,19 @@ function PersonalInfo() {
                       <option value="2">Female</option>
                       <option value="3">Other</option>
                     </select>
-                  </div>
+                  </div>*/}
                   <div className="crancy__item-form--group  mg-top-form-20">
-                    <label className="crancy__item-label">Location</label>
-                    <select
-                      className="form-select crancy__item-input"
-                      aria-label="Default select example"
-                      defaultValue={0}
-                    >
-                      <option value="0">Select location here</option>
-                      <option value="1">Bangladesh</option>
-                      <option value="2">United States</option>
-                      <option value="3">United Kingdom</option>
-                    </select>
+                    <label className="crancy__item-label">Dirección</label>
+                    <input
+                            className="crancy__item-input"
+                            type="text"
+                            placeholder="Ingresar dirección"
+                            required="required"
+                          />
                   </div>
                 </div>
               </div>
-              <div className="crancy-ptabs__form-update">
+              {/*<div className="crancy-ptabs__form-update">
                 <div className="crancy-ptabs__sidebar">
                   <div className="crancy-ptabs__ssingle crancy-ptabs__srofile">
                     <div className="crancy-ptabs__sheading">
@@ -187,10 +183,10 @@ function PersonalInfo() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>*/}
             </div>
           </div>
-          <div className="col-12">
+          {/*<div className="col-12">
             <div className="crancy__item-group mg-top-30">
               <h4 className="crancy__item-group__title">Social Information</h4>
               <div className="crancy__item-form--group">
@@ -258,7 +254,7 @@ function PersonalInfo() {
                 </div>
               </div>
             </div>
-          </div>
+          </div>*/}
         </div>
 
         <div className="crancy__item-button--group crancy__item-button--group--fix crancy__ptabs-bottom">
