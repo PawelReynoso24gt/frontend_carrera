@@ -12,19 +12,19 @@ function ProfileOverview({ children }) {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Profile Overview" link="profile-overview" />
+      <BreadCrumb title="Administrar mi perfil" link="profile-overview" />
       <Wrapper>
         <ProfileHeader />
         <div className="crancy-upinner">
           <div className="row">
             <SidebarProfile />
             <div className="col-lg-8 col-12 crancy-upinner__column2">
-              <div className="crancy-upcontent mg-top-30">
+              {/*<div className="crancy-upcontent mg-top-30">
                 <TabList />
                 <div className="tab-content" id="nav-tabContent">
                   <Outlet />
                 </div>
-              </div>
+              </div>*/}
             </div>
           </div>
         </div>

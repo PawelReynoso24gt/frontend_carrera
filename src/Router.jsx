@@ -259,7 +259,7 @@ const router = createBrowserRouter([
         path: "/profile-overview",
         Component: ProfileOverview,
         children: [
-          {
+          /*{
             index: true,
             element: <Overview />,
           },
@@ -278,7 +278,7 @@ const router = createBrowserRouter([
           {
             path: "gallery",
             element: <Gallery2 />,
-          },
+          },*/
         ],
       },
       {

@@ -24,7 +24,7 @@ function UsuariosAdminComponent() {
   const fetchActiveUsuarios = async () => {
     try {
       const response = await axios.get('http://localhost:5000/usuarios/activos');
-      const usuariosActivos = response.data.filter(usuario => usuario.idRol === 1 && usuario.estado === 1);
+      const usuariosActivos = response.data.filter(usuario => usuario.estado === 1);
       setUsuarios(usuariosActivos);
       setFilteredUsuarios(usuariosActivos);
       setFilter('activos');
@@ -139,7 +139,7 @@ function UsuariosAdminComponent() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Administradores
+            Gestión de Usuarios
           </h3>
         </div>
       </div>
@@ -165,7 +165,7 @@ function UsuariosAdminComponent() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Administrador
+          Agregar Usuario
         </Button>
         <Button
           style={{
@@ -293,84 +293,100 @@ function UsuariosAdminComponent() {
         </Table>
 
         {/* Modal para agregar o editar un administrador */}
-        <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header
-            closeButton
-            style={{ backgroundColor: "#007AC3", color: "#fff" }}
-          >
-            <Modal.Title>
-              {editingUsuario ? "Editar Administrador" : "Agregar Administrador"}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="usuario">
+<Modal show={showModal} onHide={handleCloseModal}>
+  <Modal.Header
+    closeButton
+    style={{ backgroundColor: "#007AC3", color: "#fff" }}
+  >
+    <Modal.Title>
+      {editingUsuario ? "Editar Administrador" : "Agregar Administrador"}
+    </Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form onSubmit={handleSubmit}>
+      <Form.Group controlId="usuario">
+        <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+          Usuario
+        </Form.Label>
+        <Form.Control
+          type="text"
+          name="usuario"
+          value={newUsuario.usuario}
+          onChange={handleChange}
+          required
+        />
+      </Form.Group>
+
+      {/* Nuevo Campo para la Contraseña */}
+            {!editingUsuario && ( // Mostrar solo cuando se está agregando un usuario
+              <Form.Group controlId="contrasenia">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Usuario
+                  Contraseña
                 </Form.Label>
                 <Form.Control
-                  type="text"
-                  name="usuario"
-                  value={newUsuario.usuario}
+                  type="password"
+                  name="contrasenia"
+                  value={newUsuario.contrasenia || ""} // Manejar el caso si está vacío
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              
-              <Form.Group controlId="idSede">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Sede
-                </Form.Label>
-                <Form.Control
-                  type="number"
-                  name="idSede"
-                  value={newUsuario.idSede}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="idPersona">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Persona
-                </Form.Label>
-                <Form.Control
-                  type="number"
-                  name="idPersona"
-                  value={newUsuario.idPersona}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newUsuario.estado}
-                  onChange={handleChange}
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Button
-                style={{
-                  backgroundColor: "#007AC3",
-                  borderColor: "#007AC3",
-                  padding: "5px 10px",
-                  width: "100%",
-                  fontWeight: "bold",
-                  color: "#fff",
-                }}
-                type="submit"
+            )}
+
+            <Form.Group controlId="idSede">
+              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                ID Sede
+              </Form.Label>
+              <Form.Control
+                type="number"
+                name="idSede"
+                value={newUsuario.idSede}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="idPersona">
+              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                ID Persona
+              </Form.Label>
+              <Form.Control
+                type="number"
+                name="idPersona"
+                value={newUsuario.idPersona}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="estado">
+              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                Estado
+              </Form.Label>
+              <Form.Control
+                as="select"
+                name="estado"
+                value={newUsuario.estado}
+                onChange={handleChange}
               >
-                {editingUsuario ? "Actualizar" : "Crear"}
-              </Button>
-            </Form>
-          </Modal.Body>
-        </Modal>
+                <option value={1}>Activo</option>
+                <option value={0}>Inactivo</option>
+              </Form.Control>
+            </Form.Group>
+            <Button
+              style={{
+                backgroundColor: "#007AC3",
+                borderColor: "#007AC3",
+                padding: "5px 10px",
+                width: "100%",
+                fontWeight: "bold",
+                color: "#fff",
+              }}
+              type="submit"
+            >
+              {editingUsuario ? "Actualizar" : "Crear"}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
 
         {/* Modal para cambiar la contraseña */}
         <Modal show={showPasswordModal} onHide={handleClosePasswordModal}>

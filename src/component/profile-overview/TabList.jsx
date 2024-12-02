@@ -10,7 +10,7 @@ function TabList() {
     pathSegments.length > 0 ? pathSegments[pathSegments.length - 1] : null;
   return (
     <div className="crancy-pcats__bar">
-      <div className="crancy-pcats__list list-group ">
+      {/*<div className="crancy-pcats__list list-group ">
         <Link
           className={`list-group-item ${
             lastPath === "profile-overview" ? "active" : ""
@@ -51,7 +51,7 @@ function TabList() {
         >
           Gallery
         </Link>
-      </div>
+      </div>*/}
     </div>
   );
 }

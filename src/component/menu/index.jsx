@@ -139,7 +139,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "talonarios", title: "Gestión Talonarios" },
         { link: "voluntarios", title: "Gestión Voluntarios" },
         { link: "Materiales", title: "Gestión Materiales" },
-        { link: "Administradores", title: "Gestión Administradores" },
+        { link: "Administradores", title: "Gestión de Usuarios" },
       ].map((item) => (
         <li
           key={item.link}

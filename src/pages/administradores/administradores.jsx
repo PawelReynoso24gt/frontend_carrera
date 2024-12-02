@@ -9,7 +9,7 @@ function HorariosPage() {
     useMenu();
     return (
         <Layout>
-            <BreadCrumb title="Manejo de horarios" link="/administradores" />
+            <BreadCrumb title="Usuarios" link="/administradores" />
             <Wrapper>
                 <UsuariosAdminComponent />
             </Wrapper>
