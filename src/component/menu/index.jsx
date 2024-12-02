@@ -143,6 +143,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "Administradores", title: "Gestión Administradores" },
         { link: "mercanciaVoluntarios", title: "Mercancía voluntarios" },
         { link: "inventarioMventas", title: "Inventario de mercancía para ventas" },
+        { link: "autorizacionSolicitud", title: "Autorización de solicitudes" },
       ].map((item) => (
         <li
           key={item.link}

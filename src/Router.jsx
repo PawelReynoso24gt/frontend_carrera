@@ -72,6 +72,7 @@ import CategoriaHorarios from "./component/categoriaHorarios/categoriaHorarios";
 import Permisos from "./component/permisos/permisos";
 import MercanciaVoluntarios from "./component/mercanciaVoluntarios/mercanciaVoluntarios";
 import InventarioMventas from "./pages/inventarioMventas/intentarioMventas";
+import AutorizacionSolicitud from "./pages/autorizacionSolicitud/autorizacionSolicitud";
 
 const router = createBrowserRouter([
   {
@@ -276,6 +277,10 @@ const router = createBrowserRouter([
       {
         path: "/inventarioMventas",
         element: <InventarioMventas/>,
+      },
+      {
+        path: "/autorizacionSolicitud",
+        element: <AutorizacionSolicitud/>,
       },
       {
         path: "/gallery",
