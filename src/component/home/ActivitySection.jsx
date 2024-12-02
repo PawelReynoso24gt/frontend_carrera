@@ -31,7 +31,7 @@ function ActivitySection({ className }) {
       setEmpleados(empleadosData);
       setPersonas(personasData);
 
-      calcularEmpleadoDestacado(asistenciasData, empleadosData);
+      calcularEmpleadoDestacado(asistenciasData, empleadosData, personasData);
     } catch (error) {
       console.error("Error fetching data:", error);
       setAsistencias([]);
@@ -40,7 +40,7 @@ function ActivitySection({ className }) {
     }
   };
 
-  const calcularEmpleadoDestacado = (asistenciasData, empleadosData) => {
+  const calcularEmpleadoDestacado = (asistenciasData, empleadosData, personasData) => {
     const asistenciaPorEmpleado = {};
 
     // Contar las asistencias por empleado
@@ -59,19 +59,25 @@ function ActivitySection({ className }) {
 
       if (asistencias > maxAsistencias) {
         maxAsistencias = asistencias;
-        destacado = { idEvento, idEmpleado, asistencias };
+        destacado = { idEvento, idEmpleado: parseInt(idEmpleado), asistencias };
       }
     });
 
     if (destacado) {
+      // Buscar el empleado en la lista de empleados
       const empleado = empleadosData.find(
-        (empleado) => empleado.idEmpleado === parseInt(destacado.idEmpleado)
+        (emp) => emp.idEmpleado === destacado.idEmpleado
       );
+
       if (empleado) {
-        const persona = personas.find(
-          (persona) => persona.idPersona === empleado.idPersona
+        // Buscar la persona asociada al empleado
+        const persona = personasData.find(
+          (pers) => pers.idPersona === empleado.idPersona
         );
+
         destacado.nombreEmpleado = persona ? persona.nombre : "Desconocido";
+      } else {
+        destacado.nombreEmpleado = "Desconocido";
       }
     }
 
@@ -95,9 +101,6 @@ function ActivitySection({ className }) {
     <div className={`${className ? className : "crancy-table"} mg-top-30`}>
       <div className="crancy-table__heading">
         <h3 className="crancy-table__title mb-0">Asistencia de Participantes</h3>
-        <SelectInput
-          options={[" Last 7 Days", " Last 15 Days", "Last Month"]}
-        />
       </div>
 
       {/* Empleado destacado */}
@@ -105,7 +108,7 @@ function ActivitySection({ className }) {
         <div className="alert alert-info" role="alert">
           <strong>Empleado destacado:</strong> El empleado{" "}
           <strong>{empleadoDestacado.nombreEmpleado}</strong> tiene{" "}
-          <strong>{empleadoDestacado.asistencias}</strong> asistencias 
+          <strong>{empleadoDestacado.asistencias}</strong> asistencias en el evento
         </div>
       )}
 
