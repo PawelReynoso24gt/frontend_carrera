@@ -2,20 +2,19 @@ import React from "react";
 import Layout from "../../component/home-two/Layout";
 import BreadCrumb from "../../component/home-two/BreadCrumb";
 import Wrapper from "../../component/pricing/Wrapper";
-import SedesComponent  from "../../component/Sedes/sedes";
+import PedidosComponent  from "../../component/pedidos/pedidos";
 import useMenu from "../../hooks/useMenu";
-import Sedes from "../../component/Sedes/sedes";
 
-function SedesPage () {
+function pedidosPage () {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Sedes" link="/Sedes" />
+      <BreadCrumb title="Pedidos" link="/pedidos"/>
       <Wrapper>
-      <SedesComponent/>
+      <PedidosComponent/>
       </Wrapper>
     </Layout>
   );
 }
 
-export default SedesPage ;
+export default pedidosPage ;

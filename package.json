@@ -17,7 +17,7 @@
     "@fullcalendar/react": "^6.1.8",
     "@fullcalendar/timegrid": "^6.1.8",
     "axios": "^1.7.7",
-    "chart.js": "^4.4.0",
+    "chart.js": "^4.4.7",
     "jsvectormap": "^1.5.3",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.5",
