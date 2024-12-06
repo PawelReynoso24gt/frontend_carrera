@@ -25,40 +25,43 @@ function ChangePassword() {
 
     // Verificar que las contraseñas nuevas coincidan
     if (formData.newPassword !== formData.confirmPassword) {
-      setMensaje("La nueva contraseña y la confirmación no coinciden.");
-      return;
+        setMensaje("La nueva contraseña y la confirmación no coinciden.");
+        return;
     }
 
     try {
-      // Obtener el userId del localStorage
-      const userId = localStorage.getItem("userId");
-      if (!userId) {
-        setMensaje("No se encontró el ID del usuario en el almacenamiento local.");
-        return;
-      }
+        // Obtener el userId y el token del localStorage
+        const userId = localStorage.getItem("userId");
+        const token = localStorage.getItem("token"); // Obtén el token almacenado
 
-      // Enviar la solicitud al backend
-      const response = await fetch(`http://localhost:5000/usuarios/${userId}/contrasenia`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword,
-        }),
-      });
+        if (!userId || !token) {
+            setMensaje("No se encontró el ID del usuario o el token en el almacenamiento local.");
+            return;
+        }
 
-      if (response.ok) {
-        setMensaje("La contraseña ha sido actualizada correctamente.");
-        setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" }); // Limpiar el formulario
-      } else {
-        const error = await response.json();
-        setMensaje(`Error: ${error.message || "Ocurrió un error al actualizar la contraseña."}`);
-      }
+        // Enviar la solicitud al backend con el token en el encabezado
+        const response = await fetch(`http://localhost:5000/usuarios/${userId}/contrasenia`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`, // Agregar el token al encabezado
+            },
+            body: JSON.stringify({
+                currentPassword: formData.currentPassword,
+                newPassword: formData.newPassword,
+            }),
+        });
+
+        if (response.ok) {
+            setMensaje("La contraseña ha sido actualizada correctamente.");
+            setFormData({ currentPassword: "", newPassword: "", confirmPassword: "" }); // Limpiar el formulario
+        } else {
+            const error = await response.json();
+            setMensaje(`Error: ${error.message || "Ocurrió un error al actualizar la contraseña."}`);
+        }
     } catch (error) {
-      console.error("Error al actualizar la contraseña:", error);
-      setMensaje("Ocurrió un error al intentar actualizar la contraseña.");
+        console.error("Error al actualizar la contraseña:", error);
+        setMensaje("Ocurrió un error al intentar actualizar la contraseña.");
     }
   };
 
