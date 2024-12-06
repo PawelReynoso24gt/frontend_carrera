@@ -25,9 +25,12 @@ function PersonalInfo() {
 
     // Obtener el personId desde localStorage
     const personId = localStorage.getItem("personId");
+    const token = localStorage.getItem("token");
 
-    if (!personId) {
-      setMensaje("No se encontró el ID del usuario en el almacenamiento local.");
+    if (!personId || !token) {
+      setMensaje(
+        "No se encontró el ID del usuario o el token en el almacenamiento local."
+      );
       return;
     }
 
@@ -36,6 +39,7 @@ function PersonalInfo() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Agregar el token al encabezado
         },
         body: JSON.stringify(formData),
       });
