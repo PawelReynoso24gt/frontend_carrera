@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Stand() {
   const [stands, setStands] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingStand, setEditingStand] = useState(null);
   const [newStand, setNewStand] = useState({
@@ -48,24 +51,6 @@ function Stand() {
       setTiposStands(response.data);
     } catch (error) {
       console.error("Error fetching tipos de stands:", error);
-    }
-  };
-
-  const fetchActiveStands = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/stand/activas");
-      setStands(response.data);
-    } catch (error) {
-      console.error("Error fetching active stands:", error);
-    }
-  };
-
-  const fetchInactiveStands = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/stand/inactivas");
-      setStands(response.data);
-    } catch (error) {
-      console.error("Error fetching inactive stands:", error);
     }
   };
 
@@ -130,6 +115,71 @@ function Stand() {
     }
   };
 
+  // Pagination Logic
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentStands = stands.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(stands.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -149,47 +199,49 @@ function Stand() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Stand
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveStands}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveStands}
-        >
-          Inactivos
-        </Button>
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Stand
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => fetchActiveStands()}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => fetchInactiveStands()}
+          >
+            Inactivos
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -209,11 +261,12 @@ function Stand() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "10px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Nombre Stand</th>
@@ -225,7 +278,7 @@ function Stand() {
             </tr>
           </thead>
           <tbody>
-            {stands.map((stand) => (
+            {currentStands.map((stand) => (
               <tr key={stand.idStand}>
                 <td>{stand.idStand}</td>
                 <td>{stand.nombreStand}</td>
@@ -234,144 +287,45 @@ function Stand() {
                 <td>{stand.idTipoStands}</td>
                 <td>{stand.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(stand)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: stand.estado ? "#6c757d" : "#28a745",
-                      borderColor: stand.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() =>
-                      toggleEstado(stand.idStand, stand.estado)
-                    }
-                  >
-                    {stand.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {stand.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(stand.idStand, stand.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleEstado(stand.idStand, stand.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
-
-        <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header
-            closeButton
-            style={{ backgroundColor: "#007AC3", color: "#fff" }}
-          >
-            <Modal.Title>
-              {editingStand ? "Editar Stand" : "Agregar Stand"}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="nombreStand">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Nombre Stand
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  name="nombreStand"
-                  value={newStand.nombreStand}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="direccion">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Dirección
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  name="direccion"
-                  value={newStand.direccion}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newStand.estado}
-                  onChange={handleChange}
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idSede">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Sede
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idSede"
-                  value={newStand.idSede}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Sede</option>
-                  {sedes.map((sede) => (
-                    <option key={sede.idSede} value={sede.idSede}>
-                      {sede.idSede}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idTipoStands">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Tipo Stand
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idTipoStands"
-                  value={newStand.idTipoStands}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Tipo Stand</option>
-                  {tiposStands.map((tipo) => (
-                    <option key={tipo.idTipoStands} value={tipo.idTipoStands}>
-                      {tipo.idTipoStands}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-              <Button
-                style={{
-                  backgroundColor: "#007AC3",
-                  borderColor: "#007AC3",
-                  padding: "5px 10px",
-                  width: "100%",
-                  fontWeight: "bold",
-                  color: "#fff",
-                }}
-                type="submit"
-              >
-                {editingStand ? "Actualizar" : "Crear"}
-              </Button>
-            </Form>
-          </Modal.Body>
-        </Modal>
+        {renderPagination()}
       </div>
     </>
   );

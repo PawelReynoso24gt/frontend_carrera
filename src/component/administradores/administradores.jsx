@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from 'react-bootstrap';
+import { FaPencilAlt, FaToggleOn, FaToggleOff , FaKey} from "react-icons/fa";
 
 function UsuariosAdminComponent() {
   const [usuarios, setUsuarios] = useState([]);
@@ -23,7 +24,7 @@ function UsuariosAdminComponent() {
   const fetchActiveUsuarios = async () => {
     try {
       const response = await axios.get('http://localhost:5000/usuarios/activos');
-      const usuariosActivos = response.data.filter(usuario => usuario.idRol === 1 && usuario.estado === 1);
+      const usuariosActivos = response.data.filter(usuario => usuario.estado === 1);
       setUsuarios(usuariosActivos);
       setFilteredUsuarios(usuariosActivos);
       setFilter('activos');
@@ -84,13 +85,8 @@ function UsuariosAdminComponent() {
   };
 
   const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'currentPassword') {
-      setCurrentPassword(value);
-    } else if (name === 'newPassword') {
-      setNewPassword(value);
-    }
-  };
+    setNewPassword(e.target.value);
+  };  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,22 +109,18 @@ function UsuariosAdminComponent() {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`http://localhost:5000/usuarios/${editingUsuario.idUsuario}/contrasenia`, {
-        currentPassword,
-        newPassword
+      await axios.put(`http://localhost:5000/usuarios/${editingUsuario.idUsuario}/reset`, {
+        newPassword,
       });
-      setAlertMessage('Contraseña actualizada con éxito');
+      setAlertMessage('Contraseña reseteada con éxito');
       setShowAlert(true);
       handleClosePasswordModal();
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        setAlertMessage('La contraseña actual es incorrecta');
-      } else {
-        setAlertMessage('Error al actualizar la contraseña');
-      }
+      console.error("Error al resetear la contraseña:", error);
+      setAlertMessage('Error al resetear la contraseña');
       setShowAlert(true);
     }
-  };
+  };  
 
   const toggleUsuarioEstado = async (id, currentEstado) => {
     try {
@@ -147,7 +139,7 @@ function UsuariosAdminComponent() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Administradores
+            Gestión de Usuarios
           </h3>
         </div>
       </div>
@@ -173,7 +165,7 @@ function UsuariosAdminComponent() {
           }}
           onClick={() => handleShowModal()}
         >
-          Agregar Administrador
+          Agregar Usuario
         </Button>
         <Button
           style={{
@@ -236,62 +228,64 @@ function UsuariosAdminComponent() {
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
-              <th>ID</th>
-              <th>Usuario</th>
-              <th>Estado</th>
-              <th>Rol</th>
-              <th>Acciones</th>
+              <th style={{textAlign : "center"}}>ID</th>
+              <th style={{textAlign : "center"}}>Usuario</th>
+              <th style={{textAlign : "center"}}>Estado</th>
+              <th style={{textAlign : "center"}}>Rol</th>
+              <th style={{textAlign : "center"}}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsuarios.map((usuario) => (
               <tr key={usuario.idUsuario}>
-                <td>{usuario.idUsuario}</td>
-                <td>{usuario.usuario}</td>
-                <td>{usuario.estado ? "Activo" : "Inactivo"}</td>
-                <td>{usuario.role?.roles}</td>
-                <td>
-                  <Button
+                <td style={{textAlign : "center"}}>{usuario.idUsuario}</td>
+                <td style={{textAlign : "center"}}>{usuario.usuario}</td>
+                <td style={{textAlign : "center"}}>{usuario.estado ? "Activo" : "Inactivo"}</td>
+                <td style={{textAlign : "center"}}>{usuario.role?.roles}</td>
+                <td style={{ textAlign: "center" }}>
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(usuario)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
+                  />
+                  <FaKey
                     style={{
-                      backgroundColor: "#ffcc00",
-                      borderColor: "#ffcc00",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#ffcc00",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Cambiar Contraseña"
                     onClick={() => handleShowPasswordModal(usuario)}
-                  >
-                    Cambiar Contraseña
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: usuario.estado ? "#6c757d" : "#28a745",
-                      borderColor: usuario.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleUsuarioEstado(usuario.idUsuario, usuario.estado)}
-                  >
-                    {usuario.estado ? "Desactivar" : "Activar"}
-                  </Button>
+                  />
+                  {usuario.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleUsuarioEstado(usuario.idUsuario, usuario.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleUsuarioEstado(usuario.idUsuario, usuario.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -299,29 +293,32 @@ function UsuariosAdminComponent() {
         </Table>
 
         {/* Modal para agregar o editar un administrador */}
-        <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header
-            closeButton
-            style={{ backgroundColor: "#007AC3", color: "#fff" }}
-          >
-            <Modal.Title>
-              {editingUsuario ? "Editar Administrador" : "Agregar Administrador"}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="usuario">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Usuario
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  name="usuario"
-                  value={newUsuario.usuario}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
+<Modal show={showModal} onHide={handleCloseModal}>
+  <Modal.Header
+    closeButton
+    style={{ backgroundColor: "#007AC3", color: "#fff" }}
+  >
+    <Modal.Title>
+      {editingUsuario ? "Editar Administrador" : "Agregar Administrador"}
+    </Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form onSubmit={handleSubmit}>
+      <Form.Group controlId="usuario">
+        <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+          Usuario
+        </Form.Label>
+        <Form.Control
+          type="text"
+          name="usuario"
+          value={newUsuario.usuario}
+          onChange={handleChange}
+          required
+        />
+      </Form.Group>
+
+      {/* Nuevo Campo para la Contraseña */}
+            {!editingUsuario && ( // Mostrar solo cuando se está agregando un usuario
               <Form.Group controlId="contrasenia">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
                   Contraseña
@@ -329,65 +326,67 @@ function UsuariosAdminComponent() {
                 <Form.Control
                   type="password"
                   name="contrasenia"
-                  value={newUsuario.contrasenia}
-                  onChange={handleChange}
-                  required={!editingUsuario}
-                />
-              </Form.Group>
-              <Form.Group controlId="idSede">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Sede
-                </Form.Label>
-                <Form.Control
-                  type="number"
-                  name="idSede"
-                  value={newUsuario.idSede}
+                  value={newUsuario.contrasenia || ""} // Manejar el caso si está vacío
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="idPersona">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Persona
-                </Form.Label>
-                <Form.Control
-                  type="number"
-                  name="idPersona"
-                  value={newUsuario.idPersona}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newUsuario.estado}
-                  onChange={handleChange}
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
-              <Button
-                style={{
-                  backgroundColor: "#007AC3",
-                  borderColor: "#007AC3",
-                  padding: "5px 10px",
-                  width: "100%",
-                  fontWeight: "bold",
-                  color: "#fff",
-                }}
-                type="submit"
+            )}
+
+            <Form.Group controlId="idSede">
+              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                ID Sede
+              </Form.Label>
+              <Form.Control
+                type="number"
+                name="idSede"
+                value={newUsuario.idSede}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="idPersona">
+              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                ID Persona
+              </Form.Label>
+              <Form.Control
+                type="number"
+                name="idPersona"
+                value={newUsuario.idPersona}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="estado">
+              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                Estado
+              </Form.Label>
+              <Form.Control
+                as="select"
+                name="estado"
+                value={newUsuario.estado}
+                onChange={handleChange}
               >
-                {editingUsuario ? "Actualizar" : "Crear"}
-              </Button>
-            </Form>
-          </Modal.Body>
-        </Modal>
+                <option value={1}>Activo</option>
+                <option value={0}>Inactivo</option>
+              </Form.Control>
+            </Form.Group>
+            <Button
+              style={{
+                backgroundColor: "#007AC3",
+                borderColor: "#007AC3",
+                padding: "5px 10px",
+                width: "100%",
+                fontWeight: "bold",
+                color: "#fff",
+              }}
+              type="submit"
+            >
+              {editingUsuario ? "Actualizar" : "Crear"}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
 
         {/* Modal para cambiar la contraseña */}
         <Modal show={showPasswordModal} onHide={handleClosePasswordModal}>
@@ -395,22 +394,10 @@ function UsuariosAdminComponent() {
             closeButton
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
-            <Modal.Title>Cambiar Contraseña</Modal.Title>
+            <Modal.Title>Resetear Contraseña</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handlePasswordSubmit}>
-              <Form.Group controlId="currentPassword">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Contraseña Actual
-                </Form.Label>
-                <Form.Control
-                  type="password"
-                  name="currentPassword"
-                  value={currentPassword}
-                  onChange={handlePasswordChange}
-                  required
-                />
-              </Form.Group>
               <Form.Group controlId="newPassword">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
                   Nueva Contraseña
@@ -434,7 +421,7 @@ function UsuariosAdminComponent() {
                 }}
                 type="submit"
               >
-                Actualizar Contraseña
+                Resetear Contraseña
               </Button>
             </Form>
           </Modal.Body>

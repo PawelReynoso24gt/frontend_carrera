@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+
 
 function TipoPago() {
   const [tiposPago, setTiposPago] = useState([]);
@@ -113,47 +115,49 @@ function TipoPago() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Tipo de Pago
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveTiposPago}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveTiposPago}
-        >
-          Inactivos
-        </Button>
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+              width: "130px",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Tipo de Pago
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+              width: "100px",
+            }}
+            onClick={fetchActiveTiposPago}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              fontWeight: "bold",
+              color: "#fff",
+              width: "100px",
+            }}
+            onClick={fetchInactiveTiposPago}
+          >
+            Inactivos
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -173,11 +177,18 @@ function TipoPago() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "10px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead
+            style={{
+              backgroundColor: "#007AC3",
+              color: "#fff",
+              textAlign: "center",
+            }}
+          >
             <tr>
               <th>ID</th>
               <th>Tipo de Pago</th>
@@ -192,35 +203,43 @@ function TipoPago() {
                 <td>{tipoPago.tipo}</td>
                 <td>{tipoPago.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(tipoPago)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: tipoPago.estado ? "#6c757d" : "#28a745",
-                      borderColor: tipoPago.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() =>
-                      toggleEstado(tipoPago.idTipoPago, tipoPago.estado)
-                    }
-                  >
-                    {tipoPago.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {tipoPago.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() =>
+                        toggleEstado(tipoPago.idTipoPago, tipoPago.estado)
+                      }
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() =>
+                        toggleEstado(tipoPago.idTipoPago, tipoPago.estado)
+                      }
+                    />
+                  )}
                 </td>
               </tr>
             ))}

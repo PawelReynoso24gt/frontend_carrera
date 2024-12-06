@@ -3,7 +3,7 @@ import axios from "axios";
 import { Button, Form, Table, Modal, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
-function DetalleStands() {
+function DetalleStandsVoluntarios() {
   const [detalleStands, setDetalleStands] = useState([]);
   const [filteredDetalleStands, setFilteredDetalleStands] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,13 +30,30 @@ function DetalleStands() {
 
   const fetchDetalleStands = async () => {
     try {
+      // Obtén los detalles de stands
       const response = await axios.get("http://localhost:5000/detalle_stands");
-      setDetalleStands(response.data);
-      setFilteredDetalleStands(response.data);
+      const allDetalleStands = response.data;
+  
+      // Obtén los stands
+      const standsResponse = await axios.get("http://localhost:5000/stand");
+      const allStands = standsResponse.data;
+  
+      // Filtrar los stands que cumplen con la condición
+      const filteredStands = allStands.filter(
+        (stand) => stand.nombreStand === "Virtual" && stand.idStand === 1
+      );
+  
+      // Filtrar los detalles que correspondan al stand filtrado
+      const filteredDetalleStands = allDetalleStands.filter((detalle) =>
+        filteredStands.some((stand) => stand.idStand === detalle.idStand)
+      );
+  
+      setDetalleStands(filteredDetalleStands);
+      setFilteredDetalleStands(filteredDetalleStands);
     } catch (error) {
       console.error("Error fetching detalle stands:", error);
     }
-  };
+  };  
 
   const fetchProductos = async () => {
     try {
@@ -50,31 +67,71 @@ function DetalleStands() {
   const fetchStands = async () => {
     try {
       const response = await axios.get("http://localhost:5000/stand");
-      setStands(response.data);
+  
+      // Filtramos los stands que cumplen con las condiciones
+      const filteredStands = response.data.filter(
+        (stand) => stand.nombreStand === "Virtual" && stand.idStand === 1
+      );
+  
+      setStands(filteredStands);
     } catch (error) {
       console.error("Error fetching stands:", error);
     }
-  };
+  };  
 
   const fetchActiveDetalleStands = async () => {
     try {
+      // Obtener los detalles activos
       const response = await axios.get("http://localhost:5000/detalle_stands/activos");
-      setDetalleStands(response.data);
-      setFilteredDetalleStands(response.data);
+      const allActiveDetalleStands = response.data;
+  
+      // Obtener los stands
+      const standsResponse = await axios.get("http://localhost:5000/stand");
+      const allStands = standsResponse.data;
+  
+      // Filtrar los stands que cumplen con la condición
+      const filteredStands = allStands.filter(
+        (stand) => stand.nombreStand === "Virtual" && stand.idStand === 1
+      );
+  
+      // Filtrar los detalles que corresponden al stand filtrado
+      const filteredDetalleStands = allActiveDetalleStands.filter((detalle) =>
+        filteredStands.some((stand) => stand.idStand === detalle.idStand)
+      );
+  
+      setDetalleStands(filteredDetalleStands);
+      setFilteredDetalleStands(filteredDetalleStands);
     } catch (error) {
       console.error("Error fetching active detalle stands:", error);
     }
-  };
+  };  
 
   const fetchInactiveDetalleStands = async () => {
     try {
+      // Obtener los detalles inactivos
       const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
-      setDetalleStands(response.data);
-      setFilteredDetalleStands(response.data);
+      const allInactiveDetalleStands = response.data;
+  
+      // Obtener los stands
+      const standsResponse = await axios.get("http://localhost:5000/stand");
+      const allStands = standsResponse.data;
+  
+      // Filtrar los stands que cumplen con la condición
+      const filteredStands = allStands.filter(
+        (stand) => stand.nombreStand === "Virtual" && stand.idStand === 1
+      );
+  
+      // Filtrar los detalles que corresponden al stand filtrado
+      const filteredDetalleStands = allInactiveDetalleStands.filter((detalle) =>
+        filteredStands.some((stand) => stand.idStand === detalle.idStand)
+      );
+  
+      setDetalleStands(filteredDetalleStands);
+      setFilteredDetalleStands(filteredDetalleStands);
     } catch (error) {
       console.error("Error fetching inactive detalle stands:", error);
     }
-  };
+  };  
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
@@ -101,15 +158,20 @@ function DetalleStands() {
   const handleShowModal = (detalleStand = null) => {
     setEditingDetalleStand(detalleStand);
     setNewDetalleStand(
-      detalleStand || {
-        cantidad: "",
-        estado: 1,
-        idProducto: "",
-        idStand: "",
-      }
+      detalleStand
+        ? {
+            ...detalleStand,
+            idStand: "1", // Siempre establece idStand como 1 al editar
+          }
+        : {
+            cantidad: "",
+            estado: 1,
+            idProducto: "",
+            idStand: "1", // Siempre establece idStand como 1 al agregar
+          }
     );
     setShowModal(true);
-  };
+  };  
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -127,30 +189,33 @@ function DetalleStands() {
       const selectedProduct = productos.find(
         (producto) => producto.idProducto === parseInt(newDetalleStand.idProducto)
       );
-
+  
       if (selectedProduct && newDetalleStand.cantidad > selectedProduct.cantidad) {
         setMessageModalContent(`Stock insuficiente. Solo quedan ${selectedProduct.cantidad} unidades.`);
         setShowMessageModal(true);
         return;
       }
-
+  
+      // Siempre asegura que idStand sea 1
+      const standData = { ...newDetalleStand, idStand: "1" };
+  
       if (editingDetalleStand) {
         await axios.put(
           `http://localhost:5000/detalle_stands/update/${editingDetalleStand.idDetalleStands}`,
-          newDetalleStand
+          standData
         );
-        setMessageModalContent("Detalle Stand actualizado con éxito");
+        setMessageModalContent("Información actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/detalle_stands/create", newDetalleStand);
-        setMessageModalContent("Detalle Stand creado con éxito");
+        await axios.post("http://localhost:5000/detalle_stands/create", standData);
+        setMessageModalContent("Producto creado con éxito");
       }
-
+  
       fetchDetalleStands();
       setShowMessageModal(true);
       handleCloseModal();
     } catch (error) {
       console.error("Error submitting detalle stand:", error);
-
+  
       if (error.response && error.response.data && error.response.data.message) {
         setMessageModalContent(error.response.data.message);
       } else {
@@ -158,7 +223,7 @@ function DetalleStands() {
       }
       setShowMessageModal(true);
     }
-  };
+  };  
 
   const toggleEstado = async (id, estadoActual) => {
     try {
@@ -166,7 +231,7 @@ function DetalleStands() {
       await axios.put(`http://localhost:5000/detalle_stands/update/${id}`, { estado: nuevoEstado });
       fetchDetalleStands();
       setMessageModalContent(
-        `Detalle Stand ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+        `Producto ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
       );
       setShowMessageModal(true);
     } catch (error) {
@@ -259,7 +324,7 @@ function DetalleStands() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Detalle Stands
+            Inventario Voluntarios
           </h3>
         </div>
       </div>
@@ -275,7 +340,7 @@ function DetalleStands() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar por cantidad, producto o stand..."
+            placeholder="Buscar por cantidad, producto..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -294,7 +359,7 @@ function DetalleStands() {
             }}
             onClick={() => handleShowModal()}
           >
-            Agregar Detalle Stand
+            Agregar
           </Button>
           <Button
             style={{
@@ -333,9 +398,8 @@ function DetalleStands() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
+            borderRadius: "8px",
             marginTop: "20px",
-            borderRadius: "10px",
-            overflow: "hidden",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
@@ -416,81 +480,66 @@ function DetalleStands() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}>
             <Form.Group controlId="cantidad">
-              <Form.Label>Cantidad</Form.Label>
-              <Form.Control
+                <Form.Label>Cantidad</Form.Label>
+                <Form.Control
                 type="number"
                 name="cantidad"
                 value={newDetalleStand.cantidad}
                 onChange={handleChange}
                 required
-              />
-            </Form.Group>
-            <Form.Group controlId="idProducto">
-              <Form.Label>Producto</Form.Label>
-              <Form.Control
-                as="select"
-                name="idProducto"
-                value={newDetalleStand.idProducto}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Seleccionar Producto</option>
-                {productos.map((producto) => (
-                  <option key={producto.idProducto} value={producto.idProducto}>
-                    {producto.nombreProducto}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="idStand">
-              <Form.Label>Stand</Form.Label>
-              <Form.Control
-                as="select"
-                name="idStand"
-                value={newDetalleStand.idStand}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Seleccionar Stand</option>
-                {stands.map((stand) => (
-                  <option key={stand.idStand} value={stand.idStand}>
-                    {stand.nombreStand}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="estado">
-              <Form.Label>Estado</Form.Label>
-              <Form.Control
-                as="select"
-                name="estado"
-                value={newDetalleStand.estado}
-                onChange={handleChange}
-              >
-                <option value={1}>Activo</option>
-                <option value={0}>Inactivo</option>
-              </Form.Control>
-            </Form.Group>
-            <Button
-              style={{
-                backgroundColor: "#007AC3",
-                borderColor: "#007AC3",
-                padding: "5px 10px",
-                width: "100%",
-                fontWeight: "bold",
-                color: "#fff",
-              }}
-              type="submit"
-            >
-              {editingDetalleStand ? "Actualizar" : "Crear"}
-            </Button>
-          </Form>
+                />
+                </Form.Group>
+                <Form.Group controlId="idProducto">
+                    <Form.Label>Producto</Form.Label>
+                    <Form.Control
+                    as="select"
+                    name="idProducto"
+                    value={newDetalleStand.idProducto}
+                    onChange={handleChange}
+                    required
+                    >
+                    <option value="">Seleccionar Producto</option>
+                    {productos.map((producto) => (
+                        <option key={producto.idProducto} value={producto.idProducto}>
+                        {producto.nombreProducto}
+                        </option>
+                    ))}
+                    </Form.Control>
+                </Form.Group>
+                {/* Campo oculto para idStand */}
+                <Form.Control type="hidden" name="idStand" value="1" onChange={handleChange} />
+                <Form.Group controlId="estado">
+                    <Form.Label>Estado</Form.Label>
+                    <Form.Control
+                    as="select"
+                    name="estado"
+                    value={newDetalleStand.estado}
+                    onChange={handleChange}
+                    >
+                    <option value={1}>Activo</option>
+                    <option value={0}>Inactivo</option>
+                    </Form.Control>
+                </Form.Group>
+                <Button
+                    style={{
+                    backgroundColor: "#007AC3",
+                    borderColor: "#007AC3",
+                    padding: "5px 10px",
+                    width: "100%",
+                    fontWeight: "bold",
+                    color: "#fff",
+                    }}
+                    type="submit"
+                >
+                    {editingDetalleStand ? "Actualizar" : "Crear"}
+                </Button>
+            </Form>
         </Modal.Body>
       </Modal>
     </>
   );
 }
 
-export default DetalleStands;
+export default DetalleStandsVoluntarios;

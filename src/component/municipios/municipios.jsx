@@ -4,6 +4,8 @@ import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
 
 function Municipio() {
   const [municipios, setMunicipios] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingMunicipio, setEditingMunicipio] = useState(null);
   const [newMunicipio, setNewMunicipio] = useState({
@@ -40,7 +42,7 @@ function Municipio() {
 
   const fetchActiveMunicipios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios/activas");
+      const response = await axios.get("http://localhost:5000/municipios/activos");
       setMunicipios(response.data);
     } catch (error) {
       console.error("Error fetching active municipios:", error);
@@ -49,7 +51,7 @@ function Municipio() {
 
   const fetchInactiveMunicipios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios/inactivas");
+      const response = await axios.get("http://localhost:5000/municipios/inactivos");
       setMunicipios(response.data);
     } catch (error) {
       console.error("Error fetching inactive municipios:", error);
@@ -115,8 +117,74 @@ function Municipio() {
     }
   };
 
+  // Paginación
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentMunicipios = municipios.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(municipios.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+
   return (
     <>
+      {/* Encabezado y botones */}
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
@@ -124,7 +192,7 @@ function Municipio() {
           </h3>
         </div>
       </div>
-
+      {/* Contenedor principal */}
       <div
         className="container mt-4"
         style={{
@@ -134,48 +202,51 @@ function Municipio() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Municipio
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveMunicipios}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveMunicipios}
-        >
-          Inactivos
-        </Button>
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Municipio
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveMunicipios}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveMunicipios}
+          >
+            Inactivos
+          </Button>
+        </div>
 
+        {/* Alertas */}
         <Alert
           variant="success"
           show={showAlert}
@@ -186,6 +257,7 @@ function Municipio() {
           {alertMessage}
         </Alert>
 
+        {/* Tabla */}
         <Table
           striped
           bordered
@@ -194,11 +266,12 @@ function Municipio() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "10px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Municipio</th>
@@ -208,7 +281,7 @@ function Municipio() {
             </tr>
           </thead>
           <tbody>
-            {municipios.map((municipio) => (
+            {currentMunicipios.map((municipio) => (
               <tr key={municipio.idMunicipio}>
                 <td>{municipio.idMunicipio}</td>
                 <td>{municipio.municipio}</td>
@@ -255,6 +328,8 @@ function Municipio() {
             ))}
           </tbody>
         </Table>
+
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header

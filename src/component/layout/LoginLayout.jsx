@@ -21,7 +21,12 @@ function LoginLayout() {
 
       // Si la autenticación es exitosa, guarda el token y redirige
       const token = response.data.token;
+      const userId = response.data.usuario.idUsuario;
+      const personId = response.data.usuario.idPersona;
+      localStorage.setItem("personId", personId);
       localStorage.setItem("token", token); // Almacenar el token en localStorage
+      localStorage.setItem("userId", userId);
+      
       navigate("/dashboard-sass"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)
     } catch (err) {
       setError("Usuario o contraseña incorrectos. Por favor, intenta de nuevo.");
@@ -76,14 +81,6 @@ function LoginLayout() {
               Iniciar Sesión
             </button>
           </form>
-          <div className="text-center mt-4">
-            <p style={{ color: "#333" }}>
-              ¿No tienes una cuenta?{" "}
-              <Link to="/create-account" style={{ color: "#007AC3", fontWeight: "bold" }}>
-                Regístrate aquí
-              </Link>
-            </p>
-          </div>
         </div>
       </section>
     </div>
