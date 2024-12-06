@@ -335,6 +335,8 @@ function DetalleStands() {
             backgroundColor: "#ffffff",
             borderRadius: "8px",
             marginTop: "20px",
+            borderRadius: "10px",
+            overflow: "hidden",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
