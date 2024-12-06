@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import img from "../../../assets/img/password-reset.png";
+import fetchWithToken from "../../../utils/fetchWithToken";
 
 function ChangePassword() {
   const [formData, setFormData] = useState({
@@ -40,7 +41,7 @@ function ChangePassword() {
         }
 
         // Enviar la solicitud al backend con el token en el encabezado
-        const response = await fetch(`http://localhost:5000/usuarios/${userId}/contrasenia`, {
+        const response = await fetchWithToken(`http://localhost:5000/usuarios/${userId}/contrasenia`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

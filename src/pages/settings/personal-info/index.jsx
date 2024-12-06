@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import fetchWithToken from "../../../utils/fetchWithToken";
 
 function PersonalInfo() {
   const [formData, setFormData] = useState({
@@ -35,7 +36,7 @@ function PersonalInfo() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/personas/update/${personId}`, {
+      const response = await fetchWithToken(`http://localhost:5000/personas/update/${personId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
