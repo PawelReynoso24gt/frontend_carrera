@@ -333,7 +333,6 @@ function DetalleStands() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
             marginTop: "20px",
             borderRadius: "10px",
             overflow: "hidden",
