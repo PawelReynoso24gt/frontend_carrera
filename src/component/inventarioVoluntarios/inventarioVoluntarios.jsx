@@ -21,6 +21,8 @@ function DetalleStandsVoluntarios() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageModalContent, setMessageModalContent] = useState("");
+  const [busqueda, setBusqueda] = useState("");
+  const [filtro, setFiltro] = useState("producto");
 
   useEffect(() => {
     fetchDetalleStands();
@@ -132,6 +134,35 @@ function DetalleStandsVoluntarios() {
       console.error("Error fetching inactive detalle stands:", error);
     }
   };  
+
+  
+  const handleBusqueda = (e) => {
+    const valorBusqueda = e.target.value.toLowerCase();
+    setBusqueda(valorBusqueda);
+
+    const detallesFiltrados = detalleStands.filter((detalle) => {
+      const producto = productos.find((p) => p.idProducto === detalle.idProducto);
+      const stand = stands.find((s) => s.idStand === detalle.idStand);
+
+      if (filtro === "producto") {
+        return producto?.nombreProducto.toLowerCase().includes(valorBusqueda);
+      } else if (filtro === "stand") {
+        return stand?.nombreStand.toLowerCase().includes(valorBusqueda);
+      } else if (filtro === "cantidad") {
+        return detalle.cantidad.toString().includes(valorBusqueda);
+      }
+      return false;
+    });
+
+    setFilteredDetalleStands(detallesFiltrados);
+  };
+
+  const handleFiltroChange = (e) => {
+    setFiltro(e.target.value);
+    setBusqueda("");
+    setFilteredDetalleStands(detalleStands);
+  };
+
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
@@ -338,13 +369,36 @@ function DetalleStandsVoluntarios() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <InputGroup className="mb-3">
+
+          {/* Buscador con filtro */}
+      <div
+        className="search-container"
+        style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px" }}
+      >
+        <select
+          className="filter-dropdown"
+          value={filtro}
+          onChange={handleFiltroChange}
+        >
+          <option value="producto">Producto</option>
+          <option value="stand">Stand</option>
+          <option value="cantidad">Cantidad</option>
+        </select>
+        <input
+          type="text"
+          placeholder={`Buscar por ${filtro}`}
+          value={busqueda}
+          onChange={handleBusqueda}
+        />
+      </div>
+
+       {/* <InputGroup className="mb-3">
           <FormControl
             placeholder="Buscar por cantidad, producto..."
             value={searchTerm}
             onChange={handleSearch}
           />
-        </InputGroup>
+        </InputGroup>*/}
 
         <div className="d-flex justify-content-start align-items-center mb-3">
           <Button

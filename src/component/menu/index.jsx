@@ -117,7 +117,6 @@ function Menu({ toggleMenu, menu }) {
         { link: "traslados", title: "Gestión de traslados" },
         { link: "categoriaHorarios", title: "Gestión de categoría horarios" },
         { link: "Categorias", title: "Gestión de categoría productos" },
-        { link: "mercanciaVoluntarios", title: "Mercancía voluntarios" },
         { link: "inventarioMventas", title: "Inventario de mercancía para ventas" },
         { link: "autorizacionSolicitud", title: "Autorización de solicitudes" },
         { link: "asignacionStand", title: "Asignación de Stands" },
