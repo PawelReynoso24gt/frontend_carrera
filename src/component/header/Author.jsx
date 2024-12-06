@@ -9,6 +9,8 @@ function Author({ subNav, setSubNav, title }) {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('token');
+      const personId = localStorage.getItem('personId');
+      const userId = localStorage.getItem('userId');
       if (token) {
         // Obtener el id del usuario decodificando el token (siempre que el id esté incluido en el payload)
         const userId = parseJwt(token).idUsuario;
@@ -22,6 +24,8 @@ function Author({ subNav, setSubNav, title }) {
 
         // Eliminar el token del localStorage
         localStorage.removeItem('token');
+        localStorage.removeItem('personId');
+        localStorage.removeItem('userId');
       }
 
       // Navegar a la página de login

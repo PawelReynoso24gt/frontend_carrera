@@ -10,7 +10,7 @@ function Settings({ children }) {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Settings" link="/settings" />
+      <BreadCrumb title="Configuración" link="/settings" />
       <Wrapper>
         <div className="row">
           <Sidebar />
