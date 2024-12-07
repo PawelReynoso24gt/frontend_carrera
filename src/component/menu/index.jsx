@@ -119,6 +119,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "Categorias", title: "Gestión de categoría productos" },
         { link: "inventarioMventas", title: "Inventario de mercancía para ventas" },
         { link: "autorizacionSolicitud", title: "Autorización de solicitudes" },
+        { link: "autorizacionTalonarios", title: "Autorización de talonarios" },
         { link: "asignacionStand", title: "Asignación de Stands" },
       ].map((item) => (
         <li
