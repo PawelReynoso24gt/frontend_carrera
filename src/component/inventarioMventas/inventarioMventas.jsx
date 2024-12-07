@@ -3,49 +3,76 @@ import axios from "axios";
 import { Button, Form, Table, Modal, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
-function Departamentos() {
-  const [departamentos, setDepartamentos] = useState([]);
-  const [filteredDepartamentos, setFilteredDepartamentos] = useState([]);
+function DetalleStands() {
+  const [detalleStands, setDetalleStands] = useState([]);
+  const [filteredDetalleStands, setFilteredDetalleStands] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingDepartamento, setEditingDepartamento] = useState(null);
-  const [newDepartamento, setNewDepartamento] = useState({ departamento: "", estado: 1 });
+  const [editingDetalleStand, setEditingDetalleStand] = useState(null);
+  const [newDetalleStand, setNewDetalleStand] = useState({
+    cantidad: "",
+    estado: 1,
+    idProducto: "",
+    idStand: "",
+  });
+  const [productos, setProductos] = useState([]);
+  const [stands, setStands] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageModalContent, setMessageModalContent] = useState("");
 
   useEffect(() => {
-    fetchDepartamentos();
+    fetchDetalleStands();
+    fetchProductos();
+    fetchStands();
   }, []);
 
-  const fetchDepartamentos = async () => {
+  const fetchDetalleStands = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos");
-      setDepartamentos(response.data);
-      setFilteredDepartamentos(response.data);
+      const response = await axios.get("http://localhost:5000/detalle_stands");
+      setDetalleStands(response.data);
+      setFilteredDetalleStands(response.data);
     } catch (error) {
-      console.error("Error fetching departamentos:", error);
+      console.error("Error fetching detalle stands:", error);
     }
   };
 
-  const fetchActiveDepartamentos = async () => {
+  const fetchProductos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos/activas");
-      setDepartamentos(response.data);
-      setFilteredDepartamentos(response.data);
+      const response = await axios.get("http://localhost:5000/productos");
+      setProductos(response.data);
     } catch (error) {
-      console.error("Error fetching active departamentos:", error);
+      console.error("Error fetching productos:", error);
     }
   };
 
-  const fetchInactiveDepartamentos = async () => {
+  const fetchStands = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos/inactivas");
-      setDepartamentos(response.data);
-      setFilteredDepartamentos(response.data);
+      const response = await axios.get("http://localhost:5000/stand");
+      setStands(response.data);
     } catch (error) {
-      console.error("Error fetching inactive departamentos:", error);
+      console.error("Error fetching stands:", error);
+    }
+  };
+
+  const fetchActiveDetalleStands = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/detalle_stands/activos");
+      setDetalleStands(response.data);
+      setFilteredDetalleStands(response.data);
+    } catch (error) {
+      console.error("Error fetching active detalle stands:", error);
+    }
+  };
+
+  const fetchInactiveDetalleStands = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
+      setDetalleStands(response.data);
+      setFilteredDetalleStands(response.data);
+    } catch (error) {
+      console.error("Error fetching inactive detalle stands:", error);
     }
   };
 
@@ -53,45 +80,82 @@ function Departamentos() {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
 
-    const filtered = departamentos.filter((departamento) =>
-      departamento.departamento.toLowerCase().includes(value)
-    );
+    const filtered = detalleStands.filter((detalle) => {
+      const producto = productos.find((p) => p.idProducto === detalle.idProducto);
+      const stand = stands.find((s) => s.idStand === detalle.idStand);
 
-    setFilteredDepartamentos(filtered);
+      const productoNombre = producto ? producto.nombreProducto.toLowerCase() : "";
+      const standNombre = stand ? stand.nombreStand.toLowerCase() : "";
+
+      return (
+        detalle.cantidad.toString().includes(value) ||
+        productoNombre.includes(value) ||
+        standNombre.includes(value)
+      );
+    });
+
+    setFilteredDetalleStands(filtered);
+    setCurrentPage(1);
   };
 
-  const handleShowModal = (departamento = null) => {
-    setEditingDepartamento(departamento);
-    setNewDepartamento(departamento || { departamento: "", estado: 1 });
+  const handleShowModal = (detalleStand = null) => {
+    setEditingDetalleStand(detalleStand);
+    setNewDetalleStand(
+      detalleStand || {
+        cantidad: "",
+        estado: 1,
+        idProducto: "",
+        idStand: "",
+      }
+    );
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingDepartamento(null);
+    setEditingDetalleStand(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewDepartamento({ ...newDepartamento, [name]: value });
+    setNewDetalleStand({ ...newDetalleStand, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingDepartamento) {
-        await axios.put(`http://localhost:5000/departamentos/${editingDepartamento.idDepartamento}`, newDepartamento);
-        setMessageModalContent("Departamento actualizado con éxito");
-      } else {
-        await axios.post("http://localhost:5000/departamentos/create", newDepartamento);
-        setMessageModalContent("Departamento creado con éxito");
+      const selectedProduct = productos.find(
+        (producto) => producto.idProducto === parseInt(newDetalleStand.idProducto)
+      );
+
+      if (selectedProduct && newDetalleStand.cantidad > selectedProduct.cantidad) {
+        setMessageModalContent(`Stock insuficiente. Solo quedan ${selectedProduct.cantidad} unidades.`);
+        setShowMessageModal(true);
+        return;
       }
-      fetchDepartamentos();
+
+      if (editingDetalleStand) {
+        await axios.put(
+          `http://localhost:5000/detalle_stands/update/${editingDetalleStand.idDetalleStands}`,
+          newDetalleStand
+        );
+        setMessageModalContent("Detalle Stand actualizado con éxito");
+      } else {
+        await axios.post("http://localhost:5000/detalle_stands/create", newDetalleStand);
+        setMessageModalContent("Detalle Stand creado con éxito");
+      }
+
+      fetchDetalleStands();
       setShowMessageModal(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting departamento:", error);
-      setMessageModalContent("Error al procesar la solicitud.");
+      console.error("Error submitting detalle stand:", error);
+
+      if (error.response && error.response.data && error.response.data.message) {
+        setMessageModalContent(error.response.data.message);
+      } else {
+        setMessageModalContent("Ocurrió un error al procesar la solicitud.");
+      }
       setShowMessageModal(true);
     }
   };
@@ -99,22 +163,24 @@ function Departamentos() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/departamentos/${id}`, { estado: nuevoEstado });
-      fetchDepartamentos();
+      await axios.put(`http://localhost:5000/detalle_stands/update/${id}`, { estado: nuevoEstado });
+      fetchDetalleStands();
       setMessageModalContent(
-        `Departamento ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+        `Detalle Stand ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
       );
       setShowMessageModal(true);
     } catch (error) {
       console.error("Error toggling estado:", error);
+      setMessageModalContent("Error al intentar cambiar el estado.");
+      setShowMessageModal(true);
     }
   };
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentDepartamentos = filteredDepartamentos.slice(indexOfFirstRow, indexOfLastRow);
+  const currentDetalleStands = filteredDetalleStands.slice(indexOfFirstRow, indexOfLastRow);
 
-  const totalPages = Math.ceil(filteredDepartamentos.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredDetalleStands.length / rowsPerPage);
 
   const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
@@ -189,16 +255,15 @@ function Departamentos() {
         </Modal.Footer>
       </Modal>
 
-      {/* Encabezado */}
+      {/* Resto del contenido */}
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Departamentos
+            Gestión de Detalle Stands
           </h3>
         </div>
       </div>
 
-      {/* Contenedor principal */}
       <div
         className="container mt-4"
         style={{
@@ -210,7 +275,7 @@ function Departamentos() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar por departamento..."
+            placeholder="Buscar por cantidad, producto o stand..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -222,26 +287,26 @@ function Departamentos() {
               backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
+              width: "130px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
-               width: "150px"
             }}
             onClick={() => handleShowModal()}
           >
-            Agregar Departamento
+            Agregar Detalle Stand
           </Button>
           <Button
             style={{
               backgroundColor: "#009B85",
               borderColor: "#007AC3",
               padding: "5px 10px",
+              width: "100px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
-               width: "100px"
             }}
-            onClick={fetchActiveDepartamentos}
+            onClick={fetchActiveDetalleStands}
           >
             Activos
           </Button>
@@ -250,11 +315,11 @@ function Departamentos() {
               backgroundColor: "#bf2200",
               borderColor: "#007AC3",
               padding: "5px 10px",
+              width: "100px",
               fontWeight: "bold",
               color: "#fff",
-               width: "100px"
             }}
-            onClick={fetchInactiveDepartamentos}
+            onClick={fetchInactiveDetalleStands}
           >
             Inactivos
           </Button>
@@ -268,26 +333,35 @@ function Departamentos() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
+            marginTop: "20px",
             borderRadius: "10px",
             overflow: "hidden",
-            marginTop: "20px",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th style={{ textAlign: "center" }}>ID</th>
-              <th style={{ textAlign: "center" }}>Nombre</th>
+              <th style={{ textAlign: "center" }}>Cantidad</th>
+              <th style={{ textAlign: "center" }}>Producto</th>
+              <th style={{ textAlign: "center" }}>Stand</th>
               <th style={{ textAlign: "center" }}>Estado</th>
               <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {currentDepartamentos.map((departamento) => (
-              <tr key={departamento.idDepartamento}>
-                <td style={{ textAlign: "center" }}>{departamento.idDepartamento}</td>
-                <td style={{ textAlign: "center" }}>{departamento.departamento}</td>
+            {currentDetalleStands.map((detalle) => (
+              <tr key={detalle.idDetalleStands}>
+                <td style={{ textAlign: "center" }}>{detalle.idDetalleStands}</td>
+                <td style={{ textAlign: "center" }}>{detalle.cantidad}</td>
                 <td style={{ textAlign: "center" }}>
-                  {departamento.estado === 1 ? "Activo" : "Inactivo"}
+                  {productos.find((producto) => producto.idProducto === detalle.idProducto)?.nombreProducto ||
+                    "Desconocido"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {stands.find((stand) => stand.idStand === detalle.idStand)?.nombreStand || "Desconocido"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {detalle.estado === 1 ? "Activo" : "Inactivo"}
                 </td>
                 <td style={{ textAlign: "center" }}>
                   <FaPencilAlt
@@ -298,9 +372,9 @@ function Departamentos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(departamento)}
+                    onClick={() => handleShowModal(detalle)}
                   />
-                  {departamento.estado ? (
+                  {detalle.estado ? (
                     <FaToggleOn
                       style={{
                         color: "#30c10c",
@@ -309,7 +383,7 @@ function Departamentos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(departamento.idDepartamento, departamento.estado)}
+                      onClick={() => toggleEstado(detalle.idDetalleStands, detalle.estado)}
                     />
                   ) : (
                     <FaToggleOff
@@ -320,7 +394,7 @@ function Departamentos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(departamento.idDepartamento, departamento.estado)}
+                      onClick={() => toggleEstado(detalle.idDetalleStands, detalle.estado)}
                     />
                   )}
                 </td>
@@ -338,27 +412,61 @@ function Departamentos() {
           style={{ backgroundColor: "#007AC3", color: "#fff" }}
         >
           <Modal.Title>
-            {editingDepartamento ? "Editar Departamento" : "Agregar Departamento"}
+            {editingDetalleStand ? "Editar Detalle Stand" : "Agregar Detalle Stand"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <Form.Group controlId="departamento">
-              <Form.Label>Departamento</Form.Label>
+            <Form.Group controlId="cantidad">
+              <Form.Label>Cantidad</Form.Label>
               <Form.Control
-                type="text"
-                name="departamento"
-                value={newDepartamento.departamento}
+                type="number"
+                name="cantidad"
+                value={newDetalleStand.cantidad}
                 onChange={handleChange}
                 required
               />
+            </Form.Group>
+            <Form.Group controlId="idProducto">
+              <Form.Label>Producto</Form.Label>
+              <Form.Control
+                as="select"
+                name="idProducto"
+                value={newDetalleStand.idProducto}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccionar Producto</option>
+                {productos.map((producto) => (
+                  <option key={producto.idProducto} value={producto.idProducto}>
+                    {producto.nombreProducto}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+            <Form.Group controlId="idStand">
+              <Form.Label>Stand</Form.Label>
+              <Form.Control
+                as="select"
+                name="idStand"
+                value={newDetalleStand.idStand}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccionar Stand</option>
+                {stands.map((stand) => (
+                  <option key={stand.idStand} value={stand.idStand}>
+                    {stand.nombreStand}
+                  </option>
+                ))}
+              </Form.Control>
             </Form.Group>
             <Form.Group controlId="estado">
               <Form.Label>Estado</Form.Label>
               <Form.Control
                 as="select"
                 name="estado"
-                value={newDepartamento.estado}
+                value={newDetalleStand.estado}
                 onChange={handleChange}
               >
                 <option value={1}>Activo</option>
@@ -376,7 +484,7 @@ function Departamentos() {
               }}
               type="submit"
             >
-              {editingDepartamento ? "Actualizar" : "Crear"}
+              {editingDetalleStand ? "Actualizar" : "Crear"}
             </Button>
           </Form>
         </Modal.Body>
@@ -385,4 +493,4 @@ function Departamentos() {
   );
 }
 
-export default Departamentos;
+export default DetalleStands;

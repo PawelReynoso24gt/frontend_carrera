@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import axios from "axios";
+import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function HorariosComponent() {
   const [horarios, setHorarios] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingHorario, setEditingHorario] = useState(null);
-  const [newHorario, setNewHorario] = useState({ horarioInicio: '', horarioFinal: '', estado: 1 });
+  const [newHorario, setNewHorario] = useState({
+    horarioInicio: "",
+    horarioFinal: "",
+    estado: 1,
+  });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [filter, setFilter] = useState('activos');
+  const [alertMessage, setAlertMessage] = useState("");
+  const [filter, setFilter] = useState("activos");
 
   useEffect(() => {
     fetchActiveHorarios();
@@ -17,29 +22,43 @@ function HorariosComponent() {
 
   const fetchActiveHorarios = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/horarios/activos');
-      setHorarios(response.data);
-      setFilter('activos');
+      const response = await axios.get("http://localhost:5000/horarios/activos");
+      setHorarios(formatDates(response.data));
+      setFilter("activos");
     } catch (error) {
-      console.error('Error fetching active horarios:', error);
+      console.error("Error fetching active horarios:", error);
     }
   };
 
   const fetchInactiveHorarios = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/horarios', {
-        params: { estado: 0 }
-      });
-      setHorarios(response.data.filter(horario => horario.estado === 0));
-      setFilter('inactivos');
+      const response = await axios.get("http://localhost:5000/horarios");
+      // Filtrar horarios con estado 0
+      const inactiveHorarios = response.data.filter((horario) => horario.estado === 0);
+      setHorarios(formatDates(inactiveHorarios));
+      setFilter("inactivos");
     } catch (error) {
-      console.error('Error fetching inactive horarios:', error);
+      console.error("Error fetching inactive horarios:", error);
     }
+  };  
+
+  const formatDates = (data) => {
+    return data.map((item) => ({
+      ...item,
+      horarioInicio: item.horarioInicio.replace("T", " ").split(".")[0],
+      horarioFinal: item.horarioFinal.replace("T", " ").split(".")[0],
+    }));
   };
 
   const handleShowModal = (horario = null) => {
     setEditingHorario(horario);
-    setNewHorario(horario || { horarioInicio: '', horarioFinal: '', estado: 1 });
+    setNewHorario(
+      horario || {
+        horarioInicio: "",
+        horarioFinal: "",
+        estado: 1,
+      }
+    );
     setShowModal(true);
   };
 
@@ -56,18 +75,25 @@ function HorariosComponent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Convertimos los valores de horarioInicio y horarioFinal al formato requerido
+      const formattedHorario = {
+        ...newHorario,
+        horarioInicio: new Date(newHorario.horarioInicio).toISOString().replace("T", " ").split(".")[0],
+        horarioFinal: new Date(newHorario.horarioFinal).toISOString().replace("T", " ").split(".")[0],
+      };
+
       if (editingHorario) {
-        await axios.put(`http://localhost:5000/horarios/${editingHorario.idHorario}`, newHorario);
-        setAlertMessage('Horario actualizado con éxito');
+        await axios.put(`http://localhost:5000/horarios/${editingHorario.idHorario}`, formattedHorario);
+        setAlertMessage("Horario actualizado con éxito");
       } else {
-        await axios.post('http://localhost:5000/horarios', newHorario);
-        setAlertMessage('Horario creado con éxito');
+        await axios.post("http://localhost:5000/horarios", formattedHorario);
+        setAlertMessage("Horario creado con éxito");
       }
-      filter === 'activos' ? fetchActiveHorarios() : fetchInactiveHorarios();
+      filter === "activos" ? fetchActiveHorarios() : fetchInactiveHorarios();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting horario:', error);
+      console.error("Error submitting horario:", error.response?.data || error);
     }
   };
 
@@ -75,11 +101,11 @@ function HorariosComponent() {
     try {
       const newEstado = currentEstado === 1 ? 0 : 1;
       await axios.put(`http://localhost:5000/horarios/${id}`, { estado: newEstado });
-      setAlertMessage(`Horario ${newEstado === 1 ? 'activado' : 'desactivado'} con éxito`);
+      setAlertMessage(`Horario ${newEstado === 1 ? "activado" : "desactivado"} con éxito`);
       setShowAlert(true);
-      filter === 'activos' ? fetchActiveHorarios() : fetchInactiveHorarios();
+      filter === "activos" ? fetchActiveHorarios() : fetchInactiveHorarios();
     } catch (error) {
-      console.error('Error toggling estado of horario:', error);
+      console.error("Error toggling estado of horario:", error);
     }
   };
 
@@ -102,47 +128,49 @@ function HorariosComponent() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "180px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Horario
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveHorarios}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveHorarios}
-        >
-          Inactivos
-        </Button>
+        <div className="d-flex justify-content-start mb-3">
+          <Button
+            style={{
+              backgroundColor: "#743D90",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "180px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Horario
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#007AC3",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveHorarios}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveHorarios}
+          >
+            Inactivos
+          </Button>
+        </div>
 
         <Alert
           variant="success"
@@ -154,62 +182,55 @@ function HorariosComponent() {
           {alertMessage}
         </Alert>
 
-        <Table
-          striped
-          bordered
-          hover
-          responsive
-          className="mt-3"
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "8px",
-            marginTop: "20px",
-          }}
-        >
+        <Table striped bordered hover responsive>
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
-              <th>ID</th>
-              <th>Horario Inicio</th>
-              <th>Horario Final</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Horario Inicio</th>
+              <th style={{ textAlign: "center" }}>Horario Final</th>
+              <th style={{ textAlign: "center" }}>Estado</th>
+              <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {horarios.map((horario) => (
               <tr key={horario.idHorario}>
-                <td>{horario.idHorario}</td>
-                <td>{horario.horarioInicio}</td>
-                <td>{horario.horarioFinal}</td>
-                <td>{horario.estado ? "Activo" : "Inactivo"}</td>
-                <td>
-                  <Button
+                <td style={{ textAlign: "center" }}>{horario.idHorario}</td>
+                <td style={{ textAlign: "center" }}>{horario.horarioInicio}</td>
+                <td style={{ textAlign: "center" }}>{horario.horarioFinal}</td>
+                <td style={{ textAlign: "center" }}>{horario.estado ? "Activo" : "Inactivo"}</td>
+                <td style={{ textAlign: "center" }}>
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(horario)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: horario.estado ? "#6c757d" : "#28a745",
-                      borderColor: horario.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleHorarioEstado(horario.idHorario, horario.estado)}
-                  >
-                    {horario.estado ? "Desactivar" : "Activar"}
-                  </Button>
+                  />
+                  {horario.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleHorarioEstado(horario.idHorario, horario.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleHorarioEstado(horario.idHorario, horario.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -228,11 +249,9 @@ function HorariosComponent() {
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="horarioInicio">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Horario Inicio
-                </Form.Label>
+                <Form.Label>Horario Inicio</Form.Label>
                 <Form.Control
-                  type="text"
+                  type="datetime-local"
                   name="horarioInicio"
                   value={newHorario.horarioInicio}
                   onChange={handleChange}
@@ -240,11 +259,9 @@ function HorariosComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="horarioFinal">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Horario Final
-                </Form.Label>
+                <Form.Label>Horario Final</Form.Label>
                 <Form.Control
-                  type="text"
+                  type="datetime-local"
                   name="horarioFinal"
                   value={newHorario.horarioFinal}
                   onChange={handleChange}
@@ -252,9 +269,7 @@ function HorariosComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
+                <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -266,15 +281,13 @@ function HorariosComponent() {
                 </Form.Control>
               </Form.Group>
               <Button
+                type="submit"
                 style={{
                   backgroundColor: "#007AC3",
-                  borderColor: "#007AC3",
-                  padding: "5px 10px",
+                  color: "#fff",
                   width: "100%",
                   fontWeight: "bold",
-                  color: "#fff",
                 }}
-                type="submit"
               >
                 {editingHorario ? "Actualizar" : "Crear"}
               </Button>
