@@ -23,9 +23,7 @@ function Author({ subNav, setSubNav, title }) {
         });
 
         // Eliminar el token del localStorage
-        localStorage.removeItem('token');
-        localStorage.removeItem('personId');
-        localStorage.removeItem('userId');
+        localStorage.clear();
       }
 
       // Navegar a la página de login
