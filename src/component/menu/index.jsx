@@ -116,6 +116,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "inventarioMventas", title: "Inventario de mercancía para ventas" },
         { link: "autorizacionSolicitud", title: "Autorización de solicitudes" },
         { link: "asignacionStand", title: "Asignación de Stands" },
+        { link: "soporteTecnico", title: "Registros de Soporte Técnico" },
       ].map((item) => (
         <li
           key={item.link}

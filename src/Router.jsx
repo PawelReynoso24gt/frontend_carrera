@@ -74,6 +74,7 @@ import MercanciaVoluntarios from "./component/mercanciaVoluntarios/mercanciaVolu
 import InventarioMventas from "./pages/inventarioMventas/intentarioMventas";
 import AutorizacionSolicitud from "./pages/autorizacionSolicitud/autorizacionSolicitud";
 import AsignacionStands from "./component/asignacionStand/asignacionStand";
+import SoporteTecnico from "./pages/soporteTecnico/soporteTecnico";
 
 const router = createBrowserRouter([
   {
@@ -286,6 +287,10 @@ const router = createBrowserRouter([
       {
         path: "/asignacionStand",
         element: <AsignacionStands/>,
+      },
+      {
+        path: "/soporteTecnico",
+        element: <SoporteTecnico/>,
       },
       {
         path: "/gallery",
