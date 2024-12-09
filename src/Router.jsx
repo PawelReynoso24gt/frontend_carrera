@@ -66,15 +66,16 @@ import Personas from "./pages/personas/personas";
 import Categorias from "./pages/categoria/categoria";
 import Traslados from "./pages/traslados/traslados";
 import TipoTraslado from "./pages/tipoTraslado/tipoTraslado";
-import Eventos from "./component/eventos/eventos";
-import Pedidos from "./component/pedidos/pedidos";
-import CategoriaHorarios from "./component/categoriaHorarios/categoriaHorarios";
-import Permisos from "./component/permisos/permisos";
-import MercanciaVoluntarios from "./component/mercanciaVoluntarios/mercanciaVoluntarios";
+import Eventos from "./pages/eventos/eventos";
+import Pedidos from "./pages/pedidos/pedidos";
+import CategoriaHorarios from "./pages/categoriaHorarios/categoriaHorarios";
+import Permisos from "./pages/permisos/permisos";
+import MercanciaVoluntarios from "./pages/mercanciaVoluntarios/mercanciaVoluntarios";
 import InventarioMventas from "./pages/inventarioMventas/intentarioMventas";
 import AutorizacionSolicitud from "./pages/autorizacionSolicitud/autorizacionSolicitud";
-import AsignacionStands from "./component/asignacionStand/asignacionStand";
+import AsignacionStands from "./pages/asignacionStand/asignacionStand";
 import AutorizacionTalonarios from "./pages/autorizacionTalonarios/autorizacionTalonarios";
+import ReporteProblemas from "./pages/reporteProblemas/reporteProblemas";
 
 const router = createBrowserRouter([
   {
@@ -291,6 +292,10 @@ const router = createBrowserRouter([
       {
         path: "/asignacionStand",
         element: <AsignacionStands/>,
+      },
+      {
+        path: "/reporteProblemas",
+        element: <ReporteProblemas/>,
       },
       {
         path: "/gallery",

@@ -91,14 +91,12 @@ function AsignacionStands() {
 
       {/* Contenedor Principal */}
       <div
+        className="container mt-4"
         style={{
-          marginLeft: "350px",
-          marginRight: "20px",
           backgroundColor: "#f8f9fa",
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-           maxWidth: "calc(100% - 270px)"
         }}
       >
           <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>

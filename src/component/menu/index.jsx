@@ -121,6 +121,8 @@ function Menu({ toggleMenu, menu }) {
         { link: "autorizacionSolicitud", title: "Autorización de solicitudes" },
         { link: "autorizacionTalonarios", title: "Autorización de talonarios" },
         { link: "asignacionStand", title: "Asignación de Stands" },
+        { link: "permisos", title: "Asignación de Permisos" },
+        { link: "reporteProblemas", title: "Reporte de problemas" },
       ].map((item) => (
         <li
           key={item.link}
