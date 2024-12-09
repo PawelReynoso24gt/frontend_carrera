@@ -1,111 +1,94 @@
-import React from "react";
-import SelectInput from "../form/SelectInput";
-import seller1 from "../../assets/img/seller-1.png";
-import seller2 from "../../assets/img/seller-2.png";
-import seller3 from "../../assets/img/seller-3.png";
-import seller4 from "../../assets/img/seller-4.png";
-import seller5 from "../../assets/img/seller-5.png";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 function TopSeller() {
+  const [empleados, setEmpleados] = useState([]);
+
+  useEffect(() => {
+    fetchAsistencias();
+  }, []);
+
+  const fetchAsistencias = async () => {
+    try {
+      const asistenciasResponse = await axios.get(
+        "http://localhost:5000/asistencia_eventos"
+      );
+      const empleadosResponse = await axios.get(
+        "http://localhost:5000/empleados"
+      );
+      const personasResponse = await axios.get(
+        "http://localhost:5000/personas"
+      );
+
+      const asistencias = asistenciasResponse.data;
+      const empleadosData = empleadosResponse.data;
+      const personasData = personasResponse.data;
+
+      // Contar asistencias por empleado
+      const asistenciasPorEmpleado = {};
+      asistencias.forEach((asistencia) => {
+        if (asistenciasPorEmpleado[asistencia.idEmpleado]) {
+          asistenciasPorEmpleado[asistencia.idEmpleado]++;
+        } else {
+          asistenciasPorEmpleado[asistencia.idEmpleado] = 1;
+        }
+      });
+
+      // Crear lista de empleados con nombres y asistencias
+      const empleadosConNombres = Object.entries(asistenciasPorEmpleado).map(
+        ([idEmpleado, asistencias]) => {
+          const empleado = empleadosData.find(
+            (emp) => emp.idEmpleado === parseInt(idEmpleado)
+          );
+          const persona = empleado
+            ? personasData.find((pers) => pers.idPersona === empleado.idPersona)
+            : null;
+          return {
+            idEmpleado,
+            nombre: persona ? persona.nombre : "Desconocido",
+            asistencias,
+          };
+        }
+      );
+
+      // Ordenar empleados por número de asistencias (descendente)
+      empleadosConNombres.sort((a, b) => b.asistencias - a.asistencias);
+
+      setEmpleados(empleadosConNombres);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   return (
     <div className="col-xl-12 col-lg-6 col-md-6 col-12 crancy-sidebar__widget">
-      {/* <!-- crancy Single Sidebar --> */}
       <div className="crancy-sidebar__single">
-        {/* <!-- Sidebar Heading --> */}
         <div className="crancy-sidebar__heading">
-          <h4 className="crancy-sidebar__title">Top Seller</h4>
-          <SelectInput
-            options={[
-              "View All",
-              "Last 7 Days",
-              "Last 15 Days",
-              "Last 30 Days",
-            ]}
-          />
+          <h4 className="crancy-sidebar__title">Top Empleados</h4>
         </div>
-        {/* <!-- Sidebar Creator Lists --> */}
         <div className="crancy-sidebar__creators">
-          <div className="tab-content" id="nav-tabContent">
-            {/* <!-- Single Tab --> */}
-            <div
-              className="tab-pane fade show active"
-              id="seller_tab-3"
-              role="tabpanel"
-              aria-labelledby="nav-home-tab"
-            >
-              <ul className="crancy-sidebar__creatorlist crancy-sidebar__creatorlist--sellers">
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={seller1} alt="#" />
-                    <a href="#">
-                      <b className="crancy-sidebar__creator-name">
-                        Eleanor Pena
-                      </b>
-                      <span className="crancy-sidebar__creator-badge crancy-color1">
-                        13k
-                      </span>
-                    </a>
-                  </div>
-                </li>
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={seller2} alt="#" />
-                    <a href="#">
-                      <b className="crancy-sidebar__creator-name">
-                        Kathryn Murphy
-                      </b>
-                      <span className="crancy-sidebar__creator-badge crancy-color1">
-                        20K
-                      </span>
-                    </a>
-                  </div>
-                </li>
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={seller3} alt="#" />
-                    <a href="#">
-                      <b className="crancy-sidebar__creator-name">
-                        Cody Fisher
-                      </b>
-                      <span className="crancy-sidebar__creator-badge crancy-color1">
-                        33K
-                      </span>
-                    </a>
-                  </div>
-                </li>
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={seller4} alt="#" />
-                    <a href="#">
-                      <b className="crancy-sidebar__creator-name">
-                        Darlene Robertson
-                      </b>
-                      <span className="crancy-sidebar__creator-badge crancy-color1">
-                        10K
-                      </span>
-                    </a>
-                  </div>
-                </li>
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={seller5} alt="#" />
-                    <a href="#">
-                      <b className="crancy-sidebar__creator-name">
-                        Ronald Richards
-                      </b>
-                      <span className="crancy-sidebar__creator-badge crancy-color1">
-                        35K
-                      </span>
-                    </a>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
+          <ul className="crancy-sidebar__creatorlist crancy-sidebar__creatorlist--sellers">
+            {empleados.map((empleado, index) => (
+              <li key={empleado.idEmpleado}>
+                <div className="crancy-sidebar__creator">
+                  <img
+                    src={`https://via.placeholder.com/50?text=${empleado.nombre}`}
+                    alt={`Empleado ${empleado.nombre}`}
+                  />
+                  <a href="#">
+                    <b className="crancy-sidebar__creator-name">
+                      {empleado.nombre}
+                    </b>
+                    <span className="crancy-sidebar__creator-badge crancy-color1">
+                      {empleado.asistencias} Asistencias
+                    </span>
+                  </a>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
-        {/* <!-- End Sidebar Creator Lists --> */}
       </div>
-      {/* End crancy Single Sidebar */}
     </div>
   );
 }

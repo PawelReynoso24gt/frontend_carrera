@@ -46,7 +46,7 @@ import Departamentos from "./pages/departamentos/departamentos";
 import TipoPago from "./pages/tipoPago/tipoPago";
 import TipoStands from "./pages/tipoStands/tipoStands";
 import Horarios from "./pages/horarios/horarios";
-import DetalleHorariosComponent from "./component/detallehorarios/detallehorarios";
+import DetalleHorariosComponent from "./pages/detallehorarios/detallehorarios";
 import FotoSedesPage from "./pages/fotosedes/fotosedes";
 import TipoPublico from "./pages/tipo_publicos/tipo_publicos"
 import Stands from "./pages/stands/stands";
@@ -74,6 +74,8 @@ import MercanciaVoluntarios from "./component/mercanciaVoluntarios/mercanciaVolu
 import InventarioMventas from "./pages/inventarioMventas/intentarioMventas";
 import AutorizacionSolicitud from "./pages/autorizacionSolicitud/autorizacionSolicitud";
 import AsignacionStands from "./component/asignacionStand/asignacionStand";
+import AutorizacionTalonarios from "./pages/autorizacionTalonarios/autorizacionTalonarios";
+import SoporteTecnico from "./pages/soporteTecnico/soporteTecnico";
 
 const router = createBrowserRouter([
   {
@@ -284,8 +286,16 @@ const router = createBrowserRouter([
         element: <AutorizacionSolicitud/>,
       },
       {
+        path: "/autorizacionTalonarios",
+        element: <AutorizacionTalonarios/>,
+      },
+      {
         path: "/asignacionStand",
         element: <AsignacionStands/>,
+      },
+      {
+        path: "/soporteTecnico",
+        element: <SoporteTecnico/>,
       },
       {
         path: "/gallery",

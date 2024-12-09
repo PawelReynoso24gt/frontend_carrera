@@ -1,100 +1,148 @@
-import React from "react";
-import SelectInput from "../form/SelectInput";
-import afghanistan from "../../assets/img/country-1.png";
-import saudiArabia from "../../assets/img/country-5.png";
-import bangladesh from "../../assets/img/country-2.png";
-import unitedStates from "../../assets/img/country-4.png";
+import React, { useEffect, useState } from "react";
+import { Bar } from "react-chartjs-2";
 
 function Countries() {
+  const [eventos, setEventos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/recaudacion_evento")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Error al obtener los eventos");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Datos obtenidos del backend:", data);
+        setEventos(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error:", err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  const renderChart = () => {
+    if (!eventos || eventos.length < 2) {
+      return (
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
+          <h2>Datos insuficientes para generar la gráfica</h2>
+          <p>Se necesitan al menos 2 eventos para realizar la comparación.</p>
+        </div>
+      );
+    }
+
+    const sortedEvents = [...eventos].sort(
+      (a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro)
+    );
+    const latestEvent = sortedEvents[0];
+    const previousEvent = sortedEvents[1];
+
+    const chartData = {
+      labels: ["Evento Anterior", "Evento Más Reciente"],
+      datasets: [
+        {
+          label: "Recaudación ($)",
+          data: [previousEvent.recaudacion, latestEvent.recaudacion],
+          backgroundColor: ["#8E53E0", "#36A2EB"],
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    const options = {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            font: {
+              size: 20, // Tamaño de la leyenda
+            },
+          },
+        },
+        title: {
+          display: true,
+          text: "Comparación de Recaudación entre Eventos",
+          font: {
+            size: 25, // Tamaño del título
+            weight: "bold",
+          },
+          color: "#284CDB",
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            font: {
+              size: 16,
+            },
+          },
+        },
+        y: {
+          ticks: {
+            font: {
+              size: 16,
+            },
+          },
+        },
+      },
+    };
+
+    return (
+      <div style={{ width: "100%", marginTop: "20px" }}>
+        <Bar data={chartData} options={options} />
+        {latestEvent.recaudacion <= previousEvent.recaudacion && (
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "10px",
+              backgroundColor: "#FFE4E1",
+              border: "1px solid #FF4500",
+              borderRadius: "5px",
+              textAlign: "center",
+            }}
+          >
+            <strong>No se alcanzó la meta</strong>
+            <p>
+              La recaudación del evento más reciente fue menor o igual a la del
+              evento anterior.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  if (loading) {
+    return <p>Cargando datos...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
+
   return (
     <div className="col-xl-12 col-lg-6 col-md-6 col-12 crancy-sidebar__widget">
       <div className="crancy-sidebar__single">
-        {/* <!-- Sidebar Heading --> */}
         <div className="crancy-sidebar__heading">
-          <h4 className="crancy-sidebar__title">Countries</h4>
-
-          <SelectInput
-            options={[
-              "View All",
-              "Last 7 Days",
-              "Last 15 Days",
-              "Last 30 Days",
-            ]}
-          />
+          <h3
+            className="crancy-table__title mb-0"
+            style={{
+              textAlign: "center",
+              display: "block",
+              margin: "0 auto",
+              fontWeight: "bold",
+            }}
+          >
+            METAS CUMPLIDAS
+          </h3>
         </div>
-
-        {/* <!-- Sidebar Creator Lists --> */}
-        <div className="crancy-sidebar__creators">
-          <div className="tab-content" id="nav-tabContent">
-            {/* <!-- Single Tab --> */}
-            <div
-              className="tab-pane fade show active"
-              id="seller_tab-1"
-              role="tabpanel"
-              aria-labelledby="nav-home-tab"
-            >
-              <ul className="crancy-sidebar__creatorlist">
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={afghanistan} alt="#" />
-                    <a href="#">
-                      <span className="crancy-sidebar__creator-link">
-                        Afghanistan
-                      </span>
-                      <b className="crancy-sidebar__creator-name">$7.34k</b>
-                    </a>
-                  </div>
-                </li>
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={saudiArabia} alt="#" />
-                    <a href="#">
-                      <span className="crancy-sidebar__creator-link">
-                        Saudi Arabia
-                      </span>
-                      <b className="crancy-sidebar__creator-name">$5.34k</b>
-                    </a>
-                  </div>
-                </li>
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={bangladesh} alt="#" />
-                    <a href="#">
-                      <span className="crancy-sidebar__creator-link">
-                        Bangladesh
-                      </span>
-                      <b className="crancy-sidebar__creator-name">$3.34k</b>
-                    </a>
-                  </div>
-                </li>
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={unitedStates} alt="#" />
-                    <a href="#">
-                      <span className="crancy-sidebar__creator-link">
-                        United States
-                      </span>
-                      <b className="crancy-sidebar__creator-name">$3.34k</b>
-                    </a>
-                  </div>
-                </li>
-                <li>
-                  <div className="crancy-sidebar__creator">
-                    <img src={saudiArabia} alt="#" />
-                    <a href="#">
-                      <span className="crancy-sidebar__creator-link">
-                        Ireland
-                      </span>
-                      <b className="crancy-sidebar__creator-name">$8.34k</b>
-                    </a>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            {/* <!-- Single Tab --> */}
-          </div>
-        </div>
-        {/* <!-- End Sidebar Creator Lists --> */}
+        {renderChart()}
       </div>
     </div>
   );
