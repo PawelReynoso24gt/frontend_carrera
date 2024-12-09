@@ -123,6 +123,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "asignacionStand", title: "Asignación de Stands" },
         { link: "permisos", title: "Asignación de Permisos" },
         { link: "reporteProblemas", title: "Reporte de problemas" },
+        { link: "soporteTecnico", title: "Registros de Soporte Técnico" },
       ].map((item) => (
         <li
           key={item.link}

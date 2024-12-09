@@ -76,6 +76,7 @@ import AutorizacionSolicitud from "./pages/autorizacionSolicitud/autorizacionSol
 import AsignacionStands from "./pages/asignacionStand/asignacionStand";
 import AutorizacionTalonarios from "./pages/autorizacionTalonarios/autorizacionTalonarios";
 import ReporteProblemas from "./pages/reporteProblemas/reporteProblemas";
+import SoporteTecnico from "./pages/soporteTecnico/soporteTecnico";
 
 const router = createBrowserRouter([
   {
@@ -292,6 +293,10 @@ const router = createBrowserRouter([
       {
         path: "/asignacionStand",
         element: <AsignacionStands/>,
+      },
+      {
+        path: "/soporteTecnico",
+        element: <SoporteTecnico/>,
       },
       {
         path: "/reporteProblemas",
