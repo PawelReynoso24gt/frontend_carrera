@@ -8,8 +8,7 @@ function Sidebar() {
     <div className="col-xxl-3 col-12 crancy-main__sidebar">
       <div className="crancy-sidebar mg-top-30">
         <div className="row">
-          <Countries />
-          <CalenderSm />
+         
           <TopSeller />
         </div>
       </div>

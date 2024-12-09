@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import SelectInput from "../form/SelectInput";
 import axios from "axios";
 
 function ActivitySection({ className }) {
@@ -7,8 +6,6 @@ function ActivitySection({ className }) {
   const [empleados, setEmpleados] = useState([]);
   const [personas, setPersonas] = useState([]);
   const [empleadoDestacado, setEmpleadoDestacado] = useState(null);
-  const [page, setPage] = useState(1);
-  const [show, setShow] = useState(4);
 
   useEffect(() => {
     fetchData();
@@ -43,13 +40,11 @@ function ActivitySection({ className }) {
   const calcularEmpleadoDestacado = (asistenciasData, empleadosData, personasData) => {
     const asistenciaPorEmpleado = {};
 
-    // Contar las asistencias por empleado
     asistenciasData.forEach((asistencia) => {
       const key = `${asistencia.idEvento}-${asistencia.idEmpleado}`;
       asistenciaPorEmpleado[key] = (asistenciaPorEmpleado[key] || 0) + 1;
     });
 
-    // Buscar el empleado con más asistencias
     let maxAsistencias = 0;
     let destacado = null;
 
@@ -64,13 +59,11 @@ function ActivitySection({ className }) {
     });
 
     if (destacado) {
-      // Buscar el empleado en la lista de empleados
       const empleado = empleadosData.find(
         (emp) => emp.idEmpleado === destacado.idEmpleado
       );
 
       if (empleado) {
-        // Buscar la persona asociada al empleado
         const persona = personasData.find(
           (pers) => pers.idPersona === empleado.idPersona
         );
@@ -97,56 +90,94 @@ function ActivitySection({ className }) {
     return "Desconocido";
   };
 
-  return (
-    <div className={`${className ? className : "crancy-table"} mg-top-30`}>
-      <div className="crancy-table__heading">
-        <h3 className="crancy-table__title mb-0">Asistencia de Participantes</h3>
-      </div>
+  const styles = {
+    container: {
+      backgroundColor: "#f0f8ff", // Fondo azul claro
+      borderRadius: "8px",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      padding: "20px",
+      marginBottom: "20px",
+    },
+    heading: {
+      textAlign: "center",
+      fontWeight: "bold",
+      fontSize: "24px",
+      color: "#2a9d8f", // Verde
+      marginBottom: "20px",
+    },
+    alert: {
+      backgroundColor: "#EBE02E", // Amarillo
+      color: "#264653", // Verde oscuro
+      padding: "10px",
+      borderRadius: "4px",
+      textAlign: "center",
+      fontWeight: "bold",
+    },
+    table: {
+      width: "100%",
+      borderCollapse: "collapse",
+    },
+    tableHead: {
+      backgroundColor: "#284CDB", // Verde oscuro
+      color: "#ffffff",
+    },
+    tableRow: {
+      textAlign: "center",
+    },
+    tableCell: {
+      border: "1px solid #ddd",
+      padding: "8px",
+    },
+  };
 
-      {/* Empleado destacado */}
+  const formatDate = (dateString) => {
+    if (!dateString) return "Sin fecha";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  return (
+    <div style={styles.container}>
+      <h3 style={styles.heading}>ASISTENCIA DE PARTICIPANTES</h3>
+
       {empleadoDestacado && (
-        <div className="alert alert-info" role="alert">
+        <div style={styles.alert}>
           <strong>Empleado destacado:</strong> El empleado{" "}
           <strong>{empleadoDestacado.nombreEmpleado}</strong> tiene{" "}
-          <strong>{empleadoDestacado.asistencias}</strong> asistencias en el evento
+          <strong>{empleadoDestacado.asistencias}</strong> asistencias, equivalente al mayor número registrado.
         </div>
       )}
 
-      <div className="tab-content" id="myTabContent">
-        <div
-          className="tab-pane fade show active"
-          id="table_1"
-          role="tabpanel"
-          aria-labelledby="table_1"
-        >
-          {/* Tabla de asistencias */}
-          <table
-            id="crancy-table__main"
-            className="crancy-table__main crancy-table__main-v1"
-          >
-            <thead className="crancy-table__head">
-              <tr>
-                <th>ID Asistencia</th>
-                <th>Estado</th>
-                <th>ID Inscripción</th>
-                <th>Empleado</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody className="crancy-table__body">
-              {asistencias?.map((asistencia) => (
-                <tr key={asistencia.idAsistenciaEvento}>
-                  <td>{asistencia.idAsistenciaEvento}</td>
-                  <td>{asistencia.estado === 1 ? "Activo" : "Inactivo"}</td>
-                  <td>{asistencia.idInscripcionEvento}</td>
-                  <td>{obtenerNombreEmpleado(asistencia.idEmpleado)}</td>
-                  <td>{asistencia.createdAt}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <table style={styles.table}>
+        <thead style={styles.tableHead}>
+          <tr>
+            <th style={styles.tableCell}>ID Asistencia</th>
+            <th style={styles.tableCell}>Estado</th>
+            <th style={styles.tableCell}>ID Inscripción</th>
+            <th style={styles.tableCell}>Empleado</th>
+            <th style={styles.tableCell}>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {asistencias.map((asistencia) => (
+            <tr key={asistencia.idAsistenciaEvento} style={styles.tableRow}>
+              <td style={styles.tableCell}>{asistencia.idAsistenciaEvento}</td>
+              <td style={styles.tableCell}>
+                {asistencia.estado === 1 ? "Activo" : "Inactivo"}
+              </td>
+              <td style={styles.tableCell}>{asistencia.idInscripcionEvento}</td>
+              <td style={styles.tableCell}>
+                {obtenerNombreEmpleado(asistencia.idEmpleado)}
+              </td>
+              <td style={styles.tableCell}>{formatDate(asistencia.createdAt)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
