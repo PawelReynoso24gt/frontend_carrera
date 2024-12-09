@@ -1,300 +1,243 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { Table, Button, Modal, Form, Alert, InputGroup, FormControl } from "react-bootstrap";
-import { FaPencilAlt } from "react-icons/fa";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import logo from "../../assets/img/LogoAYUVI_FullAzul.png"; // Importa el logo
 
-function PermisosRolesComponent() {
-  const [roles, setRoles] = useState([]); // Lista de roles
-  const [permisos, setPermisos] = useState([]); // Todos los permisos disponibles
-  const [showModal, setShowModal] = useState(false); // Estado del modal
-  const [selectedRole, setSelectedRole] = useState(null); // Rol seleccionado
-  const [assignedPermisos, setAssignedPermisos] = useState([]); // Permisos asignados al rol seleccionado
-  const [showAlert, setShowAlert] = useState(false); // Estado de alerta
-  const [alertMessage, setAlertMessage] = useState(""); // Mensaje de alerta
-  const [currentPage, setCurrentPage] = useState(1); // Página actual
-  const [rowsPerPage, setRowsPerPage] = useState(5); // Filas por página
-  const [modulos, setModulos] = useState([]); // Lista de módulos
-
+function ReporteTecnico() {
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+  const [registros, setRegistros] = useState([]);
+  const [alerta, setAlerta] = useState("");
+  const [nombreUsuario, setNombreUsuario] = useState("");
 
   useEffect(() => {
-    fetchRoles(); // Obtener lista de roles
-    fetchPermisos(); // Obtener todos los permisos
+    const fetchData = async () => {
+      try {
+        const problemasDetectados = await axios.get("http://localhost:5000/bitacora/problemas");
+        const problemasRevision = await axios.get("http://localhost:5000/bitacora/problemasRevision");
+        const problemasSolucionados = await axios.get("http://localhost:5000/bitacora/problemasSolucionados");
+
+        setRegistros([
+          ...problemasDetectados.data.map((registro) => ({
+            ...registro,
+            estado: "problema detectado",
+          })),
+          ...problemasRevision.data.map((registro) => ({
+            ...registro,
+            estado: "problema en revisión",
+          })),
+          ...problemasSolucionados.data.map((registro) => ({
+            ...registro,
+            estado: "problema solucionado",
+          })),
+        ]);
+      } catch (error) {
+        console.error("Error al cargar registros:", error);
+        setAlerta("Hubo un error al cargar los registros.");
+      }
+    };
+
+    const fetchLoggedUser = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/usuarios/me", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Asegúrate de tener el token en localStorage
+          },
+        });
+        setNombreUsuario(response.data.nombre);
+      } catch (error) {
+        console.error("Error al obtener el usuario logueado:", error);
+        setNombreUsuario("Sin nombre");
+      }
+    };
+
+    fetchData();
+    fetchLoggedUser();
   }, []);
-
-  // Obtener módulos desde el backend
-  const fetchModulos = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/modulos");
-      setModulos(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching modulos:", error);
-    }
-  };
-
-
-  // Obtener roles desde el backend
-  const fetchRoles = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/roles");
-      setRoles(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching roles:", error);
-    }
-  };
-
-  // Obtener todos los permisos disponibles desde el backend
-  const fetchPermisos = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/permisos");
-      setPermisos(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching permisos:", error);
-    }
-  };
-
-  // Obtener permisos asignados al rol seleccionado
-  const fetchAssignedPermisos = async (roleId) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/asignacionPermisos?roleId=${roleId}`
-      );
-  
-      const permisosDelRol = response.data.filter(
-        (assignment) => assignment.idRol === roleId
-      );
-  
-      const mappedPermisos = permisos.map((permiso) => {
-        const assigned = permisosDelRol.find(
-          (assignment) => assignment.idPermiso === permiso.idPermiso
-        );
-        return {
-          idPermiso: permiso.idPermiso,
-          nombrePermiso: permiso.nombrePermiso,
-          estado: assigned ? assigned.estado : 0,
-          originalEstado: assigned ? assigned.estado : 0,
-          idModulo: permiso.idModulo, // Asociar permiso con módulo
-        };
-      });
-  
-      setAssignedPermisos(mappedPermisos);
-    } catch (error) {
-      console.error("Error fetching assigned permisos:", error);
-    }
-  };
-  
-  useEffect(() => {
-    fetchRoles(); // Obtener lista de roles
-    fetchPermisos(); // Obtener todos los permisos
-    fetchModulos(); // Obtener módulos
-  }, []);
-
-  
-  // Abrir modal y cargar permisos asignados al rol seleccionado
-  const handleShowModal = (role) => {
-    setSelectedRole(role);
-    fetchAssignedPermisos(role.idRol);
-    setShowModal(true);
-  };
   
 
-  // Cerrar modal y limpiar estado
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedRole(null);
-    setAssignedPermisos([]); // Limpia permisos asignados
-  };
-
-  // Alternar estado de un permiso en el modal
-  const handleCheckboxChange = (permisoId) => {
-    const permisoIndex = assignedPermisos.findIndex((p) => p.idPermiso === permisoId);
-
-    if (permisoIndex >= 0) {
-      // Cambiar el estado del permiso
-      const updatedPermisos = [...assignedPermisos];
-      updatedPermisos[permisoIndex].estado =
-        updatedPermisos[permisoIndex].estado === 1 ? 0 : 1; // Alternar estado
-      setAssignedPermisos(updatedPermisos);
-    } else {
-      // Si no está en la lista, agregar como activado
-      setAssignedPermisos([
-        ...assignedPermisos,
-        { idPermiso: permisoId, estado: 1, originalEstado: 0 },
-      ]);
+  const registrosFiltrados = useMemo(() => {
+    if (!fechaInicio || !fechaFin) {
+      return [];
     }
+
+    const inicio = new Date(`${fechaInicio}T00:00:00Z`);
+    const fin = new Date(`${fechaFin}T23:59:59Z`);
+
+    return registros.filter((registro) => {
+      const fechaRegistro = new Date(registro.fechaHora);
+      return fechaRegistro >= inicio && fechaRegistro <= fin;
+    });
+  }, [fechaInicio, fechaFin, registros]);
+
+  const generarPDF = () => {
+    const doc = new jsPDF();
+  
+    // Logo y texto al lado
+    doc.addImage(logo, "PNG", 10, 10, 60, 30); // Logo ajustado
+    doc.setFontSize(20);
+    doc.setTextColor(40);
+    doc.text("Reporte de Soporte Técnico", 75, 20); // Título alineado al lado del logo
+    doc.setFontSize(12);
+    doc.text(new Date().toLocaleDateString("es-ES"), 75, 28); // Fecha de generación debajo del título
+    doc.setFontSize(10);
+    doc.text(`Desde: ${fechaInicio}   Hasta: ${fechaFin}`, 75, 35); // Rango de fechas
+    doc.text(`Generado por: ${nombreUsuario}`, 75, 40);
+  
+    // Línea de separación
+    doc.setLineWidth(0.5);
+    doc.setDrawColor("#007AC3"); // Línea en azul
+    doc.line(10, 50, 200, 50);
+  
+    // Crear tablas por estado
+    const estados = [
+      { nombre: "Problemas detectados", clave: "problema detectado" },
+      { nombre: "Problemas en revisión", clave: "problema en revisión" },
+      { nombre: "Problemas solucionados", clave: "problema solucionado" },
+    ];
+    let startY = 55;
+  
+    estados.forEach(({ nombre, clave }) => {
+      const datos = registrosFiltrados.filter((registro) => registro.estado === clave);
+  
+      if (datos.length > 0) {
+        // Espacio adicional entre la línea y el título
+        startY += 5;
+  
+        // Título de la sección
+        doc.setFontSize(14);
+        doc.setTextColor(0);
+        doc.setFont("helvetica", "bold"); // Negrita
+        doc.text(nombre, 105, startY, { align: "center" }); // Centrados y en negrita
+  
+        // Tabla de datos
+        doc.autoTable({
+          startY: startY + 5,
+          head: [["ID", "Descripción", "Fecha y Hora", "Usuario", "Nombre"]],
+          body: datos.map((registro) => [
+            registro.idBitacora,
+            registro.descripcion,
+            new Date(registro.fechaHora).toLocaleString("es-ES", { timeZone: "UTC" }),
+            registro.usuario?.usuario || "Sin usuario",
+            registro.usuario?.persona?.nombre || "Sin nombre",
+          ]),
+          styles: { fontSize: 10, cellPadding: 2 },
+          headStyles: { fillColor: [0, 122, 195], textColor: 255 }, // Fondo azul y texto blanco
+          theme: "grid",
+        });
+  
+        startY = doc.previousAutoTable.finalY + 10; // Ajustar posición para la siguiente tabla
+      }
+    });
+  
+    doc.save(`Reporte_Soporte_Tecnico_${fechaInicio}_${fechaFin}.pdf`);
   };
+  
 
-  // Guardar cambios en permisos
-  const handleSaveChanges = async () => {
-    try {
-      const permisosToSend = assignedPermisos.filter(
-        (permiso) => permiso.estado !== permiso.originalEstado // Solo enviar los que cambiaron
-      );
 
-      await axios.post("http://localhost:5000/asignacionPermisos/update", {
-        roleId: selectedRole.idRol,
-        permisos: permisosToSend,
-      });
-
-      setAlertMessage("Permisos actualizados con éxito.");
-      setShowAlert(true);
-      handleCloseModal();
-    } catch (error) {
-      console.error("Error saving changes:", error);
-      setAlertMessage("Ocurrió un error al actualizar los permisos.");
-      setShowAlert(true);
-    }
-  };
-
-  // Paginación
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRoles = roles.slice(indexOfFirstRow, indexOfLastRow);
-  const totalPages = Math.ceil(roles.length / rowsPerPage);
-
-  // Renderizar permisos agrupados por módulo
-const renderPermisosPorModulo = () => {
-  return modulos.map((modulo) => (
+  return (
     <div
-      key={modulo.idModulo}
+      className="container mt-4"
       style={{
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#f8f9fa",
+        padding: "20px",
         borderRadius: "8px",
-        padding: "10px",
-        marginBottom: "15px",
         boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <h5 style={{ fontWeight: "bold", textAlign: "center" }}>{modulo.nombreModulo}</h5>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-        {assignedPermisos
-          .filter((permiso) => permiso.idModulo === modulo.idModulo)
-          .map((permiso) => (
-            <Form.Check
-              key={permiso.idPermiso}
-              type="checkbox"
-              label={permiso.nombrePermiso}
-              checked={permiso.estado === 1}
-              onChange={() => handleCheckboxChange(permiso.idPermiso)}
-              style={{ flex: "0 1 calc(33.333% - 10px)", textAlign: "center" }}
-            />
-          ))}
+      <div className="row mb-3">
+        <div className="col text-center">
+          <h3 style={{ fontWeight: "bold", color: "#333" }}>Reporte de Soporte Técnico</h3>
+        </div>
       </div>
-    </div>
-  ));
-};
 
-  const renderPagination = () => (
-    <div className="d-flex justify-content-between align-items-center mt-3">
-      <Button
-        variant="outline-primary"
-        disabled={currentPage === 1}
-        onClick={() => setCurrentPage((prev) => prev - 1)}
-      >
-        Anterior
-      </Button>
-      <div>Página {currentPage} de {totalPages}</div>
-      <Button
-        variant="outline-primary"
-        disabled={currentPage === totalPages}
-        onClick={() => setCurrentPage((prev) => prev + 1)}
-      >
-        Siguiente
-      </Button>
-    </div>
-  );
+      {alerta && <div className="alert alert-warning">{alerta}</div>}
 
-  return (
-    <>
-      <div
-        className="container mt-4"
+<div className="text-center mb-4"> {/* Contenedor centrado */}
+  <div className="d-inline-flex align-items-center mb-3"> {/* Alineación en línea y centrado */}
+    <div style={{ marginRight: "10px" }}>
+      <label>Fecha Inicio:</label>
+      <input
+        type="date"
+        className="form-control"
+        value={fechaInicio}
+        onChange={(e) => setFechaInicio(e.target.value)}
+        style={{ width: "150px" }}
+      />
+    </div>
+    <div>
+      <label>Fecha Fin:</label>
+      <input
+        type="date"
+        className="form-control"
+        value={fechaFin}
+        onChange={(e) => setFechaFin(e.target.value)}
+        style={{ width: "150px" }}
+      />
+    </div>
+  </div>
+</div>
+
+<div className="text-center mb-4"> {/* Contenedor centrado */}
+<button
+    className="btn btn-success mx-auto" // Centrar el botón
+    onClick={generarPDF}
+    disabled={registrosFiltrados.length === 0}
+    style={{
+      width: "20%",
+      fontWeight: "bold",
+      fontSize: "14px",
+      backgroundColor: "#007AC3",
+      borderBlockColor: "#007AC3",
+    }}
+  >
+    Descargar PDF
+  </button>
+  </div>
+
+
+      <table
+        className="table mt-4"
         style={{
-          backgroundColor: "#f8f9fa",
-          padding: "20px",
+          backgroundColor: "#ffffff",
           borderRadius: "8px",
-          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <h3 className="text-center" style={{ fontWeight: "bold", color: "#333" }}>
-          Gestión de Roles y Permisos
-        </h3>
-
-        <Alert
-          variant="success"
-          show={showAlert}
-          onClose={() => setShowAlert(false)}
-          dismissible
-          style={{ marginTop: "20px", fontWeight: "bold" }}
-        >
-          {alertMessage}
-        </Alert>
-
-        <Table striped bordered hover responsive className="mt-3">
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
-            <tr>
-              <th>ID</th>
-              <th>Rol</th>
-              <th>Asignar Permisos</th>
+        <thead className="thead-dark">
+          <tr>
+            <th>ID</th>
+            <th>Descripción</th>
+            <th>Fecha y Hora</th>
+            <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {registrosFiltrados.map((registro) => (
+            <tr key={registro.idBitacora}>
+              <td>{registro.idBitacora}</td>
+              <td>{registro.descripcion}</td>
+              <td>
+                {new Date(registro.fechaHora).toLocaleString("es-ES", {
+                  timeZone: "UTC",
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </td>
+              <td>{registro.usuario?.usuario || "Sin usuario"}</td>
+              <td>{registro.usuario?.persona?.nombre || "Sin nombre"}</td>
+              <td>{registro.estado}</td>
             </tr>
-          </thead>
-          <tbody>
-            {currentRoles.map((role) => (
-              <tr key={role.idRol}>
-                <td>{role.idRol}</td>
-                <td>{role.roles}</td>
-                <td style={{ textAlign: "center" }}>
-                  <FaPencilAlt
-                    style={{
-                      color: "#007AC3",
-                      cursor: "pointer",
-                      fontSize: "20px",
-                    }}
-                    title="Gestionar Permisos"
-                    onClick={() => handleShowModal(role)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-
-        {renderPagination()}
-      </div>
-
-      {/* Modal para gestionar permisos */}
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Permisos para el Rol: {selectedRole?.roles}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>{renderPermisosPorModulo()}</Modal.Body>
-              <Modal.Footer style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-        <Button
-          variant="secondary"
-          onClick={handleCloseModal}
-          style={{
-            fontSize: "15px", 
-            padding: "4px 8px", 
-            width: "100px", // Ajustar el ancho
-            height: "50px", // Ajustar la altura
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          variant="primary"
-          onClick={handleSaveChanges}
-          style={{
-            fontSize: "15px", 
-            padding: "4px 8px", // Espaciado reducido
-            width: "100px", // Ajustar el ancho
-            height: "50px", // Ajustar la altura
-          }}
-        >
-          Guardar Cambios
-        </Button>
-      </Modal.Footer>
-      </Modal>
-    </>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
-export default PermisosRolesComponent;
+export default ReporteTecnico;

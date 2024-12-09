@@ -117,6 +117,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "traslados", title: "Gestión de traslados" },
         { link: "categoriaHorarios", title: "Gestión de categoría horarios" },
         { link: "Categorias", title: "Gestión de categoría productos" },
+        { link: "Eventos", title: "Gestión de eventos" },
         { link: "inventarioMventas", title: "Inventario de mercancía para ventas" },
         { link: "autorizacionSolicitud", title: "Autorización de solicitudes" },
         { link: "autorizacionTalonarios", title: "Autorización de talonarios" },
