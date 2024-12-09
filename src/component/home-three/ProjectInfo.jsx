@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Bar } from "react-chartjs-2";
+import { Doughnut, Bar } from "react-chartjs-2";
 import { Table, Button, Row, Col, Container } from "react-bootstrap";
+import Chart from "chart.js/auto";
 
 function RecaudacionDashboard() {
   const [recaudaciones, setRecaudaciones] = useState([]);
@@ -11,6 +12,7 @@ function RecaudacionDashboard() {
   const [chartDataVentas, setChartDataVentas] = useState(null);
   const [chartDataRifasBoletos, setChartDataRifasBoletos] = useState(null);
   const [chartDataRifasSubtotal, setChartDataRifasSubtotal] = useState(null);
+  const [showTable, setShowTable] = useState(false);
 
   useEffect(() => {
     fetchRecaudaciones();
@@ -22,8 +24,8 @@ function RecaudacionDashboard() {
     try {
       const response = await axios.get("http://localhost:5000/recaudacion_evento");
       const data = response.data;
-      if (data && data.length > 0) generateChartDataRecaudaciones(data);
       setRecaudaciones(data);
+      generateChartDataRecaudaciones(data);
     } catch (error) {
       console.error("Error fetching recaudaciones:", error);
     }
@@ -33,8 +35,8 @@ function RecaudacionDashboard() {
     try {
       const response = await axios.get("http://localhost:5000/ventas");
       const data = response.data;
-      if (data && data.length > 0) generateChartDataVentas(data);
       setVentas(data);
+      generateChartDataVentas(data);
     } catch (error) {
       console.error("Error fetching ventas:", error);
     }
@@ -44,77 +46,26 @@ function RecaudacionDashboard() {
     try {
       const response = await axios.get("http://localhost:5000/recaudaciones");
       const data = response.data;
-      if (data && data.length > 0) {
-        generateChartDataRifasBoletos(data);
-        generateChartDataRifasSubtotal(data);
-      }
       setRifas(data);
+      generateChartDataRifasBoletos(data);
+      generateChartDataRifasSubtotal(data);
     } catch (error) {
       console.error("Error fetching rifas:", error);
     }
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Sin fecha";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
-  const generateChartOptions = (title) => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-        labels: {
-          font: {
-            size: 18,
-          },
-        },
-      },
-      title: {
-        display: true,
-        text: title,
-        font: {
-          size: 22,
-          weight: "bold",
-        },
-        color: "#284CDB",
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          font: {
-            size: 16,
-          },
-        },
-      },
-      y: {
-        ticks: {
-          font: {
-            size: 16,
-          },
-        },
-      },
-    },
-  });
-
   const generateChartDataRecaudaciones = (data) => {
-    const labels = data.map((evento) => formatDate(evento.fechaRegistro));
+    const labels = data.map((evento) => evento.fechaRegistro || "Sin fecha");
     const recaudaciones = data.map((evento) => parseFloat(evento.recaudacion || 0));
+
     setChartDataRecaudaciones({
       labels,
       datasets: [
         {
           label: "Recaudaciones (Q)",
           data: recaudaciones,
-          backgroundColor: "#8E53E0",
-          borderColor: "#4B0082",
+          backgroundColor: "rgba(54, 162, 235, 0.7)",
+          borderColor: "rgba(54, 162, 235, 1)",
           borderWidth: 1,
         },
       ],
@@ -122,16 +73,17 @@ function RecaudacionDashboard() {
   };
 
   const generateChartDataVentas = (data) => {
-    const labels = data.map((venta) => formatDate(venta.fechaVenta));
+    const labels = data.map((venta) => venta.fechaVenta || "Sin fecha");
     const ventasTotales = data.map((venta) => parseFloat(venta.totalVenta || 0));
+
     setChartDataVentas({
       labels,
       datasets: [
         {
           label: "Ventas Totales (Q)",
           data: ventasTotales,
-          backgroundColor: "#284CDB",
-          borderColor: "#0000FF",
+          backgroundColor: "rgba(75, 192, 192, 0.7)",
+          borderColor: "rgba(75, 192, 192, 1)",
           borderWidth: 1,
         },
       ],
@@ -139,16 +91,17 @@ function RecaudacionDashboard() {
   };
 
   const generateChartDataRifasBoletos = (data) => {
-    const labels = data.map((rifa) => formatDate(rifa.createdAt));
+    const labels = data.map((rifa) => rifa.createdAt || "Sin fecha");
     const boletosVendidos = data.map((rifa) => rifa.boletosVendidos || 0);
+
     setChartDataRifasBoletos({
       labels,
       datasets: [
         {
           label: "Boletos Vendidos",
           data: boletosVendidos,
-          backgroundColor: "#EBE02E",
-          borderColor: "#FFD700",
+          backgroundColor: "rgba(255, 99, 132, 0.7)",
+          borderColor: "rgba(255, 99, 132, 1)",
           borderWidth: 1,
         },
       ],
@@ -156,77 +109,104 @@ function RecaudacionDashboard() {
   };
 
   const generateChartDataRifasSubtotal = (data) => {
-    const labels = data.map((rifa) => formatDate(rifa.createdAt));
+    const labels = data.map((rifa) => rifa.createdAt || "Sin fecha");
     const subtotales = data.map((rifa) => parseFloat(rifa.subTotal || 0));
+
     setChartDataRifasSubtotal({
       labels,
       datasets: [
         {
           label: "Subtotal (Q)",
           data: subtotales,
-          backgroundColor: "#16CD2E",
-          borderColor: "#008000",
+          backgroundColor: "rgba(153, 102, 255, 0.7)",
+          borderColor: "rgba(153, 102, 255, 1)",
           borderWidth: 1,
         },
       ],
     });
   };
 
-  const styles = {
-    header: {
-      textAlign: "center",
-      fontWeight: "bold",
-      color: "#284CDB",
-      marginBottom: "20px",
-      fontSize: 25
-    },
-    chartContainer: {
-      height: "500px",
-      marginBottom: "30px",
-      backgroundColor: "#ffffff",
-      padding: "15px",
-      borderRadius: "8px",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    },
-  };
-
   return (
     <div className="container mt-4">
-      <h3 style={styles.header}>RECAUDACIONES, VENTAS Y RIFAS</h3>
-      <Container>
-        <Row>
-          <Col md={6}>
-            <div style={styles.chartContainer}>
+      <h3 className="text-center mb-4" style={{ fontWeight: "bold", color: "#0A82FD" }}>
+        Dashboard de Recaudaciones, Ventas y Rifas
+      </h3>
+
+      <div className="text-center mb-4">
+        <Button variant="primary" onClick={() => setShowTable(!showTable)} style={{ width: "200px" }}>
+          {showTable ? "Ver Gráficas" : "Ver Tabla"}
+        </Button>
+      </div>
+
+      {showTable ? (
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Recaudación (Q)</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {recaudaciones.map((evento) => (
+              <tr key={evento.idRecaudacionEvento}>
+                <td>{evento.idRecaudacionEvento}</td>
+                <td>{evento.fechaRegistro || "Sin fecha"}</td>
+                <td>{parseFloat(evento.recaudacion || 0).toFixed(2)}</td>
+                <td>{evento.estado === 1 ? "Activo" : "Inactivo"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      ) : (
+        <Container>
+          <Row>
+            <Col md={6}>
+              <h5 className="text-center" style={{ fontWeight: "bold", marginBottom: "20px" }}>
+                Recaudaciones por Fecha
+              </h5>
               {chartDataRecaudaciones && (
-                <Bar data={chartDataRecaudaciones} options={generateChartOptions("Recaudaciones por Fecha")} />
+                <div style={{ height: "400px" }}>
+                  <Bar data={chartDataRecaudaciones} options={{ responsive: true, maintainAspectRatio: false }} />
+                </div>
               )}
-            </div>
-          </Col>
-          <Col md={6}>
-            <div style={styles.chartContainer}>
+            </Col>
+            <Col md={6}>
+              <h5 className="text-center" style={{ fontWeight: "bold", marginBottom: "20px" }}>
+                Ventas Totales por Fecha
+              </h5>
               {chartDataVentas && (
-                <Bar data={chartDataVentas} options={generateChartOptions("Ventas Totales por Fecha")} />
+                <div style={{ height: "400px" }}>
+                  <Bar data={chartDataVentas} options={{ responsive: true, maintainAspectRatio: false }} />
+                </div>
               )}
-            </div>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={6}>
-            <div style={styles.chartContainer}>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <h5 className="text-center" style={{ fontWeight: "bold", marginBottom: "20px" }}>
+                Boletos Vendidos por Fecha
+              </h5>
               {chartDataRifasBoletos && (
-                <Bar data={chartDataRifasBoletos} options={generateChartOptions("Boletos Vendidos por Fecha")} />
+                <div style={{ height: "400px" }}>
+                  <Bar data={chartDataRifasBoletos} options={{ responsive: true, maintainAspectRatio: false }} />
+                </div>
               )}
-            </div>
-          </Col>
-          <Col md={6}>
-            <div style={styles.chartContainer}>
+            </Col>
+            <Col md={6}>
+              <h5 className="text-center" style={{ fontWeight: "bold", marginBottom: "20px" }}>
+                Subtotales de Rifas por Fecha
+              </h5>
               {chartDataRifasSubtotal && (
-                <Bar data={chartDataRifasSubtotal} options={generateChartOptions("Recaudaciones de Rifas por Fecha")} />
+                <div style={{ height: "400px" }}>
+                  <Bar data={chartDataRifasSubtotal} options={{ responsive: true, maintainAspectRatio: false }} />
+                </div>
               )}
-            </div>
-          </Col>
-        </Row>
-      </Container>
+            </Col>
+          </Row>
+        </Container>
+      )}
     </div>
   );
 }
