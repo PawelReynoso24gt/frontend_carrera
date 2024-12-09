@@ -117,6 +117,7 @@ function Menu({ toggleMenu, menu }) {
         { link: "autorizacionSolicitud", title: "Autorización de solicitudes" },
         { link: "autorizacionTalonarios", title: "Autorización de talonarios" },
         { link: "asignacionStand", title: "Asignación de Stands" },
+        { link: "soporteTecnico", title: "Registros de Soporte Técnico" },
       ].map((item) => (
         <li
           key={item.link}
