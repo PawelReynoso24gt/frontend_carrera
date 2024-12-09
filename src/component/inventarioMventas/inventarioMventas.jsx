@@ -21,6 +21,10 @@ function DetalleStands() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageModalContent, setMessageModalContent] = useState("");
+  // para la busqueda de productos de ventas
+  const [isProductSearched, setIsProductSearched] = useState(false);
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     fetchDetalleStands();
@@ -75,7 +79,7 @@ function DetalleStands() {
       console.error("Error fetching inactive detalle stands:", error);
     }
   };
-
+  // busqueda por nombre de stand, cantidad y producto
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
@@ -96,6 +100,31 @@ function DetalleStands() {
 
     setFilteredDetalleStands(filtered);
     setCurrentPage(1);
+
+    // Verificar si se encuentra un producto y habilitar el botón
+    const matchingProducts = productos.filter((producto) =>
+      producto.nombreProducto.toLowerCase().includes(value)
+    );
+
+    if (matchingProducts.length > 0) {
+      setSelectedProduct(matchingProducts[0]); // Seleccionar el primer producto relevante
+      setIsProductSearched(true); // Habilitar el botón
+    } else {
+      setSelectedProduct(null); // No hay producto seleccionado
+      setIsProductSearched(false); // Deshabilitar el botón
+    }
+  };
+  // llamada de los datos del producto especifico
+  const handleShowProductModal = async () => {
+    if (!selectedProduct) return;
+  
+    try {
+      const response = await axios.get(`http://localhost:5000/productos/${selectedProduct.idProducto}`);
+      setSelectedProduct(response.data); // Actualizar con datos completos
+      setShowProductModal(true); // Mostrar el modal
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+    }
   };
 
   const handleShowModal = (detalleStand = null) => {
@@ -255,6 +284,41 @@ function DetalleStands() {
         </Modal.Footer>
       </Modal>
 
+      {/* Modal para ver resultados de la busqueda del producto */}
+      <Modal show={showProductModal} onHide={() => setShowProductModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Detalles del Producto</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedProduct ? (
+            <div>
+              <p><strong>Nombre:</strong> {selectedProduct.nombreProducto}</p>
+              <p><strong>Descripción:</strong> {selectedProduct.descripcion}</p>
+              <p><strong>Precio:</strong> Q{selectedProduct.precio}</p>
+              <p><strong>Categoría:</strong> {selectedProduct.categoria?.nombreCategoria}</p>
+              <p><strong>Detalles de Stands:</strong></p>
+              <ul>
+                {selectedProduct.detallesStands.map((stand) => (
+                  <li key={stand.idDetalleStands}>
+                    {stand.cantidad} unidades en {stand.stand?.nombreStand}
+                  </li>
+                ))}
+              </ul>
+              <p><strong>Detalles de Sedes:</strong></p>
+              <ul>
+                {selectedProduct.detalle_productos.map((detalle) => (
+                  <li key={detalle.idDetalleProductos}>
+                    {detalle.cantidad} unidades en {detalle.sede?.nombreSede}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p>No hay información disponible.</p>
+          )}
+        </Modal.Body>
+      </Modal>
+
       {/* Resto del contenido */}
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
@@ -273,13 +337,31 @@ function DetalleStands() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <InputGroup className="mb-3">
-          <FormControl
-            placeholder="Buscar por cantidad, producto o stand..."
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </InputGroup>
+        <div className="d-flex align-items-center mb-3">
+            <InputGroup style={{ flex: 1, marginRight: "10px" }}>
+                <FormControl
+                    placeholder="Buscar por cantidad, producto o stand..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                />
+            </InputGroup>
+
+            {/* Botón de ver especificaciones de producto */}
+            <Button
+                onClick={handleShowProductModal}
+                disabled={!selectedProduct} // Deshabilitar si no se ha buscado un producto
+                style={{
+                    backgroundColor: selectedProduct ? "#007AC3" : "#cccccc",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    height: "38px", // Ajustar altura
+                    width: "150px", // Ajustar ancho
+                    textAlign: "center",
+                }}
+            >
+                Abrir Modal
+            </Button>
+        </div>
 
         <div className="d-flex justify-content-start align-items-center mb-3">
           <Button
