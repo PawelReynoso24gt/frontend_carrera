@@ -425,7 +425,7 @@ function DetalleStandsVoluntarios() {
                     textAlign: "center",
                 }}
             >
-                Abrir Modal
+                Detalles
             </Button>
         </div>
 
