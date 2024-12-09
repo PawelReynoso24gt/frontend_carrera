@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Modal, Card, Row, Col } from "react-bootstrap";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-function SolicitudesVoluntariado() {
+
+
+function SolicitudesVoluntariado() {  
   const [aspirantes, setAspirantes] = useState([]);
   const [personas, setPersonas] = useState([]);
   const [selectedPersona, setSelectedPersona] = useState(null);
@@ -19,9 +23,12 @@ function SolicitudesVoluntariado() {
   const fetchAspirantes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/aspirantes");
-      setAspirantes(response.data);
+      // Filtrar los aspirantes con estado activo (1)
+      const aspirantesActivos = response.data.filter((aspirante) => aspirante.estado === 1);
+      setAspirantes(aspirantesActivos);
     } catch (error) {
       console.error("Error fetching aspirantes:", error);
+      toast.error("Error al cargar aspirantes.");
     }
   };
 
@@ -31,6 +38,7 @@ function SolicitudesVoluntariado() {
       setPersonas(response.data);
     } catch (error) {
       console.error("Error fetching personas:", error);
+      toast.error("Error al cargar personas.");
     }
   };
 
@@ -59,21 +67,25 @@ function SolicitudesVoluntariado() {
 
   const acceptSolicitud = async (idAspirante) => {
     try {
-      await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
-      fetchAspirantes();
+      const response = await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
+      toast.success("Solicitud aceptada exitosamente.");
+      fetchAspirantes(); // Actualizar lista de aspirantes
       setShowConfirmationModal(false);
     } catch (error) {
-      console.error("Error accepting solicitud:", error);
+      console.error("Error accepting solicitud:", error.response?.data || error.message);
+      toast.error("No se pudo aceptar la solicitud.");
     }
   };
 
   const denySolicitud = async (idAspirante) => {
     try {
       await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
-      fetchAspirantes();
+      fetchAspirantes(); // Actualizar lista de aspirantes
       setShowConfirmationModal(false);
+      toast.info("Solicitud denegada.");
     } catch (error) {
-      console.error("Error denying solicitud:", error);
+      console.error("Error denying solicitud:", error.response?.data || error.message);
+      toast.error("Error al denegar la solicitud.");
     }
   };
 
@@ -98,7 +110,7 @@ function SolicitudesVoluntariado() {
                     variant="success"
                     size="sm"
                     onClick={() => handleAccept(aspirante.idAspirante)}
-                    style={{ minWidth: "70px" , width: "100px"}}
+                    style={{ minWidth: "70px", width: "100px" }}
                   >
                     Aceptar
                   </Button>
@@ -106,7 +118,7 @@ function SolicitudesVoluntariado() {
                     variant="danger"
                     size="sm"
                     onClick={() => handleDeny(aspirante.idAspirante)}
-                    style={{ minWidth: "70px",  width: "100px" }}
+                    style={{ minWidth: "70px", width: "100px" }}
                   >
                     Denegar
                   </Button>
@@ -139,20 +151,20 @@ function SolicitudesVoluntariado() {
         <Modal.Body>
           {selectedPersona ? (
             <>
-              <p style={{ color: "#000000" }}><strong>Nombre:</strong> {selectedPersona.nombre}</p>
-              <p style={{ color: "#000000" }}><strong>Correo:</strong> {selectedPersona.correo}</p>
-              <p style={{ color: "#000000" }}><strong>Teléfono:</strong> {selectedPersona.telefono}</p>
-              <p style={{ color: "#000000" }}><strong>Domicilio:</strong> {selectedPersona.domicilio}</p>
-              <p style={{ color: "#000000" }}><strong>CUI:</strong> {selectedPersona.CUI}</p>
-              <p style={{ color: "#000000" }}><strong>Fecha de Nacimiento:</strong> {selectedPersona.fechaNacimiento}</p>
-              <p style={{ color: "#000000" }}><strong>Estado:</strong> {selectedPersona.estado === 1 ? "Activo" : "Inactivo"}</p>
+              <p><strong>Nombre:</strong> {selectedPersona.nombre}</p>
+              <p><strong>Correo:</strong> {selectedPersona.correo}</p>
+              <p><strong>Teléfono:</strong> {selectedPersona.telefono}</p>
+              <p><strong>Domicilio:</strong> {selectedPersona.domicilio}</p>
+              <p><strong>CUI:</strong> {selectedPersona.CUI}</p>
+              <p><strong>Fecha de Nacimiento:</strong> {selectedPersona.fechaNacimiento}</p>
+              <p><strong>Estado:</strong> {selectedPersona.estado === 1 ? "Activo" : "Inactivo"}</p>
             </>
           ) : (
             <p>No se encontró información.</p>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" size="sm" onClick={handleCloseModal} style={{ minWidth: "70px", width: "100px", marginRight: "185px", backgroundColor: "#007abf"}}>
+          <Button variant="secondary" size="sm" onClick={handleCloseModal}>
             Cerrar
           </Button>
         </Modal.Footer>
@@ -164,19 +176,11 @@ function SolicitudesVoluntariado() {
           <Modal.Title>Confirmación</Modal.Title>
         </Modal.Header>
         <Modal.Body>{modalContent}</Modal.Body>
-        <Modal.Footer style={{ justifyContent: "center" }}>
+        <Modal.Footer>
           <Button
             variant="danger"
             size="sm"
             onClick={() => setShowConfirmationModal(false)}
-            style={{
-              backgroundColor: "#a40b22",
-              borderColor: "#FF6B6B",
-              minWidth: "70px",
-              fontSize: "14px",
-              marginRight: "10px",
-              width: "100px"
-            }}
           >
             Cancelar
           </Button>
@@ -184,12 +188,6 @@ function SolicitudesVoluntariado() {
             variant="success"
             size="sm"
             onClick={confirmationAction}
-            style={{
-              backgroundColor: "#1e7f06",
-              borderColor: "#28A745",
-              fontSize: "14px",
-              width: "100px"
-            }}
           >
             Confirmar
           </Button>
