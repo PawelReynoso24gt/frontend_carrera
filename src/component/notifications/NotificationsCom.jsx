@@ -28,7 +28,7 @@ function NotificationsCom() {
   useEffect(() => {
     fetchNotifications(); // Llamada inicial para cargar las notificaciones
 
-    const intervalId = setInterval(fetchNotifications, 1000); // Verificar cada 1 segundos
+    const intervalId = setInterval(fetchNotifications, 5000); // Verificar cada 5 segundos
 
     return () => clearInterval(intervalId); // Limpiar el intervalo al desmontar el componente
   }, []);
