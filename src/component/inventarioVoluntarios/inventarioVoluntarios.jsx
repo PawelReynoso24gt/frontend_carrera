@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, InputGroup, FormControl } from "react-bootstrap";
-import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
 
 function DetalleStandsVoluntarios() {
   const [detalleStands, setDetalleStands] = useState([]);
@@ -172,17 +172,18 @@ function DetalleStandsVoluntarios() {
     }
   };
 
-  const handleShowProductModal = async () => {
-    if (!selectedProduct) return;
+  const handleShowProductModal = async (idProducto) => {
+    if (!idProducto) return;
   
     try {
-      const response = await axios.get(`http://localhost:5000/productos/${selectedProduct.idProducto}`);
+      const response = await axios.get(`http://localhost:5000/productos/${idProducto}`);
       setSelectedProduct(response.data); // Actualizar con datos completos
       setShowProductModal(true); // Mostrar el modal
     } catch (error) {
       console.error("Error fetching product details:", error);
     }
   };
+  
 
   const handleShowModal = (detalleStand = null) => {
     setEditingDetalleStand(detalleStand);
@@ -412,21 +413,6 @@ function DetalleStandsVoluntarios() {
                 />
             </InputGroup>
 
-            {/* Botón de ver especificaciones de producto */}
-            <Button
-                onClick={handleShowProductModal}
-                disabled={!selectedProduct} // Deshabilitar si no se ha buscado un producto
-                style={{
-                    backgroundColor: selectedProduct ? "#007AC3" : "#cccccc",
-                    color: "#fff",
-                    fontWeight: "bold",
-                    height: "38px", // Ajustar altura
-                    width: "150px", // Ajustar ancho
-                    textAlign: "center",
-                }}
-            >
-                Detalles
-            </Button>
         </div>
 
         <div className="d-flex justify-content-start align-items-center mb-3">
@@ -511,40 +497,50 @@ function DetalleStandsVoluntarios() {
                   {detalle.estado === 1 ? "Activo" : "Inactivo"}
                 </td>
                 <td style={{ textAlign: "center" }}>
-                  <FaPencilAlt
-                    style={{
-                      color: "#007AC3",
-                      cursor: "pointer",
-                      marginRight: "10px",
-                      fontSize: "20px",
-                    }}
-                    title="Editar"
-                    onClick={() => handleShowModal(detalle)}
-                  />
-                  {detalle.estado ? (
-                    <FaToggleOn
-                      style={{
-                        color: "#30c10c",
-                        cursor: "pointer",
-                        marginLeft: "10px",
-                        fontSize: "20px",
-                      }}
-                      title="Inactivar"
-                      onClick={() => toggleEstado(detalle.idDetalleStands, detalle.estado)}
-                    />
-                  ) : (
-                    <FaToggleOff
-                      style={{
-                        color: "#e10f0f",
-                        cursor: "pointer",
-                        marginLeft: "10px",
-                        fontSize: "20px",
-                      }}
-                      title="Activar"
-                      onClick={() => toggleEstado(detalle.idDetalleStands, detalle.estado)}
-                    />
-                  )}
-                </td>
+  <FaPencilAlt
+    style={{
+      color: "#007AC3",
+      cursor: "pointer",
+      marginRight: "10px",
+      fontSize: "20px",
+    }}
+    title="Editar"
+    onClick={() => handleShowModal(detalle)}
+  />
+  {detalle.estado ? (
+    <FaToggleOn
+      style={{
+        color: "#30c10c",
+        cursor: "pointer",
+        marginLeft: "10px",
+        fontSize: "20px",
+      }}
+      title="Inactivar"
+      onClick={() => toggleEstado(detalle.idDetalleStands, detalle.estado)}
+    />
+  ) : (
+    <FaToggleOff
+      style={{
+        color: "#e10f0f",
+        cursor: "pointer",
+        marginLeft: "10px",
+        fontSize: "20px",
+      }}
+      title="Activar"
+      onClick={() => toggleEstado(detalle.idDetalleStands, detalle.estado)}
+    />
+  )}
+  <FaEye
+    style={{
+      color: "#007AC3",
+      cursor: "pointer",
+      marginLeft: "10px",
+      fontSize: "20px",
+    }}
+    title="Ver detalles"
+    onClick={() => handleShowProductModal(detalle.idProducto)}
+  />
+</td>
               </tr>
             ))}
           </tbody>
