@@ -42,7 +42,7 @@ function AsistenciasPage () {
         ) : (
           <RegistroComisiones />
         )}
-        <AsistenciaEventosComponent/>
+       
       </Wrapper>
     </Layout>
   );
