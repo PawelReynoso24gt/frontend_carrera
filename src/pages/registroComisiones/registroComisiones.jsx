@@ -2,19 +2,19 @@ import React from "react";
 import Layout from "../../component/home-two/Layout";
 import BreadCrumb from "../../component/home-two/BreadCrumb";
 import Wrapper from "../../component/pricing/Wrapper";
-import AsignacionStandComponent  from "../../component/asignacionStand/asignacionStand";
+import RegistroComisiones  from "../../component/registroComisiones/registroComisiones";
 import useMenu from "../../hooks/useMenu";
 
-function AsignacionStandPage () {
+function MunicipiosPage () {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Asignación de stands" link="/asignacionStand" />
+      <BreadCrumb title="Registro Comisiones" link="/registroComisiones" />
       <Wrapper>
-      <AsignacionStandComponent/>
+        <RegistroComisiones/>
       </Wrapper>
     </Layout>
   );
 }
 
-export default AsignacionStandPage ;
+export default MunicipiosPage ; 

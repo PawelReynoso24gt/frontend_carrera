@@ -66,16 +66,19 @@ import Personas from "./pages/personas/personas";
 import Categorias from "./pages/categoria/categoria";
 import Traslados from "./pages/traslados/traslados";
 import TipoTraslado from "./pages/tipoTraslado/tipoTraslado";
-import Eventos from "./component/eventos/eventos";
-import Pedidos from "./component/pedidos/pedidos";
-import CategoriaHorarios from "./component/categoriaHorarios/categoriaHorarios";
-import Permisos from "./component/permisos/permisos";
-import MercanciaVoluntarios from "./component/mercanciaVoluntarios/mercanciaVoluntarios";
+import Eventos from "./pages/eventos/eventos";
+import Pedidos from "./pages/pedidos/pedidos";
+import CategoriaHorarios from "./pages/categoriaHorarios/categoriaHorarios";
+import Permisos from "./pages/permisos/permisos";
+import MercanciaVoluntarios from "./pages/mercanciaVoluntarios/mercanciaVoluntarios";
 import InventarioMventas from "./pages/inventarioMventas/intentarioMventas";
 import AutorizacionSolicitud from "./pages/autorizacionSolicitud/autorizacionSolicitud";
-import AsignacionStands from "./component/asignacionStand/asignacionStand";
+import AsignacionStands from "./pages/asignacionStand/asignacionStand";
 import AutorizacionTalonarios from "./pages/autorizacionTalonarios/autorizacionTalonarios";
+import ReporteProblemas from "./pages/reporteProblemas/reporteProblemas";
 import SoporteTecnico from "./pages/soporteTecnico/soporteTecnico";
+import Desarrolladores from "./pages/desarrolladores/desarrolladores";
+import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 
 const router = createBrowserRouter([
   {
@@ -162,6 +165,10 @@ const router = createBrowserRouter([
         element: <Departamentos />,
       },
       {
+        path: "/paginaPrincipal",
+        element: <PaginaPrincipal/>,
+      },
+      {
         path: "/asistencia_eventos",
         element: <AsistenciaEventos />,
       },
@@ -224,6 +231,10 @@ const router = createBrowserRouter([
       {
         path: "/categoriaHorarios",
         element: <CategoriaHorarios />,
+      },
+      {
+        path: "/desarrolladores",
+        element: <Desarrolladores />,
       },
       {
         path: "/pedidos",
@@ -296,6 +307,10 @@ const router = createBrowserRouter([
       {
         path: "/soporteTecnico",
         element: <SoporteTecnico/>,
+      },
+      {
+        path: "/reporteProblemas",
+        element: <ReporteProblemas/>,
       },
       {
         path: "/gallery",

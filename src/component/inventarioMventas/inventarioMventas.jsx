@@ -336,7 +336,7 @@ function DetalleStands() {
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
-      >
+       >
         <div className="d-flex align-items-center mb-3">
             <InputGroup style={{ flex: 1, marginRight: "10px" }}>
                 <FormControl

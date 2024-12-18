@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Alert, Spinner, Breadcrumb } from "react-bootstrap";
+import { Table, Alert, Spinner, Breadcrumb, Button } from "react-bootstrap";
 
 function AsignacionStands() {
   const [asignaciones, setAsignaciones] = useState([]);
@@ -24,6 +24,38 @@ function AsignacionStands() {
       console.error("Error al obtener las asignaciones:", err);
       setError("Error al obtener las asignaciones de voluntarios.");
       setLoading(false);
+    }
+  };
+
+  const fetchAsignacionesActivas = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/asignacion_stands/voluntarios_por_stand/activos"
+      );
+      if (Array.isArray(response.data)) {
+        setAsignaciones(response.data);
+      } else {
+        throw new Error("La respuesta de la API no es un arreglo");
+      }
+    } catch (err) {
+      console.error("Error al obtener asignaciones activas:", err);
+      setError("Error al obtener las asignaciones activas.");
+    }
+  };
+
+  const fetchAsignacionesInactivas = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/asignacion_stands/voluntarios_por_stand/inactivos"
+      );
+      if (Array.isArray(response.data)) {
+        setAsignaciones(response.data);
+      } else {
+        throw new Error("La respuesta de la API no es un arreglo");
+      }
+    } catch (err) {
+      console.error("Error al obtener asignaciones inactivas:", err);
+      setError("Error al obtener las asignaciones inactivas.");
     }
   };
 
@@ -59,14 +91,12 @@ function AsignacionStands() {
 
       {/* Contenedor Principal */}
       <div
+        className="container mt-4"
         style={{
-          marginLeft: "350px",
-          marginRight: "20px",
           backgroundColor: "#f8f9fa",
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-           maxWidth: "calc(100% - 270px)"
         }}
       >
           <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -75,6 +105,52 @@ function AsignacionStands() {
             Asignación de Voluntarios a Stands
           </h3>
         </div>
+
+         {/* Botones de filtro */}
+      <div className="d-flex justify-content-center mb-4">
+      <Button
+          style={{
+            backgroundColor: "#007abf",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchAsignaciones}
+        >
+          Todas
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchAsignacionesActivas}
+        >
+          Activas
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#bf2200",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchAsignacionesInactivas}
+        >
+          Inactivas
+        </Button>
+      </div>
+
       </div>
         {asignaciones.length > 0 ? (
           asignaciones.map((stand) => (
@@ -98,8 +174,15 @@ function AsignacionStands() {
                       <td>{voluntario.nombreVoluntario}</td>
                       <td>{voluntario.telefonoVoluntario}</td>
                       <td>
-                        {new Date(voluntario.horarioInicio).toLocaleTimeString()} -{" "}
-                        {new Date(voluntario.horarioFinal).toLocaleTimeString()}
+                        {new Date(voluntario.horarioInicio).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        -{" "}
+                        {new Date(voluntario.horarioFinal).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </td>
                     </tr>
                   ))}

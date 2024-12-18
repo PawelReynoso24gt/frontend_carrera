@@ -2,19 +2,19 @@ import React from "react";
 import Layout from "../../component/home-two/Layout";
 import BreadCrumb from "../../component/home-two/BreadCrumb";
 import Wrapper from "../../component/pricing/Wrapper";
-import AsignacionStandComponent  from "../../component/asignacionStand/asignacionStand";
+import PaginaPrincipal  from "../../component/cards/paginaPrincipal";
 import useMenu from "../../hooks/useMenu";
 
-function AsignacionStandPage () {
+function PrincipalPage () {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Asignación de stands" link="/asignacionStand" />
+      <BreadCrumb link="/paginaPrincipal" />
       <Wrapper>
-      <AsignacionStandComponent/>
+        <PaginaPrincipal/>
       </Wrapper>
     </Layout>
   );
 }
 
-export default AsignacionStandPage ;
+export default PrincipalPage ;
