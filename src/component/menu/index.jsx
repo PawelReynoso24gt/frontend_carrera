@@ -210,6 +210,8 @@ function Menu({ toggleMenu, menu }) {
               setDropdown={handleDropdown}
               options={[
                 { link: "reporteProblemas", title: "Reporte de problemas" },
+                { link: "reporteEventos", title: "Reporte de eventos" },
+                { link: "reporteStands", title: "Reporte de stands" },
                 // aqui colocar reportes
               ]}
               img={
