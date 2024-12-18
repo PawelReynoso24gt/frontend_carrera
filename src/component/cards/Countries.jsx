@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
+import Chart from "chart.js/auto";
 
 function Countries() {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
 
   useEffect(() => {
     fetch("http://localhost:5000/recaudacion_evento")

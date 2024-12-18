@@ -7,18 +7,21 @@ import Sidebar from "../../component/home/Sidebar";
 import Layout from "../../component/home/Layout";
 import BodyWrapper from "../../component/home/BodyWrapper";
 import useMenu from "../../hooks/useMenu";
+import PaginaPrincipal from "../../component/cards/paginaPrincipal";
 
 function Home() {
   useMenu();
   return (
     <Layout>
       <BodyWrapper>
-        <ProgressCom />
-        <SalesCharts />
-        <AnalyticsConversions />
-        <ActivitySection />
+       {/* <ProgressCom />*/}
+        {/* <SalesCharts /> */}
+       {/* <AnalyticsConversions /> */}
+       {/*  <ActivitySection />*/}
+      
       </BodyWrapper>
-      <Sidebar />
+      <PaginaPrincipal />
+     {/* <Sidebar />*/}
     </Layout>
   );
 }
