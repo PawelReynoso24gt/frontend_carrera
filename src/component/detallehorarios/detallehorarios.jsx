@@ -1,44 +1,77 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import axios from "axios";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function DetalleHorariosComponent() {
   const [detalles, setDetalles] = useState([]);
+  const [filteredDetalles, setFilteredDetalles] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingDetalle, setEditingDetalle] = useState(null);
-  const [newDetalle, setNewDetalle] = useState({ cantidadPersonas: '', idHorario: '', idCategoriaHorario: '', estado: 1 });
+  const [newDetalle, setNewDetalle] = useState({
+    cantidadPersonas: "",
+    idHorario: "",
+    idCategoriaHorario: "",
+    estado: 1,
+  });
   const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [filter, setFilter] = useState('activos');
+  const [alertMessage, setAlertMessage] = useState("");
 
-  useEffect(() => { 1
+  useEffect(() => {
+    fetchAllDetalles();
   }, []);
 
-  const fetchActiveDetalles = async () => {
+  // Obtener todos los detalles de horarios
+  const fetchAllDetalles = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/detalle_horarios/activos');
+      const response = await axios.get("http://localhost:5000/detalle_horarios");
       setDetalles(response.data);
-      setFilter('activos');
+      setFilteredDetalles(response.data);
     } catch (error) {
-      console.error('Error fetching active detalles:', error);
+      console.error("Error fetching detalles:", error);
     }
   };
 
+  // Filtrar por estado activo
+  const fetchActiveDetalles = () => {
+    const activos = detalles.filter((detalle) => detalle.estado === 1);
+    setFilteredDetalles(activos);
+  };
+
+  // Filtrar por estado inactivo
   const fetchInactiveDetalles = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/detalle_horarios', {
-        params: { estado: 0 }
-      });
-      setDetalles(response.data.filter(detalle => detalle.estado === 0));
-      setFilter('inactivos');
+      const response = await axios.get("http://localhost:5000/detalle_horarios/inactivos");
+      setDetalles(response.data); // Actualiza el estado con los inactivos
+      setFilteredDetalles(response.data); // Aplica el filtro a la tabla
     } catch (error) {
-      console.error('Error fetching inactive detalles:', error);
+      console.error("Error fetching inactive detalles:", error);
     }
+  };
+
+  // Buscar por cantidad de personas o categoría
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    const filtered = detalles.filter(
+      (detalle) =>
+        detalle.cantidadPersonas.toString().includes(value) ||
+        detalle.categoriaHorario?.categoria?.toLowerCase().includes(value)
+    );
+    setFilteredDetalles(filtered);
   };
 
   const handleShowModal = (detalle = null) => {
     setEditingDetalle(detalle);
-    setNewDetalle(detalle || { cantidadPersonas: '', idHorario: '', idCategoriaHorario: '', estado: 1 });
+    setNewDetalle(
+      detalle || {
+        cantidadPersonas: "",
+        idHorario: "",
+        idCategoriaHorario: "",
+        estado: 1,
+      }
+    );
     setShowModal(true);
   };
 
@@ -56,161 +89,133 @@ function DetalleHorariosComponent() {
     e.preventDefault();
     try {
       if (editingDetalle) {
-        await axios.put(`http://localhost:5000/detalle_horarios/${editingDetalle.idDetalleHorario}`, newDetalle);
-        setAlertMessage('Detalle de horario actualizado con éxito');
+        await axios.put(
+          `http://localhost:5000/detalle_horarios/${editingDetalle.idDetalleHorario}`,
+          newDetalle
+        );
+        setAlertMessage("Detalle de horario actualizado con éxito");
       } else {
-        await axios.post('http://localhost:5000/detalle_horarios', newDetalle);
-        setAlertMessage('Detalle de horario creado con éxito');
+        await axios.post("http://localhost:5000/detalle_horarios", newDetalle);
+        setAlertMessage("Detalle de horario creado con éxito");
       }
-      filter === 'activos' ? fetchActiveDetalles() : fetchInactiveDetalles();
+      fetchAllDetalles();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting detalle de horario:', error);
+      console.error("Error submitting detalle:", error);
     }
   };
 
-  const toggleDetalleEstado = async (id, currentEstado) => {
+  const toggleEstado = async (id, estadoActual) => {
     try {
-      const newEstado = currentEstado === 1 ? 0 : 1;
+      const newEstado = estadoActual === 1 ? 0 : 1;
       await axios.put(`http://localhost:5000/detalle_horarios/${id}`, { estado: newEstado });
-      setAlertMessage(`Detalle de horario ${newEstado === 1 ? 'activado' : 'desactivado'} con éxito`);
+      setAlertMessage(`Detalle ${newEstado === 1 ? "activado" : "desactivado"} con éxito`);
+      fetchAllDetalles();
       setShowAlert(true);
-      filter === 'activos' ? fetchActiveDetalles() : fetchInactiveDetalles();
     } catch (error) {
-      console.error('Error toggling estado of detalle de horario:', error);
+      console.error("Error toggling estado:", error);
     }
   };
 
   return (
     <>
-      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
-        <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Detalles de Horarios
-          </h3>
+      <div className="container mt-4">
+        <h3 style={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold", color: "#333" }}>
+          Gestión de Detalles de Horarios
+        </h3>
+
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar por cantidad de personas o categoría..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => handleShowModal()}
+          >
+            Agregar Detalle
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveDetalles}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveDetalles}
+          >
+            Inactivos
+          </Button>
         </div>
-      </div>
 
-      <div
-        className="container mt-4"
-        style={{
-          backgroundColor: "#f8f9fa",
-          padding: "20px",
-          borderRadius: "8px",
-          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <Button
-          style={{
-            backgroundColor: "#743D90",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "220px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => handleShowModal()}
-        >
-          Agregar Detalle de Horario
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#007AC3",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveDetalles}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveDetalles}
-        >
-          Inactivos
-        </Button>
-
-        <Alert
-          variant="success"
-          show={showAlert}
-          onClose={() => setShowAlert(false)}
-          dismissible
-          style={{ marginTop: "20px", fontWeight: "bold" }}
-        >
+        <Alert show={showAlert} variant="success" onClose={() => setShowAlert(false)} dismissible>
           {alertMessage}
         </Alert>
 
-        <Table
-          striped
-          bordered
-          hover
-          responsive
-          className="mt-3"
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "8px",
-            marginTop: "20px",
-          }}
-        >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+        <Table striped bordered hover responsive>
+          <thead style={{ backgroundColor: "#007AC3", color: "white", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Cantidad de Personas</th>
-              <th>ID Horario</th>
-              <th>ID Categoría Horario</th>
+              <th>Horario</th>
+              <th>Categoría</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {detalles.map((detalle) => (
+            {filteredDetalles.map((detalle) => (
               <tr key={detalle.idDetalleHorario}>
                 <td>{detalle.idDetalleHorario}</td>
                 <td>{detalle.cantidadPersonas}</td>
-                <td>{detalle.idHorario}</td>
-                <td>{detalle.idCategoriaHorario}</td>
-                <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
+                <td>{detalle.horario?.horarioInicio || "Sin horario"}</td>
+                <td>{detalle.categoriaHorario?.categoria || "Sin categoría"}</td>
+                <td>{detalle.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
-                    style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
+                  <FaPencilAlt
+                    style={{ color: "#007AC3", cursor: "pointer", marginRight: "10px" }}
                     onClick={() => handleShowModal(detalle)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: detalle.estado ? "#6c757d" : "#28a745",
-                      borderColor: detalle.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado)}
-                  >
-                    {detalle.estado ? "Desactivar" : "Activar"}
-                  </Button>
+                  />
+                  {detalle.estado === 1 ? (
+                    <FaToggleOn
+                      style={{ color: "green", cursor: "pointer" }}
+                      onClick={() => toggleEstado(detalle.idDetalleHorario, detalle.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{ color: "red", cursor: "pointer" }}
+                      onClick={() => toggleEstado(detalle.idDetalleHorario, detalle.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -218,56 +223,42 @@ function DetalleHorariosComponent() {
         </Table>
 
         <Modal show={showModal} onHide={handleCloseModal}>
-          <Modal.Header
-            closeButton
-            style={{ backgroundColor: "#007AC3", color: "#fff" }}
-          >
+          <Modal.Header closeButton>
             <Modal.Title>
               {editingDetalle ? "Editar Detalle de Horario" : "Agregar Detalle de Horario"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="cantidadPersonas">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Cantidad de Personas
-                </Form.Label>
+              <Form.Group>
+                <Form.Label>Cantidad de Personas</Form.Label>
                 <Form.Control
                   type="number"
                   name="cantidadPersonas"
                   value={newDetalle.cantidadPersonas}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
-              <Form.Group controlId="idHorario">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Horario
-                </Form.Label>
+              <Form.Group>
+                <Form.Label>Horario</Form.Label>
                 <Form.Control
                   type="number"
                   name="idHorario"
                   value={newDetalle.idHorario}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
-              <Form.Group controlId="idCategoriaHorario">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Categoría Horario
-                </Form.Label>
+              <Form.Group>
+                <Form.Label>Categoría</Form.Label>
                 <Form.Control
                   type="number"
                   name="idCategoriaHorario"
                   value={newDetalle.idCategoriaHorario}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
+              <Form.Group>
+                <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -278,17 +269,7 @@ function DetalleHorariosComponent() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
-              <Button
-                style={{
-                  backgroundColor: "#007AC3",
-                  borderColor: "#007AC3",
-                  padding: "5px 10px",
-                  width: "100%",
-                  fontWeight: "bold",
-                  color: "#fff",
-                }}
-                type="submit"
-              >
+              <Button type="submit" variant="primary" className="w-100 mt-3">
                 {editingDetalle ? "Actualizar" : "Crear"}
               </Button>
             </Form>
