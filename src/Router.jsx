@@ -77,6 +77,8 @@ import AsignacionStands from "./pages/asignacionStand/asignacionStand";
 import AutorizacionTalonarios from "./pages/autorizacionTalonarios/autorizacionTalonarios";
 import ReporteProblemas from "./pages/reporteProblemas/reporteProblemas";
 import SoporteTecnico from "./pages/soporteTecnico/soporteTecnico";
+import Desarrolladores from "./pages/desarrolladores/desarrolladores";
+import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 
 const router = createBrowserRouter([
   {
@@ -163,6 +165,10 @@ const router = createBrowserRouter([
         element: <Departamentos />,
       },
       {
+        path: "/paginaPrincipal",
+        element: <PaginaPrincipal/>,
+      },
+      {
         path: "/asistencia_eventos",
         element: <AsistenciaEventos />,
       },
@@ -225,6 +231,10 @@ const router = createBrowserRouter([
       {
         path: "/categoriaHorarios",
         element: <CategoriaHorarios />,
+      },
+      {
+        path: "/desarrolladores",
+        element: <Desarrolladores />,
       },
       {
         path: "/pedidos",

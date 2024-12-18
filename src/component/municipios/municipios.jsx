@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl  } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+
 
 function Municipio() {
   const [municipios, setMunicipios] = useState([]);
+  const [filteredMunicipios, setFilteredMunicipios] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
@@ -29,6 +33,16 @@ function Municipio() {
     } catch (error) {
       console.error("Error fetching municipios:", error);
     }
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    const filtered = municipios.filter((municipio) =>
+      municipio.includes(value)
+    );
+    setFilteredMunicipios(filtered);
   };
 
   const fetchDepartamentos = async () => {
@@ -192,6 +206,15 @@ function Municipio() {
           </h3>
         </div>
       </div>
+
+      {/* Barra de búsqueda */}
+      <InputGroup className="mb-3">
+        <FormControl
+          placeholder="Buscar municipio..."
+          value={searchTerm}
+          onChange={handleSearch}
+        />
+      </InputGroup>
       {/* Contenedor principal */}
       <div
         className="container mt-4"
@@ -281,52 +304,60 @@ function Municipio() {
             </tr>
           </thead>
           <tbody>
-            {currentMunicipios.map((municipio) => (
-              <tr key={municipio.idMunicipio}>
-                <td>{municipio.idMunicipio}</td>
-                <td>{municipio.municipio}</td>
-                <td>
-                  {
-                    departamentos.find(
+              {currentMunicipios.map((municipio) => (
+                <tr key={municipio.idMunicipio}>
+                  <td style={{ textAlign: "center" }}>{municipio.idMunicipio}</td>
+                  <td style={{ textAlign: "center" }}>{municipio.municipio}</td>
+                  <td style={{ textAlign: "center" }}>
+                    {departamentos.find(
                       (d) => d.idDepartamento === municipio.idDepartamento
-                    )?.departamento || "Desconocido"
-                  }
-                </td>
-                <td>{municipio.estado ? "Activo" : "Inactivo"}</td>
-                <td>
-                  <Button
-                    style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => handleShowModal(municipio)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: municipio.estado ? "#6c757d" : "#28a745",
-                      borderColor: municipio.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() =>
-                      toggleEstado(municipio.idMunicipio, municipio.estado)
-                    }
-                  >
-                    {municipio.estado ? "Inactivar" : "Activar"}
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+                    )?.departamento || "Desconocido"}
+                  </td>
+                  <td style={{ textAlign: "center" }}>
+                    {municipio.estado === 1 ? "Activo" : "Inactivo"}
+                  </td>
+                  <td style={{ textAlign: "center" }}>
+                    {/* Botón de Editar */}
+                    <FaPencilAlt
+                      style={{
+                        color: "#007AC3",
+                        cursor: "pointer",
+                        marginRight: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Editar"
+                      onClick={() => handleShowModal(municipio)}
+                    />
+
+                    {/* Botón de Activar/Inactivar */}
+                    {municipio.estado ? (
+                      <FaToggleOn
+                        style={{
+                          color: "#30c10c",
+                          cursor: "pointer",
+                          marginLeft: "10px",
+                          fontSize: "20px",
+                        }}
+                        title="Inactivar"
+                        onClick={() => toggleEstado(municipio.idMunicipio, municipio.estado)}
+                      />
+                    ) : (
+                      <FaToggleOff
+                        style={{
+                          color: "#e10f0f",
+                          cursor: "pointer",
+                          marginLeft: "10px",
+                          fontSize: "20px",
+                        }}
+                        title="Activar"
+                        onClick={() => toggleEstado(municipio.idMunicipio, municipio.estado)}
+                      />
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+
         </Table>
 
         {renderPagination()}
