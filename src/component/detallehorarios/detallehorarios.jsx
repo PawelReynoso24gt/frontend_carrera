@@ -9,6 +9,8 @@ function DetalleHorariosComponent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingDetalle, setEditingDetalle] = useState(null);
+  const [horarios, setHorarios] = useState([]);
+  const [categoriasHorarios, setCategoriasHorarios] = useState([]);
   const [newDetalle, setNewDetalle] = useState({
     cantidadPersonas: "",
     idHorario: "",
@@ -20,6 +22,8 @@ function DetalleHorariosComponent() {
 
   useEffect(() => {
     fetchAllDetalles();
+    fetchHorarios();            // Obtener horarios activos
+    fetchCategoriasHorarios();  // Obtener categorías activas
   }, []);
 
   // Obtener todos los detalles de horarios
@@ -49,6 +53,31 @@ function DetalleHorariosComponent() {
       console.error("Error fetching inactive detalles:", error);
     }
   };
+
+  // Obtener horarios activos
+  const fetchHorarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/horarios/activos");
+      setHorarios(response.data);
+    } catch (error) {
+      console.error("Error fetching horarios:", error);
+    }
+  };
+
+  // Obtener categorías de horarios activas
+  const fetchCategoriasHorarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/categoriaHorarios/activas");
+      setCategoriasHorarios(response.data);
+    } catch (error) {
+      console.error("Error fetching categorias horarios:", error);
+    }
+  };
+
+  const formatTime = (timeString) => {
+    const date = new Date(`1970-01-01T${timeString}Z`);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  };  
 
   // Buscar por cantidad de personas o categoría
   const handleSearch = (e) => {
@@ -197,7 +226,11 @@ function DetalleHorariosComponent() {
               <tr key={detalle.idDetalleHorario}>
                 <td>{detalle.idDetalleHorario}</td>
                 <td>{detalle.cantidadPersonas}</td>
-                <td>{detalle.horario?.horarioInicio || "Sin horario"}</td>
+                <td>
+                  {detalle.horario
+                    ? `${formatTime(detalle.horario.horarioInicio)} - ${formatTime(detalle.horario.horarioFinal)}`
+                    : "Sin horario"}
+                </td>
                 <td>{detalle.categoriaHorario?.categoria || "Sin categoría"}</td>
                 <td>{detalle.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
@@ -230,6 +263,7 @@ function DetalleHorariosComponent() {
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
+              {/* Cantidad de Personas */}
               <Form.Group>
                 <Form.Label>Cantidad de Personas</Form.Label>
                 <Form.Control
@@ -239,24 +273,44 @@ function DetalleHorariosComponent() {
                   onChange={handleChange}
                 />
               </Form.Group>
+
+              {/* Select de Horarios */}
               <Form.Group>
                 <Form.Label>Horario</Form.Label>
                 <Form.Control
-                  type="number"
+                  as="select"
                   name="idHorario"
                   value={newDetalle.idHorario}
                   onChange={handleChange}
-                />
+                >
+                  <option value="">Seleccionar Horario</option>
+                  {horarios.map((horario) => (
+                    <option key={horario.idHorario} value={horario.idHorario}>
+                      {`${horario.horarioInicio} - ${horario.horarioFinal}`}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
+
+              {/* Select de Categorías */}
               <Form.Group>
                 <Form.Label>Categoría</Form.Label>
                 <Form.Control
-                  type="number"
+                  as="select"
                   name="idCategoriaHorario"
                   value={newDetalle.idCategoriaHorario}
                   onChange={handleChange}
-                />
+                >
+                  <option value="">Seleccionar Categoría</option>
+                  {categoriasHorarios.map((categoria) => (
+                    <option key={categoria.idCategoriaHorario} value={categoria.idCategoriaHorario}>
+                      {categoria.categoria}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
+
+              {/* Estado */}
               <Form.Group>
                 <Form.Label>Estado</Form.Label>
                 <Form.Control
@@ -269,6 +323,8 @@ function DetalleHorariosComponent() {
                   <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
+
+              {/* Botón de Enviar */}
               <Button type="submit" variant="primary" className="w-100 mt-3">
                 {editingDetalle ? "Actualizar" : "Crear"}
               </Button>

@@ -10,6 +10,7 @@ function Comisiones() {
   const [eventos, setEventos] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingComision, setEditingComision] = useState(null);
+  const [detallesHorarios, setDetallesHorarios] = useState([]); // para horarios
   const [newComision, setNewComision] = useState({
     comision: "",
     descripcion: "",
@@ -25,6 +26,7 @@ function Comisiones() {
   useEffect(() => {
     fetchComisiones();
     fetchEventos();
+    fetchDetallesHorarios();
   }, []);
 
   const fetchComisiones = async () => {
@@ -34,6 +36,15 @@ function Comisiones() {
       setFilteredComisiones(response.data);
     } catch (error) {
       console.error("Error fetching comisiones:", error);
+    }
+  };
+
+  const fetchDetallesHorarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/detalle_horarios/comisiones"); // Endpoint para obtener todos los detalles
+      setDetallesHorarios(response.data);
+    } catch (error) {
+      console.error("Error fetching detalle horarios:", error);
     }
   };
 
@@ -62,6 +73,15 @@ function Comisiones() {
     } catch (error) {
       console.error("Error fetching inactive comisiones:", error);
     }
+  };
+
+  const validateForm = () => {
+    if (!newComision.comision || !newComision.descripcion || !newComision.idEvento) {
+      setAlertMessage("Por favor, completa todos los campos requeridos.");
+      setShowAlert(true);
+      return false;
+    }
+    return true;
   };
 
   const handleSearch = (e) => {
@@ -100,6 +120,7 @@ function Comisiones() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     try {
       if (editingComision) {
         await axios.put(
@@ -306,7 +327,20 @@ function Comisiones() {
                 <td>{comision.comision}</td>
                 <td>{comision.descripcion}</td>
                 <td>{eventos.find((evento) => evento.idEvento === comision.idEvento)?.nombreEvento || "No asignado"}</td>
-                <td>{comision.idDetalleHorario || "No asignado"}</td>
+                <td>
+                  {comision.detalleHorario ? (
+                    <>
+                      <div>{comision.detalleHorario.cantidadPersonas} personas</div>
+                        <div>
+                          {comision.detalleHorario.horario
+                            ? `${new Date(`1970-01-01T${comision.detalleHorario.horario.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${comision.detalleHorario.horario.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`
+                            : "Sin horario"}
+                        </div>
+                      </>
+                    ) : (
+                      "No asignado"
+                    )}
+                  </td>
                 <td>{comision.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                   <FaPencilAlt
@@ -399,27 +433,37 @@ function Comisiones() {
                 </Form.Control>
               </Form.Group>
               <Form.Group controlId="idDetalleHorario">
-                <Form.Label>Detalle Horario</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="idDetalleHorario"
-                  value={newComision.idDetalleHorario}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newComision.estado}
-                  onChange={handleChange}
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
+                  <Form.Label>Detalle Horario</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="idDetalleHorario"
+                    value={newComision.idDetalleHorario}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccionar Detalle Horario</option>
+                    {detallesHorarios.map((detalle) => (
+                      <option key={detalle.idDetalleHorario} value={detalle.idDetalleHorario}>
+                        {`${detalle.cantidadPersonas} personas - ${new Date(`1970-01-01T${detalle.horario?.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${detalle.horario?.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+
+                {/* Campo: Estado */}
+                <Form.Group controlId="estado">
+                  <Form.Label>Estado</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="estado"
+                    value={newComision.estado}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value={1}>Activo</option>
+                    <option value={0}>Inactivo</option>
+                  </Form.Control>
+                </Form.Group>
               <Button
                 style={{
                   backgroundColor: "#007AC3",
