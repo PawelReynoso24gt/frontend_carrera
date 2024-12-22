@@ -23,6 +23,7 @@ async function fetchWithToken(url, options = {}) {
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
         localStorage.removeItem("personId");
+        localStorage.removeItem("sedeId");
         window.location.href = "/login";
         return Promise.reject("Token inválido o expirado.");
       }

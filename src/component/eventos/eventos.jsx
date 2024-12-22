@@ -39,6 +39,9 @@ function Eventos() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  // extraer el dato para idSede
+  const sedeId = localStorage.getItem("sedeId");
+
   useEffect(() => {
     fetchEventos();
     fetchSedes();
@@ -115,7 +118,7 @@ function Eventos() {
         descripcion: "",
         direccion: "",
         estado: 1,
-        idSede: "",
+        idSede: sedeId || "",
       }
     );
     setShowModal(true);
@@ -133,6 +136,10 @@ function Eventos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const data = {
+        ...newEvento,
+        idSede: sedeId || newEvento.idSede, // Priorizar el `sedeId` almacenado
+      };
       if (editingEvento) {
         await axios.put(
           `http://localhost:5000/eventos/${editingEvento.idEvento}`,

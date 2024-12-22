@@ -79,6 +79,7 @@ import ReporteProblemas from "./pages/reporteProblemas/reporteProblemas";
 import SoporteTecnico from "./pages/soporteTecnico/soporteTecnico";
 import Desarrolladores from "./pages/desarrolladores/desarrolladores";
 import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
+import Ventas from "./pages/ventas/ventas";
 
 const router = createBrowserRouter([
   {
@@ -175,6 +176,10 @@ const router = createBrowserRouter([
       {
         path: "/tipoPago",
         element: <TipoPago />,
+      },
+      {
+        path: "/ventas",
+        element: <Ventas />,
       },
       {
         path: "/categoria_bitacoras",

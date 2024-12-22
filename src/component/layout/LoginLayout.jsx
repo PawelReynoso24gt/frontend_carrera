@@ -23,9 +23,11 @@ function LoginLayout() {
       const token = response.data.token;
       const userId = response.data.usuario.idUsuario;
       const personId = response.data.usuario.idPersona;
+      const sedeId = response.data.usuario.idSede;
       localStorage.setItem("personId", personId);
       localStorage.setItem("token", token); // Almacenar el token en localStorage
       localStorage.setItem("userId", userId);
+      localStorage.setItem("sedeId", sedeId);
       
       navigate("/dashboard-sass"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)
     } catch (err) {

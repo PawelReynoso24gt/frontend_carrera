@@ -13,6 +13,7 @@ function Rifas() {
   const [newRifa, setNewRifa] = useState({
     nombreRifa: "",
     descripcion: "",
+    precioBoleto: "",
     idSede: "",
     estado: 1,
   });
@@ -20,6 +21,9 @@ function Rifas() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // extraer el dato para idSede
+  const sedeId = localStorage.getItem("sedeId");
 
   useEffect(() => {
     fetchRifas();
@@ -82,7 +86,8 @@ function Rifas() {
       rifa || {
         nombreRifa: "",
         descripcion: "",
-        idSede: "",
+        precioBoleto: "",
+        idSede: sedeId || "",
         estado: 1,
       }
     );
@@ -105,7 +110,7 @@ function Rifas() {
       const data = {
         ...newRifa,
         estado: parseInt(newRifa.estado, 10),
-        idSede: parseInt(newRifa.idSede, 10),
+        idSede: sedeId || parseInt(newRifa.idSede, 10),
       };
 
       if (editingRifa) {
@@ -299,6 +304,7 @@ function Rifas() {
               <th>ID</th>
               <th>Nombre Rifa</th>
               <th>Descripción</th>
+              <th>Precio del boleto</th>
               <th>Sede</th>
               <th>Estado</th>
               <th>Acciones</th>
@@ -310,6 +316,7 @@ function Rifas() {
                 <td>{rifa.idRifa}</td>
                 <td>{rifa.nombreRifa}</td>
                 <td>{rifa.descripcion}</td>
+                <td>Q. {rifa.precioBoleto}</td>
                 <td>
                   {
                     sedes.find((sede) => sede.idSede === rifa.idSede)?.nombreSede || "Sin sede"
@@ -385,6 +392,16 @@ function Rifas() {
                   type="text"
                   name="descripcion"
                   value={newRifa.descripcion}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="precioBoleto">
+                <Form.Label>Precio del Boleto</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="precioBoleto"
+                  value={newRifa.precioBoleto}
                   onChange={handleChange}
                   required
                 />

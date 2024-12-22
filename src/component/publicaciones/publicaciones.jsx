@@ -22,6 +22,9 @@ function Publicaciones() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
+  // extraer el dato para idSede
+  const sedeId = localStorage.getItem("sedeId");
+
   useEffect(() => {
     fetchPublicaciones();
     fetchSedes();
@@ -81,7 +84,7 @@ function Publicaciones() {
         descripcion: "",
         fechaPublicacion: new Date().toISOString().split("T")[0],
         estado: 1,
-        idSede: "",
+        idSede: sedeId || "", // Usar `sedeId` si no hay una publicación existente
         tipoPublicacion: "general",
       }
     );
@@ -106,7 +109,7 @@ function Publicaciones() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    Object.entries(newPublicacion).forEach(([key, value]) => {
+    Object.entries({ ...newPublicacion, idSede: sedeId || newPublicacion.idSede }).forEach(([key, value]) => {
       formData.append(key, value);
     });
     files.forEach((file) => formData.append("files", file));
@@ -294,7 +297,14 @@ function Publicaciones() {
           </tbody>
         </Table>
 
-        <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal 
+        show={showModal} 
+        onHide={handleCloseModal} 
+        style={{
+            height: "80vh", // Altura fija en porcentaje de la ventana
+            maxHeight: "90vh", // Máxima altura permitida
+          }}
+        >
           <Modal.Header
             closeButton
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
@@ -303,7 +313,12 @@ function Publicaciones() {
               {editingPublicacion ? "Editar Publicación" : "Agregar Publicación"}
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body
+            style={{
+              maxHeight: "75vh", // Altura máxima del contenido
+              overflowY: "auto", // Habilitar scroll si el contenido supera la altura
+            }}
+          >
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="nombrePublicacion">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
@@ -385,6 +400,18 @@ function Publicaciones() {
                   multiple
                   onChange={handleFileChange}
                 />
+              </Form.Group>
+              <Form.Group controlId="estado">
+                <Form.Label>Estado</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="estado"
+                  value={newPublicacion.estado}
+                  onChange={handleChange}
+                >
+                  <option value={1}>Activo</option>
+                  <option value={0}>Inactivo</option>
+                </Form.Control>
               </Form.Group>
               <Button
                 style={{
