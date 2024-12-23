@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import fetchWithToken from "../../../utils/fetchWithToken";
-import { getUserDataFromToken } from "../../../utils/jwtUtils";
+import { getUserDataFromToken } from "../../../utils/jwtUtils"; // ! EJEMPLO DE IMPORTACIÓN DE FUNCIÓN getUserDataFromToken
 
 function PersonalInfo() {
   const [formData, setFormData] = useState({
@@ -26,8 +26,8 @@ function PersonalInfo() {
     e.preventDefault();
 
     // Obtener el idPersona desde localStorage
-    const idPersona = getUserDataFromToken(localStorage.getItem("token"))?.idPersona;
-    const token = localStorage.getItem("token");
+    const idPersona = getUserDataFromToken(localStorage.getItem("token"))?.idPersona; // ! EJEMPLO DE USO DE LA FUNCIÓN getUserDataFromToken
+    const token = localStorage.getItem("token"); // ! ESTO NO ES NECESARIO SI SE USA LA FUNCIÓN getUserDataFromToken
 
     if (!idPersona || !token) {
       setMensaje(
