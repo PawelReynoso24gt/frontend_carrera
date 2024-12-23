@@ -21,8 +21,6 @@ function LoginLayout() {
 
       // Si la autenticación es exitosa, guarda el token y redirige
       const token = response.data.token;
-      const personId = response.data.usuario.idPersona;
-      localStorage.setItem("personId", personId);
       localStorage.setItem("token", token); // Almacenar el token en localStorage
       
       navigate("/dashboard-sass"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)

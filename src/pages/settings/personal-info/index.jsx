@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import fetchWithToken from "../../../utils/fetchWithToken";
+import { getUserDataFromToken } from "../../../utils/jwtUtils";
 
 function PersonalInfo() {
   const [formData, setFormData] = useState({
@@ -24,11 +25,11 @@ function PersonalInfo() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Obtener el personId desde localStorage
-    const personId = localStorage.getItem("personId");
+    // Obtener el idPersona desde localStorage
+    const idPersona = getUserDataFromToken(localStorage.getItem("token"))?.idPersona;
     const token = localStorage.getItem("token");
 
-    if (!personId || !token) {
+    if (!idPersona || !token) {
       setMensaje(
         "No se encontró el ID del usuario o el token en el almacenamiento local."
       );
@@ -36,7 +37,7 @@ function PersonalInfo() {
     }
 
     try {
-      const response = await fetchWithToken(`http://localhost:5000/personas/update/${personId}`, {
+      const response = await fetchWithToken(`http://localhost:5000/personas/update/${idPersona}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
