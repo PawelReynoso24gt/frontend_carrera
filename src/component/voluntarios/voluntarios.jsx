@@ -315,13 +315,13 @@ function Voluntarios() {
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
-              <th style={{ textAlign: "center" }}>ID</th>
-              <th style={{ textAlign: "center" }}>Código QR</th>
-              <th style={{ textAlign: "center" }}>Fecha Registro</th>
-              <th style={{ textAlign: "center" }}>Fecha Salida</th>
-              <th style={{ textAlign: "center" }}>Persona</th>
-              <th style={{ textAlign: "center" }}>Estado</th>
-              <th style={{ textAlign: "center" }}>Acciones</th>
+              <th style={{ textAlign: "center", fontFamily: "Arial, sans-serif" }}>ID</th>
+              <th style={{ textAlign: "center", fontFamily: "Arial, sans-serif" }}>Código QR</th>
+              <th style={{ textAlign: "center", fontFamily: "Arial, sans-serif" }}>Fecha Registro</th>
+              <th style={{ textAlign: "center", fontFamily: "Arial, sans-serif" }}>Fecha Salida</th>
+              <th style={{ textAlign: "center", fontFamily: "Arial, sans-serif" }}>Persona</th>
+              <th style={{ textAlign: "center", fontFamily: "Arial, sans-serif" }}>Estado</th>
+              <th style={{ textAlign: "center", fontFamily: "Arial, sans-serif" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
