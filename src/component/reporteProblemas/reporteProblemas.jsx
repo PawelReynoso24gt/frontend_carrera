@@ -10,6 +10,7 @@ function ReporteTecnico() {
   const [registros, setRegistros] = useState([]);
   const [alerta, setAlerta] = useState("");
   const [nombreUsuario, setNombreUsuario] = useState("");
+  const [revisor, setRevisor] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,21 +57,34 @@ function ReporteTecnico() {
     fetchLoggedUser();
   }, []);
   
-
+  function formatDateTimeFromUTC(dateString) {
+    // La fecha de entrada se encuentra en formato ISO
+    const [datePart, timePart] = dateString.split("T"); // Dividir la fecha y la hora
+    const [year, month, day] = datePart.split("-"); // Separar año, mes y día
+    const [hour, minute, second] = timePart.split(":"); // Separar hora, minutos y segundos
+  
+    // Convertir hora a formato 12 horas
+    const hour12 = (hour % 12) || 12; // Convertir a formato 12 horas
+    const amPm = hour >= 12 ? "p. m." : "a. m.";
+  
+    return `${day}/${month}/${year} ${hour12}:${minute} ${amPm}`;
+  }
+  
   const registrosFiltrados = useMemo(() => {
     if (!fechaInicio || !fechaFin) {
       return [];
     }
-
-    const inicio = new Date(`${fechaInicio}T00:00:00Z`);
-    const fin = new Date(`${fechaFin}T23:59:59Z`);
-
+  
+    // Interpretar fechas exactamente como seleccionadas
+    const inicio = new Date(`${fechaInicio}T00:00:00`);
+    const fin = new Date(`${fechaFin}T23:59:59`);
+  
     return registros.filter((registro) => {
       const fechaRegistro = new Date(registro.fechaHora);
       return fechaRegistro >= inicio && fechaRegistro <= fin;
     });
   }, [fechaInicio, fechaFin, registros]);
-
+  
   const generarPDF = () => {
     const doc = new jsPDF();
   
@@ -82,7 +96,12 @@ function ReporteTecnico() {
     doc.setFontSize(12);
     doc.text(new Date().toLocaleDateString("es-ES"), 75, 28); // Fecha de generación debajo del título
     doc.setFontSize(10);
-    doc.text(`Desde: ${fechaInicio}   Hasta: ${fechaFin}`, 75, 35); // Rango de fechas
+
+      // Formato de fecha: DD-MM-YYYY
+  const fechaInicioFormatted = fechaInicio.split("-").reverse().join("/");
+  const fechaFinFormatted = fechaFin.split("-").reverse().join("/");
+
+    doc.text(`Desde: ${fechaInicioFormatted}   Hasta: ${fechaFinFormatted}`, 75, 35); // Rango de fechas
     doc.text(`Generado por: ${nombreUsuario}`, 75, 40);
   
     // Línea de separación
@@ -118,7 +137,7 @@ function ReporteTecnico() {
           body: datos.map((registro) => [
             registro.idBitacora,
             registro.descripcion,
-            new Date(registro.fechaHora).toLocaleString("es-ES", { timeZone: "UTC" }),
+            formatDateTimeFromUTC(registro.fechaHora),
             registro.usuario?.usuario || "Sin usuario",
             registro.usuario?.persona?.nombre || "Sin nombre",
           ]),
@@ -130,8 +149,52 @@ function ReporteTecnico() {
         startY = doc.previousAutoTable.finalY + 10; // Ajustar posición para la siguiente tabla
       }
     });
-  
-    doc.save(`Reporte_Soporte_Tecnico_${fechaInicio}_${fechaFin}.pdf`);
+
+  // Calcular subtotales
+  const totalRegistros = registrosFiltrados.length;
+  const totalPorEstado = {
+    detectados: registrosFiltrados.filter((registro) => registro.estado === "problema detectado").length,
+    enRevision: registrosFiltrados.filter((registro) => registro.estado === "problema en revisión").length,
+    solucionados: registrosFiltrados.filter((registro) => registro.estado === "problema solucionado").length,
+  };
+  const usuarioConMasRegistros = registrosFiltrados.reduce((acc, registro) => {
+    const usuario = registro.usuario?.usuario || "Sin usuario";
+    acc[usuario] = (acc[usuario] || 0) + 1;
+    return acc;
+  }, {});
+  const usuarioTop = Object.keys(usuarioConMasRegistros).reduce((max, usuario) =>
+    usuarioConMasRegistros[usuario] > usuarioConMasRegistros[max] ? usuario : max
+  );
+
+  // Revisar si el resumen cabe en la página actual, de lo contrario, agregar nueva página
+  if (startY + 60 > 280) { // 280 es el límite antes de la parte inferior
+    doc.addPage();
+    startY = 10; // Comenzar desde la parte superior de la nueva página
+  }
+
+  // Resumen
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor("#333");
+  doc.text("RESUMEN", 14, startY);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`• Total de registros: ${totalRegistros}`, 14, startY + 10);
+  doc.text(`• Problemas detectados: ${totalPorEstado.detectados}`, 14, startY + 20);
+  doc.text(`• Problemas en revisión: ${totalPorEstado.enRevision}`, 14, startY + 30);
+  doc.text(`• Problemas solucionados: ${totalPorEstado.solucionados}`, 14, startY + 40);
+  doc.text(`• Período cubierto: Desde ${fechaInicioFormatted} hasta ${fechaFinFormatted}`, 14, startY + 50);
+  doc.text(`• Usuario con más registros: ${usuarioTop} (${usuarioConMasRegistros[usuarioTop]} registros)`, 14, startY + 60);
+
+  // Espacio para la firma
+  const firmaStartY = startY + 80; // Ajustamos para que quede más cerca del resumen
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("_______________________________", 105, firmaStartY, { align: "center" });
+  doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
+
+    doc.save(`Reporte_Soporte_Tecnico_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
   };
   
 
@@ -177,6 +240,20 @@ function ReporteTecnico() {
       />
     </div>
   </div>
+  <div className="text-center mb-4">
+        <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Revisado por:</label>
+        <input
+          type="text"
+          className="form-control mx-auto"
+          value={revisor}
+          onChange={(e) => setRevisor(e.target.value)}
+          placeholder="Nombre del revisor"
+          style={{
+            width: "250px",
+            textAlign: "center",
+          }}
+        />
+      </div>
 </div>
 
 <div className="text-center mb-4"> {/* Contenedor centrado */}
@@ -219,16 +296,7 @@ function ReporteTecnico() {
             <tr key={registro.idBitacora}>
               <td>{registro.idBitacora}</td>
               <td>{registro.descripcion}</td>
-              <td>
-                {new Date(registro.fechaHora).toLocaleString("es-ES", {
-                  timeZone: "UTC",
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </td>
+              <td>{formatDateTimeFromUTC(registro.fechaHora)}</td>
               <td>{registro.usuario?.usuario || "Sin usuario"}</td>
               <td>{registro.usuario?.persona?.nombre || "Sin nombre"}</td>
               <td>{registro.estado}</td>

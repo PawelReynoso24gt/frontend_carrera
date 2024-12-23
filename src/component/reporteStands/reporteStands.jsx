@@ -9,6 +9,7 @@ function ReportePlayeras() {
   const [fechaFin, setFechaFin] = useState("");
   const [reportes, setReportes] = useState([]);
   const [alerta, setAlerta] = useState("");
+  const [revisor, setRevisor] = useState("");
 
   useEffect(() => {
     const fetchReportes = async () => {
@@ -31,6 +32,41 @@ function ReportePlayeras() {
     }
   }, [fechaInicio, fechaFin]);
 
+  const subtotalesPorTallaAsignadas = ["10", "12", "14", "16", "S", "M", "L", "XL"].reduce(
+    (totales, talla) => {
+      totales[talla] = reportes.reduce(
+        (sum, stand) => sum + (stand.playerasAsignadas[talla] || 0),
+        0
+      );
+      return totales;
+    },
+    {}
+  );
+  
+  const subtotalesPorTallaVendidas = ["10", "12", "14", "16", "S", "M", "L", "XL"].reduce(
+    (totales, talla) => {
+      totales[talla] = reportes.reduce(
+        (sum, stand) => sum + (stand.playerasVendidas[talla] || 0),
+        0
+      );
+      return totales;
+    },
+    {}
+  );
+
+  const totalGeneral = {
+    totalAsignadas: reportes.reduce((sum, stand) => {
+      return sum + Object.values(stand.playerasAsignadas || {}).reduce((suma, cantidad) => suma + cantidad, 0);
+    }, 0),
+    totalVendidas: reportes.reduce((sum, stand) => {
+      return sum + Object.values(stand.playerasVendidas || {}).reduce((suma, cantidad) => suma + cantidad, 0);
+    }, 0),
+    totalRecaudado: reportes.reduce((sum, stand) => {
+      return sum + Object.keys(stand.subtotalesVendidos || {}).reduce((total, talla) => total + (stand.subtotalesVendidos[talla] || 0), 0);
+    }, 0),
+  };
+
+
   const generarPDF = () => {
     const doc = new jsPDF();
 
@@ -42,7 +78,9 @@ function ReportePlayeras() {
     doc.setFontSize(12);
     doc.text(new Date().toLocaleDateString("es-ES"), 75, 28);
     doc.setFontSize(10);
-    doc.text(`Desde: ${fechaInicio}   Hasta: ${fechaFin}`, 75, 35);
+    const fechaInicioFormatted = fechaInicio.split("-").reverse().join("/");
+    const fechaFinFormatted = fechaFin.split("-").reverse().join("/");
+    doc.text(`Desde: ${fechaInicioFormatted}   Hasta: ${fechaFinFormatted}`, 75, 35);
 
     // Línea de separación
     doc.setLineWidth(0.5);
@@ -105,7 +143,7 @@ function ReportePlayeras() {
           stand.playerasVendidas.L || 0,
           stand.playerasVendidas.XL || 0,
           totalVendidas,
-          totalRecaudado || 0,
+         `Q${totalRecaudado.toFixed(2)}`,
         ];
       }),
       styles: { fontSize: 10, cellPadding: 2 },
@@ -113,22 +151,48 @@ function ReportePlayeras() {
       theme: "grid",
     });
 
-    // Calcular el total recaudado general
-    const totalRecaudadoGeneral = reportes.reduce((sum, stand) => {
-      const totalRecaudadoPorStand = Object.keys(stand.subtotalesVendidos || {}).reduce((total, talla) => {
-        return total + (stand.subtotalesVendidos[talla] || 0);
-      }, 0);
-      return sum + totalRecaudadoPorStand;
-    }, 0);
-
-    // Añadir el total recaudado general al final del reporte
-    doc.setFontSize(12);
-    doc.setTextColor(0);
+    let startY = doc.lastAutoTable.finalY + 15; // Punto inicial después de la última tabla
+    doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Total Recaudado General: " + totalRecaudadoGeneral.toFixed(2), 10, doc.lastAutoTable.finalY + 10);
-
+    doc.text("Subtotales y Métricas", 105, startY, { align: "center" });
+    startY += 10;
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Total playeras asignadas y vendidas", 105, startY, { align: "center" });
+    startY += 10; // Incremento para dejar espacio después del título
+    
+    // Agregar la tabla de totales generales de playeras asignadas y vendidas
+    doc.setFontSize(12);
+    doc.autoTable({
+      startY: startY,
+      head: [["Talla", "Asignadas", "Vendidas"]],
+      body: ["10", "12", "14", "16", "S", "M", "L", "XL"].map((talla) => [
+        talla,
+        subtotalesPorTallaAsignadas[talla] || 0,
+        subtotalesPorTallaVendidas[talla] || 0,
+      ]),
+      styles: { fontSize: 10, cellPadding: 2 },
+      headStyles: { fillColor: [0, 122, 195], textColor: 255 },
+      theme: "grid",
+    });
+    
+    startY = doc.lastAutoTable.finalY + 10; // Punto inicial después de la tabla
+    
+    // Totales generales
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total Playeras Asignadas: ${totalGeneral.totalAsignadas}`, 105, startY, { align: "center" });
+    doc.text(`Total Playeras Vendidas: ${totalGeneral.totalVendidas}`, 105, startY + 6, { align: "center" });
+    doc.text(`Total Recaudado: Q${totalGeneral.totalRecaudado.toFixed(2)}`, 105, startY + 12, { align: "center" });
+    
+    const firmaStartY = doc.lastAutoTable.finalY + 35; // Calcula un espacio fijo después de la última tabla
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("_______________________________", 105, firmaStartY, { align: "center" });
+    doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
+      
     // Guardar el documento
-    doc.save(`Reporte_Playeras_${fechaInicio}_${fechaFin}.pdf`);
+    doc.save(`Reporte_Playeras_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
   };
 
   return (
@@ -172,6 +236,20 @@ function ReportePlayeras() {
             />
           </div>
         </div>
+        <div className="text-center mb-4">
+        <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Revisado por:</label>
+        <input
+          type="text"
+          className="form-control mx-auto"
+          value={revisor}
+          onChange={(e) => setRevisor(e.target.value)}
+          placeholder="Nombre del revisor"
+          style={{
+            width: "250px",
+            textAlign: "center",
+          }}
+        />
+       </div>
       </div>
 
       <div className="text-center mb-4">
