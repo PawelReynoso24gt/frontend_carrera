@@ -30,10 +30,7 @@ axios.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 || error.response?.status === 403) {
       // Si el token es inválido o expiró, limpia el localStorage y redirige al login
-      localStorage.removeItem("token");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("personId");
-      localStorage.removeItem("sedeId");
+      localStorage.clear(); // Limpia el localStorage
       window.location.href = "/login"; // Redirige al usuario a la página de login
     }
     return Promise.reject(error); // Propaga el error para manejarlo en los componentes si es necesario

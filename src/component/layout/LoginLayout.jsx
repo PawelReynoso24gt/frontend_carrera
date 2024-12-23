@@ -3,11 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import bg from "../../assets/img/credential-bg.svg";
 import logoW from "../../assets/img/logo-white.png";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function LoginLayout() {
   const [usuario, setUsuario] = useState(""); // Estado para el usuario
   const [contrasenia, setContrasenia] = useState(""); // Estado para la contraseña
   const [error, setError] = useState(null); // Estado para los mensajes de error
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   // Manejar la solicitud de inicio de sesión
@@ -21,13 +23,7 @@ function LoginLayout() {
 
       // Si la autenticación es exitosa, guarda el token y redirige
       const token = response.data.token;
-      const userId = response.data.usuario.idUsuario;
-      const personId = response.data.usuario.idPersona;
-      const sedeId = response.data.usuario.idSede;
-      localStorage.setItem("personId", personId);
       localStorage.setItem("token", token); // Almacenar el token en localStorage
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("sedeId", sedeId);
       
       navigate("/dashboard-sass"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)
     } catch (err) {

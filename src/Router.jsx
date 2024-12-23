@@ -81,6 +81,7 @@ import Desarrolladores from "./pages/desarrolladores/desarrolladores";
 import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 import Ventas from "./pages/ventas/ventas";
 
+
 const router = createBrowserRouter([
   {
     path: "/",

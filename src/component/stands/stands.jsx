@@ -54,6 +54,8 @@ function Stand() {
     }
   };
 
+  
+
   const handleShowModal = (stand = null) => {
     setEditingStand(stand);
     setNewStand(
@@ -114,6 +116,29 @@ function Stand() {
       console.error("Error toggling estado:", error);
     }
   };
+
+  const fetchActiveStands = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/stand/activas");
+    const data = Array.isArray(response.data) ? response.data : []; // Validación
+    setStands(data);
+  } catch (error) {
+    console.error("Error fetching active stands:", error);
+    setStands([]); // Respaldo en caso de error
+  }
+};
+
+const fetchInactiveStands = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/stand/inactivas");
+    const data = Array.isArray(response.data) ? response.data : []; // Validación
+    setStands(data);
+  } catch (error) {
+    console.error("Error fetching inactive stands:", error);
+    setStands([]); // Respaldo en caso de error
+  }
+};
+
 
   // Pagination Logic
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -199,49 +224,50 @@ function Stand() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <div className="d-flex justify-content-start align-items-center mb-3">
-          <Button
-            style={{
-              backgroundColor: "#007abf",
-              borderColor: "#007AC3",
-              padding: "5px 10px",
-              width: "130px",
-              marginRight: "10px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-            onClick={() => handleShowModal()}
-          >
-            Agregar Stand
-          </Button>
-          <Button
-            style={{
-              backgroundColor: "#009B85",
-              borderColor: "#007AC3",
-              padding: "5px 10px",
-              width: "100px",
-              marginRight: "10px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-            onClick={() => fetchActiveStands()}
-          >
-            Activos
-          </Button>
-          <Button
-            style={{
-              backgroundColor: "#bf2200",
-              borderColor: "#007AC3",
-              padding: "5px 10px",
-              width: "100px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-            onClick={() => fetchInactiveStands()}
-          >
-            Inactivos
-          </Button>
-        </div>
+      <div className="d-flex justify-content-start align-items-center mb-3">
+        <Button
+          style={{
+            backgroundColor: "#007abf",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "130px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={() => handleShowModal()}
+        >
+          Agregar Stand
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveStands}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#bf2200",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveStands}
+        >
+          Inactivos
+        </Button>
+      </div>
+
 
         <Alert
           variant="success"
@@ -327,6 +353,83 @@ function Stand() {
         </Table>
         {renderPagination()}
       </div>
+
+      <Modal show={showModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {editingStand ? "Editar Stand" : "Agregar Stand"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group controlId="nombreStand">
+              <Form.Label>Nombre del Stand</Form.Label>
+              <Form.Control
+                type="text"
+                name="nombreStand"
+                value={newStand.nombreStand}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="direccion">
+              <Form.Label>Dirección</Form.Label>
+              <Form.Control
+                type="text"
+                name="direccion"
+                value={newStand.direccion}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="idSede">
+              <Form.Label>Sede</Form.Label>
+              <Form.Control
+                as="select"
+                name="idSede"
+                value={newStand.idSede}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccionar Sede</option>
+                {sedes.map((sede) => (
+                  <option key={sede.idSede} value={sede.idSede}>
+                    {sede.nombreSede}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+            <Form.Group controlId="idTipoStands">
+              <Form.Label>Tipo de Stand</Form.Label>
+              <Form.Control
+                as="select"
+                name="idTipoStands"
+                value={newStand.idTipoStands}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccionar Tipo</option>
+                {tiposStands.map((tipo) => (
+                  <option key={tipo.idTipoStands} value={tipo.idTipoStands}>
+                    {tipo.nombreTipo}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+            <Button
+              type="submit"
+              style={{
+                backgroundColor: "#007AC3",
+                borderColor: "#007AC3",
+                width: "100%",
+                marginTop: "15px",
+              }}
+            >
+              {editingStand ? "Actualizar" : "Crear"}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </>
   );
 }
