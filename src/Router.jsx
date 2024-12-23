@@ -82,6 +82,7 @@ import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 import ReporteEventos from "./pages/reporteEventos/reporteEventos";
 import ReporteStands from "./pages/reporteStands/reporteStands";
 
+
 const router = createBrowserRouter([
   {
     path: "/",

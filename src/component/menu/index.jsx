@@ -22,7 +22,7 @@ function Menu({ toggleMenu, menu }) {
       {/* <!-- Admin Menu --> */}
       <div className={`admin-menu ${dropdown ? "no-overflow" : ""}`}>
         {/* <!-- Logo --> */}
-        <div className="logo crancy-sidebar-padding pd-right-0">
+        <div className="logo crancy-sidebar-padding pd-right-0">  {/* color aq */}
           <Link className="crancy-logo" to="/paginaPrincipal">
             {/* <!-- Logo for Default --> */}
             <img className="crancy-logo__main" src={logo} alt="#"  style={{ width: "250px", height: "auto" }} />
@@ -45,7 +45,8 @@ function Menu({ toggleMenu, menu }) {
         </div>
 
         {/* <!-- Main Menu --> */}
-        <div className="admin-menu__one crancy-sidebar-padding mg-top-20">
+        <div className="admin-menu__one crancy-sidebar-padding mg-top-20"
+        >
           <h4 className="admin-menu__title">Menu</h4>
           {/* <!-- Nav Menu --> */}
           <div className="menu-bar">
@@ -126,7 +127,7 @@ function Menu({ toggleMenu, menu }) {
                 { link: "comisiones", title: "Gestión Comisiones" },
                 { link: "actividades", title: "Gestión Actividades" },
                 { link: "Materiales", title: "Gestión Materiales" },
-                { link: "asistencia_eventos", title: "Asistencias a Eventos" },
+                { link: "asistencia_eventos", title: "Inscripciones y Asistenciass" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-balloon" viewBox="0 0 16 16">
