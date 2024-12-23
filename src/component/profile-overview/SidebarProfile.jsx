@@ -6,6 +6,7 @@ import socialImg2 from "../../assets/img/social-2.png";
 import socialImg3 from "../../assets/img/social-3.png";
 import socialImg4 from "../../assets/img/social-4.png";
 import socialImg5 from "../../assets/img/social-5.png";
+import { getUserDataFromToken } from "../../utils/jwtUtils";
 
 function SidebarProfile() {
   const [userData, setUserData] = useState(null);
@@ -15,9 +16,9 @@ function SidebarProfile() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Obtener el userId desde el localStorage
-        const userId = Number(localStorage.getItem("userId"));
-        if (!userId) {
+        // Obtener el idUsuario desde el localStorage
+        const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
+        if (!idUsuario) {
           setError("No se ha iniciado sesión correctamente.");
           setLoading(false);
           return;
@@ -28,7 +29,7 @@ function SidebarProfile() {
 
         console.log("Usuarios activos desde la API:", response.data); // Debug
         // Buscar el usuario logueado en los datos retornados
-        const loggedUser = response.data.find((user) => user.idUsuario === userId);
+        const loggedUser = response.data.find((user) => user.idUsuario === idUsuario);
 
         if (loggedUser) {
           setUserData(loggedUser);

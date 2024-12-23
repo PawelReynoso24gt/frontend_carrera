@@ -20,9 +20,7 @@ async function fetchWithToken(url, options = {}) {
   
       // Si el token expira o es inválido, redirige al login
       if (response.status === 401 || response.status === 403) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("personId");
+        localStorage.clear();
         window.location.href = "/login";
         return Promise.reject("Token inválido o expirado.");
       }

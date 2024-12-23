@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import profile from '../../assets/img/profile-pic.png';
 import axios from 'axios';
+import { getUserDataFromToken } from '../../utils/jwtUtils';
 
 function Author({ subNav, setSubNav, title }) {
   const navigate = useNavigate();
@@ -9,14 +10,14 @@ function Author({ subNav, setSubNav, title }) {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('token');
-      const personId = localStorage.getItem('personId');
-      const userId = localStorage.getItem('userId');
+      const userData = getUserDataFromToken(token);
+
       if (token) {
         // Obtener el id del usuario decodificando el token (siempre que el id esté incluido en el payload)
-        const userId = parseJwt(token).idUsuario;
+        const idUsuario = userData ? userData.idUsuario : null;
 
         // Llamar al endpoint de logout para eliminar el token de la base de datos
-        await axios.put(`http://localhost:5000/usuarios/logout/${userId}`, {}, {
+        await axios.put(`http://localhost:5000/usuarios/logout/${idUsuario}`, {}, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
