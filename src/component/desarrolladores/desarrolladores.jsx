@@ -24,7 +24,7 @@ const Desarrolladores = () => {
       role: "Administrador de seguridad y Desarrollador de backend y frontend",
       description:
         "Nacido en San Marcos, Guatemala el 16 de Diciembre de 2003. Actualmente cuenta con pensum cerrado de la carrera de Ingeniería en Sistemas, Informática y Ciencias de la computación en la Universidad Mesoamericana, sede Quetzaltenango, en 2024. Además obtuvo el titulo de Bachiller en computación con orientación científica en el Colegio Pre Universitario Galileo en San Marcos 2020.",
-      image: "/src/assets/img/prueba5.jpg",
+      image: "/src/assets/img/Pablo.jpeg",
       imageStyle: { maxHeight: "400px", width: "100%", objectFit: "contain" },
     },
     {
