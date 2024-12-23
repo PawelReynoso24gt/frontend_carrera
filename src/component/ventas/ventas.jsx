@@ -13,6 +13,8 @@ function Ventas() {
   const [showModal, setShowModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [editingVenta, setEditingVenta] = useState(null);
+  const [imagenBase64, setImagenBase64] = useState(null);
+  const [imagen, setImagen] = useState(null);
   const [newVenta, setNewVenta] = useState({
     totalVenta: 0,
     idTipoPublico: "",
@@ -72,26 +74,31 @@ function Ventas() {
 
   const handleViewDetails = async (idVenta) => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/detalle_ventas_voluntarios/${idVenta}`
-      );
-  
-      console.log("JSON recibido:", response.data);
-  
-      // Asegurarse de que `detalleSeleccionado` sea un objeto, no un arreglo
-      if (response.data && response.data.length > 0) {
-        setDetalleSeleccionado(response.data[0]); // Extrae el primer elemento del arreglo
-      } else {
-        setDetalleSeleccionado(null);
+        const response = await axios.get(
+            `http://localhost:5000/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`
+        );
+
+        console.log("JSON recibido:", response.data);
+
+        if (response.data && response.data.length > 0) {
+            setDetalleSeleccionado(response.data); // Guarda todos los detalles de la venta
+            const imagen = response.data[0]?.detalle_pago_ventas_voluntarios[0]?.imagenTransferencia || null;
+            setImagenBase64(imagen); // Establecer la imagen Base64
+        } else {
+            alert("No se encontraron detalles para esta venta.");
+            setDetalleSeleccionado(null);
+            setImagenBase64(null);
+        }
+
+        setShowModal(true);
+      } catch (error) {
+          console.error("Error fetching detalles de venta:", error);
+          alert("Error al cargar los detalles de la venta.");
+          setDetalleSeleccionado(null);
+          setImagenBase64(null);
+          setShowModal(false); // Oculta el modal si no se obtienen datos
       }
-  
-      setShowModal(true); // Muestra el modal después de establecer los datos
-    } catch (error) {
-      console.error("Error fetching detalles de venta:", error);
-      setDetalleSeleccionado(null); // Asegúrate de manejar errores estableciendo nulo
-      setShowModal(false); // Oculta el modal si no se obtienen datos
-    }
-  };  
+  };
   
   const handleCloseModal = () => {
     setDetalleSeleccionado(null);
@@ -300,41 +307,52 @@ function Ventas() {
             <Modal.Title>Detalle de Venta</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {detalleSeleccionado ? (
-              <div>
-                <h5>Información del Detalle</h5>
-                <p><strong>ID Detalle:</strong> {detalleSeleccionado.idDetalleVentaVoluntario || "N/A"}</p>
-                <p><strong>Cantidad:</strong> {detalleSeleccionado.cantidad || "N/A"}</p>
-                <p><strong>Subtotal:</strong> Q{detalleSeleccionado.subTotal || "N/A"}</p>
-                <p><strong>Donación:</strong> Q{detalleSeleccionado.donacion || "N/A"}</p>
-
-                <h5>Información de la Venta</h5>
-                <p><strong>ID Venta:</strong> {detalleSeleccionado.venta?.idVenta || "N/A"}</p>
-                <p><strong>Total Venta:</strong> Q{detalleSeleccionado.venta?.totalVenta || "N/A"}</p>
-                <p><strong>Fecha Venta:</strong> {detalleSeleccionado.venta?.fechaVenta || "N/A"}</p>
-
-                <h5>Información del Producto</h5>
-                <p><strong>ID Producto:</strong> {detalleSeleccionado.producto?.idProducto || "N/A"}</p>
-                <p><strong>Nombre Producto:</strong> {detalleSeleccionado.producto?.nombreProducto || "N/A"}</p>
-                <p><strong>Precio:</strong> Q{detalleSeleccionado.producto?.precio || "N/A"}</p>
-
-                <h5>Información del Voluntario</h5>
-                <p><strong>Nombre:</strong> {detalleSeleccionado.voluntario?.persona?.nombre || "N/A"}</p>
-                <p><strong>Teléfono:</strong> {detalleSeleccionado.voluntario?.persona?.telefono || "N/A"}</p>
-                <p><strong>Domicilio:</strong> {detalleSeleccionado.voluntario?.persona?.domicilio || "N/A"}</p>
-                <p><strong>Código QR:</strong> {detalleSeleccionado.voluntario?.codigoQR || "N/A"}</p>
-
-                <h5>Productos Asociados al Voluntario</h5>
-                {detalleSeleccionado.voluntario?.detalle_productos_voluntarios?.map((producto, index) => (
+          {detalleSeleccionado ? (
+              detalleSeleccionado.map((detalle, index) => (
                   <div key={index}>
-                    <p><strong>ID Producto:</strong> {producto.idProducto || "N/A"}</p>
-                    <p><strong>Cantidad:</strong> {producto.cantidad || "N/A"}</p>
+                      <h5>Detalle #{index + 1}</h5>
+                      <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
+                      <p><strong>Nombre Producto:</strong> {detalle.producto?.nombreProducto || "N/A"}</p>
+                      <p><strong>Cantidad:</strong> {detalle.cantidad || "N/A"}</p>
+                      <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
+                      <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
+
+                      <h5>Pagos Asociados</h5>
+                      {detalle.detalle_pago_ventas_voluntarios && detalle.detalle_pago_ventas_voluntarios.length > 0 ? (
+                          detalle.detalle_pago_ventas_voluntarios.map((pago, idx) => (
+                              <div key={idx}>
+                                <p><strong>Tipo de Pago:</strong> {pago.tipo_pago?.tipo || "N/A"}</p>
+                                <p><strong>Monto:</strong> Q{pago.pago || "N/A"}</p>
+                                <p><strong>Correlativo:</strong> {pago.correlativo || "N/A"}</p>
+                                <p>
+                                  <strong>Imagen:</strong>
+                                  {pago.imagenTransferencia === "efectivo" ? (
+                                      "Efectivo"
+                                  ) : (
+                                      <img
+                                          src={`data:image/png;base64,${pago.imagenTransferencia}`}
+                                          alt="Comprobante de Pago"
+                                          style={{ width: "100%", maxWidth: "150px", marginTop: "10px", borderRadius: "8px" }}
+                                      />
+                                    )}
+                                </p>
+                              </div>
+                          ))
+                      ) : (
+                          <p>No hay pagos asociados.</p>
+                      )}
+
+                      <h5>Información del Voluntario</h5>
+                      <p><strong>Nombre:</strong> {detalle.voluntario?.persona?.nombre || "N/A"}</p>
+                      <p><strong>Teléfono:</strong> {detalle.voluntario?.persona?.telefono || "N/A"}</p>
+                      <p><strong>Domicilio:</strong> {detalle.voluntario?.persona?.domicilio || "N/A"}</p>
+                      <p><strong>Código QR:</strong> {detalle.voluntario?.codigoQR || "N/A"}</p>
+                      <hr />
                   </div>
-                )) || <p>No hay productos asociados.</p>}
-              </div>
-            ) : (
-              <p>No se encontraron detalles.</p>
-            )}
+                  ))
+              ) : (
+                  <p>No se encontraron detalles.</p>
+              )}
           </Modal.Body>
         </Modal>
       </div>
