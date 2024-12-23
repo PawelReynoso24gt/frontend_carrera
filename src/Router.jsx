@@ -80,6 +80,7 @@ import SoporteTecnico from "./pages/soporteTecnico/soporteTecnico";
 import Desarrolladores from "./pages/desarrolladores/desarrolladores";
 import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 
+
 const router = createBrowserRouter([
   {
     path: "/",
