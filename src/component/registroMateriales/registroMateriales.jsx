@@ -81,8 +81,8 @@ function InscripcionesMateriales() {
             <Col key={inscripcion.idDetalleInscripcionMaterial} md={6} lg={4} className="mb-4">
               <Card className="h-100 shadow-sm">
                 <Card.Body>
-                  <Card.Title>Inscripción #{inscripcion.idDetalleInscripcionMaterial}</Card.Title>
-                  <Card.Text>
+                  <Card.Title style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: "bold", fontSize: "1.2rem" }}>Inscripción #{inscripcion.idDetalleInscripcionMaterial}</Card.Title>
+                  <Card.Text style={{ fontFamily: "'Arial', sans-serif", fontSize: "1rem", lineHeight: "1.5" }}>
                     <strong>Nombre del Evento:</strong> {inscripcion.nombreEvento}
                     <br />
                     <strong>Nombre de la Comisión:</strong> {inscripcion.nombreComision}

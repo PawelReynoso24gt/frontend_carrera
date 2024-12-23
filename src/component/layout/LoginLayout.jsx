@@ -3,11 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import bg from "../../assets/img/credential-bg.svg";
 import logoW from "../../assets/img/logo-white.png";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function LoginLayout() {
   const [usuario, setUsuario] = useState(""); // Estado para el usuario
   const [contrasenia, setContrasenia] = useState(""); // Estado para la contraseña
   const [error, setError] = useState(null); // Estado para los mensajes de error
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   // Manejar la solicitud de inicio de sesión

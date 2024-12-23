@@ -26,6 +26,17 @@ function DetalleStands() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+
+  useEffect(() => {
+    if (detalleStands.length > 0 && stands.length > 0) {
+      const filtered = detalleStands.filter((detalle) => {
+        const stand = stands.find((s) => s.idStand === detalle.idStand);
+        return stand && stand.nombreStand === "Stand de venta";
+      });
+      setFilteredDetalleStands(filtered);
+    }
+  }, [detalleStands, stands]);
+  
   useEffect(() => {
     fetchDetalleStands();
     fetchProductos();
@@ -36,12 +47,12 @@ function DetalleStands() {
     try {
       const response = await axios.get("http://localhost:5000/detalle_stands");
       setDetalleStands(response.data);
-      setFilteredDetalleStands(response.data);
     } catch (error) {
       console.error("Error fetching detalle stands:", error);
     }
   };
 
+  // Función para obtener productos
   const fetchProductos = async () => {
     try {
       const response = await axios.get("http://localhost:5000/productos");
@@ -51,6 +62,7 @@ function DetalleStands() {
     }
   };
 
+  // Función para obtener stands
   const fetchStands = async () => {
     try {
       const response = await axios.get("http://localhost:5000/stand");
