@@ -33,6 +33,7 @@ function EventosActivos() {
   };
 
   const fetchComisionesByEvento = async (idEvento) => {
+    
     setComisiones({});
     setIsVoluntariosLoaded(false);
     try {
@@ -74,9 +75,9 @@ function EventosActivos() {
       );
 
       const voluntarios = response.data
-        .filter((inscripcion) => inscripcion.comisione?.idComision === idComision)
+        .filter((inscripcion) => inscripcion.comision?.idComision === idComision)
         .map((inscripcion) => ({
-          idComision: inscripcion.comisione?.idComision,
+          idComision: inscripcion.comision?.idComision,
           idVoluntario: inscripcion.voluntario?.idVoluntario || "N/A",
           nombre: inscripcion.voluntario?.persona?.nombre || "Nombre no disponible",
         }));
