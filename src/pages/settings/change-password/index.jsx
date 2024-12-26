@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import img from "../../../assets/img/password-reset.png";
 import fetchWithToken from "../../../utils/fetchWithToken";
+import { getUserDataFromToken } from "../../../utils/jwtUtils";
 
 function ChangePassword() {
   const [formData, setFormData] = useState({
@@ -31,17 +32,17 @@ function ChangePassword() {
     }
 
     try {
-        // Obtener el userId y el token del localStorage
-        const userId = localStorage.getItem("userId");
+        // Obtener el idUsuario y el token del localStorage
+        const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
         const token = localStorage.getItem("token"); // Obtén el token almacenado
 
-        if (!userId || !token) {
+        if (!idUsuario || !token) {
             setMensaje("No se encontró el ID del usuario o el token en el almacenamiento local.");
             return;
         }
 
         // Enviar la solicitud al backend con el token en el encabezado
-        const response = await fetchWithToken(`http://localhost:5000/usuarios/${userId}/contrasenia`, {
+        const response = await fetchWithToken(`http://localhost:5000/usuarios/${idUsuario}/contrasenia`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
