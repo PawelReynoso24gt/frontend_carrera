@@ -168,7 +168,7 @@ function Ventas() {
   if (productosValidos.length === 0) {
     alert("No hay productos válidos para asociar al pago.");
     return;
-  }
+  };
 
   // Crear un nuevo pago
     const nuevoPago = {
@@ -305,6 +305,13 @@ function Ventas() {
     } catch (error) {
       console.error("Error toggling estado:", error);
     }
+  };
+
+  const handleRemovePago = (index) => {
+    // Crear una nueva copia del array sin el elemento en el índice proporcionado
+    const nuevosPagos = tiposPagos.filter((_, i) => i !== index);
+    setTiposPagos(nuevosPagos); // Actualizar el estado con los pagos restantes
+    console.log(`Pago eliminado en el índice ${index}. Lista actualizada:`, nuevosPagos); // Log para depuración
   };
 
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -735,7 +742,11 @@ function Ventas() {
                   <Form.Label>Imagen</Form.Label>
                   <Form.Control type="file" onChange={(e) => handleFileUpload(e, idx)} />
                 </Form.Group>
-                <Button variant="danger" onClick={() => handleRemovePago(idx)} style={{ marginTop: "10px" }}>
+                <Button
+                  variant="danger"
+                  onClick={() => handleRemovePago(idx)}
+                  style={{ marginTop: "10px" }}
+                >
                   Quitar Pago
                 </Button>
               </div>
