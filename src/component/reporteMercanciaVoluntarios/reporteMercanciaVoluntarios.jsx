@@ -120,10 +120,18 @@ function ReporteMercanciaVoluntarios() {
   };
 
   return (
-    <div className="container mt-4">
+    <div
+      className="container mt-4"
+      style={{
+        backgroundColor: "#f8f9fa",
+        padding: "20px",
+        borderRadius: "8px",
+        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+      }}
+    >
       <div className="row mb-3">
         <div className="col text-center">
-          <h3>Reporte de Mercancía - Voluntarios</h3>
+          <h3 style={{ fontWeight: "bold", color: "#333" }}>Reporte de Mercancía - Voluntarios</h3>
         </div>
       </div>
 
@@ -137,6 +145,7 @@ function ReporteMercanciaVoluntarios() {
               type="date"
               className="form-control"
               onChange={handleFechaInicio}
+              style={{ width: "150px" }}
             />
           </div>
           <div>
@@ -145,17 +154,24 @@ function ReporteMercanciaVoluntarios() {
               type="date"
               className="form-control"
               onChange={handleFechaFin}
+              style={{ width: "150px" }}
             />
           </div>
         </div>
-        <label>Revisado por:</label>
-        <input
-          type="text"
-          className="form-control mx-auto"
-          value={revisor}
-          onChange={(e) => setRevisor(e.target.value)}
-          placeholder="Nombre del revisor"
-        />
+        <div className="text-center mb-4">
+          <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Revisado por:</label>
+          <input
+            type="text"
+            className="form-control mx-auto"
+            value={revisor}
+            onChange={(e) => setRevisor(e.target.value)}
+            placeholder="Nombre del revisor"
+            style={{
+              width: "250px",
+              textAlign: "center",
+            }}
+          />
+        </div>
       </div>
 
       <div className="text-center mb-4">
@@ -163,12 +179,25 @@ function ReporteMercanciaVoluntarios() {
           className="btn btn-success mx-auto"
           onClick={generarPDF}
           disabled={reporte.length === 0}
+          style={{
+            width: "20%",
+            fontWeight: "bold",
+            fontSize: "14px",
+            backgroundColor: "#007AC3",
+            borderBlockColor: "#007AC3",
+          }}
         >
           Descargar PDF
         </button>
       </div>
 
-      <table className="table mt-4">
+      <table
+        className="table mt-4"
+        style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "8px",
+        }}
+      >
         <thead className="thead-dark">
           <tr>
             <th>Nombre Stand</th>
