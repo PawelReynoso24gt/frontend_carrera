@@ -76,7 +76,7 @@ import AutorizacionSolicitud from "./pages/autorizacionSolicitud/autorizacionSol
 import AsignacionStands from "./pages/asignacionStand/asignacionStand";
 import AutorizacionTalonarios from "./pages/autorizacionTalonarios/autorizacionTalonarios";
 import ReporteProblemas from "./pages/reporteProblemas/reporteProblemas";
-import SoporteTecnico from "./pages/soporteTecnico/soporteTecnico";
+import SoporteSituaciones from "./pages/soporteSituaciones/soporteSituaciones";
 import Desarrolladores from "./pages/desarrolladores/desarrolladores";
 import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 import Ventas from "./pages/ventas/ventas";
@@ -311,8 +311,8 @@ const router = createBrowserRouter([
         element: <AsignacionStands/>,
       },
       {
-        path: "/soporteTecnico",
-        element: <SoporteTecnico/>,
+        path: "/soporteSituaciones",
+        element: <SoporteSituaciones/>,
       },
       {
         path: "/reporteProblemas",

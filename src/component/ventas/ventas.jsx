@@ -15,6 +15,12 @@ function Ventas() {
   const [editingVenta, setEditingVenta] = useState(null);
   const [imagenBase64, setImagenBase64] = useState(null);
   const [imagen, setImagen] = useState(null);
+  const [voluntarios, setVoluntarios] = useState([]);
+  const [totalAPagar, setTotalAPagar] = useState(0);
+  const [subtotal, setSubtotal] = useState(0);
+  const [tiposPagosOptions, setTiposPagosOptions] = useState([]);
+  // temporal
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [newVenta, setNewVenta] = useState({
     totalVenta: 0,
     idTipoPublico: "",
@@ -30,7 +36,16 @@ function Ventas() {
     fetchVentas();
     fetchTiposPagos();
     fetchTiposPublico();
-  }, []);
+    fetchVoluntarios();
+    // Calcular el subtotal (sin donación)
+    const calculatedSubtotal = detallesVenta.reduce((sum, detalle) => sum + (detalle.subTotal || 0), 0);
+
+    // El total a pagar ya incluye la donación directamente en `newVenta.donacion`
+    const total = calculatedSubtotal + (newVenta.donacion || 0);
+
+    setSubtotal(calculatedSubtotal); // Guardar el subtotal
+    setTotalAPagar(total); // Guardar el total
+  }, [detallesVenta, newVenta.donacion]);
 
   const fetchVentas = async () => {
     try {
@@ -42,10 +57,21 @@ function Ventas() {
     }
   };
 
+  const fetchVoluntarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/voluntarios/conProductos");
+      console.log("Voluntarios con productos asignados recibidos:", response.data);
+      setVoluntarios(response.data); // Almacena los voluntarios con productos asignados
+    } catch (error) {
+      console.error("Error fetching voluntarios con productos asignados:", error);
+      alert("Error al cargar los voluntarios con productos asignados.");
+    }
+  };  
+
   const fetchTiposPagos = async () => {
     try {
       const response = await axios.get("http://localhost:5000/tipospagos");
-      setTiposPagos(response.data);
+      setTiposPagosOptions(response.data); // Ahora esto se usará en el select
     } catch (error) {
       console.error("Error fetching tipos pagos:", error);
     }
@@ -114,6 +140,16 @@ function Ventas() {
       console.error("Error fetching active ventas:", error);
     }
   };
+
+  const fetchProductosAsignados = async (idVoluntario) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/productos_voluntarios/${idVoluntario}`);
+      setDetallesVenta(response.data); // Usa el estado para almacenar los productos asignados.
+      console.log("Productos asignados al voluntario seleccionado:", detallesVenta);
+    } catch (error) {
+      console.error("Error fetching productos asignados:", error);
+    }
+  };  
   
   const fetchInactiveVentas = async () => {
     try {
@@ -123,7 +159,141 @@ function Ventas() {
     } catch (error) {
       console.error("Error fetching inactive ventas:", error);
     }
+  }; 
+
+  const handleAddPago = () => {
+    // Filtrar productos con cantidad > 0
+  const productosValidos = detallesVenta.filter((detalle) => detalle.cantidad > 0);
+
+  if (productosValidos.length === 0) {
+    alert("No hay productos válidos para asociar al pago.");
+    return;
+  }
+
+  // Crear un nuevo pago
+    const nuevoPago = {
+      idTipoPago: "", // Campo vacío para que el usuario lo seleccione
+      monto: 0.0,
+      correlativo: "",
+      imagenTransferencia: "",
+      estado: 1,
+      idProducto: productosValidos[0]?.idProducto || null, // Asociar al primer producto válido
+    };
+    setTiposPagos((prevPagos) => [...prevPagos, nuevoPago]);
+    console.log("Pago agregado:", nuevoPago); // Agrega este log
+    console.log("Lista de pagos actualizada:", [...tiposPagos, nuevoPago]); // Agrega este log
   };  
+  
+  const handlePagoChange = (index, field, value) => {
+    const nuevosPagos = [...tiposPagos];
+    nuevosPagos[index][field] = value;
+    setTiposPagos(nuevosPagos);
+    console.log(`Pago actualizado en el índice ${index}:`, nuevosPagos[index]); // Agrega este log
+  };
+  
+  const handleFileUpload = (e, index) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const nuevosPagos = [...tiposPagos];
+        nuevosPagos[index].imagenTransferencia = reader.result.split(",")[1];
+        setTiposPagos(nuevosPagos);
+      };
+      reader.readAsDataURL(file);
+    }
+  };  
+
+  const handleCreateVenta = async () => {
+    try {
+        // Validar y calcular los subtotales de los productos
+        const detallesVentaValidos = detallesVenta
+        .filter((detalle) => detalle.cantidad > 0)
+        .map((detalle) => {
+            const subTotal = detalle.cantidad * detalle.precio;
+            console.log("Calculando subtotal para:", detalle.nombreProducto, subTotal);
+            return {
+                ...detalle,
+                subTotal, // Asegura que el subtotal se incluya correctamente
+                donacion: detalle.donacion || newVenta.donacion, // Asignar la donación a cada detalle
+            };
+        });
+
+        console.log("Detalles válidos con subtotales y donación:", detallesVentaValidos);
+
+        // Calcular el subtotal de los productos y el total de la venta
+        const subtotalVenta = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0);
+        const totalVenta = subtotalVenta + (newVenta.donacion || 0);
+
+        console.log("Subtotal calculado:", subtotalVenta);
+        console.log("Donación:", newVenta.donacion);
+        console.log("Total calculado (incluyendo donación):", totalVenta);
+
+        // Validar que la suma de los montos de los pagos coincida con el total calculado
+        const totalPagado = tiposPagos.reduce((sum, pago) => sum + (parseFloat(pago.monto) || 0), 0);
+
+        console.log("Validando pagos...");
+        console.log("Subtotal calculado:", subtotal);
+        console.log("Total de la venta (subtotal + donación):", totalAPagar);
+        console.log("Total de los pagos:", totalPagado);
+
+        // Verifica si el total pagado coincide con el total calculado (incluyendo la donación ya sumada)
+        if (totalPagado !== totalAPagar) {
+            alert(
+                `La suma de los pagos (Q${totalPagado.toFixed(2)}) no coincide con el total a pagar (Q${totalAPagar.toFixed(2)}).`
+            );
+            return;
+        }
+
+        // Validar que cada pago tenga el formato correcto
+        const pagosValidados = tiposPagos.map((pago) => {
+            if (!pago.idTipoPago || pago.monto <= 0 || !pago.idProducto) {
+                throw new Error("Cada pago debe tener un tipo, monto válido y producto asociado.");
+            }
+
+            // Validar pagos que requieren correlativo e imagen
+            if ([1, 2, 4].includes(pago.idTipoPago)) { // Depósito, Transferencia, Cheque
+                if (!pago.correlativo || !pago.imagenTransferencia) {
+                    throw new Error(
+                        `El tipo de pago ${pago.idTipoPago} requiere correlativo e imagen.`
+                    );
+                }
+            }
+
+            // Manejo de valores por defecto para tipos de pago
+            const correlativo = pago.correlativo || "NA"; // Por defecto "NA"
+            const imagenTransferencia = pago.imagenTransferencia || "efectivo"; // Por defecto "efectivo"
+            
+            return {
+                ...pago,
+                correlativo,
+                imagenTransferencia,
+            };
+        });
+
+        console.log("Pagos validados:", pagosValidados);
+
+        // Construir los datos de la venta para enviar al backend
+        const ventaData = {
+            venta: { ...newVenta, totalVenta }, // Incluye la donación y el total
+            detalles: detallesVentaValidos, // Incluye los subtotales y donaciones
+            pagos: pagosValidados, // Pagos validados con sus requisitos
+        };
+
+        console.log("Datos para enviar al backend:", ventaData);
+
+        // Enviar los datos al backend
+        const response = await axios.post("http://localhost:5000/ventas/create/completa", ventaData);
+        if (response.status === 201) {
+            alert("Venta creada con éxito");
+            setShowDetailsModal(false); // Cerrar el modal
+            fetchVentas(); // Actualizar la lista de ventas
+        }
+      } catch (error) {
+          console.error("Error creando venta:", error.message || error);
+          alert("Error al crear la venta: " + (error.message || "Revisa los datos ingresados."));
+      }
+  };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
@@ -229,6 +399,20 @@ function Ventas() {
           {alertMessage}
         </Alert>
         <div className="d-flex justify-content-start align-items-center mb-3">
+        <Button
+          style={{
+            backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+          }}
+          onClick={() => setShowDetailsModal(true)}
+        >
+          Crear Venta
+        </Button>
           <Button
             style={{
               backgroundColor: "#009B85",
@@ -314,7 +498,9 @@ function Ventas() {
                       <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
                       <p><strong>Nombre Producto:</strong> {detalle.producto?.nombreProducto || "N/A"}</p>
                       <p><strong>Cantidad:</strong> {detalle.cantidad || "N/A"}</p>
+                      {console.log("Subtotal recibido en detalle:", detalle.subTotal)} {/* LOG AQUÍ */}
                       <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
+                      {console.log("Detalle seleccionado para el modal:", detalleSeleccionado)}
                       <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
 
                       <h5>Pagos Asociados</h5>
@@ -354,6 +540,224 @@ function Ventas() {
                   <p>No se encontraron detalles.</p>
               )}
           </Modal.Body>
+        </Modal>
+        <Modal show={showPreviewModal} onHide={() => setShowPreviewModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>Vista Previa de los Datos</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+      {JSON.stringify(
+        {
+          venta: { ...newVenta, totalVenta: subtotal + (newVenta.donacion || 0) },
+          detalles: detallesVenta
+            .filter((detalle) => detalle.cantidad > 0)
+            .map((detalle) => ({
+              ...detalle,
+              subTotal: detalle.cantidad * detalle.precio,
+              donacion: detalle.donacion || newVenta.donacion,
+            })),
+          pagos: tiposPagos.map((pago) => ({
+            ...pago,
+            correlativo: pago.correlativo || "NA",
+            imagenTransferencia: pago.imagenTransferencia || "efectivo",
+          })),
+        },
+        null,
+        2
+      )}
+    </pre>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button onClick={() => setShowPreviewModal(false)}>Cerrar</Button>
+  </Modal.Footer>
+</Modal>
+        <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Crear Venta de Voluntario</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          <Form.Group>
+            <Form.Label>Seleccionar Voluntario</Form.Label>
+            <Form.Control
+              as="select"
+              onChange={(e) => {
+                const voluntarioSeleccionado = voluntarios.find(
+                  (vol) => vol.idVoluntario === parseInt(e.target.value)
+                );
+                if (voluntarioSeleccionado) {
+                  const productos = voluntarioSeleccionado.detalle_productos_voluntarios.map((detalle) => ({
+                    idProducto: detalle.idProducto,
+                    nombreProducto: detalle.producto.nombreProducto,
+                    precio: parseFloat(detalle.producto.precio),
+                    cantidad: detalle.cantidad,
+                    subTotal: detalle.cantidad * parseFloat(detalle.producto.precio),
+                    idVoluntario: voluntarioSeleccionado.idVoluntario,
+                    donacion: detalle.donacion || 0, // Incluye el campo donación
+                    estado: 1,
+                  }));
+                  console.log("Productos cargados para el voluntario seleccionado:", productos); // Agrega este log
+                  setDetallesVenta(productos); // Carga los productos asignados
+                } else {
+                  setDetallesVenta([]); // Limpia los productos si no hay selección
+                }
+              }}
+            >
+              <option value="">Seleccione un voluntario</option>
+              {voluntarios.map((vol) => (
+                <option key={vol.idVoluntario} value={vol.idVoluntario}>
+                  {vol.persona?.nombre || "Voluntario sin nombre"}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+          <h5>Productos Asignados</h5>
+          <Table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {detallesVenta.map((producto, idx) => (
+                <tr key={producto.idProducto}>
+                  <td>{producto.nombreProducto}</td>
+                  <td>{producto.precio}</td>
+                  <td>
+                    <Form.Control
+                      type="number"
+                      min="1"
+                      value={producto.cantidad}
+                      onChange={(e) => {
+                        const nuevosDetalles = [...detallesVenta];
+                        nuevosDetalles[idx].cantidad = Number(e.target.value);
+                        nuevosDetalles[idx].subTotal = nuevosDetalles[idx].cantidad * nuevosDetalles[idx].precio;
+                        setDetallesVenta(nuevosDetalles);
+                        console.log("Detalles actualizados:", nuevosDetalles); // Agrega este log
+                      }}
+                    />
+                  </td>
+                  <td>{producto.cantidad * producto.precio}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          <Form.Group>
+            <Form.Label>Donación</Form.Label>
+            <Form.Control
+              type="number"
+              min="0"
+              value={newVenta.donacion || 0}
+              onChange={(e) => {
+                const donacion = parseFloat(e.target.value) || 0;
+                setNewVenta({ ...newVenta, donacion });
+                console.log("Donación actualizada:", donacion);
+              }}
+            />
+          </Form.Group>
+          <h5>Resumen de Pago</h5>
+            <Table>
+              <tbody>
+                <tr>
+                  <td><strong>Subtotal:</strong></td>
+                  <td>Q{subtotal.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td><strong>Donación:</strong></td>
+                  <td>Q{(newVenta.donacion || 0).toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td><strong>Total a Pagar:</strong></td>
+                  <td>Q{totalAPagar.toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </Table>
+          <h5>Pagos</h5>
+            {/* Botones para agregar pagos rápidamente */}
+            <Button onClick={handleAddPago} style={{ marginRight: "10px" }}>
+              Agregar Pago
+            </Button>
+            {/* Formulario para editar los pagos agregados */}
+            {tiposPagos.map((pago, idx) => (
+              <div key={idx} style={{ borderBottom: "1px solid #ccc", marginBottom: "10px", paddingBottom: "10px" }}>
+                <Form.Group>
+                  <Form.Label>Producto Asociado</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={pago.idProducto}
+                    onChange={(e) => handlePagoChange(idx, "idProducto", parseInt(e.target.value))}
+                  >
+                    <option value="">Seleccione un producto</option>
+                    {detallesVenta
+                      .filter((detalle) => detalle.cantidad > 0) // Mostrar solo productos válidos
+                      .map((detalle) => (
+                        <option key={detalle.idProducto} value={detalle.idProducto}>
+                          {detalle.nombreProducto}
+                        </option>
+                      ))}
+                  </Form.Control>
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Tipo de Pago</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={pago.idTipoPago}
+                    onChange={(e) => handlePagoChange(idx, "idTipoPago", parseInt(e.target.value))}
+                  >
+                    <option value="">Seleccione un tipo de pago</option>
+                    {tiposPagosOptions.map((tipo) => (
+                      <option key={tipo.idTipoPago} value={tipo.idTipoPago}>
+                        {tipo.tipo}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Monto</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={pago.monto}
+                    onChange={(e) => handlePagoChange(idx, "monto", parseFloat(e.target.value))}
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Correlativo</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={pago.correlativo}
+                    onChange={(e) => handlePagoChange(idx, "correlativo", e.target.value)}
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Imagen</Form.Label>
+                  <Form.Control type="file" onChange={(e) => handleFileUpload(e, idx)} />
+                </Form.Group>
+                <Button variant="danger" onClick={() => handleRemovePago(idx)} style={{ marginTop: "10px" }}>
+                  Quitar Pago
+                </Button>
+              </div>
+            ))}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={() => handleCreateVenta()}>Crear Venta</Button>
+            <Button
+              style={{
+                backgroundColor: "#6c757d",
+                borderColor: "#6c757d",
+                padding: "5px 10px",
+                width: "130px",
+                marginRight: "10px",
+                fontWeight: "bold",
+                color: "#fff",
+              }}
+              onClick={() => setShowPreviewModal(true)}
+            >
+              Ver Datos
+            </Button>
+          </Modal.Footer>
         </Modal>
       </div>
     </>
