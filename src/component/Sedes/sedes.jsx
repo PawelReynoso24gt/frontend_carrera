@@ -27,10 +27,36 @@ function Sedes() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchSedes();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchSedes = async () => {
     try {
@@ -230,7 +256,11 @@ function Sedes() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear sede', 'No tienes permisos para crear sede')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Sede
           </Button>
@@ -314,7 +344,11 @@ function Sedes() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(sede)}
+                    onClick={() => {
+                      if (checkPermission('Editar sede', 'No tienes permisos para editar sede')) {
+                        handleShowModal(sede);
+                      }
+                    }}
                   />
                   {sede.estado === 1 ? (
                     <FaToggleOn
@@ -325,7 +359,11 @@ function Sedes() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar sede', 'No tienes permisos para desactivar sede')) {
+                          toggleEstado(sede.idSede, sede.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -336,7 +374,11 @@ function Sedes() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(sede.idSede, sede.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar sede', 'No tienes permisos para activar sede')) {
+                          toggleEstado(sede.idSede, sede.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -406,6 +448,17 @@ function Sedes() {
             </Form>
           </Modal.Body>
         </Modal>
+           <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{permissionMessage}</Modal.Body>
+                <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                </Modal.Footer>
+              </Modal>
       </div>
     </>
   );

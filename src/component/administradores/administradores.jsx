@@ -16,10 +16,38 @@ function UsuariosAdminComponent() {
   const [filter, setFilter] = useState('activos');
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredUsuarios, setFilteredUsuarios] = useState([]);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchActiveUsuarios();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
+  
 
   const fetchActiveUsuarios = async () => {
     try {
@@ -79,6 +107,10 @@ function UsuariosAdminComponent() {
     setNewPassword('');
   };
 
+  const handlePermissionModalClose = () => {
+    setShowPermissionModal(false); // Cierra el modal de notificación
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewUsuario({ ...newUsuario, [name]: value });
@@ -102,7 +134,7 @@ function UsuariosAdminComponent() {
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error('Error submitting usuario:', error);
+        console.error('Error submitting usuario:', error);
     }
   };
 
@@ -153,7 +185,7 @@ function UsuariosAdminComponent() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Button
+      <Button
           style={{
             backgroundColor: "#743D90",
             borderColor: "#007AC3",
@@ -163,10 +195,14 @@ function UsuariosAdminComponent() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={() => handleShowModal()}
+           onClick={() => {
+      if (checkPermission('Crear usuario', 'No tienes permisos para crear usuarios')) {
+        handleShowModal();
+      }
+    }}
         >
           Agregar Usuario
-        </Button>
+        </Button> 
         <Button
           style={{
             backgroundColor: "#007AC3",
@@ -251,7 +287,11 @@ function UsuariosAdminComponent() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(usuario)}
+                    onClick={() => {
+                      if (checkPermission('Editar usuario', 'No tienes permisos para Editar usuarios')) {
+                        handleShowModal(usuario);
+                      }
+                    }}
                   />
                   <FaKey
                     style={{
@@ -261,7 +301,11 @@ function UsuariosAdminComponent() {
                       fontSize: "20px",
                     }}
                     title="Cambiar Contraseña"
-                    onClick={() => handleShowPasswordModal(usuario)}
+                    onClick={() => {
+                      if (checkPermission('Actualizar contraseña', 'No tienes permisos para actualizar contraseña')) {
+                        handleShowPasswordModal(usuario);
+                      }
+                    }}
                   />
                   {usuario.estado ? (
                     <FaToggleOn
@@ -272,7 +316,11 @@ function UsuariosAdminComponent() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleUsuarioEstado(usuario.idUsuario, usuario.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar usuario', 'No tienes permisos para desactivar usuario')) {
+                          toggleUsuarioEstado(usuario.idUsuario, usuario.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -283,7 +331,11 @@ function UsuariosAdminComponent() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleUsuarioEstado(usuario.idUsuario, usuario.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar usuario', 'No tienes permisos para activar usuario')) {
+                          toggleUsuarioEstado(usuario.idUsuario, usuario.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -426,6 +478,29 @@ function UsuariosAdminComponent() {
             </Form>
           </Modal.Body>
         </Modal>
+           {/* Modal de notificación */}
+           <Modal show={showPermissionModal} onHide={handlePermissionModalClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Notificación</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={handlePermissionModalClose}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+         <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+         </Modal.Footer>
+      </Modal>
       </div>
     </>
   );
