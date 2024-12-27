@@ -81,6 +81,7 @@ import Desarrolladores from "./pages/desarrolladores/desarrolladores";
 import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 import ReporteEventos from "./pages/reporteEventos/reporteEventos";
 import ReporteStands from "./pages/reporteStands/reporteStands";
+import ReporteMercanciaVoluntariosPage from "./pages/reporteMercanciaVoluntarios/reporteMercanciaVoluntarios";
 
 
 const router = createBrowserRouter([
@@ -322,6 +323,10 @@ const router = createBrowserRouter([
       {
         path: "/reporteStands",
         element: <ReporteStands/>,
+      },
+      {
+        path: "/reporteMercanciaVoluntarios",
+        element: <ReporteMercanciaVoluntariosPage/>,
       },
       {
         path: "/gallery",

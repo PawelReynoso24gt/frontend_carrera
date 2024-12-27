@@ -213,6 +213,7 @@ function Menu({ toggleMenu, menu }) {
                 { link: "reporteProblemas", title: "Reporte de problemas" },
                 { link: "reporteEventos", title: "Reporte de eventos" },
                 { link: "reporteStands", title: "Reporte de stands" },
+                { link: "reporteMercanciaVoluntarios", title: "Reporte de mercancia de voluntarios" },
                 // aqui colocar reportes
               ]}
               img={
