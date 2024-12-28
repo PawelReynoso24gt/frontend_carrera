@@ -24,12 +24,38 @@ function DetalleStandsVoluntarios() {
   const [isProductSearched, setIsProductSearched] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+        const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+        const [permissionMessage, setPermissionMessage] = useState('');
+        const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchDetalleStands();
     fetchProductos();
     fetchStands();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchDetalleStands = async () => {
     try {
@@ -426,7 +452,11 @@ function DetalleStandsVoluntarios() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear inventario voluntarios', 'No tienes permisos para crear inventario voluntarios')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar
           </Button>
@@ -505,7 +535,11 @@ function DetalleStandsVoluntarios() {
       fontSize: "20px",
     }}
     title="Editar"
-    onClick={() => handleShowModal(detalle)}
+    onClick={() => {
+      if (checkPermission('Editar inventario voluntarios', 'No tienes permisos para editar inventario voluntarios')) {
+        handleShowModal(detalle);
+      }
+    }}
   />
   {detalle.estado ? (
     <FaToggleOn
@@ -516,7 +550,11 @@ function DetalleStandsVoluntarios() {
         fontSize: "20px",
       }}
       title="Inactivar"
-      onClick={() => toggleEstado(detalle.idDetalleStands, detalle.estado)}
+      onClick={() => {
+        if (checkPermission('Desactivar inventario voluntarios', 'No tienes permisos para desactivar inventario voluntarios')) {
+          toggleEstado(detalle.idDetalleStands, detalle.estado);
+        }
+      }}
     />
   ) : (
     <FaToggleOff
@@ -527,7 +565,11 @@ function DetalleStandsVoluntarios() {
         fontSize: "20px",
       }}
       title="Activar"
-      onClick={() => toggleEstado(detalle.idDetalleStands, detalle.estado)}
+      onClick={() => {
+        if (checkPermission('Activar inventario voluntarios', 'No tienes permisos para activar inventario voluntarios')) {
+          toggleEstado(detalle.idDetalleStands, detalle.estado);
+        }
+      }}
     />
   )}
   <FaEye
@@ -617,6 +659,17 @@ function DetalleStandsVoluntarios() {
             </Form>
         </Modal.Body>
       </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                           <Modal.Header closeButton>
+                            <Modal.Title>Permiso Denegado</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>{permissionMessage}</Modal.Body>
+                            <Modal.Footer>
+                            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                              Aceptar
+                            </Button>
+                           </Modal.Footer>
+                        </Modal>
     </>
   );
 }

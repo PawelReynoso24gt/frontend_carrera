@@ -10,10 +10,37 @@ function TipoStandsComponent() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [filter, setFilter] = useState('activos');
+      const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+      const [permissionMessage, setPermissionMessage] = useState('');
+      const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchActiveTipoStands();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
+
 
   const fetchActiveTipoStands = async () => {
     try {
@@ -112,7 +139,11 @@ function TipoStandsComponent() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={() => handleShowModal()}
+          onClick={() => {
+            if (checkPermission('Crear tipo stand', 'No tienes permisos para crear tipo stand')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Tipo de Stand
         </Button>
@@ -193,7 +224,11 @@ function TipoStandsComponent() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(tipoStand)}
+                    onClick={() => {
+                      if (checkPermission('Editar tipo stand', 'No tienes permisos para editar tipo stand')) {
+                        handleShowModal(tipoStand);
+                      }
+                    }}
                   >
                     Editar
                   </Button>
@@ -206,7 +241,16 @@ function TipoStandsComponent() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado)}
+                    onClick={() => {
+                      const actionPermission = tipoStand.estado ? 'Desactivar tipo stand' : 'Activar tipo stand';
+                      const actionMessage = tipoStand.estado
+                        ? 'No tienes permisos para desactivar tipo stand'
+                        : 'No tienes permisos para activar tipo stand';
+  
+                      if (checkPermission(actionPermission, actionMessage)) {
+                        toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado);
+                      }
+                    }}
                   >
                     {tipoStand.estado ? "Desactivar" : "Activar"}
                   </Button>
@@ -281,6 +325,17 @@ function TipoStandsComponent() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                       <Modal.Header closeButton>
+                        <Modal.Title>Permiso Denegado</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>{permissionMessage}</Modal.Body>
+                        <Modal.Footer>
+                        <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                          Aceptar
+                        </Button>
+                       </Modal.Footer>
+                    </Modal>
       </div>
     </>
   );

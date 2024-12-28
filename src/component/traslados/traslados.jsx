@@ -26,11 +26,37 @@ function Traslados() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [tipoTraslados, setTipoTraslados] = useState([]);
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchTraslados();
     fetchTipoTraslados();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchTraslados = async () => {
     try {
@@ -195,7 +221,11 @@ function Traslados() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear traslado', 'No tienes permisos para crear traslado')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Traslado
           </Button>
@@ -281,7 +311,11 @@ function Traslados() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(traslado)}
+                    onClick={() => {
+                      if (checkPermission('Editar traslado', 'No tienes permisos para editar traslado')) {
+                        handleShowModal(traslado);
+                      }
+                    }}
                   />
                   {traslado.estado ? (
                     <FaToggleOn
@@ -292,7 +326,11 @@ function Traslados() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(traslado.idTraslado, traslado.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar traslado', 'No tienes permisos para desactivar traslado')) {
+                          toggleEstado(traslado.idTraslado, traslado.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -303,7 +341,12 @@ function Traslados() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(traslado.idTraslado, traslado.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar traslado', 'No tienes permisos para activar traslado')) {
+                          toggleEstado(traslado.idTraslado, traslado.estado);
+                        }
+                      }}
+
                     />
                   )}
                 </td>
@@ -377,6 +420,17 @@ function Traslados() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                 <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{permissionMessage}</Modal.Body>
+                  <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                 </Modal.Footer>
+              </Modal>
       </div>
     </>
   );

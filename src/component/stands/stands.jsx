@@ -20,12 +20,38 @@ function Stand() {
   const [alertMessage, setAlertMessage] = useState("");
   const [sedes, setSedes] = useState([]);
   const [tiposStands, setTiposStands] = useState([]);
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchStands();
     fetchSedes();
     fetchTiposStands();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchStands = async () => {
     try {
@@ -235,7 +261,11 @@ const fetchInactiveStands = async () => {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={() => handleShowModal()}
+          onClick={() => {
+            if (checkPermission('Crear stand', 'No tienes permisos para crear stand')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Stand
         </Button>
@@ -321,7 +351,11 @@ const fetchInactiveStands = async () => {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(stand)}
+                    onClick={() => {
+                      if (checkPermission('Editar stand', 'No tienes permisos para editar stand')) {
+                        handleShowModal(stand);
+                      }
+                    }}
                   />
                   {stand.estado ? (
                     <FaToggleOn
@@ -332,7 +366,11 @@ const fetchInactiveStands = async () => {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(stand.idStand, stand.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar stand', 'No tienes permisos para desactivar stand')) {
+                          toggleEstado(stand.idStand, stand.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -343,7 +381,11 @@ const fetchInactiveStands = async () => {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(stand.idStand, stand.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar stand', 'No tienes permisos para activar stand')) {
+                          toggleEstado(stand.idStand, stand.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -430,6 +472,17 @@ const fetchInactiveStands = async () => {
           </Form>
         </Modal.Body>
       </Modal>
+       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+               <Modal.Header closeButton>
+                <Modal.Title>Permiso Denegado</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{permissionMessage}</Modal.Body>
+                <Modal.Footer>
+                <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                  Aceptar
+                </Button>
+               </Modal.Footer>
+            </Modal>
     </>
   );
 }

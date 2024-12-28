@@ -37,12 +37,39 @@ function Pedidos() {
   const [usuarios, setUsuarios] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchPedidos();
     fetchSedes();
     fetchUsuarios();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
+  
 
   const fetchPedidos = async () => {
     try {
@@ -54,6 +81,26 @@ function Pedidos() {
     }
   };
 
+  const fetchActivePedidos = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/pedidos/activas");
+      setPedidos(response.data);
+      setFilteredPedidos(response.data);
+    } catch (error) {
+      console.error("Error fetching active pedidos:", error);
+    }
+  };
+  
+  const fetchInactivePedidos = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/pedidos/inactivas");
+      setPedidos(response.data);
+      setFilteredPedidos(response.data);
+    } catch (error) {
+      console.error("Error fetching inactive pedidos:", error);
+    }
+  };
+  
   const fetchSedes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/sedes");
@@ -260,7 +307,11 @@ function Pedidos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear pedido', 'No tienes permisos para crear pedido')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Pedido
           </Button>
@@ -274,7 +325,7 @@ function Pedidos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchPedidos}
+            onClick={fetchActivePedidos}
           >
             Activos
           </Button>
@@ -287,7 +338,7 @@ function Pedidos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchPedidos}
+            onClick={fetchInactivePedidos}
           >
             Inactivos
           </Button>
@@ -354,7 +405,11 @@ function Pedidos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(pedido)}
+                    onClick={() => {
+                      if (checkPermission('Editar pedido', 'No tienes permisos para editar pedido')) {
+                        handleShowModal(pedido);
+                      }
+                    }}
                   />
                   {pedido.estado === 1 ? (
                     <FaToggleOn
@@ -365,7 +420,11 @@ function Pedidos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(pedido.idPedido, pedido.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar pedido', 'No tienes permisos para desactivar pedido')) {
+                          toggleEstado(pedido.idPedido, pedido.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -376,7 +435,11 @@ function Pedidos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(pedido.idPedido, pedido.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar pedido', 'No tienes permisos para activar pedido')) {
+                          toggleEstado(pedido.idPedido, pedido.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -468,6 +531,17 @@ function Pedidos() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                 <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{permissionMessage}</Modal.Body>
+                  <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                 </Modal.Footer>
+              </Modal>
       </div>
     </>
   );

@@ -11,10 +11,36 @@ function TipoPago() {
   const [newTipoPago, setNewTipoPago] = useState({ tipo: "", estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchTiposPago();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchTiposPago = async () => {
     try {
@@ -126,7 +152,11 @@ function TipoPago() {
               color: "#fff",
               width: "130px",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear tipo pago', 'No tienes permisos para crear tipo pago')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Tipo de Pago
           </Button>
@@ -211,7 +241,11 @@ function TipoPago() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(tipoPago)}
+                    onClick={() => {
+                      if (checkPermission('Editar tipo pago', 'No tienes permisos para editar tipo pago')) {
+                        handleShowModal(tipoPago);
+                      }
+                    }}
                   />
                   {tipoPago.estado ? (
                     <FaToggleOn
@@ -222,9 +256,11 @@ function TipoPago() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() =>
-                        toggleEstado(tipoPago.idTipoPago, tipoPago.estado)
-                      }
+                      onClick={() => {
+                        if (checkPermission('Desactivar tipo pago', 'No tienes permisos para desactivar tipo pago')) {
+                          toggleEstado(tipoPago.idTipoPago, tipoPago.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -235,9 +271,11 @@ function TipoPago() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() =>
-                        toggleEstado(tipoPago.idTipoPago, tipoPago.estado)
-                      }
+                      onClick={() => {
+                        if (checkPermission('Activar tipo pago', 'No tienes permisos para activar tipo pago')) {
+                          toggleEstado(tipoPago.idTipoPago, tipoPago.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -301,6 +339,17 @@ function TipoPago() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                 <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{permissionMessage}</Modal.Body>
+                  <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                 </Modal.Footer>
+              </Modal>
       </div>
     </>
   );

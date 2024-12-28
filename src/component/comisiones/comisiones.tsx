@@ -21,11 +21,37 @@ function Comisiones() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchComisiones();
     fetchEventos();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchComisiones = async () => {
     try {
@@ -233,7 +259,11 @@ function Comisiones() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear comision', 'No tienes permisos para crear comision')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Comisión
           </Button>
@@ -317,7 +347,11 @@ function Comisiones() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(comision)}
+                    onClick={() => {
+                      if (checkPermission('Editar comision', 'No tienes permisos para editar comision')) {
+                        handleShowModal(comision);
+                      }
+                    }}
                   />
                   {comision.estado ? (
                     <FaToggleOn
@@ -328,7 +362,11 @@ function Comisiones() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(comision.idComision, comision.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar comision', 'No tienes permisos para desactivar comision')) {
+                          toggleEstado(comision.idComision, comision.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -339,7 +377,11 @@ function Comisiones() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(comision.idComision, comision.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar comision', 'No tienes permisos para activar comision')) {
+                          toggleEstado(comision.idComision, comision.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -436,6 +478,17 @@ function Comisiones() {
             </Form>
           </Modal.Body>
         </Modal>
+          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                         <Modal.Header closeButton>
+                          <Modal.Title>Permiso Denegado</Modal.Title>
+                          </Modal.Header>
+                          <Modal.Body>{permissionMessage}</Modal.Body>
+                          <Modal.Footer>
+                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                            Aceptar
+                          </Button>
+                         </Modal.Footer>
+                      </Modal>
       </div>
     </>
   );

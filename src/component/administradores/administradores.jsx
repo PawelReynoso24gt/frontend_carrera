@@ -367,9 +367,9 @@ function UsuariosAdminComponent() {
           onChange={handleChange}
           required
         />
-      </Form.Group>
+       </Form.Group>
 
-      {/* Nuevo Campo para la Contraseña */}
+       {/* Nuevo Campo para la Contraseña */}
             {!editingUsuario && ( // Mostrar solo cuando se está agregando un usuario
               <Form.Group controlId="contrasenia">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
@@ -438,7 +438,7 @@ function UsuariosAdminComponent() {
             </Button>
           </Form>
         </Modal.Body>
-      </Modal>
+       </Modal>
 
         {/* Modal para cambiar la contraseña */}
         <Modal show={showPasswordModal} onHide={handleClosePasswordModal}>
@@ -500,7 +500,7 @@ function UsuariosAdminComponent() {
             Aceptar
           </Button>
          </Modal.Footer>
-      </Modal>
+       </Modal>
       </div>
     </>
   );

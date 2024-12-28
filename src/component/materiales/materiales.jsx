@@ -12,10 +12,36 @@ function MaterialesComponent() {
   const [alertMessage, setAlertMessage] = useState('');
   const [filter, setFilter] = useState('activos');
   const [searchTerm, setSearchTerm] = useState('');
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchActiveMateriales();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchActiveMateriales = async () => {
     try {
@@ -125,7 +151,11 @@ function MaterialesComponent() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={() => handleShowModal()}
+          onClick={() => {
+            if (checkPermission('Crear material', 'No tienes permisos para crear material')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Material
         </Button>
@@ -220,7 +250,11 @@ function MaterialesComponent() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(material)}
+                    onClick={() => {
+                      if (checkPermission('Editar material', 'No tienes permisos para editar material')) {
+                        handleShowModal(material);
+                      }
+                    }}
                   >
                     Editar
                   </Button>
@@ -233,7 +267,16 @@ function MaterialesComponent() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => toggleMaterialEstado(material.idMaterial, material.estado)}
+                    onClick={() => {
+                      const actionPermission = material.estado ? 'Desactivar material' : 'Activar material';
+                      const actionMessage = material.estado
+                        ? 'No tienes permisos para desactivar material'
+                        : 'No tienes permisos para activar material';
+  
+                      if (checkPermission(actionPermission, actionMessage)) {
+                        toggleMaterialEstado(material.idMaterial, material.estado);
+                      }
+                    }}
                   >
                     {material.estado ? "Desactivar" : "Activar"}
                   </Button>
@@ -332,6 +375,17 @@ function MaterialesComponent() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                         <Modal.Header closeButton>
+                          <Modal.Title>Permiso Denegado</Modal.Title>
+                          </Modal.Header>
+                          <Modal.Body>{permissionMessage}</Modal.Body>
+                          <Modal.Footer>
+                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                            Aceptar
+                          </Button>
+                         </Modal.Footer>
+                      </Modal>
       </div>
     </>
   );

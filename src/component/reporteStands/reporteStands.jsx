@@ -10,6 +10,9 @@ function ReportePlayeras() {
   const [reportes, setReportes] = useState([]);
   const [alerta, setAlerta] = useState("");
   const [revisor, setRevisor] = useState("");
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
     const fetchReportes = async () => {

@@ -10,9 +10,47 @@ function DetalleHorariosComponent() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [filter, setFilter] = useState('activos');
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
-  useEffect(() => { 1
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
+    fetchDetalleHorarios();
   }, []);
+
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
+  
+ const fetchDetalleHorarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/detalle_horarios");
+      setDetalles(response.data);
+      setFilter(response.data);
+    } catch (error) {
+      console.error("Error fetching detalle de horarios:", error);
+    }
+  };
 
   const fetchActiveDetalles = async () => {
     try {
@@ -26,13 +64,11 @@ function DetalleHorariosComponent() {
 
   const fetchInactiveDetalles = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/detalle_horarios', {
-        params: { estado: 0 }
-      });
-      setDetalles(response.data.filter(detalle => detalle.estado === 0));
+      const response = await axios.get('http://localhost:5000/detalle_horarios/inactivos');
+      setDetalles(response.data);
       setFilter('inactivos');
     } catch (error) {
-      console.error('Error fetching inactive detalles:', error);
+      console.error('Error fetching active detalles:', error);
     }
   };
 
@@ -111,7 +147,11 @@ function DetalleHorariosComponent() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={() => handleShowModal()}
+          onClick={() => {
+            if (checkPermission('Crear detalle horario', 'No tienes permisos para crear detalle horario')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Detalle de Horario
         </Button>
@@ -194,7 +234,11 @@ function DetalleHorariosComponent() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => handleShowModal(detalle)}
+                    onClick={() => {
+                      if (checkPermission('Editar detalle horario', 'No tienes permisos para editar detalle horario')) {
+                        handleShowModal(detalle);
+                      }
+                    }}
                   >
                     Editar
                   </Button>
@@ -207,7 +251,16 @@ function DetalleHorariosComponent() {
                       fontWeight: "bold",
                       color: "#fff",
                     }}
-                    onClick={() => toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado)}
+                    onClick={() => {
+                      const actionPermission = detalle.estado ? 'Desactivar detalle horario' : 'Activar detalle horario';
+                      const actionMessage = detalle.estado
+                        ? 'No tienes permisos para desactivar detalle horario'
+                        : 'No tienes permisos para activar detalle horario';
+  
+                      if (checkPermission(actionPermission, actionMessage)) {
+                        toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado);
+                      }
+                    }}
                   >
                     {detalle.estado ? "Desactivar" : "Activar"}
                   </Button>
@@ -294,6 +347,17 @@ function DetalleHorariosComponent() {
             </Form>
           </Modal.Body>
         </Modal>
+            <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                 <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{permissionMessage}</Modal.Body>
+                  <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                 </Modal.Footer>
+               </Modal>
       </div>
     </>
   );

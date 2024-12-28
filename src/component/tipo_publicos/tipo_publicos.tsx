@@ -15,10 +15,36 @@ function TipoPublicos() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showValidationError, setShowValidationError] = useState(false); // Nuevo estado para validación
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchTipoPublicos();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchTipoPublicos = async () => {
     try {
@@ -166,7 +192,11 @@ function TipoPublicos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear tipo publico', 'No tienes permisos para crear tipo publico')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Tipo de Público
           </Button>
@@ -244,7 +274,11 @@ function TipoPublicos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(tipoPublico)}
+                    onClick={() => {
+                      if (checkPermission('Editar tipo publico', 'No tienes permisos para editar tipo publico')) {
+                        handleShowModal(tipoPublico);
+                      }
+                    }}
                   />
                   {tipoPublico.estado ? (
                     <FaToggleOn
@@ -255,9 +289,11 @@ function TipoPublicos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() =>
-                        toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)
-                      }
+                      onClick={() => {
+                        if (checkPermission('Desactivar tipo publico', 'No tienes permisos para desactivar tipo publico')) {
+                          toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -268,9 +304,11 @@ function TipoPublicos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() =>
-                        toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)
-                      }
+                      onClick={() => {
+                        if (checkPermission('Activar tipo publico', 'No tienes permisos para activar tipo publico')) {
+                          toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -334,6 +372,17 @@ function TipoPublicos() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                 <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{permissionMessage}</Modal.Body>
+                  <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                 </Modal.Footer>
+              </Modal>
       </div>
     </>
   );

@@ -7,10 +7,36 @@ function AutorizacionTalonarios() {
   const [modalContent, setModalContent] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+      const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+      const [permissionMessage, setPermissionMessage] = useState('');
+      const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchSolicitudes();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchSolicitudes = async () => {
     try {
@@ -69,7 +95,11 @@ function AutorizacionTalonarios() {
                       <Button
                         variant="success"
                         size="sm"
-                        onClick={() => handleAccept(solicitud.idSolicitudTalonario)}
+                        onClick={() => {
+                          if (checkPermission('Aceptar solicitud de talonario', 'No tienes permisos para aceptar solicitud de talonario')) {
+                            handleAccept(solicitud.idSolicitudTalonario);
+                          }
+                        }}
                         style={{ minWidth: "70px", width: "100px" }}
                       >
                         Aceptar
@@ -77,7 +107,11 @@ function AutorizacionTalonarios() {
                       <Button
                         variant="danger"
                         size="sm"
-                        onClick={() => handleDeny(solicitud.idSolicitudTalonario)}
+                        onClick={() => {
+                          if (checkPermission('Denegar solicitud de talonario', 'No tienes permisos para denegar solicitud de talonario')) {
+                            handleDeny(solicitud.idSolicitudTalonario);
+                          }
+                        }}
                         style={{ minWidth: "70px", width: "100px" }}
                       >
                         Denegar
@@ -88,7 +122,11 @@ function AutorizacionTalonarios() {
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => handleDeny(solicitud.idSolicitudTalonario)}
+                      onClick={() => {
+                        if (checkPermission('Denegar solicitud de talonario', 'No tienes permisos para denegar solicitud de talonario')) {
+                          handleDeny(solicitud.idSolicitudTalonario);
+                        }
+                      }}
                       style={{ minWidth: "70px", width: "100px" }}
                     >
                       Denegar
@@ -98,7 +136,11 @@ function AutorizacionTalonarios() {
                     <Button
                       variant="success"
                       size="sm"
-                      onClick={() => handleAccept(solicitud.idSolicitudTalonario)}
+                      onClick={() => {
+                        if (checkPermission('Aceptar solicitud de talonario', 'No tienes permisos para aceptar solicitud de talonario')) {
+                          handleAccept(solicitud.idSolicitudTalonario);
+                        }
+                      }}
                       style={{ minWidth: "70px", width: "100px" }}
                     >
                       Aceptar
@@ -144,6 +186,17 @@ function AutorizacionTalonarios() {
           </Button>
         </Modal.Footer>
       </Modal>
+       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                     <Modal.Header closeButton>
+                      <Modal.Title>Permiso Denegado</Modal.Title>
+                      </Modal.Header>
+                      <Modal.Body>{permissionMessage}</Modal.Body>
+                      <Modal.Footer>
+                      <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                        Aceptar
+                      </Button>
+                     </Modal.Footer>
+                  </Modal>
     </div>
   );
 }
