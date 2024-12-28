@@ -82,6 +82,7 @@ import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 import ReporteEventos from "./pages/reporteEventos/reporteEventos";
 import ReporteStands from "./pages/reporteStands/reporteStands";
 import ReporteMercanciaVoluntariosPage from "./pages/reporteMercanciaVoluntarios/reporteMercanciaVoluntarios";
+import ReporteAspirantesPage from "./pages/reporteAspirantes/reporteAspirantes";
 
 
 const router = createBrowserRouter([
@@ -327,6 +328,10 @@ const router = createBrowserRouter([
       {
         path: "/reporteMercanciaVoluntarios",
         element: <ReporteMercanciaVoluntariosPage/>,
+      },
+      {
+        path: "/reporteAspirantes",
+        element: <ReporteAspirantesPage/>,
       },
       {
         path: "/gallery",
