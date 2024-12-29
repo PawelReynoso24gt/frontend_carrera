@@ -143,17 +143,7 @@ function Ventas() {
     } catch (error) {
       console.error("Error fetching active ventas:", error);
     }
-  };
-
-  // const fetchProductosAsignados = async (idVoluntario) => {
-  //   try {
-  //     const response = await axios.get(`http://localhost:5000/productos_voluntarios/${idVoluntario}`);
-  //     setDetallesVenta(response.data); // Usa el estado para almacenar los productos asignados.
-  //     console.log("Productos asignados al voluntario seleccionado:", detallesVenta);
-  //   } catch (error) {
-  //     console.error("Error fetching productos asignados:", error);
-  //   }
-  // };  
+  };  
   
   const fetchInactiveVentas = async () => {
     try {
@@ -299,88 +289,15 @@ function Ventas() {
       }
   };
 
-  const handleUpdateVenta = async () => {
-    try {
-      const response = await axios.put(
-        `http://localhost:5000/ventas/update/completa/${ventaEditada.venta.idVenta}`,
-        {
-          venta: ventaEditada.venta,
-          detalles: ventaEditada.detalles,
-          pagos: ventaEditada.pagos
-        }
-      );
-  
-      if (response.status === 200) {
-        alert("Venta actualizada con éxito.");
-        setVentaEditada({ venta: null, detalles: [], pagos: [] }); // Limpiar los datos editados
-        fetchVentas(); // Refrescar la lista de ventas
-      }
-    } catch (error) {
-      console.error("Error al actualizar la venta:", error);
-      alert("Error al actualizar la venta.");
-    }
-  };  
-
-  const handleEditDetalles = (index, field, value) => {
-    const nuevosDetalles = [...ventaEditada.detalles];
-    nuevosDetalles[index][field] = value;
-    const nuevoSubtotal = nuevosDetalles.reduce((sum, detalle) => sum + (detalle.cantidad * detalle.precio || 0), 0 );
-
-    setVentaEditada({
-      ...ventaEditada,
-      detalles: nuevosDetalles,
-      venta: { ...ventaEditada.venta, totalVenta: nuevoSubtotal },
+  const handleCreateVentaClick = () => {
+    setNewVenta({
+      totalVenta: 0,
+      idTipoPublico: "",
+      estado: 1,
     });
-
-    console.log("Detalles actualizados:", nuevosDetalles);
-  };
-  
-  const handleEditPagos = (index, field, value) => {
-    // Validar si el valor ingresado es válido
-    if (field === "monto" && (!value || value <= 0)) {
-      alert("El monto ingresado no es válido.");
-      return;
-    }
-  
-    if (field === "idTipoPago" && (!value || value === "")) {
-      alert("Debe seleccionar un tipo de pago válido.");
-      return;
-    }
-  
-    // Continuar con la actualización si el valor es válido
-    const nuevosPagos = [...ventaEditada.pagos];
-    nuevosPagos[index][field] = value;
-  
-    setVentaEditada({ ...ventaEditada, pagos: nuevosPagos });
-    console.log("Pagos actualizados:", nuevosPagos);
-  };  
-
-  const handleLoadVentaForEdit = async (idVenta) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`
-      );
-      if (response.data) {
-        setVentaEditada({
-          venta: response.data.venta,
-          detalles: response.data.detalles,
-          pagos: response.data.pagos,
-        });
-        console.log("Venta cargada para edición:", response.data);
-      } else {
-        alert("No se encontraron datos para esta venta.");
-      }
-    } catch (error) {
-      console.error("Error al cargar la venta para edición:", error);
-      alert("Hubo un error al cargar los datos de la venta.");
-    }
-  };
-
-  const handleInactivateDetalle = (index) => {
-    const nuevosDetalles = [...ventaEditada.detalles];
-    nuevosDetalles[index].estado = 0; // Marcar el detalle como inactivo
-    setVentaEditada({ ...ventaEditada, detalles: nuevosDetalles });
-    console.log(`Detalle inactivado en el índice ${index}. Detalles actualizados:`, nuevosDetalles);
+    setDetallesVenta([]); // Limpia los detalles
+    setTiposPagos([]); // Limpia los pagos
+    setShowDetailsModal(true);
   };  
 
   const toggleEstado = async (id, estadoActual) => {
@@ -465,7 +382,7 @@ function Ventas() {
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>Gestión de Ventas</h3>
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>Gestión de Ventas de Voluntarios</h3>
         </div>
       </div>
       <div
@@ -504,7 +421,7 @@ function Ventas() {
               fontWeight: "bold",
               color: "#fff",
           }}
-          onClick={() => setShowDetailsModal(true)}
+          onClick={handleCreateVentaClick}
         >
           Crear Venta
         </Button>

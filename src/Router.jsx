@@ -79,7 +79,8 @@ import ReporteProblemas from "./pages/reporteProblemas/reporteProblemas";
 import SoporteSituaciones from "./pages/soporteSituaciones/soporteSituaciones";
 import Desarrolladores from "./pages/desarrolladores/desarrolladores";
 import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
-import Ventas from "./pages/ventas/ventas";
+import VentasVoluntarios from "./pages/ventas_voluntarios/ventas_voluntarios";
+import VentasStands from "./pages/ventas_stands/ventas_stands";
 
 
 const router = createBrowserRouter([
@@ -179,8 +180,12 @@ const router = createBrowserRouter([
         element: <TipoPago />,
       },
       {
-        path: "/ventas",
-        element: <Ventas />,
+        path: "/ventas_voluntarios",
+        element: <VentasVoluntarios />,
+      },
+      {
+        path: "/ventas_stands",
+        element: <VentasStands />,
       },
       {
         path: "/categoria_bitacoras",

@@ -196,7 +196,8 @@ function Menu({ toggleMenu, menu }) {
                 { link: "inventarioMventas", title: "Inventario de mercancía para ventas" },
                 { link: "TipoPago", title: "Gestión Tipo Pago" },
                 { link: "tipo_publicos", title: "Gestión Tipo Público" },
-                { link: "ventas", title: "Gestión de Ventas" },
+                { link: "ventas_voluntarios", title: "Gestión de Ventas de Voluntarios" },
+                { link: "ventas_stands", title: "Gestión de Ventas de Stands" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-piggy-bank" viewBox="0 0 16 16">
