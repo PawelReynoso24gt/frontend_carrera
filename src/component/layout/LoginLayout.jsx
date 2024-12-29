@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import bg from "../../assets/img/credential-bg.svg";
 import logoW from "../../assets/img/logo-white.png";
+import { Button, } from "react-bootstrap";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function LoginLayout() {
@@ -14,6 +15,8 @@ function LoginLayout() {
 
   // Manejar la solicitud de inicio de sesión
   const handleLogin = async (e) => {
+    const [showPassword, setShowPassword] = useState(false);
+    
     e.preventDefault();
     try {
       const response = await axios.post("http://localhost:5000/usuarios/login", {
@@ -29,6 +32,10 @@ function LoginLayout() {
     } catch (err) {
       setError("Usuario o contraseña incorrectos. Por favor, intenta de nuevo.");
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -59,15 +66,29 @@ function LoginLayout() {
             </div>
             <div className="form-group mt-3">
               <label htmlFor="contrasenia" style={{ color: "#333", fontWeight: "bold" }}>Contraseña</label>
+              <span
+                onClick={togglePasswordVisibility}
+                style={{
+                  position: "absolute",
+                  right: "20px", 
+                  top: "70%", 
+                  transform: "translateY(-50%)",
+                  cursor: "pointer", 
+                  fontSize: "18px", 
+                  color: "#333", 
+                }}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 className="form-control"
                 id="contrasenia"
                 value={contrasenia}
                 onChange={(e) => setContrasenia(e.target.value)}
                 required
                 placeholder="Ingrese su contraseña"
-                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
+                style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd", paddingLeft: "10px" }}
               />
             </div>
             {error && (
