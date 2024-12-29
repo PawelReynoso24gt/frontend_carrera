@@ -9,9 +9,16 @@ function Countries() {
   
 
   useEffect(() => {
-    fetch("http://localhost:5000/recaudacion_evento")
+    const token = localStorage.getItem("token"); // Obtén el token del localStorage
+    fetch("http://localhost:5000/recaudacion_evento", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}` // Incluye el token en los encabezados
+      }
+    })
       .then((response) => {
         if (!response.ok) {
+          console.error("Error en la respuesta del servidor:", response.status, response.statusText);
           throw new Error("Error al obtener los eventos");
         }
         return response.json();
@@ -22,11 +29,12 @@ function Countries() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error:", err);
+        console.error("Error al realizar la solicitud:", err);
         setError(err.message);
         setLoading(false);
       });
   }, []);
+  
 
   const renderChart = () => {
     if (!eventos || eventos.length < 2) {
@@ -50,7 +58,7 @@ function Countries() {
         {
           label: "Recaudación ($)",
           data: [previousEvent.recaudacion, latestEvent.recaudacion],
-          backgroundColor: ["#8E53E0", "#36A2EB"],
+          backgroundColor: ["#BDE038", "#36A2EB"],
           borderWidth: 1,
         },
       ],
@@ -96,7 +104,7 @@ function Countries() {
     };
 
     return (
-      <div style={{ width: "100%", marginTop: "20px" }}>
+      <div style={{ width: "100%", marginTop: "20px", justifyContent: "center",  }}>
         <Bar data={chartData} options={options} />
         {latestEvent.recaudacion <= previousEvent.recaudacion && (
           <div

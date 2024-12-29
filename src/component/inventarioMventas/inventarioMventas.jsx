@@ -428,7 +428,7 @@ function DetalleStands() {
           style={{
             backgroundColor: "#ffffff",
             marginTop: "20px",
-            borderRadius: "10px",
+            borderRadius: "20px",
             overflow: "hidden",
           }}
         >

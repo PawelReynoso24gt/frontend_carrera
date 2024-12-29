@@ -287,7 +287,7 @@ const fetchInactiveStands = async () => {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "10px",
+            borderRadius: "20px",
             overflow: "hidden",
             marginTop: "20px",
           }}
@@ -303,7 +303,7 @@ const fetchInactiveStands = async () => {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {currentStands.map((stand) => (
               <tr key={stand.idStand}>
                 <td>{stand.idStand}</td>

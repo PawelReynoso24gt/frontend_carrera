@@ -284,7 +284,8 @@ function Comisiones() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
@@ -299,7 +300,7 @@ function Comisiones() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {currentComisiones.map((comision) => (
               <tr key={comision.idComision}>
                 <td>{comision.idComision}</td>

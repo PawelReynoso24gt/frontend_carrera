@@ -101,8 +101,8 @@ function EventosActivos() {
   };
 
   return (
-    <Container className="mt-5">
-      <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>
+    <Container className="mt-5" style={{ backgroundColor: "#CEECF2" }}>
+      <h2 className="text-center mb-4" style={{ fontWeight: "bold"}}>
         Eventos Activos
       </h2>
       <Row>

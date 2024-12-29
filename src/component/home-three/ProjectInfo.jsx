@@ -113,7 +113,7 @@ function RecaudacionDashboard() {
         {
           label: "Recaudaciones (Q)",
           data: recaudaciones,
-          backgroundColor: "#8E53E0",
+          backgroundColor: "#C466FA",
           borderColor: "#4B0082",
           borderWidth: 1,
         },
@@ -130,7 +130,7 @@ function RecaudacionDashboard() {
         {
           label: "Ventas Totales (Q)",
           data: ventasTotales,
-          backgroundColor: "#284CDB",
+          backgroundColor: "#528DFF",
           borderColor: "#0000FF",
           borderWidth: 1,
         },
@@ -164,7 +164,7 @@ function RecaudacionDashboard() {
         {
           label: "Subtotal (Q)",
           data: subtotales,
-          backgroundColor: "#16CD2E",
+          backgroundColor: "#F29F05",
           borderColor: "#008000",
           borderWidth: 1,
         },

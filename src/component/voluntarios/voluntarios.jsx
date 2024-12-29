@@ -301,7 +301,7 @@ function Voluntarios() {
           {alertMessage}
         </Alert>
   
-                <Table 
+        <Table 
           striped
           bordered
           hover
@@ -309,8 +309,9 @@ function Voluntarios() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
             marginTop: "20px",
+            borderRadius: "20px",
+            overflow: "hidden",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
