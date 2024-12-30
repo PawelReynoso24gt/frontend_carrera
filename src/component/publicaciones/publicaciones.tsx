@@ -246,7 +246,7 @@ function Publicaciones() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{  textAlign: "center" }}>
             {filteredPublicaciones.map((publicacion) => (
               <tr key={publicacion.idPublicacion}>
                 <td>{publicacion.idPublicacion}</td>
