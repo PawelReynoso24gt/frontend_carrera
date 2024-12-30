@@ -49,14 +49,21 @@ function Ventas() {
     //fetchVoluntariosByStand();
     fetchStands();
     fetchVoluntarios();
-    // Calcular el subtotal (sin donación)
-    const calculatedSubtotal = detallesVenta.reduce((sum, detalle) => sum + (detalle.subTotal || 0), 0);
+    // Validar si todos los pagos son del tipo solicitado
+  const pagosSolicitados = tiposPagos.filter((pago) => pago.idTipoPago === 5);
 
-    // El total a pagar ya incluye la donación directamente en `newVenta.donacion`
+  if (pagosSolicitados.length === tiposPagos.length) {
+    // Modo de tipo solicitado
+    setSubtotal(0);
+    setTotalAPagar(0);
+  } else {
+    // Cálculo estándar
+    const calculatedSubtotal = detallesVenta.reduce((sum, detalle) => sum + (detalle.subTotal || 0), 0);
     const total = calculatedSubtotal + (newVenta.donacion || 0);
 
-    setSubtotal(calculatedSubtotal); // Guardar el subtotal
-    setTotalAPagar(total); // Guardar el total
+    setSubtotal(calculatedSubtotal);
+    setTotalAPagar(total);
+  }
     console.log("Voluntarios asignados:", voluntarios);
   }, [detallesVenta, newVenta.donacion, voluntarios]);
 
@@ -262,120 +269,122 @@ const handleSelectVoluntarioGlobal = (id) => {
     }
   };  
 
+  const calcularTotales = (detallesVenta, pagos, donacion) => {
+    let subtotal = 0;
+    let totalPagado = 0;
+  
+    for (const detalle of detallesVenta) {
+      subtotal += detalle.subTotal || 0;
+    }
+  
+    for (const pago of pagos) {
+      totalPagado += pago.monto || 0;
+    }
+  
+    // Total de la venta = subtotal + donación (o 0 si no aplica)
+    const totalVenta = subtotal + (donacion || 0);
+  
+    return { subtotal, totalPagado, totalVenta };
+  };  
+
   const handleCreateVenta = async () => {
     try {
-        // Validar que se haya seleccionado un voluntario si es requerido
-        if (standSeleccionado?.idStand === 1 && standSeleccionado?.idTipoStands === 1 && !standSeleccionado?.voluntarioAsignado) {
-            alert("Debe seleccionar un voluntario para este stand.");
-            return; // Detener la ejecución si no se ha seleccionado un voluntario
-        }
-
-        // Validar y calcular los subtotales de los productos
-        const detallesVentaValidos = detallesVenta
-        .filter((detalle) => detalle.cantidad > 0 && detalle.estado !== 0)
+      // Validar que se haya seleccionado un voluntario si es requerido
+      if (standSeleccionado?.idStand === 1 && standSeleccionado?.idTipoStands === 1 && !standSeleccionado?.voluntarioAsignado) {
+        alert("Debe seleccionar un voluntario para este stand.");
+        return; // Detener la ejecución si no se ha seleccionado un voluntario
+      }
+  
+      // Validar y calcular los subtotales de los productos
+      const detallesVentaValidos = detallesVenta
+        .filter((detalle) => detalle.cantidad > 0 && detalle.estado !== 0) // Solo productos válidos
         .map((detalle) => {
-            const subTotal = detalle.cantidad * detalle.precio;
-            console.log("Calculando subtotal para:", detalle.nombreProducto, subTotal);
-            
-            // Agregar un console.log aquí para verificar el voluntario asignado
-            console.log("Voluntario seleccionado para el detalle:", detalle.idVoluntario || voluntarioStandSeleccionado || voluntarioGlobalSeleccionado);
-
-            return {
-                ...detalle,
-                subTotal, // Asegura que el subtotal se incluya correctamente
-                donacion: detalle.donacion || newVenta.donacion, // Asignar la donación a cada detalle
-                idVoluntario:
-                standSeleccionado?.idStand === 1 || voluntarios.length > 0
-                    ? voluntarioStandSeleccionado || voluntarioGlobalSeleccionado
-                    : null, // Asignar el voluntario o null según corresponda
-                idStand: detalle.idStand || selectedStand?.idStand // Asignar idStand del seleccionado
-            };
+          const isDonation = tiposPagos.some(
+            (pago) => pago.idProducto === detalle.idProducto && pago.monto === 0 // Verificar si es una donación
+          );
+  
+          // Si es donación, establecer subtotal como 0, de lo contrario calcular normalmente
+          const subTotal = isDonation ? 0 : detalle.cantidad * detalle.precio;
+  
+          return {
+            ...detalle,
+            subTotal, // Asignar el subtotal calculado
+            donacion: detalle.donacion || newVenta.donacion, // Asignar la donación
+            idVoluntario: 
+              standSeleccionado?.idStand === 1 || voluntarios.length > 0
+                ? voluntarioStandSeleccionado || voluntarioGlobalSeleccionado
+                : null, // Asignar el voluntario si aplica
+            idStand: detalle.idStand || standSeleccionado?.idStand, // Asignar el stand seleccionado
+          };
         });
-
-        console.log("Detalles válidos con subtotales y donación:", detallesVentaValidos);
-
-        // Calcular el subtotal de los productos y el total de la venta
-        const subtotalVenta = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0);
-        const totalVenta = subtotalVenta + (newVenta.donacion || 0);
-
-        console.log("Subtotal calculado:", subtotalVenta);
-        console.log("Donación:", newVenta.donacion);
-        console.log("Total calculado (incluyendo donación):", totalVenta);
-
-        // Validar que la suma de los montos de los pagos coincida con el total calculado
-        const totalPagado = tiposPagos.reduce((sum, pago) => sum + (parseFloat(pago.monto) || 0), 0);
-
-        console.log("Validando pagos...");
-        console.log("Subtotal calculado:", subtotal);
-        console.log("Total de la venta (subtotal + donación):", totalAPagar);
-        console.log("Total de los pagos:", totalPagado);
-
-        // Verifica si el total pagado coincide con el total calculado (incluyendo la donación ya sumada)
-        if (totalPagado !== totalAPagar) {
-            alert(
-                `La suma de los pagos (Q${totalPagado.toFixed(2)}) no coincide con el total a pagar (Q${totalAPagar.toFixed(2)}).`
-            );
-            return;
+  
+      console.log("Detalles válidos con subtotales y donación:", detallesVentaValidos);
+  
+      // Si todos los pagos son donaciones (monto = 0), totalVenta debe ser 0
+      const allPaymentsAreDonations = tiposPagos.every((pago) => pago.monto === 0);
+      const totalVenta = allPaymentsAreDonations
+        ? 0 // Venta total es 0 si todos los pagos son donaciones
+        : detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0); // Sumar subtotales de los detalles
+  
+      // Actualizar newVenta con el total calculado
+      setNewVenta({ ...newVenta, totalVenta });
+  
+      // Validar que la suma de los montos de los pagos coincida con el total calculado
+      const totalPagado = tiposPagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
+      if (!allPaymentsAreDonations && totalPagado !== totalVenta) {
+        alert(`La suma de los pagos (Q${totalPagado.toFixed(2)}) no coincide con el total (Q${totalVenta.toFixed(2)}).`);
+        return;
+      }
+  
+      // Validar los pagos
+      const pagosValidados = tiposPagos.map((pago) => {
+        const isDonation = pago.monto === 0;
+  
+        if (!pago.idTipoPago || (!isDonation && !pago.monto) || !pago.idProducto) {
+          throw new Error("Cada pago debe tener un tipo, monto válido y producto asociado.");
         }
-
-        // Validar que cada pago tenga el formato correcto
-        const pagosValidados = tiposPagos.map((pago) => {
-
-            if (tiposPagos.some((pago) => pago.idTipoPago === 5 && !pago.idVoluntario)) {
-                alert("El tipo de pago '5' requiere un voluntario asociado.");
-                return;
-            }
-            
-            if (!pago.idTipoPago || pago.monto <= 0 || !pago.idProducto) {
-                throw new Error("Cada pago debe tener un tipo, monto válido y producto asociado.");
-            }
-
-            // Validar pagos que requieren correlativo e imagen
-            if ([1, 2, 4].includes(pago.idTipoPago)) { // Depósito, Transferencia, Cheque
-                if (!pago.correlativo || !pago.imagenTransferencia) {
-                    throw new Error(
-                        `El tipo de pago ${pago.idTipoPago} requiere correlativo e imagen.`
-                    );
-                }
-            }
-
-            // Manejo de valores por defecto para tipos de pago
-            const correlativo = pago.correlativo || "NA"; // Por defecto "NA"
-            const imagenTransferencia = pago.imagenTransferencia || "efectivo"; // Por defecto "efectivo"
-            
-            return {
-                ...pago,
-                correlativo,
-                imagenTransferencia,
-            };
-        });
-
-        console.log("Pagos validados:", pagosValidados);
-
-        // Construir los datos de la venta para enviar al backend
-        const ventaData = {
-            venta: { ...newVenta, totalVenta }, // Incluye la donación y el total
-            detalles: detallesVentaValidos, // Incluye los subtotales y donaciones
-            pagos: pagosValidados, // Pagos validados con sus requisitos
-            idVoluntario: voluntarios.length > 0 
+  
+        // Validar correlativo e imagen solo para ciertos tipos de pagos (que no son donaciones)
+        if (!isDonation && [1, 2, 4].includes(pago.idTipoPago)) {
+          if (!pago.correlativo || !pago.imagenTransferencia) {
+            throw new Error(`El tipo de pago ${pago.idTipoPago} requiere correlativo e imagen.`);
+          }
+        }
+  
+        return {
+          ...pago,
+          correlativo: pago.correlativo || "NA", // Valores por defecto
+          imagenTransferencia: pago.imagenTransferencia || "efectivo", // Valores por defecto
+        };
+      });
+  
+      console.log("Pagos validados:", pagosValidados);
+  
+      // Construir los datos de la venta para enviar al backend
+      const ventaData = {
+        venta: { ...newVenta, totalVenta }, // Incluye la donación y el total
+        detalles: detallesVentaValidos, // Incluye los subtotales y donaciones
+        pagos: pagosValidados, // Pagos validados con sus requisitos
+        idVoluntario:
+          voluntarios.length > 0
             ? voluntarioStandSeleccionado || voluntarioGlobalSeleccionado
             : null, // Si no hay voluntarios, establecer como null
-        };
-
-        console.log("Datos para enviar al backend:", ventaData);
-
-        // Enviar los datos al backend
-        const response = await axios.post("http://localhost:5000/ventas/create/stands/completa", ventaData);
-        if (response.status === 201) {
-            alert("Venta creada con éxito");
-            setShowDetailsModal(false); // Cerrar el modal
-            fetchVentas(); // Actualizar la lista de ventas
-        }
-      } catch (error) {
-        console.error("Error creando venta:", error.response?.data || error.message);
-        alert(`Error al crear la venta: ${error.response?.data || "Revisa los datos ingresados."}`);
-    }    
-  };
+      };
+  
+      console.log("Datos para enviar al backend:", ventaData);
+  
+      // Enviar los datos al backend
+      const response = await axios.post("http://localhost:5000/ventas/create/stands/completa", ventaData);
+      if (response.status === 201) {
+        alert("Venta creada con éxito");
+        setShowDetailsModal(false); // Cerrar el modal
+        fetchVentas(); // Actualizar la lista de ventas
+      }
+    } catch (error) {
+      console.error("Error creando venta:", error.response?.data || error.message);
+      alert(`Error al crear la venta: ${error.response?.data || "Revisa los datos ingresados."}`);
+    }
+  };  
 
   const handleCreateVentaClick = () => {
     setNewVenta({
@@ -940,6 +949,11 @@ const handleSelectVoluntarioGlobal = (id) => {
                                 {tipo.tipo}
                             </option>
                             ))}
+                            {/* <Form.Text muted>
+                            {tiposPagos.some((pago) => pago.idTipoPago === 5)
+                                ? "Los valores pueden ser 0 si es un pago solicitado."
+                                : "Todos los valores deben coincidir con el total de la venta."}
+                            </Form.Text> */}
                         </Form.Control>
                         </Form.Group>
                         <Form.Group>
