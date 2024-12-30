@@ -262,7 +262,7 @@ function Eventos() {
               backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
-              width: "130px",
+              width: "180px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",

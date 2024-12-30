@@ -124,7 +124,7 @@ function TipoPago() {
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
-              width: "130px",
+              width: "180px",
             }}
             onClick={() => handleShowModal()}
           >
