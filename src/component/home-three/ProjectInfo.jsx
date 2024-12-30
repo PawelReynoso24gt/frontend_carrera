@@ -198,7 +198,7 @@ function RecaudacionDashboard() {
           label: "Subtotal (Q)",
           data: previous ? [parseFloat(previous.subTotal || 0), parseFloat(mostRecent.subTotal || 0)] : [parseFloat(mostRecent.subTotal || 0)],
           backgroundColor: previous ? ["#FFD700", "#F29F05"] : ["#F29F05"],
-          borderColor: previous ? ["#FFA500", "#008000"] : ["#008000"],
+          borderColor: previous ? ["#FFA500", "#FFD700"] : ["#008000"],
           borderWidth: 1,
         },
       ],
