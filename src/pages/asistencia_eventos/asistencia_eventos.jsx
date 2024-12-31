@@ -22,7 +22,8 @@ function AsistenciasPage() {
   return (
     <Layout>
       <BreadCrumb title="Asistencia a Eventos" link="/asistencia_eventos" />
-      <Wrapper>
+      <Wrapper >
+      <div style={{ backgroundColor: "#CEECF2", padding: "20px", borderRadius: "10px" }}>
         {/* Combobox para seleccionar el componente */}
         <div style={{ marginBottom: "20px" }}>
           <label htmlFor="component-select" style={{ marginRight: "10px" }}>
@@ -46,6 +47,7 @@ function AsistenciasPage() {
         {selectedComponent === "registroComision" && <RegistroComisiones />}
         {selectedComponent === "registroMateriales" && <RegistroMateriales />}
         {selectedComponent === "registroActividades" && <RegistroActividades />}
+        </div>
       </Wrapper>
     </Layout>
   );

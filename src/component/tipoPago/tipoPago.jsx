@@ -124,7 +124,7 @@ function TipoPago() {
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
-              width: "130px",
+              width: "180px",
             }}
             onClick={() => handleShowModal()}
           >
@@ -177,7 +177,7 @@ function TipoPago() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "10px",
+            borderRadius: "20px",
             overflow: "hidden",
             marginTop: "20px",
           }}
@@ -196,7 +196,7 @@ function TipoPago() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {tiposPago.map((tipoPago) => (
               <tr key={tipoPago.idTipoPago}>
                 <td>{tipoPago.idTipoPago}</td>

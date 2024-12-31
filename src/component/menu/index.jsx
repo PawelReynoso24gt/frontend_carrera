@@ -18,11 +18,11 @@ function Menu({ toggleMenu, menu }) {
     setDropdown(name === dropdown ? "" : name);
   };
   return (
-    <div className={`crancy-smenu ${menu && "crancy-close"}`} id="CrancyMenu">
+    <div className={`crancy-smenu ${menu && "crancy-close"}`} id="CrancyMenu" >
       {/* <!-- Admin Menu --> */}
       <div className={`admin-menu ${dropdown ? "no-overflow" : ""}`}>
         {/* <!-- Logo --> */}
-        <div className="logo crancy-sidebar-padding pd-right-0">  {/* color aq */}
+        <div className="logo crancy-sidebar-padding pd-right-0" >  {/* color aq */}
           <Link className="crancy-logo" to="/paginaPrincipal">
             {/* <!-- Logo for Default --> */}
             <img className="crancy-logo__main" src={logo} alt="#"  style={{ width: "250px", height: "auto" }} />

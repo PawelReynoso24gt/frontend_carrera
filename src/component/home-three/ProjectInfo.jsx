@@ -105,72 +105,106 @@ function RecaudacionDashboard() {
   });
 
   const generateChartDataRecaudaciones = (data) => {
-    const labels = data.map((evento) => formatDate(evento.fechaRegistro));
-    const recaudaciones = data.map((evento) => parseFloat(evento.recaudacion || 0));
+    // Ordena los eventos por fecha de registro en orden descendente
+    const sortedData = [...data].sort((a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro));
+  
+    // Toma los dos eventos más recientes
+    const [mostRecent, previous] = sortedData;
+  
+    // Configura los datos del gráfico
     setChartDataRecaudaciones({
-      labels,
+      labels: previous
+        ? [formatDate(previous.fechaRegistro), formatDate(mostRecent.fechaRegistro)]
+        : [formatDate(mostRecent.fechaRegistro)],
       datasets: [
         {
-          label: "Recaudaciones (Q)",
-          data: recaudaciones,
-          backgroundColor: "#8E53E0",
-          borderColor: "#4B0082",
+          label: "Número de Personas",
+          data: previous
+            ? [parseInt(previous.numeroPersonas || 0), parseInt(mostRecent.numeroPersonas || 0)]
+            : [parseInt(mostRecent.numeroPersonas || 0)],
+          backgroundColor: previous ? ["#FFA07A", "#C466FA"] : ["#C466FA"],
+          borderColor: previous ? ["#FF6347", "#4B0082"] : ["#4B0082"],
           borderWidth: 1,
         },
       ],
     });
   };
-
+  
   const generateChartDataVentas = (data) => {
-    const labels = data.map((venta) => formatDate(venta.fechaVenta));
-    const ventasTotales = data.map((venta) => parseFloat(venta.totalVenta || 0));
+    // Ordena las ventas por fecha en orden descendente
+    const sortedData = [...data].sort((a, b) => new Date(b.fechaVenta) - new Date(a.fechaVenta));
+  
+    // Toma las dos ventas más recientes
+    const [mostRecent, previous] = sortedData;
+  
+    // Configura los datos del gráfico
     setChartDataVentas({
-      labels,
+      labels: previous ? [formatDate(previous.fechaVenta), formatDate(mostRecent.fechaVenta)] : [formatDate(mostRecent.fechaVenta)],
       datasets: [
         {
-          label: "Ventas Totales (Q)",
-          data: ventasTotales,
-          backgroundColor: "#284CDB",
-          borderColor: "#0000FF",
+          label: "Comparación de ventas (Q)",
+          data: previous ? [parseFloat(previous.totalVenta || 0), parseFloat(mostRecent.totalVenta || 0)] : [parseFloat(mostRecent.totalVenta || 0)],
+          backgroundColor: previous ? ["#FFB84C", "#528DFF"] : ["#528DFF"],
+          borderColor: previous ? ["#FF8C00", "#0000FF"] : ["#0000FF"],
           borderWidth: 1,
         },
       ],
     });
   };
-
+  
+  generateChartDataVentas
   const generateChartDataRifasBoletos = (data) => {
-    const labels = data.map((rifa) => formatDate(rifa.createdAt));
-    const boletosVendidos = data.map((rifa) => rifa.boletosVendidos || 0);
+    // Ordena las rifas por fecha de creación de forma descendente
+    const sortedData = [...data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  
+    // Toma las dos rifas más recientes
+    const [mostRecent, previous] = sortedData;
+  
+    // Configura los datos del gráfico
     setChartDataRifasBoletos({
-      labels,
+      labels: previous ? [formatDate(previous.createdAt), formatDate(mostRecent.createdAt)] : [formatDate(mostRecent.createdAt)],
       datasets: [
         {
-          label: "Boletos Vendidos",
-          data: boletosVendidos,
+          label: "Total de boletos",
+          data: previous ? [previous.boletosVendidos || 0, mostRecent.boletosVendidos || 0] : [mostRecent.boletosVendidos || 0],
           backgroundColor: "#EBE02E",
           borderColor: "#FFD700",
           borderWidth: 1,
         },
-      ],
-    });
-  };
-
-  const generateChartDataRifasSubtotal = (data) => {
-    const labels = data.map((rifa) => formatDate(rifa.createdAt));
-    const subtotales = data.map((rifa) => parseFloat(rifa.subTotal || 0));
-    setChartDataRifasSubtotal({
-      labels,
-      datasets: [
         {
-          label: "Subtotal (Q)",
-          data: subtotales,
-          backgroundColor: "#16CD2E",
-          borderColor: "#008000",
+          label: "Rifa Más Reciente - Anterior",
+          data: previous ? [0, (mostRecent.boletosVendidos || 0) - (previous.boletosVendidos || 0)] : [0],
+          backgroundColor: "#2E86C1",
+          borderColor: "#2874A6",
           borderWidth: 1,
         },
       ],
     });
   };
+  
+
+  const generateChartDataRifasSubtotal = (data) => {
+    // Ordena las rifas por fecha en orden descendente
+    const sortedData = [...data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  
+    // Toma las dos rifas más recientes
+    const [mostRecent, previous] = sortedData;
+  
+    // Configura los datos del gráfico
+    setChartDataRifasSubtotal({
+      labels: previous ? [formatDate(previous.createdAt), formatDate(mostRecent.createdAt)] : [formatDate(mostRecent.createdAt)],
+      datasets: [
+        {
+          label: "Subtotal (Q)",
+          data: previous ? [parseFloat(previous.subTotal || 0), parseFloat(mostRecent.subTotal || 0)] : [parseFloat(mostRecent.subTotal || 0)],
+          backgroundColor: previous ? ["#FFD700", "#F29F05"] : ["#F29F05"],
+          borderColor: previous ? ["#FFA500", "#FFD700"] : ["#008000"],
+          borderWidth: 1,
+        },
+      ],
+    });
+  };
+  
 
   const styles = {
     header: {
@@ -189,46 +223,64 @@ function RecaudacionDashboard() {
       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
     },
   };
-
   return (
     <div className="container mt-4">
       <h3 style={styles.header}>RECAUDACIONES, VENTAS Y RIFAS</h3>
       <Container>
         <Row>
-          <Col md={6}>
-            <div style={styles.chartContainer}>
-              {chartDataRecaudaciones && (
-                <Bar data={chartDataRecaudaciones} options={generateChartOptions("Recaudaciones por Fecha")} />
-              )}
-            </div>
-          </Col>
+          {/* Ventas Totales */}
           <Col md={6}>
             <div style={styles.chartContainer}>
               {chartDataVentas && (
-                <Bar data={chartDataVentas} options={generateChartOptions("Ventas Totales por Fecha")} />
+                <Bar
+                  data={chartDataVentas}
+                  options={generateChartOptions("Comparación de ventas totales")}
+                />
+              )}
+            </div>
+          </Col>
+  
+          {/* Número de Personas en Evento */}
+          <Col md={6}>
+            <div style={styles.chartContainer}>
+              {chartDataRecaudaciones && (
+                <Bar
+                  data={chartDataRecaudaciones}
+                  options={generateChartOptions("Número de personas en evento")}
+                />
               )}
             </div>
           </Col>
         </Row>
-        <Row>
+  
+        <Row className="mt-4">
+          {/* Comparación de Boletos Vendidos */}
           <Col md={6}>
             <div style={styles.chartContainer}>
               {chartDataRifasBoletos && (
-                <Bar data={chartDataRifasBoletos} options={generateChartOptions("Boletos Vendidos por Fecha")} />
+                <Bar
+                  data={chartDataRifasBoletos}
+                  options={generateChartOptions("Comparación de boletos vendidos")}
+                />
               )}
             </div>
           </Col>
+  
+          {/* Recaudaciones de Rifas por Fecha */}
           <Col md={6}>
             <div style={styles.chartContainer}>
               {chartDataRifasSubtotal && (
-                <Bar data={chartDataRifasSubtotal} options={generateChartOptions("Recaudaciones de Rifas por Fecha")} />
+                <Bar
+                  data={chartDataRifasSubtotal}
+                  options={generateChartOptions("Recaudaciones de Rifas por Fecha")}
+                />
               )}
             </div>
           </Col>
         </Row>
       </Container>
     </div>
-  );
+  );  
 }
 
 export default RecaudacionDashboard;

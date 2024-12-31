@@ -155,7 +155,7 @@ function UsuariosAdminComponent() {
       >
         <Button
           style={{
-            backgroundColor: "#743D90",
+            backgroundColor: "#007abf",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "180px",
@@ -169,7 +169,7 @@ function UsuariosAdminComponent() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#007AC3",
+            backgroundColor: "#009B85",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -183,7 +183,7 @@ function UsuariosAdminComponent() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#009B85",
+            backgroundColor: "#bf2200",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -222,8 +222,9 @@ function UsuariosAdminComponent() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
             marginTop: "20px",
+            borderRadius: "20px",
+            overflow: "hidden",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>

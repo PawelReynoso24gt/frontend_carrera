@@ -10,6 +10,7 @@ function LoginLayout() {
   const [contrasenia, setContrasenia] = useState(""); // Estado para la contraseña
   const [error, setError] = useState(null); // Estado para los mensajes de error
   const [showPassword, setShowPassword] = useState(false);
+  
   const navigate = useNavigate();
 
   // Manejar la solicitud de inicio de sesión
@@ -29,6 +30,11 @@ function LoginLayout() {
     } catch (err) {
       setError("Usuario o contraseña incorrectos. Por favor, intenta de nuevo.");
     }
+  
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -59,8 +65,22 @@ function LoginLayout() {
             </div>
             <div className="form-group mt-3">
               <label htmlFor="contrasenia" style={{ color: "#333", fontWeight: "bold" }}>Contraseña</label>
+              <span
+                onClick={togglePasswordVisibility}
+                style={{
+                  position: "absolute",
+                  right: "20px", 
+                  top: "70%", 
+                  transform: "translateY(-50%)",
+                  cursor: "pointer", 
+                  fontSize: "18px", 
+                  color: "#333", 
+                }}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 className="form-control"
                 id="contrasenia"
                 value={contrasenia}
@@ -69,6 +89,7 @@ function LoginLayout() {
                 placeholder="Ingrese su contraseña"
                 style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
               />
+              
             </div>
             {error && (
               <div className="alert alert-danger mt-3" role="alert">

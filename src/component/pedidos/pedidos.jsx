@@ -255,7 +255,7 @@ function Pedidos() {
               backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
-              width: "130px",
+              width: "180px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
@@ -311,7 +311,8 @@ function Pedidos() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
