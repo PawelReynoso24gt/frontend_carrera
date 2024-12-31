@@ -40,10 +40,11 @@ Version:	1.0.0
 .admin-menu {
   background: #fff;
   height: 100%;
-  scrollbar-width: none;
-  overflow: scroll;
+  max-height: 100vh; /* Limita la altura al tamaño de la ventana */
+  overflow-y: auto; /* Solo desplaza verticalmente */
+  scrollbar-width: thin; /* Reduce el ancho de la barra en navegadores compatibles */
   transition: all 0.3s ease;
-  border-right: 1px solid #e8edff;
+  border-right: 1px solid #c6cbdb;
 }
 .admin-menu__one {
   padding-bottom: 25px;
@@ -68,7 +69,7 @@ Version:	1.0.0
   align-items: center;
   justify-content: space-between;
   min-height: 80px;
-  border-bottom: 1px solid #e8edff;
+  border-bottom: 1px solid #c3cbe6;
 }
 .logo a {
   position: relative;
@@ -136,7 +137,7 @@ Version:	1.0.0
 }
 .menu-bar li:hover .menu-bar__name,
 .menu-bar li.active .menu-bar__name {
-  color: #0a82fd;
+  color: #1908b6;
 }
 .menu-bar li.active-icon:before {
   opacity: 1;
@@ -149,7 +150,7 @@ Version:	1.0.0
   font-weight: 400;
   font-size: 18px;
   line-height: 22px;
-  color: #0a82fd;
+  color: #1b050f;
   padding: 14px 0px;
   display: inline-block;
   width: 100%;
@@ -171,7 +172,7 @@ Version:	1.0.0
 }
 .menu-bar li ul li a:hover span,
 .menu-bar li ul li a:hover {
-  color: #0a82fd !important;
+  color: #7d45d8 !important;
 }
 .crancy__dropdown ul li a i {
   margin-right: 5px;
@@ -187,7 +188,7 @@ Version:	1.0.0
 }
 .menu-bar li .crancy__dropdown {
   padding-left: 15px;
-  border-left: 1px solid #e4f2ffb5;
+  border-left: 1px solid #13b420b5;
   margin-left: 40px;
 }
 .menu-bar li.show-dropdown ul {
@@ -227,7 +228,7 @@ Version:	1.0.0
   border-radius: 100%;
   display: inline-block;
   transition: all 0.3s ease;
-  color: #2f3032;
+  color: #6c1bc9;
   min-width: 30px;
 }
 .menu-bar__text .crancy-menu-icon .crancy-svg-icon {
@@ -236,12 +237,12 @@ Version:	1.0.0
   stroke: currentColor;
 }
 .crancy-dashboard-menu .collapsed .crancy-menu-icon .crancy-svg-icon {
-  color: #2f3032;
+  color: #6c1bc9;
 }
 .menu-bar li .crancy-menu-icon .crancy-svg-icon,
 .menu-bar li:hover .collapsed .crancy-menu-icon .crancy-svg-icon,
 .menu-bar li.active .crancy-menu-icon .crancy-svg-icon {
-  color: #0a82fd;
+  color: #6c1bc9;
 }
 .menu-bar__text .crancy-menu-icon.crancy-svg-icon__v2 .crancy-svg-icon {
   stroke: initial;
@@ -285,7 +286,7 @@ Version:	1.0.0
 }
 .logout-button .crancy-btn {
   padding: 7px 14px;
-  background: #0a82fd;
+  background: #0c3c6d;
   color: #fff;
   display: flex;
   gap: 10px;
@@ -509,7 +510,7 @@ Version:	1.0.0
   height: 16px;
   display: inline-block;
   border-radius: 100%;
-  color: #fff;
+  color: #3a0b0b;
   line-height: 16px;
   font-size: 14px;
 }
@@ -1267,7 +1268,7 @@ Version:	1.0.0
 }
 .crancy-sidebar__single {
   padding: 25px 22px;
-  background: #fff;
+  background: #d8dbd7;
   border-radius: 15px;
   margin-bottom: 40px;
 }

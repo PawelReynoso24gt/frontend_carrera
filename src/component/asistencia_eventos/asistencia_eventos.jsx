@@ -12,36 +12,10 @@ function EventosActivos() {
   const [selectedInscripcion, setSelectedInscripcion] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [hasScanned, setHasScanned] = useState(false);
-  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-  const [permissionMessage, setPermissionMessage] = useState('');
-  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
-    const fetchPermissions = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
-          },
-        });
-        setPermissions(response.data.permisos || {});
-      } catch (error) {
-        console.error('Error fetching permissions:', error);
-      }
-    };
-  
-    fetchPermissions();
     fetchEventosActivos();
   }, []);
-
-  const checkPermission = (permission, message) => {
-    if (!permissions[permission]) {
-      setPermissionMessage(message);
-      setShowPermissionModal(true);
-      return false;
-    }
-    return true;
-  };
 
   const fetchEventosActivos = async () => {
     try {
@@ -127,8 +101,8 @@ function EventosActivos() {
   };
 
   return (
-    <Container className="mt-5">
-      <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>
+    <Container className="mt-5" style={{ backgroundColor: "#CEECF2" }}>
+      <h2 className="text-center mb-4" style={{ fontWeight: "bold"}}>
         Eventos Activos
       </h2>
       <Row>
@@ -152,10 +126,15 @@ function EventosActivos() {
                 <Card.Footer className="text-center">
                   <Button
                     variant="primary"
-                    onClick={() => {
-                      if (checkPermission('Ver inscripciones a eventos', 'No tienes permisos para ver inscripciones a eventos')) {
-                        handleShowInscripciones(evento.idEvento);
-                      }
+                    onClick={() => handleShowInscripciones(evento.idEvento)}
+                    style={{
+                      backgroundColor: "#007abf",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "180px",
+                      marginRight: "10px",
+                      fontWeight: "bold",
+                      color: "#fff",
                     }}
                   >
                     Ver Inscripciones
@@ -200,11 +179,7 @@ function EventosActivos() {
                     <td>
                       <Button
                         variant="success"
-                        onClick={() => {
-                          if (checkPermission('Tomar asistencia', 'No tienes permisos para tomar asistencia')) {
-                            handleOpenQRScanner(inscripcion);
-                          }
-                        }}
+                        onClick={() => handleOpenQRScanner(inscripcion)}
                       >
                         Tomar Asistencia
                       </Button>
@@ -255,17 +230,6 @@ function EventosActivos() {
           <h4>Asistencia registrada con éxito</h4>
         </Modal.Body>
       </Modal>
-       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-               <Modal.Header closeButton>
-                <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                  Aceptar
-                </Button>
-               </Modal.Footer>
-            </Modal>
     </Container>
   );
 }

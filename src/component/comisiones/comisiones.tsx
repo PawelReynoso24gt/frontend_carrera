@@ -254,7 +254,7 @@ function Comisiones() {
               backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
-              width: "130px",
+              width: "180px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
@@ -314,7 +314,8 @@ function Comisiones() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
@@ -329,7 +330,7 @@ function Comisiones() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {currentComisiones.map((comision) => (
               <tr key={comision.idComision}>
                 <td>{comision.idComision}</td>

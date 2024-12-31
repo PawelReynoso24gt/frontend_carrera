@@ -143,7 +143,7 @@ function MaterialesComponent() {
       >
         <Button
           style={{
-            backgroundColor: "#743D90",
+            backgroundColor: "#007abf",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "180px",
@@ -161,7 +161,7 @@ function MaterialesComponent() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#007AC3",
+            backgroundColor: "#009B85",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -175,7 +175,7 @@ function MaterialesComponent() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#009B85",
+            backgroundColor: "#bf2200",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -215,7 +215,8 @@ function MaterialesComponent() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
@@ -230,7 +231,7 @@ function MaterialesComponent() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {filteredMateriales.map((material) => (
               <tr key={material.idMaterial}>
                 <td>{material.idMaterial}</td>

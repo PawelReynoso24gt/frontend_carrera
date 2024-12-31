@@ -251,7 +251,7 @@ function Departamentos() {
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
-               width: "150px"
+              width: "200px"
             }}
             onClick={() => {
               if (checkPermission('Crear departamento', 'No tienes permisos para crear departamento')) {

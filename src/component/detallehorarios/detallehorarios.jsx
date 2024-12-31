@@ -139,7 +139,7 @@ function DetalleHorariosComponent() {
       >
         <Button
           style={{
-            backgroundColor: "#743D90",
+            backgroundColor: "#007abf",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "220px",
@@ -157,7 +157,7 @@ function DetalleHorariosComponent() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#007AC3",
+            backgroundColor: "#009B85",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -171,7 +171,7 @@ function DetalleHorariosComponent() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#009B85",
+            backgroundColor: "#bf2200",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -201,11 +201,12 @@ function DetalleHorariosComponent() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Cantidad de Personas</th>
@@ -215,7 +216,7 @@ function DetalleHorariosComponent() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {detalles.map((detalle) => (
               <tr key={detalle.idDetalleHorario}>
                 <td>{detalle.idDetalleHorario}</td>

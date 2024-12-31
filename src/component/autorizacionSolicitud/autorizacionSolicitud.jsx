@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Modal, Card, Row, Col } from "react-bootstrap";
+import { Button, Modal, Card, Row, Col, Pagination } from "react-bootstrap";
 
 function SolicitudesVoluntariado() {
   const [aspirantes, setAspirantes] = useState([]);
@@ -13,6 +13,10 @@ function SolicitudesVoluntariado() {
     const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
     const [permissionMessage, setPermissionMessage] = useState('');
     const [permissions, setPermissions] = useState({});
+
+  // Estados para la paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6); // Número de elementos por página
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -103,13 +107,21 @@ function SolicitudesVoluntariado() {
     }
   };
 
+  // Paginación
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentAspirantes = aspirantes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(aspirantes.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div className="container mt-4">
       <h3 className="text-center mb-4" style={{ fontWeight: "bold", color: "#007abf" }}>
         SOLICITUDES ENTRANTES PARA VOLUNTARIADO
       </h3>
       <Row>
-        {aspirantes.map((aspirante) => (
+        {currentAspirantes.map((aspirante) => (
           <Col key={aspirante.idAspirante} sm={12} md={6} lg={4}>
             <Card
               className="mb-3"
@@ -165,6 +177,19 @@ function SolicitudesVoluntariado() {
         ))}
       </Row>
 
+      {/* Barra de paginación */}
+      <Pagination className="justify-content-center mt-4">
+        {[...Array(totalPages).keys()].map((number) => (
+          <Pagination.Item
+            key={number + 1}
+            active={number + 1 === currentPage}
+            onClick={() => handlePageChange(number + 1)}
+          >
+            {number + 1}
+          </Pagination.Item>
+        ))}
+      </Pagination>
+
       {/* Modal para mostrar más información */}
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
@@ -186,7 +211,12 @@ function SolicitudesVoluntariado() {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" size="sm" onClick={handleCloseModal} style={{ minWidth: "70px", width: "100px", marginRight: "185px", backgroundColor: "#007abf"}}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleCloseModal}
+            style={{ minWidth: "70px", width: "100px", marginRight: "185px", backgroundColor: "#007abf" }}
+          >
             Cerrar
           </Button>
         </Modal.Footer>
@@ -209,7 +239,7 @@ function SolicitudesVoluntariado() {
               minWidth: "70px",
               fontSize: "14px",
               marginRight: "10px",
-              width: "100px"
+              width: "100px",
             }}
           >
             Cancelar
@@ -222,7 +252,7 @@ function SolicitudesVoluntariado() {
               backgroundColor: "#1e7f06",
               borderColor: "#28A745",
               fontSize: "14px",
-              width: "100px"
+              width: "100px",
             }}
           >
             Confirmar

@@ -57,6 +57,27 @@ const Desarrolladores = () => {
       >
         Equipo de Desarrolladores
       </h2>
+
+       {/* Nuevo recuadro para el texto */}
+       <div
+        style={{
+          backgroundColor: "#F9F7ED",
+          color: "#ffffff",
+          padding: "15px",
+          borderRadius: "8px",
+          marginBottom: "20px",
+          textAlign: "center",
+        }}
+      >
+        <p style={{ margin: 0,  fontWeight: "bold", fontSize: "20px" }}>
+        Este proyecto fue desarrollado por estudiantes de la Facultad de Ingeniería de la Universidad Mesoamericana, sede Quetzaltenango, 
+        como parte de los requisitos del Proyecto de Carrera para la obtención del título de Ingeniería en Sistemas, Informática y Ciencias de la Computación. 
+        Cada integrante del equipo contribuyó con sus conocimientos y habilidades técnicas, abarcando áreas como diseño de bases de datos,
+        desarrollo backend y frontend, así como gestión de seguridad informática, demostrando un compromiso con la excelencia académica y profesional.
+        </p>
+      </div>
+
+      
       <Row>
         {developers.map((developer, index) => (
           <Col key={index} md={6} lg={4} className="mb-4">

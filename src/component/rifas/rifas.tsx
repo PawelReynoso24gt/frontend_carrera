@@ -321,7 +321,8 @@ function Rifas() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
@@ -335,7 +336,7 @@ function Rifas() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {currentRifas.map((rifa) => (
               <tr key={rifa.idRifa}>
                 <td>{rifa.idRifa}</td>

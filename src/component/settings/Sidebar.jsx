@@ -78,7 +78,7 @@ function Sidebar() {
             </span>
             <span className="crancy-psidebar__title">Payment Method</span>
           </Link>*/}
-          <Link
+        {/*  <Link
             className={`list-group-item ${
               lastPath === "notification-setting" ? "active" : ""
             }`}
@@ -111,7 +111,7 @@ function Sidebar() {
               </svg>
             </span>
             <span className="crancy-psidebar__title">Notificaciones</span>
-          </Link>
+          </Link>*/}
           {/*<Link
             className={`list-group-item ${
               lastPath === "login-activity" ? "active" : ""

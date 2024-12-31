@@ -278,10 +278,10 @@ function CategoriasHorarios() {
         <div className="d-flex justify-content-start align-items-center mb-3">
           <Button
             style={{
-              backgroundColor: "#743D90",
+              backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
-              width: "130px",
+              width: "180px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
@@ -296,7 +296,7 @@ function CategoriasHorarios() {
           </Button>
           <Button
             style={{
-              backgroundColor: "#007AC3",
+              backgroundColor: "#009B85",
               borderColor: "#007AC3",
               padding: "5px 10px",
               width: "100px",
@@ -310,7 +310,7 @@ function CategoriasHorarios() {
           </Button>
           <Button
             style={{
-              backgroundColor: "#009B85",
+              backgroundColor: "#bf2200",
               borderColor: "#007AC3",
               padding: "5px 10px",
               width: "100px",
@@ -341,7 +341,8 @@ function CategoriasHorarios() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >

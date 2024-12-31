@@ -157,7 +157,7 @@ function HorariosComponent() {
         <div className="d-flex justify-content-start mb-3">
           <Button
             style={{
-              backgroundColor: "#743D90",
+              backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
               width: "180px",
@@ -175,7 +175,7 @@ function HorariosComponent() {
           </Button>
           <Button
             style={{
-              backgroundColor: "#007AC3",
+              backgroundColor: "#009B85",
               borderColor: "#007AC3",
               padding: "5px 10px",
               width: "100px",
@@ -189,7 +189,7 @@ function HorariosComponent() {
           </Button>
           <Button
             style={{
-              backgroundColor: "#009B85",
+              backgroundColor: "#bf2200",
               borderColor: "#007AC3",
               padding: "5px 10px",
               width: "100px",
@@ -212,8 +212,15 @@ function HorariosComponent() {
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover responsive>
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+        <Table striped bordered hover responsive
+         style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "20px",
+          overflow: "hidden",
+          marginTop: "20px",
+        }}>
+          <thead 
+          style={{ backgroundColor: "#007AC3", color: "#fff"  }}>
             <tr>
               <th style={{ textAlign: "center" }}>ID</th>
               <th style={{ textAlign: "center" }}>Horario Inicio</th>
