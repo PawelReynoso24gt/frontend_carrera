@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import bg from "../../assets/img/credential-bg.svg";
+import bg from "../../assets/img/BannerAYUVILOGIN.png";
 import logoW from "../../assets/img/logo-white.png";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -38,20 +38,20 @@ function LoginLayout() {
   };
 
   return (
-    <div className="body-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div className="body-bg" style={{  display: "flex", alignItems: "center", justifyContent: "center" }}>
       <section
         className="crancy-wc crancy-wc__full crancy-bg-cover"
-        style={{ backgroundImage: `url(${bg})`, width: "100%", height: "100%" }}
+        style={{ backgroundImage: `url(${bg})`, width: "100%", height: "100vh", backgroundSize: "cover"}}
       >
-        <div className="container" style={{ maxWidth: "400px", padding: "40px", backgroundColor: "rgba(255, 255, 255, 0.95)", borderRadius: "16px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
+        <div className="container" style={{ maxWidth: "450px", padding: "80px", backgroundColor: "#D5F8FB", borderRadius: "16px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)", marginTop: "350px" }}>
           <div className="text-center mb-4">
-            <img src={logoW} alt="Logo" style={{ width: "150px", marginBottom: "20px" }} />
+            
             <h4 style={{ color: "#333", fontWeight: "bold" }}>Iniciar Sesión</h4>
           </div>
           {/* Formulario de Inicio de Sesión */}
-          <form onSubmit={handleLogin}>
-            <div className="form-group">
-              <label htmlFor="usuario" style={{ color: "#333", fontWeight: "bold" }}>Usuario</label>
+          <form onSubmit={handleLogin} >
+            <div className="form-group" >
+              <label htmlFor="usuario" style={{ color: "#333", fontWeight: "bold", fontSize: "20px" }}>Usuario</label>
               <input
                 type="text"
                 className="form-control"
@@ -64,7 +64,7 @@ function LoginLayout() {
               />
             </div>
             <div className="form-group mt-3">
-              <label htmlFor="contrasenia" style={{ color: "#333", fontWeight: "bold" }}>Contraseña</label>
+              <label htmlFor="contrasenia" style={{ color: "#333", fontWeight: "bold", fontSize: "20px" }}>Contraseña</label>
               <span
                 onClick={togglePasswordVisibility}
                 style={{
