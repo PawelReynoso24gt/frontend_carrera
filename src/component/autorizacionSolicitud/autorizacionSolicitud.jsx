@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Modal, Card, Row, Col, Pagination } from "react-bootstrap";
 
+const formatDate = (date) => {
+  const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+  return new Date(date).toLocaleDateString("es-ES", options);
+};
+
 function SolicitudesVoluntariado() {
   const [aspirantes, setAspirantes] = useState([]);
   const [personas, setPersonas] = useState([]);
@@ -104,7 +109,7 @@ function SolicitudesVoluntariado() {
               <Card.Body style={{ position: "relative", paddingBottom: "40px" }}>
                 <Card.Title>Aspirante ID: {aspirante.idAspirante}</Card.Title>
                 <Card.Text>Estado: {aspirante.estado === 1 ? "Activo" : "Inactivo"}</Card.Text>
-                <Card.Text>Fecha de Registro: {aspirante.fechaRegistro}</Card.Text>
+                <Card.Text>Fecha de Registro: {formatDate(aspirante.fechaRegistro)}</Card.Text>
                 <div style={{ display: "flex", gap: "5px", justifyContent: "center" }}>
                   <Button
                     variant="success"
@@ -169,7 +174,7 @@ function SolicitudesVoluntariado() {
               <p style={{ color: "#000000" }}><strong>Teléfono:</strong> {selectedPersona.telefono}</p>
               <p style={{ color: "#000000" }}><strong>Domicilio:</strong> {selectedPersona.domicilio}</p>
               <p style={{ color: "#000000" }}><strong>CUI:</strong> {selectedPersona.CUI}</p>
-              <p style={{ color: "#000000" }}><strong>Fecha de Nacimiento:</strong> {selectedPersona.fechaNacimiento}</p>
+              <p style={{ color: "#000000" }}><strong>Fecha de Nacimiento:</strong> {formatDate(selectedPersona.fechaNacimiento)}</p>
               <p style={{ color: "#000000" }}><strong>Estado:</strong> {selectedPersona.estado === 1 ? "Activo" : "Inactivo"}</p>
             </>
           ) : (
