@@ -574,7 +574,9 @@ const handleSelectVoluntarioGlobal = (id) => {
                 </tr>
             </thead>
             <tbody>
-                {currentVentas.map((venta) => (
+            {currentVentas.length > 0 ? (
+            currentVentas.map((venta) => {
+              return (
                 <tr key={venta.idVenta}>
                     <td>{venta.idVenta}</td>
                     <td>{venta.fechaVenta}</td>
@@ -583,26 +585,49 @@ const handleSelectVoluntarioGlobal = (id) => {
                     <td>{venta.estado === 1 ? "Activo" : "Inactivo"}</td>
                     <td>
                     <FaEye
-                        style={{ cursor: "pointer", marginRight: "10px", color: "#007AC3" }}
+                         style={{
+                            color: "#007AC3",
+                            cursor: "pointer",
+                            marginRight: "10px",
+                            fontSize: "20px",
+                          }}
                         title="Ver Detalle"
                         onClick={() => handleViewDetails(venta.idVenta)}
                     />
                     {venta.estado ? (
                         <FaToggleOn
-                        style={{ cursor: "pointer", color: "#30c10c" }}
+                        style={{
+                            color: "#30c10c",
+                            cursor: "pointer",
+                            marginLeft: "10px",
+                            fontSize: "20px",
+                        }}
                         title="Inactivar"
                         onClick={() => toggleEstado(venta.idVenta, venta.estado)}
                         />
                     ) : (
                         <FaToggleOff
-                        style={{ cursor: "pointer", color: "#e10f0f" }}
+                        style={{
+                            color: "#e10f0f",
+                            cursor: "pointer",
+                            marginLeft: "10px",
+                            fontSize: "20px",
+                        }}
                         title="Activar"
                         onClick={() => toggleEstado(venta.idVenta, venta.estado)}
                         />
                     )}
                     </td>
                 </tr>
-                ))}
+                );
+            })
+        ) : (
+            <tr>
+            <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
+                No hay ventas disponibles.
+            </td>
+            </tr>
+        )}
             </tbody>
             </Table>
         {renderPagination()}
@@ -909,7 +934,23 @@ const handleSelectVoluntarioGlobal = (id) => {
                         }}
                     />
                     </Form.Group>
-
+                        {/* <h5>Resumen de Pago</h5>
+                        <Table>
+                            <tbody>
+                            <tr>
+                                <td><strong>Subtotal:</strong></td>
+                                <td>Q{subtotal.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Donación:</strong></td>
+                                <td>Q{(newVenta.donacion || 0).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total a Pagar:</strong></td>
+                                <td>Q{totalAPagar.toFixed(2)}</td>
+                            </tr>
+                            </tbody>
+                        </Table> */}
                     {/* Pagos */}
                     <h5>Pagos</h5>
                     <Button onClick={handleAddPago} style={{ marginBottom: "10px" }}>

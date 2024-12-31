@@ -128,6 +128,7 @@ function Menu({ toggleMenu, menu }) {
                 { link: "actividades", title: "Gestión Actividades" },
                 { link: "Materiales", title: "Gestión Materiales" },
                 { link: "asistencia_eventos", title: "Inscripciones y Asistenciass" },
+                { link: "recaudacion_eventos", title: "Gestión de Recaudación de Eventos" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-balloon" viewBox="0 0 16 16">
@@ -179,6 +180,7 @@ function Menu({ toggleMenu, menu }) {
                 { link: "rifas", title: "Gestión Rifas" },
                 { link: "talonarios", title: "Gestión Talonarios" },
                 { link: "autorizacionTalonarios", title: "Autorización de talonarios" },
+                { link: "recaudacion_rifas", title: "Gestión de Recaudación de Rifas" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-ticket-perforated" viewBox="0 0 16 16">

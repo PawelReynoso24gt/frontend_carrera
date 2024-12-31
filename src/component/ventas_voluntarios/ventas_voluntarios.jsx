@@ -53,7 +53,7 @@ function Ventas() {
 
   const fetchVentas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/ventas");
+      const response = await axios.get("http://localhost:5000/ventas/voluntarios");
       setVentas(response.data);
       setFilteredVentas(response.data);
     } catch (error) {
@@ -137,7 +137,7 @@ function Ventas() {
 
   const fetchActiveVentas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/ventas/activas");
+      const response = await axios.get("http://localhost:5000/ventas/voluntarios/activas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
     } catch (error) {
@@ -147,7 +147,7 @@ function Ventas() {
   
   const fetchInactiveVentas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/ventas/inactivas");
+      const response = await axios.get("http://localhost:5000/ventas/voluntarios/inactivas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
     } catch (error) {
@@ -465,7 +465,9 @@ function Ventas() {
             </tr>
           </thead>
           <tbody>
-            {currentVentas.map((venta) => (
+            {currentVentas.length > 0 ? (
+            currentVentas.map((venta) => {
+              return (
               <tr key={venta.idVenta}>
                 <td>{venta.idVenta}</td>
                 <td>{venta.fechaVenta}</td>
@@ -501,7 +503,14 @@ function Ventas() {
                   )}
                 </td>
               </tr>
-            ))}
+              );
+            })) : (
+              <tr>
+              <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
+                  No hay ventas disponibles.
+              </td>
+              </tr>
+          )}
           </tbody>
         </Table>
         {renderPagination()}
@@ -530,7 +539,7 @@ function Ventas() {
                                 <p><strong>Monto:</strong> Q{pago.pago || "N/A"}</p>
                                 <p><strong>Correlativo:</strong> {pago.correlativo || "N/A"}</p>
                                 <p>
-                                  <strong>Imagen:</strong>
+                                  <strong>Comprobante:</strong>
                                   {pago.imagenTransferencia === "efectivo" ? (
                                       "Efectivo"
                                   ) : (
@@ -677,7 +686,7 @@ function Ventas() {
               }}
             />
           </Form.Group>
-          <h5>Resumen de Pago</h5>
+          {/* <h5>Resumen de Pago</h5>
             <Table>
               <tbody>
                 <tr>
@@ -693,7 +702,7 @@ function Ventas() {
                   <td>Q{totalAPagar.toFixed(2)}</td>
                 </tr>
               </tbody>
-            </Table>
+            </Table> */}
           <h5>Pagos</h5>
             {/* Botones para agregar pagos rápidamente */}
             <Button onClick={handleAddPago} style={{ marginRight: "10px" }}>

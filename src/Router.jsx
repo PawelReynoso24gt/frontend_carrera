@@ -81,6 +81,8 @@ import Desarrolladores from "./pages/desarrolladores/desarrolladores";
 import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 import VentasVoluntarios from "./pages/ventas_voluntarios/ventas_voluntarios";
 import VentasStands from "./pages/ventas_stands/ventas_stands";
+import RecaudacionRifas from "./pages/recaudacion_rifas/recaudacion_rifas";
+import RecaudacionEventos from "./pages/recaudaciones_eventos/recaudaciones_eventos";
 
 
 const router = createBrowserRouter([
@@ -206,6 +208,14 @@ const router = createBrowserRouter([
       {
         path: "/rifas",
         element: <Rifas />,
+      },
+      {
+        path: "/recaudacion_rifas",
+        element: <RecaudacionRifas />,
+      },
+      {
+        path: "/recaudacion_eventos",
+        element: <RecaudacionEventos />,
       },
       {
         path: "/productos",

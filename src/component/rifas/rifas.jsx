@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 function Rifas() {
   const [rifas, setRifas] = useState([]);
@@ -14,6 +17,9 @@ function Rifas() {
     nombreRifa: "",
     descripcion: "",
     precioBoleto: "",
+    fechaInicio: "",
+    fechaFin: "",
+    ventaTotal: "",
     idSede: "",
     estado: 1,
   });
@@ -29,6 +35,17 @@ function Rifas() {
     fetchRifas();
     fetchSedes();
   }, []);
+
+  // Obtener el idPersona desde localStorage
+      const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
+  
+      if (!idSede) {
+        setMensaje(
+          "No se encontró el ID de la sede en el almacenamiento local."
+        );
+        
+        return;
+      }
 
   const fetchRifas = async () => {
     try {
@@ -83,14 +100,27 @@ function Rifas() {
   const handleShowModal = (rifa = null) => {
     setEditingRifa(rifa);
     setNewRifa(
-      rifa || {
-        nombreRifa: "",
-        descripcion: "",
-        precioBoleto: "",
-        idSede: sedeId || "",
-        estado: 1,
-      }
-    );
+      rifa
+        ? {
+            ...rifa,
+            fechaInicio: rifa.fechaInicio
+            ? format(parseISO(rifa.fechaInicio), "yyyy-MM-dd")
+            : "",
+            fechaFin: rifa.fechaFin
+            ? format(parseISO(rifa.fechaFin), "yyyy-MM-dd")
+            : "",
+          }
+        : {
+            nombreRifa: "",
+            descripcion: "",
+            precioBoleto: "",
+            fechaInicio: "",
+            fechaFin: "",
+            ventaTotal: "",
+            idSede: idSede || "",
+            estado: 1,
+          }
+    );    
     setShowModal(true);
   };
 
@@ -106,6 +136,14 @@ function Rifas() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+     // Validar las fechas
+    if (newRifa.fechaInicio && newRifa.fechaFin && new Date(newRifa.fechaInicio) > new Date(newRifa.fechaFin)) {
+      setAlertMessage("La fecha de inicio no puede ser mayor que la fecha de fin.");
+      setShowAlert(true);
+      return;
+    }
+
     try {
       const data = {
         ...newRifa,
@@ -295,8 +333,10 @@ function Rifas() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "10px",
+            overflow: "hidden",
             marginTop: "20px",
+            textAlign: "center",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
@@ -305,6 +345,9 @@ function Rifas() {
               <th>Nombre Rifa</th>
               <th>Descripción</th>
               <th>Precio del boleto</th>
+              <th>Fecha de inicio</th>
+              <th>Fecha de fin</th>
+              <th>Venta total</th>
               <th>Sede</th>
               <th>Estado</th>
               <th>Acciones</th>
@@ -317,6 +360,9 @@ function Rifas() {
                 <td>{rifa.nombreRifa}</td>
                 <td>{rifa.descripcion}</td>
                 <td>Q. {rifa.precioBoleto}</td>
+                <td>{rifa.fechaInicio ? format(parseISO(rifa.fechaInicio), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td>{rifa.fechaFin ? format(parseISO(rifa.fechaFin), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td>Q. {rifa.ventaTotal}</td>
                 <td>
                   {
                     sedes.find((sede) => sede.idSede === rifa.idSede)?.nombreSede || "Sin sede"
@@ -392,6 +438,26 @@ function Rifas() {
                   type="text"
                   name="descripcion"
                   value={newRifa.descripcion}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="fechaInicio">
+                <Form.Label>Fecha de Inicio</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="fechaInicio"
+                  value={newRifa.fechaInicio}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="fechaFin">
+                <Form.Label>Fecha de Fin</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="fechaFin"
+                  value={newRifa.fechaFin}
                   onChange={handleChange}
                   required
                 />
