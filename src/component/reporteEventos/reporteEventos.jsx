@@ -109,6 +109,7 @@ function ReporteEventos() {
             "Nombre Evento",
             "Recaudación Total",
             "Asistencia de voluntarios",
+            "Número de participantes",
             "Fecha Inicio",
             "Fecha Fin",
           ],
@@ -117,6 +118,7 @@ function ReporteEventos() {
           evento.nombreEvento,
           `Q ${evento.recaudacionTotal.toFixed(2)}`,
           evento.cantidadVoluntariosAsistieron,
+          evento.numeroPersonas,
           new Date(evento.fechaHoraInicio).toLocaleDateString("es-ES"),
           new Date(evento.fechaHoraFin).toLocaleDateString("es-ES"),
         ]),
@@ -249,6 +251,7 @@ function ReporteEventos() {
             <th>Nombre Evento</th>
             <th>Recaudación Total</th>
             <th>Cantidad Voluntarios Asistieron</th>
+            <th>Número de participantes</th>
             <th>Fecha Inicio</th>
             <th>Fecha Fin</th>
           </tr>
@@ -259,6 +262,7 @@ function ReporteEventos() {
               <td>{evento.nombreEvento}</td>
               <td>{evento.recaudacionTotal}</td>
               <td>{evento.cantidadVoluntariosAsistieron}</td>
+              <td>{evento.numeroPersonas}</td>
               <td>
                 {new Date(evento.fechaHoraInicio).toLocaleString("es-ES", {
                   timeZone: "UTC",

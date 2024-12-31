@@ -189,8 +189,8 @@ const renderPermisosPorModulo = () => {
         boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <h5 style={{ fontWeight: "bold", textAlign: "center" }}>{modulo.nombreModulo}</h5>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+      <h5 style={{ fontWeight: "bold", textAlign: "center", fontSize:"25px" }}>{modulo.nombreModulo}</h5>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize:"20px" }}>
         {assignedPermisos
           .filter((permiso) => permiso.idModulo === modulo.idModulo)
           .map((permiso) => (
@@ -200,7 +200,7 @@ const renderPermisosPorModulo = () => {
               label={permiso.nombrePermiso}
               checked={permiso.estado === 1}
               onChange={() => handleCheckboxChange(permiso.idPermiso)}
-              style={{ flex: "0 1 calc(33.333% - 10px)", textAlign: "center" }}
+              style={{ flex: "0 1 calc(25% - 10px)", textAlign: "center" }}
             />
           ))}
       </div>
@@ -290,7 +290,7 @@ const renderPermisosPorModulo = () => {
       </div>
 
       {/* Modal para gestionar permisos */}
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={handleCloseModal} size="xl">
         <Modal.Header closeButton>
           <Modal.Title>Permisos para el Rol: {selectedRole?.roles}</Modal.Title>
         </Modal.Header>
