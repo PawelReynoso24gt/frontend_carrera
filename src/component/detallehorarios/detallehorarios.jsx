@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from 'react-bootstrap';
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function DetalleHorariosComponent() {
   const [detalles, setDetalles] = useState([]);
@@ -11,6 +12,10 @@ function DetalleHorariosComponent() {
   const [alertMessage, setAlertMessage] = useState('');
   const [filter, setFilter] = useState('activos');
   const [categorias, setCategorias] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredDetalleHorarios, setFilteredDetalleHorarios] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const fetchCategorias = async () => {
     try {
@@ -27,13 +32,14 @@ function DetalleHorariosComponent() {
   useEffect(() => {
     1,
       fetchCategorias();
+    fetchActiveDetalles();
   }, []);
 
   const fetchActiveDetalles = async () => {
     try {
       const response = await axios.get('http://localhost:5000/detalle_horarios/activos');
       setDetalles(response.data);
-      setFilter('activos');
+      setFilteredDetalleHorarios(response.data);
     } catch (error) {
       console.error('Error fetching active detalles:', error);
     }
@@ -41,11 +47,11 @@ function DetalleHorariosComponent() {
 
   const fetchInactiveDetalles = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/detalle_horarios', {
+      const response = await axios.get('http://localhost:5000/detalle_horarios/inactivos', {
         params: { estado: 0 }
       });
       setDetalles(response.data.filter(detalle => detalle.estado === 0));
-      setFilter('inactivos');
+      setFilteredDetalleHorarios(response.data);
     } catch (error) {
       console.error('Error fetching inactive detalles:', error);
     }
@@ -97,6 +103,84 @@ function DetalleHorariosComponent() {
     }
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    // Filtrar los datos por cantidadPersonas
+    const filtered = detalles.filter((detalle) => {
+      const cantidadPersonas = detalle.cantidadPersonas?.toString().toLowerCase() || "";
+      return cantidadPersonas.includes(value);
+    });
+
+    setFilteredDetalleHorarios(filtered);
+    setCurrentPage(1);
+  };
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentDetalleHorarios = filteredDetalleHorarios.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(filteredDetalleHorarios.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -116,6 +200,14 @@ function DetalleHorariosComponent() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar detalle por categoria..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
         <Button
           style={{
             backgroundColor: "#007abf",
@@ -192,7 +284,7 @@ function DetalleHorariosComponent() {
             </tr>
           </thead>
           <tbody style={{ textAlign: "center" }}>
-            {detalles.map((detalle) => (
+            {currentDetalleHorarios.map((detalle) => (
               <tr key={detalle.idDetalleHorario}>
                 <td>{detalle.idDetalleHorario}</td>
                 <td>{detalle.cantidadPersonas}</td>
@@ -200,38 +292,46 @@ function DetalleHorariosComponent() {
                 <td>{detalle.categoriaHorario?.categoria || 'Sin categoría'}</td> {/* Mostrar nombre */}
                 <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(detalle)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: detalle.estado ? "#6c757d" : "#28a745",
-                      borderColor: detalle.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado)}
-                  >
-                    {detalle.estado ? "Desactivar" : "Activar"}
-                  </Button>
+                  />
+                  {detalle.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
+
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
