@@ -10,8 +10,23 @@ function DetalleHorariosComponent() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [filter, setFilter] = useState('activos');
+  const [categorias, setCategorias] = useState([]);
 
-  useEffect(() => { 1
+  const fetchCategorias = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/categoriaHorarios');
+      //console.log('Response de categorías:', response.data); // Depuración
+      const data = Array.isArray(response.data) ? response.data : Object.values(response.data); // Si es objeto, convierte en array
+      setCategorias(data);
+    } catch (error) {
+      console.error('Error fetching categorias:', error);
+      setCategorias([]); // Manejo de errores: asegura un array vacío
+    }
+  };
+
+  useEffect(() => {
+    1,
+      fetchCategorias();
   }, []);
 
   const fetchActiveDetalles = async () => {
@@ -182,7 +197,7 @@ function DetalleHorariosComponent() {
                 <td>{detalle.idDetalleHorario}</td>
                 <td>{detalle.cantidadPersonas}</td>
                 <td>{detalle.idHorario}</td>
-                <td>{detalle.idCategoriaHorario}</td>
+                <td>{detalle.categoriaHorario?.categoria || 'Sin categoría'}</td> {/* Mostrar nombre */}
                 <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
                 <td>
                   <Button
@@ -254,16 +269,22 @@ function DetalleHorariosComponent() {
                 />
               </Form.Group>
               <Form.Group controlId="idCategoriaHorario">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Categoría Horario
-                </Form.Label>
+                <Form.Label>Categoría Horario</Form.Label>
                 <Form.Control
-                  type="number"
+                  as="select"
                   name="idCategoriaHorario"
                   value={newDetalle.idCategoriaHorario}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Seleccione una categoría</option>
+                  {Array.isArray(categorias) &&
+                    categorias.map((categoria) => (
+                      <option key={categoria.idCategoriaHorario} value={categoria.idCategoriaHorario}>
+                        {categoria.categoria}
+                      </option>
+                    ))}
+                </Form.Control>
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
