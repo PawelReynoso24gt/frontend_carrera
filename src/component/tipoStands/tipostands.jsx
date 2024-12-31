@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function TipoStandsComponent() {
   const [tipoStands, setTipoStands] = useState([]);
@@ -167,7 +168,7 @@ function TipoStandsComponent() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff",  textAlign: "center"  }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Tipo</th>
@@ -184,33 +185,39 @@ function TipoStandsComponent() {
                 <td>{tipoStand.descripcion}</td>
                 <td>{tipoStand.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(tipoStand)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: tipoStand.estado ? "#6c757d" : "#28a745",
-                      borderColor: tipoStand.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado)}
-                  >
-                    {tipoStand.estado ? "Desactivar" : "Activar"}
-                  </Button>
+                  />
+                  {tipoStand.estado === 1 ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
