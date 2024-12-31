@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Talonarios() {
   const [talonarios, setTalonarios] = useState([]);
@@ -265,33 +266,39 @@ function Talonarios() {
                 </td>
                 <td>{talonario.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(talonario)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
+                  />
+                  {talonario.estado ? (
+                  <FaToggleOn
                     style={{
-                      backgroundColor: talonario.estado ? "#6c757d" : "#28a745",
-                      borderColor: talonario.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#30c10c",
+                      cursor: "pointer",
+                      marginLeft: "10px",
+                      fontSize: "20px",
+                  }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(talonario.idTalonario, talonario.estado)}
+                   />
+                ) : (
+                 <FaToggleOff
+                   style={{
+                      color: "#e10f0f",
+                      cursor: "pointer",
+                      marginLeft: "10px",
+                      fontSize: "20px",
                     }}
-                    onClick={() => toggleEstado(talonario.idTalonario, talonario.estado)}
-                  >
-                    {talonario.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                      title="Activar"
+                      onClick={() => toggleEstado(talonario.idTalonario, talonario.estado)}
+                  />
+               )}
                 </td>
               </tr>
             ))}
