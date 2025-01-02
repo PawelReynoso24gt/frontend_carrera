@@ -3,6 +3,10 @@ import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
+const formatDate = (date) => {
+  const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+  return new Date(date).toLocaleDateString("es-ES", options);
+};
 
 function Voluntarios() {
   const [voluntarios, setVoluntarios] = useState([]);
@@ -337,8 +341,8 @@ function Voluntarios() {
                     {voluntario.codigoQR}
                   </span>
                 </td>
-                <td style={{ textAlign: "center" }}>{voluntario.fechaRegistro}</td>
-                <td style={{ textAlign: "center" }}>{voluntario.fechaSalida}</td>
+                <td style={{ textAlign: "center" }}>{formatDate(voluntario.fechaRegistro)}</td>
+                <td style={{ textAlign: "center" }}>{formatDate(voluntario.fechaSalida)}</td>
                 <td style={{ textAlign: "center" }}>
                   {personas.find((persona) => persona.idPersona === voluntario.idPersona)?.nombre ||
                     "Desconocido"}

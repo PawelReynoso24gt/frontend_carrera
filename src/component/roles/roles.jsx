@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Roles() {
   const [roles, setRoles] = useState([]);
@@ -220,40 +221,46 @@ function Roles() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {filteredRoles.map((role) => (
               <tr key={role.idRol}>
                 <td>{role.idRol}</td>
                 <td>{role.roles}</td>
                 <td>{role.estado === 1 ? "Activo" : "Inactivo"}</td>
-                <td>
-                  <Button
+                <td> 
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(role)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: role.estado ? "#6c757d" : "#28a745",
-                      borderColor: role.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
+                  />
+                  {role.estado ? (
+                  <FaToggleOn
+                  style={{
+                    color: "#30c10c",
+                    cursor: "pointer",
+                    marginLeft: "10px",
+                    fontSize: "20px",
+                  }}
+                    title="Inactivar"
                     onClick={() => toggleEstado(role.idRol, role.estado)}
-                  >
-                    {role.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                ) : (
+                  <FaToggleOff
+                    style={{
+                      color: "#e10f0f",
+                      cursor: "pointer",
+                      marginLeft: "10px",
+                      fontSize: "20px",
+                    }}
+                      title="Activar"
+                    onClick={() => toggleEstado(role.idRol, role.estado)}
+                 />
+                )}
                 </td>
               </tr>
             ))}
