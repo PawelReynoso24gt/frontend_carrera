@@ -144,8 +144,6 @@ function Menu({ toggleMenu, menu }) {
                 { link: "traslados", title: "Gestión de traslados" },
                 { link: "tipoTraslado", title: "Gestión de tipo traslado" },
                 { link: "productos", title: "Gestión Productos" },
-                { link: "Categorias", title: "Gestión de categoría productos" },
-                { link: "pedidos", title: "Gestión de pedidos" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-basket" viewBox="0 0 16 16">
