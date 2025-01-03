@@ -11,6 +11,7 @@ function ChangePassword() {
   });
 
   const [mensaje, setMensaje] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState("");
 
   // Manejar cambios en los campos del formulario
   const handleInputChange = (e) => {
@@ -19,6 +20,29 @@ function ChangePassword() {
       ...formData,
       [name]: value,
     });
+
+    if (name === "newPassword") {
+      validatePassword(value);
+    }
+  };
+
+  // Validar la fortaleza de la contraseña
+  const validatePassword = (password) => {
+    let strength = "";
+    if (password.length < 6) {
+      strength = "La contraseña es demasiado corta.";
+    } else if (!/[A-Z]/.test(password)) {
+      strength = "La contraseña debe contener al menos una letra mayúscula.";
+    } else if (!/[a-z]/.test(password)) {
+      strength = "La contraseña debe contener al menos una letra minúscula.";
+    } else if (!/[0-9]/.test(password)) {
+      strength = "La contraseña debe contener al menos un número.";
+    } else if (!/[!@#$%^&*]/.test(password)) {
+      strength = "La contraseña debe contener al menos un carácter especial.";
+    } else {
+      strength = "La contraseña es fuerte.";
+    }
+    setPasswordStrength(strength);
   };
 
   // Manejar el envío del formulario
@@ -109,6 +133,7 @@ function ChangePassword() {
                     onChange={handleInputChange}
                   />
                 </div>
+                {passwordStrength && <p style={{ color: passwordStrength === "La contraseña es fuerte." ? "green" : "red" }}>{passwordStrength}</p>}
               </div>
               <div className="form-group">
                 <label className="crancy-wc__form-label">Confirmar contraseña</label>
