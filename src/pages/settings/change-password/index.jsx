@@ -15,6 +15,7 @@ function ChangePassword() {
 
   const [mensaje, setMensaje] = useState("");
   const [passwordStrength, setPasswordStrength] = useState("");
+  const [passwordMatch, setPasswordMatch] = useState("");
   const [showPassword, setShowPassword] = useState({
     currentPassword: false,
     newPassword: false,
@@ -24,20 +25,25 @@ function ChangePassword() {
   // Manejar cambios en los campos del formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
+    const updatedFormData = {
       ...formData,
       [name]: value,
-    });
+    };
+    setFormData(updatedFormData);
 
     if (name === "newPassword") {
       validatePassword(value);
+    }
+
+    if (name === "confirmPassword" || name === "newPassword") {
+      checkPasswordMatch(updatedFormData.newPassword, updatedFormData.confirmPassword);
     }
   };
 
   // Validar la fortaleza de la contraseña
   const validatePassword = (password) => {
     let strength = "";
-    if (password.length < 6) {
+    if (password.length < 8) {
       strength = "La contraseña es demasiado corta.";
     } else if (!/[A-Z]/.test(password)) {
       strength = "La contraseña debe contener al menos una letra mayúscula.";
@@ -51,6 +57,19 @@ function ChangePassword() {
       strength = "La contraseña es fuerte.";
     }
     setPasswordStrength(strength);
+  };
+
+  // Verificar si las contraseñas coinciden
+  const checkPasswordMatch = (newPassword, confirmPassword) => {
+    if (newPassword && confirmPassword) {
+      if (newPassword === confirmPassword) {
+        setPasswordMatch("Las contraseñas coinciden.");
+      } else {
+        setPasswordMatch("Las contraseñas no coinciden.");
+      }
+    } else {
+      setPasswordMatch("");
+    }
   };
 
   // Alternar visibilidad de la contraseña
@@ -208,6 +227,7 @@ function ChangePassword() {
                     </span>
                   </div>
                 </div>
+                {passwordMatch && <p style={{ color: passwordMatch === "Las contraseñas coinciden." ? "green" : "red" }}>{passwordMatch}</p>}
               </div>
               <div className="crancy__item-button--group crancy__ptabs-bottom">
                 <button
