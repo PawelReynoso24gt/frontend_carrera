@@ -13,7 +13,7 @@ const Desarrolladores = () => {
     },
     {
       name: "Angely Esmeralda Thomas Cortéz",
-      role: "Diseñador UI y Desarrollador de backend y frontend  (SCRUM Master)",
+      role: "Diseñador UI, Desarrollador de backend y frontend  (SCRUM Master)",
       description:
         "Nacida en Quetzaltenango, Guatemala, el 10 de noviembre de 2004. Cuenta con pénsum cerrado de la carrera de Ingeniería en Sistemas, Informática y Ciencias de la Computación en la Universidad Mesoamericana, sede Quetzaltenango, en 2024. Además, obtuvo el título de Bachiller en Ciencias Exactas con orientación en Computación en el colegio IEA Los Altos de Quetzaltenango en 2020.",
       image: "/src/assets/img/Angely.jpeg",
@@ -21,7 +21,7 @@ const Desarrolladores = () => {
     },
     {
       name: "Pablo Daniel Vásquez Monzón",
-      role: "Administrador de seguridad y Desarrollador de backend y frontend",
+      role: "Administrador de seguridad, Desarrollador de backend y frontend",
       description:
         "Nacido en San Marcos, Guatemala el 16 de Diciembre de 2003. Actualmente cuenta con pensum cerrado de la carrera de Ingeniería en Sistemas, Informática y Ciencias de la computación en la Universidad Mesoamericana, sede Quetzaltenango, en 2024. Además obtuvo el titulo de Bachiller en computación con orientación científica en el Colegio Pre Universitario Galileo en San Marcos 2020.",
       image: "/src/assets/img/Pablo.jpeg",
@@ -57,6 +57,27 @@ const Desarrolladores = () => {
       >
         Equipo de Desarrolladores
       </h2>
+
+       {/* Nuevo recuadro para el texto */}
+       <div
+        style={{
+          backgroundColor: "#F9F7ED",
+          color: "#ffffff",
+          padding: "15px",
+          borderRadius: "8px",
+          marginBottom: "20px",
+          textAlign: "center",
+        }}
+      >
+        <p style={{ margin: 0,  fontWeight: "bold", fontSize: "20px" }}>
+        Este proyecto fue desarrollado por estudiantes de la Facultad de Ingeniería de la Universidad Mesoamericana, sede Quetzaltenango, 
+        como parte de los requisitos del Proyecto de Carrera para la obtención del título de Ingeniería en Sistemas, Informática y Ciencias de la Computación. 
+        Cada integrante del equipo contribuyó con sus conocimientos y habilidades técnicas, abarcando áreas como diseño de bases de datos,
+        desarrollo backend y frontend, así como gestión de seguridad informática, demostrando un compromiso con la excelencia académica y profesional.
+        </p>
+      </div>
+
+      
       <Row>
         {developers.map((developer, index) => (
           <Col key={index} md={6} lg={4} className="mb-4">

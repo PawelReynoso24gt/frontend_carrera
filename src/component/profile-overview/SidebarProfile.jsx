@@ -27,7 +27,7 @@ function SidebarProfile() {
         // Hacer la petición al backend
         const response = await axios.get(`http://localhost:5000/usuarios/activos`);
 
-        console.log("Usuarios activos desde la API:", response.data); // Debug
+        // console.log("Usuarios activos desde la API:", response.data); // Debug
         // Buscar el usuario logueado en los datos retornados
         const loggedUser = response.data.find((user) => user.idUsuario === idUsuario);
 

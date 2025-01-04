@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert, InputGroup, FormControl  } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
-
 
 function Municipio() {
   const [municipios, setMunicipios] = useState([]);
@@ -29,26 +28,18 @@ function Municipio() {
   const fetchMunicipios = async () => {
     try {
       const response = await axios.get("http://localhost:5000/municipios");
-      setMunicipios(response.data);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setMunicipios(data);
+      setFilteredMunicipios(data);
     } catch (error) {
       console.error("Error fetching municipios:", error);
     }
   };
 
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-
-    const filtered = municipios.filter((municipio) =>
-      municipio.includes(value)
-    );
-    setFilteredMunicipios(filtered);
-  };
-
   const fetchDepartamentos = async () => {
     try {
       const response = await axios.get("http://localhost:5000/departamentos");
-      setDepartamentos(response.data);
+      setDepartamentos(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching departamentos:", error);
     }
@@ -56,8 +47,10 @@ function Municipio() {
 
   const fetchActiveMunicipios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios/activos");
-      setMunicipios(response.data);
+      const response = await axios.get("http://localhost:5000/municipios/activas");
+      const data = Array.isArray(response.data) ? response.data : [];
+      setMunicipios(data);
+      setFilteredMunicipios(data);
     } catch (error) {
       console.error("Error fetching active municipios:", error);
     }
@@ -65,11 +58,23 @@ function Municipio() {
 
   const fetchInactiveMunicipios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios/inactivos");
-      setMunicipios(response.data);
+      const response = await axios.get("http://localhost:5000/municipios/inactivas");
+      const data = Array.isArray(response.data) ? response.data : [];
+      setMunicipios(data);
+      setFilteredMunicipios(data);
     } catch (error) {
       console.error("Error fetching inactive municipios:", error);
     }
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = municipios.filter((municipio) =>
+      municipio.municipio?.toLowerCase().includes(value)
+    );
+    setFilteredMunicipios(filtered);
   };
 
   const handleShowModal = (municipio = null) => {
@@ -134,7 +139,9 @@ function Municipio() {
   // Paginación
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentMunicipios = municipios.slice(indexOfFirstRow, indexOfLastRow);
+  const currentMunicipios = Array.isArray(filteredMunicipios)
+    ? filteredMunicipios.slice(indexOfFirstRow, indexOfLastRow)
+    : [];
 
   const totalPages = Math.ceil(municipios.length / rowsPerPage);
 
@@ -231,7 +238,7 @@ function Municipio() {
               backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
-              width: "130px",
+              width: "180px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
@@ -289,7 +296,7 @@ function Municipio() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "10px",
+            borderRadius: "20px",
             overflow: "hidden",
             marginTop: "20px",
           }}

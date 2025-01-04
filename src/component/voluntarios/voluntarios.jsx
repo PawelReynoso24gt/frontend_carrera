@@ -3,6 +3,10 @@ import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
+const formatDate = (date) => {
+  const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+  return new Date(date).toLocaleDateString("es-ES", options);
+};
 
 function Voluntarios() {
   const [voluntarios, setVoluntarios] = useState([]);
@@ -253,7 +257,7 @@ function Voluntarios() {
               backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
-              width: "130px",
+              width: "180px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
@@ -301,7 +305,7 @@ function Voluntarios() {
           {alertMessage}
         </Alert>
   
-                <Table 
+        <Table 
           striped
           bordered
           hover
@@ -309,8 +313,9 @@ function Voluntarios() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
             marginTop: "20px",
+            borderRadius: "20px",
+            overflow: "hidden",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
@@ -336,8 +341,8 @@ function Voluntarios() {
                     {voluntario.codigoQR}
                   </span>
                 </td>
-                <td style={{ textAlign: "center" }}>{voluntario.fechaRegistro}</td>
-                <td style={{ textAlign: "center" }}>{voluntario.fechaSalida}</td>
+                <td style={{ textAlign: "center" }}>{formatDate(voluntario.fechaRegistro)}</td>
+                <td style={{ textAlign: "center" }}>{formatDate(voluntario.fechaSalida)}</td>
                 <td style={{ textAlign: "center" }}>
                   {personas.find((persona) => persona.idPersona === voluntario.idPersona)?.nombre ||
                     "Desconocido"}

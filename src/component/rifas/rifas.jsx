@@ -353,7 +353,7 @@ function Rifas() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {currentRifas.map((rifa) => (
               <tr key={rifa.idRifa}>
                 <td>{rifa.idRifa}</td>

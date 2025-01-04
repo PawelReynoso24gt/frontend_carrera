@@ -61,12 +61,12 @@ function TopSeller() {
   };
 
   return (
-    <div className="col-xl-12 col-lg-6 col-md-6 col-12 crancy-sidebar__widget">
-      <div className="crancy-sidebar__single">
+    <div className="col-xl-12 col-lg-6 col-md-6 col-12 crancy-sidebar__widget" >
+      <div className="crancy-sidebar__single" style={{ backgroundColor: "#D9F5ED" }}>
         <div className="crancy-sidebar__heading">
-          <h4 className="crancy-sidebar__title">Top Empleados</h4>
+          <h4 className="crancy-sidebar__title" >Top Empleados</h4>
         </div>
-        <div className="crancy-sidebar__creators">
+        <div className="crancy-sidebar__creators" >
           <ul className="crancy-sidebar__creatorlist crancy-sidebar__creatorlist--sellers">
             {empleados.map((empleado, index) => (
               <li key={empleado.idEmpleado}>

@@ -185,7 +185,7 @@ function CategoriaBitacoras() {
             backgroundColor: "#007abf",
             borderColor: "#007AC3",
             padding: "5px 10px",
-            width: "130px",
+            width: "180px",
             fontWeight: "bold",
             color: "#fff",
           }}
@@ -212,7 +212,8 @@ function CategoriaBitacoras() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
@@ -223,7 +224,7 @@ function CategoriaBitacoras() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {currentCategorias.map((categoria) => (
               <tr key={categoria.idCategoriaBitacora}>
                 <td>{categoria.idCategoriaBitacora}</td>

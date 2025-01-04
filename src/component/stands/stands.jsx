@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Stand() {
   const [stands, setStands] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingStand, setEditingStand] = useState(null);
@@ -54,8 +55,15 @@ function Stand() {
     }
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+  };
   
-
+  const filteredStands = stands.filter((stand) =>
+    stand.nombreStand?.toLowerCase().includes(searchTerm)
+  );
+  
   const handleShowModal = (stand = null) => {
     setEditingStand(stand);
     setNewStand(
@@ -204,6 +212,8 @@ const fetchInactiveStands = async () => {
       </a>
     </div>
   );
+  
+  const currentFilteredStands = filteredStands.slice(indexOfFirstRow, indexOfLastRow);
 
   return (
     <>
@@ -214,6 +224,15 @@ const fetchInactiveStands = async () => {
           </h3>
         </div>
       </div>
+
+      {/* Barra de búsqueda */}
+      <InputGroup className="mb-3">
+        <FormControl
+          placeholder="Buscar stand..."
+          value={searchTerm}
+          onChange={handleSearch}
+        />
+      </InputGroup>
 
       <div
         className="container mt-4"
@@ -287,7 +306,7 @@ const fetchInactiveStands = async () => {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "10px",
+            borderRadius: "20px",
             overflow: "hidden",
             marginTop: "20px",
           }}
@@ -303,8 +322,9 @@ const fetchInactiveStands = async () => {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {currentStands.map((stand) => (
+          
+          <tbody style={{ textAlign: "center" }}>
+            {currentFilteredStands.map((stand) => (
               <tr key={stand.idStand}>
                 <td>{stand.idStand}</td>
                 <td>{stand.nombreStand}</td>

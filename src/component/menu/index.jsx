@@ -18,11 +18,11 @@ function Menu({ toggleMenu, menu }) {
     setDropdown(name === dropdown ? "" : name);
   };
   return (
-    <div className={`crancy-smenu ${menu && "crancy-close"}`} id="CrancyMenu">
+    <div className={`crancy-smenu ${menu && "crancy-close"}`} id="CrancyMenu" >
       {/* <!-- Admin Menu --> */}
       <div className={`admin-menu ${dropdown ? "no-overflow" : ""}`}>
         {/* <!-- Logo --> */}
-        <div className="logo crancy-sidebar-padding pd-right-0">  {/* color aq */}
+        <div className="logo crancy-sidebar-padding pd-right-0" >  {/* color aq */}
           <Link className="crancy-logo" to="/paginaPrincipal">
             {/* <!-- Logo for Default --> */}
             <img className="crancy-logo__main" src={logo} alt="#"  style={{ width: "250px", height: "auto" }} />
@@ -145,8 +145,6 @@ function Menu({ toggleMenu, menu }) {
                 { link: "traslados", title: "Gestión de traslados" },
                 { link: "tipoTraslado", title: "Gestión de tipo traslado" },
                 { link: "productos", title: "Gestión Productos" },
-                { link: "Categorias", title: "Gestión de categoría productos" },
-                { link: "pedidos", title: "Gestión de pedidos" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-basket" viewBox="0 0 16 16">
@@ -215,6 +213,11 @@ function Menu({ toggleMenu, menu }) {
               setDropdown={handleDropdown}
               options={[
                 { link: "reporteProblemas", title: "Reporte de problemas" },
+                { link: "reporteEventos", title: "Reporte de eventos" },
+                { link: "reporteStands", title: "Reporte de stands" },
+                { link: "reporteMercanciaVoluntarios", title: "Reporte de mercancia de voluntarios" },
+                { link: "reporteAspirantes", title: "Reporte de aspirantes" },
+                { link: "reporteRifas", title: "Reporte de rifas" },
                 // aqui colocar reportes
               ]}
               img={

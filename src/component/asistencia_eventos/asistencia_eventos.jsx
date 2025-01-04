@@ -101,8 +101,8 @@ function EventosActivos() {
   };
 
   return (
-    <Container className="mt-5">
-      <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>
+    <Container className="mt-5" style={{ backgroundColor: "#CEECF2" }}>
+      <h2 className="text-center mb-4" style={{ fontWeight: "bold"}}>
         Eventos Activos
       </h2>
       <Row>
@@ -127,6 +127,15 @@ function EventosActivos() {
                   <Button
                     variant="primary"
                     onClick={() => handleShowInscripciones(evento.idEvento)}
+                    style={{
+                      backgroundColor: "#007abf",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "180px",
+                      marginRight: "10px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
                   >
                     Ver Inscripciones
                   </Button>

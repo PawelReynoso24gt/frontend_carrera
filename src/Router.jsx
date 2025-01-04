@@ -79,6 +79,11 @@ import ReporteProblemas from "./pages/reporteProblemas/reporteProblemas";
 import SoporteSituaciones from "./pages/soporteSituaciones/soporteSituaciones";
 import Desarrolladores from "./pages/desarrolladores/desarrolladores";
 import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
+import ReporteEventos from "./pages/reporteEventos/reporteEventos";
+import ReporteStands from "./pages/reporteStands/reporteStands";
+import ReporteMercanciaVoluntariosPage from "./pages/reporteMercanciaVoluntarios/reporteMercanciaVoluntarios";
+import ReporteAspirantesPage from "./pages/reporteAspirantes/reporteAspirantes";
+import ReporteRifasPage from "./pages/reporteRifas/reporteRifas"
 import VentasVoluntarios from "./pages/ventas_voluntarios/ventas_voluntarios";
 import VentasStands from "./pages/ventas_stands/ventas_stands";
 import RecaudacionRifas from "./pages/recaudacion_rifas/recaudacion_rifas";
@@ -332,6 +337,26 @@ const router = createBrowserRouter([
       {
         path: "/reporteProblemas",
         element: <ReporteProblemas/>,
+      },
+      {
+        path: "/reporteEventos",
+        element: <ReporteEventos/>,
+      },
+      {
+        path: "/reporteStands",
+        element: <ReporteStands/>,
+      },
+      {
+        path: "/reporteMercanciaVoluntarios",
+        element: <ReporteMercanciaVoluntariosPage/>,
+      },
+      {
+        path: "/reporteAspirantes",
+        element: <ReporteAspirantesPage/>,
+      },
+      {
+        path: "/reporteRifas",
+        element: <ReporteRifasPage/>,
       },
       {
         path: "/gallery",

@@ -12,6 +12,8 @@ function UsuariosAdminComponent() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showAlert, setShowAlert] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [alertMessage, setAlertMessage] = useState('');
   const [filter, setFilter] = useState('activos');
   const [searchTerm, setSearchTerm] = useState('');
@@ -134,6 +136,71 @@ function UsuariosAdminComponent() {
     }
   };
 
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentUsuarios = filteredUsuarios.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(filteredUsuarios.length / rowsPerPage);
+
+   const renderPagination = () => (
+      <div className="d-flex justify-content-between align-items-center mt-3">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+          }}
+          style={{
+            color: currentPage === 1 ? "gray" : "#007AC3",
+            cursor: currentPage === 1 ? "default" : "pointer",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
+          Anterior
+        </a>
+  
+        <div className="d-flex align-items-center">
+          <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+          <Form.Control
+            as="select"
+            value={rowsPerPage}
+            onChange={(e) => {
+              setRowsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            style={{
+              width: "100px",
+              height: "40px",
+            }}
+          >
+            {[5, 10, 20, 50].map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </Form.Control>
+        </div>
+  
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+          }}
+          style={{
+            color: currentPage === totalPages ? "gray" : "#007AC3",
+            cursor: currentPage === totalPages ? "default" : "pointer",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
+          Siguiente
+        </a>
+      </div>
+    );
+  
+
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -155,7 +222,7 @@ function UsuariosAdminComponent() {
       >
         <Button
           style={{
-            backgroundColor: "#743D90",
+            backgroundColor: "#007abf",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "180px",
@@ -169,7 +236,7 @@ function UsuariosAdminComponent() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#007AC3",
+            backgroundColor: "#009B85",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -183,7 +250,7 @@ function UsuariosAdminComponent() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#009B85",
+            backgroundColor: "#bf2200",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -222,8 +289,9 @@ function UsuariosAdminComponent() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
             marginTop: "20px",
+            borderRadius: "20px",
+            overflow: "hidden",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
@@ -236,7 +304,7 @@ function UsuariosAdminComponent() {
             </tr>
           </thead>
           <tbody>
-            {filteredUsuarios.map((usuario) => (
+            {currentUsuarios.map((usuario) => (
               <tr key={usuario.idUsuario}>
                 <td style={{textAlign : "center"}}>{usuario.idUsuario}</td>
                 <td style={{textAlign : "center"}}>{usuario.usuario}</td>
@@ -291,6 +359,7 @@ function UsuariosAdminComponent() {
             ))}
           </tbody>
         </Table>
+        {renderPagination()}
 
         {/* Modal para agregar o editar un administrador */}
 <Modal show={showModal} onHide={handleCloseModal}>

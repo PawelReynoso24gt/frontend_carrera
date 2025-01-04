@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Modal, Card, Row, Col } from "react-bootstrap";
+import { Button, Modal, Card, Row, Col, Pagination } from "react-bootstrap";
+
+const formatDate = (date) => {
+  const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+  return new Date(date).toLocaleDateString("es-ES", options);
+};
 
 function SolicitudesVoluntariado() {
   const [aspirantes, setAspirantes] = useState([]);
@@ -10,6 +15,10 @@ function SolicitudesVoluntariado() {
   const [modalContent, setModalContent] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+
+  // Estados para la paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6); // Número de elementos por página
 
   useEffect(() => {
     fetchAspirantes();
@@ -77,13 +86,21 @@ function SolicitudesVoluntariado() {
     }
   };
 
+  // Paginación
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentAspirantes = aspirantes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(aspirantes.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div className="container mt-4">
       <h3 className="text-center mb-4" style={{ fontWeight: "bold", color: "#007abf" }}>
         SOLICITUDES ENTRANTES PARA VOLUNTARIADO
       </h3>
       <Row>
-        {aspirantes.map((aspirante) => (
+        {currentAspirantes.map((aspirante) => (
           <Col key={aspirante.idAspirante} sm={12} md={6} lg={4}>
             <Card
               className="mb-3"
@@ -92,13 +109,13 @@ function SolicitudesVoluntariado() {
               <Card.Body style={{ position: "relative", paddingBottom: "40px" }}>
                 <Card.Title>Aspirante ID: {aspirante.idAspirante}</Card.Title>
                 <Card.Text>Estado: {aspirante.estado === 1 ? "Activo" : "Inactivo"}</Card.Text>
-                <Card.Text>Fecha de Registro: {aspirante.fechaRegistro}</Card.Text>
+                <Card.Text>Fecha de Registro: {formatDate(aspirante.fechaRegistro)}</Card.Text>
                 <div style={{ display: "flex", gap: "5px", justifyContent: "center" }}>
                   <Button
                     variant="success"
                     size="sm"
                     onClick={() => handleAccept(aspirante.idAspirante)}
-                    style={{ minWidth: "70px" , width: "100px"}}
+                    style={{ minWidth: "70px", width: "100px" }}
                   >
                     Aceptar
                   </Button>
@@ -106,7 +123,7 @@ function SolicitudesVoluntariado() {
                     variant="danger"
                     size="sm"
                     onClick={() => handleDeny(aspirante.idAspirante)}
-                    style={{ minWidth: "70px",  width: "100px" }}
+                    style={{ minWidth: "70px", width: "100px" }}
                   >
                     Denegar
                   </Button>
@@ -131,6 +148,19 @@ function SolicitudesVoluntariado() {
         ))}
       </Row>
 
+      {/* Barra de paginación */}
+      <Pagination className="justify-content-center mt-4">
+        {[...Array(totalPages).keys()].map((number) => (
+          <Pagination.Item
+            key={number + 1}
+            active={number + 1 === currentPage}
+            onClick={() => handlePageChange(number + 1)}
+          >
+            {number + 1}
+          </Pagination.Item>
+        ))}
+      </Pagination>
+
       {/* Modal para mostrar más información */}
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
@@ -144,7 +174,7 @@ function SolicitudesVoluntariado() {
               <p style={{ color: "#000000" }}><strong>Teléfono:</strong> {selectedPersona.telefono}</p>
               <p style={{ color: "#000000" }}><strong>Domicilio:</strong> {selectedPersona.domicilio}</p>
               <p style={{ color: "#000000" }}><strong>CUI:</strong> {selectedPersona.CUI}</p>
-              <p style={{ color: "#000000" }}><strong>Fecha de Nacimiento:</strong> {selectedPersona.fechaNacimiento}</p>
+              <p style={{ color: "#000000" }}><strong>Fecha de Nacimiento:</strong> {formatDate(selectedPersona.fechaNacimiento)}</p>
               <p style={{ color: "#000000" }}><strong>Estado:</strong> {selectedPersona.estado === 1 ? "Activo" : "Inactivo"}</p>
             </>
           ) : (
@@ -152,7 +182,12 @@ function SolicitudesVoluntariado() {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" size="sm" onClick={handleCloseModal} style={{ minWidth: "70px", width: "100px", marginRight: "185px", backgroundColor: "#007abf"}}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleCloseModal}
+            style={{ minWidth: "70px", width: "100px", marginRight: "185px", backgroundColor: "#007abf" }}
+          >
             Cerrar
           </Button>
         </Modal.Footer>
@@ -175,7 +210,7 @@ function SolicitudesVoluntariado() {
               minWidth: "70px",
               fontSize: "14px",
               marginRight: "10px",
-              width: "100px"
+              width: "100px",
             }}
           >
             Cancelar
@@ -188,7 +223,7 @@ function SolicitudesVoluntariado() {
               backgroundColor: "#1e7f06",
               borderColor: "#28A745",
               fontSize: "14px",
-              width: "100px"
+              width: "100px",
             }}
           >
             Confirmar

@@ -228,8 +228,13 @@ const renderPermisosPorModulo = () => {
           {alertMessage}
         </Alert>
 
-        <Table striped bordered hover responsive className="mt-3">
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
+        <Table striped bordered hover responsive className="mt-3 "   style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "20px",
+            overflow: "hidden",
+            marginTop: "20px",
+          }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center",  }}>
             <tr>
               <th>ID</th>
               <th>Rol</th>

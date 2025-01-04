@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Talonarios() {
   const [talonarios, setTalonarios] = useState([]);
@@ -174,10 +175,10 @@ function Talonarios() {
 
         <Button
           style={{
-            backgroundColor: "#743D90",
+            backgroundColor: "#007abf",
             borderColor: "#007AC3",
             padding: "5px 10px",
-            width: "130px",
+            width: "180px",
             marginRight: "10px",
             fontWeight: "bold",
             color: "#fff",
@@ -188,7 +189,7 @@ function Talonarios() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#007AC3",
+            backgroundColor: "#009B85",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -202,7 +203,7 @@ function Talonarios() {
         </Button>
         <Button
           style={{
-            backgroundColor: "#009B85",
+            backgroundColor: "#bf2200",
             borderColor: "#007AC3",
             padding: "5px 10px",
             width: "100px",
@@ -232,11 +233,12 @@ function Talonarios() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
+            overflow: "hidden",
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Código</th>
@@ -248,7 +250,7 @@ function Talonarios() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {filteredTalonarios.map((talonario) => (
               <tr key={talonario.idTalonario}>
                 <td>{talonario.idTalonario}</td>
@@ -264,33 +266,39 @@ function Talonarios() {
                 </td>
                 <td>{talonario.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(talonario)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
+                  />
+                  {talonario.estado ? (
+                  <FaToggleOn
                     style={{
-                      backgroundColor: talonario.estado ? "#6c757d" : "#28a745",
-                      borderColor: talonario.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#30c10c",
+                      cursor: "pointer",
+                      marginLeft: "10px",
+                      fontSize: "20px",
+                  }}
+                      title="Inactivar"
+                      onClick={() => toggleEstado(talonario.idTalonario, talonario.estado)}
+                   />
+                ) : (
+                 <FaToggleOff
+                   style={{
+                      color: "#e10f0f",
+                      cursor: "pointer",
+                      marginLeft: "10px",
+                      fontSize: "20px",
                     }}
-                    onClick={() => toggleEstado(talonario.idTalonario, talonario.estado)}
-                  >
-                    {talonario.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                      title="Activar"
+                      onClick={() => toggleEstado(talonario.idTalonario, talonario.estado)}
+                  />
+               )}
                 </td>
               </tr>
             ))}
