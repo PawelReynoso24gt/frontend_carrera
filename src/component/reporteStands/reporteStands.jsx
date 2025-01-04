@@ -198,7 +198,7 @@ function ReportePlayeras() {
     >
       <div className="row mb-3">
         <div className="col text-center">
-          <h3 style={{ fontWeight: "bold", color: "#333" }}>Reporte de Playeras por Stand</h3>
+          <h3 style={{ fontWeight: "bold", color: "#333" }}>Reporte de ventas por Stand</h3>
         </div>
       </div>
 

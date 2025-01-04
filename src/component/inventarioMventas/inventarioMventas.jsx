@@ -28,7 +28,8 @@ function DetalleStands() {
       const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
       const [permissionMessage, setPermissionMessage] = useState('');
       const [permissions, setPermissions] = useState({});
-
+      const [hasViewPermission, setHasViewPermission] = useState(false);
+      const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     if (detalleStands.length > 0 && stands.length > 0) {
@@ -45,21 +46,36 @@ function DetalleStands() {
       try {
         const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+            Authorization: `Bearer ${localStorage.getItem('token')}`, 
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission = 
+        response.data.permisos['Ver inventario de stands']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true); 
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
   
     fetchPermissions();
-    fetchDetalleStands();
     fetchProductos();
     fetchStands();
   }, []);
 
+  useEffect(() => {
+    if(isPermissionsLoaded){
+      if (hasViewPermission) {
+        fetchDetalleStands();
+      } else {
+        console.log(hasViewPermission)
+        checkPermission('Ver inventario de stands', 'No tienes permisos para ver inventario de stands');
+      }}
+  }, [isPermissionsLoaded, hasViewPermission]);
+  
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
       setPermissionMessage(message);
@@ -78,7 +94,6 @@ function DetalleStands() {
     }
   };
 
-  // Función para obtener productos
   const fetchProductos = async () => {
     try {
       const response = await axios.get("http://localhost:5000/productos");
@@ -100,9 +115,13 @@ function DetalleStands() {
 
   const fetchActiveDetalleStands = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/detalle_stands/activos");
       setDetalleStands(response.data);
       setFilteredDetalleStands(response.data);
+    } else {
+      checkPermission('Ver inventario de stands', 'No tienes permisos para ver inventario de stands')
+    }
     } catch (error) {
       console.error("Error fetching active detalle stands:", error);
     }
@@ -110,9 +129,13 @@ function DetalleStands() {
 
   const fetchInactiveDetalleStands = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
       setDetalleStands(response.data);
       setFilteredDetalleStands(response.data);
+         } else {
+      checkPermission('Ver inventario de stands', 'No tienes permisos para ver inventario de stands')
+    }
     } catch (error) {
       console.error("Error fetching inactive detalle stands:", error);
     }

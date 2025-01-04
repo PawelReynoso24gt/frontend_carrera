@@ -17,6 +17,7 @@ function PermisosRolesComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [searchTerm, setSearchTerm] = useState(""); 
 
 
   useEffect(() => {
@@ -170,15 +171,32 @@ function PermisosRolesComponent() {
     }
   };
 
+  // Filtrar permisos por nombre según el término de búsqueda
+const filteredPermisos = assignedPermisos.filter((permiso) =>
+  permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
   // Paginación
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRoles = roles.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages = Math.ceil(roles.length / rowsPerPage);
 
+
+
   // Renderizar permisos agrupados por módulo
 const renderPermisosPorModulo = () => {
-  return modulos.map((modulo) => (
+  return  modulos
+  .filter((modulo) => {
+    // Filtrar los módulos que tengan permisos que coincidan con el término de búsqueda
+    const permisosDelModulo = assignedPermisos.filter(
+      (permiso) =>
+        permiso.idModulo === modulo.idModulo &&
+        permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    return permisosDelModulo.length > 0; // Solo se renderiza el módulo si tiene permisos que coinciden
+  })
+  .map((modulo) => (
     <div
       key={modulo.idModulo}
       style={{
@@ -189,11 +207,14 @@ const renderPermisosPorModulo = () => {
         boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <h5 style={{ fontWeight: "bold", textAlign: "center", fontSize:"25px" }}>{modulo.nombreModulo}</h5>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize:"20px" }}>
+    <h5 style={{ fontWeight: "bold", textAlign: "center", fontSize:"25px" }}>{modulo.nombreModulo}</h5>
+
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "20px" }}>
         {assignedPermisos
-          .filter((permiso) => permiso.idModulo === modulo.idModulo)
-          .map((permiso) => (
+          .filter((permiso) => permiso.idModulo === modulo.idModulo) // Filtrar permisos por módulo
+          .filter((permiso) =>
+            permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase()) // Filtrar permisos por nombre
+          ) .map((permiso) => (
             <Form.Check
               key={permiso.idPermiso}
               type="checkbox"
@@ -253,6 +274,7 @@ const renderPermisosPorModulo = () => {
           {alertMessage}
         </Alert>
 
+
         <Table striped bordered hover responsive className="mt-3 "   style={{
             backgroundColor: "#ffffff",
             borderRadius: "20px",
@@ -299,7 +321,16 @@ const renderPermisosPorModulo = () => {
         <Modal.Header closeButton>
           <Modal.Title>Permisos para el Rol: {selectedRole?.roles}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>{renderPermisosPorModulo()}</Modal.Body>
+        <Modal.Body>        {/* Buscador dentro del módulo */}
+        <InputGroup className="mb-3">
+        <FormControl
+          placeholder="Buscar permisos por nombre..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)} // Actualiza el término de búsqueda
+        />
+      </InputGroup>
+{renderPermisosPorModulo()}       
+        </Modal.Body>
               <Modal.Footer style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
         <Button
           variant="secondary"

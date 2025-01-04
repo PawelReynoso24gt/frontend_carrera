@@ -24,9 +24,12 @@ function DetalleStandsVoluntarios() {
   const [isProductSearched, setIsProductSearched] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-        const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-        const [permissionMessage, setPermissionMessage] = useState('');
-        const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -37,16 +40,35 @@ function DetalleStandsVoluntarios() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission = 
+        response.data.permisos['Ver inventario de voluntarios']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true); 
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
+
+      
     };
-  
+     
+
     fetchPermissions();
-    fetchDetalleStands();
     fetchProductos();
     fetchStands();
   }, []);
+
+    useEffect(() => {
+      if(isPermissionsLoaded){
+        if (hasViewPermission) {
+          fetchDetalleStands();
+        } else {
+          console.log(hasViewPermission)
+          checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
+        }}
+    }, [isPermissionsLoaded, hasViewPermission]);
+
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -110,10 +132,13 @@ function DetalleStandsVoluntarios() {
 
   const fetchActiveDetalleStands = async () => {
     try {
-      // Obtener los detalles activos
+      let allActiveDetalleStands = [];
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/detalle_stands/activos");
-      const allActiveDetalleStands = response.data;
-  
+      allActiveDetalleStands = response.data;
+    } else {
+      checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
+    }
       // Obtener los stands
       const standsResponse = await axios.get("http://localhost:5000/stand");
       const allStands = standsResponse.data;
@@ -137,10 +162,13 @@ function DetalleStandsVoluntarios() {
 
   const fetchInactiveDetalleStands = async () => {
     try {
-      // Obtener los detalles inactivos
+      let allInactiveDetalleStands = [];
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
-      const allInactiveDetalleStands = response.data;
-  
+       allInactiveDetalleStands = response.data;
+    } else {
+      checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
+    }
       // Obtener los stands
       const standsResponse = await axios.get("http://localhost:5000/stand");
       const allStands = standsResponse.data;
