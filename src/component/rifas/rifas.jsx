@@ -148,7 +148,7 @@ function Rifas() {
       const data = {
         ...newRifa,
         estado: parseInt(newRifa.estado, 10),
-        idSede: sedeId || parseInt(newRifa.idSede, 10),
+        idSede: idSede || parseInt(newRifa.idSede, 10),
       };
 
       if (editingRifa) {

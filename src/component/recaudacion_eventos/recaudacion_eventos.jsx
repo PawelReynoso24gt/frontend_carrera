@@ -146,7 +146,7 @@ function RecaudacionesEventos() {
         try {
             const recaudacionData = {
                 ...newRecaudaciones,
-                fechaRegistro: new Date().toISOString(),
+                fechaRegistro: format(new Date(), "yyyy-MM-dd"),
             };
 
             const response = await axios.post(
