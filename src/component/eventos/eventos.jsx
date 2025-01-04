@@ -11,6 +11,7 @@ import {
   Pagination,
 } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { getUserDataFromToken } from "../../utils/jwtUtils";
 
 // Utilidad para formatear fechas
 const formatDate = (date) => {
@@ -40,7 +41,15 @@ function Eventos() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // extraer el dato para idSede
-  const sedeId = localStorage.getItem("sedeId");
+  const sedeId = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
+  
+    if (!sedeId) {
+      setMensaje(
+        "No se encontró el ID de la sede en el almacenamiento local."
+      );
+      
+      return;
+    }
 
   useEffect(() => {
     fetchEventos();
