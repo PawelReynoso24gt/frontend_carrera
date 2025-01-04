@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import profileImg from "../../assets/img/profile-single-thumb.png";
+import profileImg from "../../assets/img/withoutProfilePicture.png";
 import socialImg from "../../assets/img/social-1.png";
 import socialImg2 from "../../assets/img/social-2.png";
 import socialImg3 from "../../assets/img/social-3.png";

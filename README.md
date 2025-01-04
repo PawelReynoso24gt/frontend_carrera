@@ -34,9 +34,6 @@ Currently, two official plugins are available:
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-# DESARROLLADORES
-
-- **Angely Esmeralda Thomas Cortéz** - 202108048
-- **Pablo Daniel Vásquez Monzón** - 202108025
-- **Alejandra González Monterrosa** - 20108048 
-- **Pawel Alessandro Reynoso Marquez** - 202108006
+```bash
+npm install @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons --legacy-peer-deps
+```
