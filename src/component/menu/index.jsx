@@ -144,6 +144,8 @@ function Menu({ toggleMenu, menu }) {
               options={[
                 { link: "traslados", title: "Gestión de traslados" },
                 { link: "tipoTraslado", title: "Gestión de tipo traslado" },
+                { link: "Categorias", title: "Gestión de categoría productos" },
+                { link: "pedidos", title: "Gestión de pedidos" },
                 { link: "productos", title: "Gestión Productos" },
               ]}
               img={
@@ -161,8 +163,6 @@ function Menu({ toggleMenu, menu }) {
                 { link: "Stands", title: "Gestión Stands" },
                 { link: "tipoStands", title: "Gestión Tipo Stands" },
                 { link: "asignacionStand", title: "Asignación de Stands" },
-                { link: "Categorias", title: "Gestión de categoría productos" },
-                { link: "pedidos", title: "Gestión de pedidos" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop" viewBox="0 0 16 16">
