@@ -568,7 +568,11 @@ function Publicaciones() {
                 <td>{publicacion.nombrePublicacion}</td>
                 <td>{publicacion.descripcion}</td>     
                 <td>{publicacion.fechaPublicacion ? format(parseISO(publicacion.fechaPublicacion), "dd-MM-yyyy hh:mm a") : "Sin fecha"}</td>
-                <td>{publicacion.tipoPublicacion}</td> {/* Mostrar el tipo de publicación */}
+                <td>
+                  {publicacion.tipoPublicacion === "rifas" && "Rifas"}
+                  {publicacion.tipoPublicacion === "eventos" && "Eventos"}
+                  {publicacion.tipoPublicacion === "generales" && "Generales"}
+                </td>
                 <td>{publicacion.sede?.nombreSede || "No asignada"}</td>
                 <td>{publicacion.estado === 1 ? "Activo" : "Inactivo"}</td>          
                 <td>
