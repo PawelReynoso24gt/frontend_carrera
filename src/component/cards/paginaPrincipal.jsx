@@ -23,7 +23,7 @@ function HomePage() {
         right: "1025px", // Posición hacia la izquierda
         top: "50%",
         transform: "translateY(-50%)",
-        background: "rgba(0, 195, 255, 0.29)", // Fondo semi-transparente
+        background: "rgba(255, 255, 255, 0.35)", // Fondo semi-transparente
         color: "#fff",
         border: "none",
         borderRadius: "10px",
@@ -39,11 +39,11 @@ function HomePage() {
         transition: "background 0.3s ease, transform 0.3s ease", // Animación para el hover
       }}
       onMouseEnter={(e) => {
-        e.target.style.background = "rgba(0, 195, 255, 0.8)"; // Cambia el fondo al hacer hover
+        e.target.style.background = "rgb(255, 238, 0)"; // Cambia el fondo al hacer hover
         e.target.style.transform = "translateY(-50%) scale(1.1)"; // Aumenta ligeramente el tamaño
       }}
       onMouseLeave={(e) => {
-        e.target.style.background = "rgba(0, 195, 255, 0.29)"; // Regresa al color original
+        e.target.style.background = "rgba(255, 255, 255, 0.35)"; // Regresa al color original
         e.target.style.transform = "translateY(-50%) scale(1)"; // Regresa al tamaño original
       }}
     >
@@ -60,7 +60,7 @@ function HomePage() {
         left: "1025px", // Posición hacia la derecha
         top: "50%",
         transform: "translateY(-50%)",
-        background: "rgba(0, 195, 255, 0.29)", // Fondo semi-transparente
+        background: "rgba(255, 255, 255, 0.35)", // Fondo semi-transparente
         color: "#fff",
         border: "none",
         borderRadius: "10px",
@@ -76,11 +76,11 @@ function HomePage() {
         transition: "background 0.3s ease, transform 0.3s ease", // Animación para el hover
       }}
       onMouseEnter={(e) => {
-        e.target.style.background = "rgba(0, 195, 255, 0.8)"; // Cambia el fondo al hacer hover
+        e.target.style.background = "rgb(255, 238, 0)"; // Cambia el fondo al hacer hover
         e.target.style.transform = "translateY(-50%) scale(1.1)"; // Aumenta ligeramente el tamaño
       }}
       onMouseLeave={(e) => {
-        e.target.style.background = "rgba(0, 195, 255, 0.29)"; // Regresa al color original
+        e.target.style.background = "rgba(255, 255, 255, 0.35)"; // Regresa al color original
         e.target.style.transform = "translateY(-50%) scale(1)"; // Regresa al tamaño original
       }}
     >
@@ -127,7 +127,8 @@ function HomePage() {
 
   const styles = {
     container: {
-      background: `linear-gradient(135deg, rgb(49, 162, 228), rgb(238, 236, 125), rgb(191, 71, 228))`,
+      //background: `linear-gradient(135deg, rgb(49, 162, 228), rgb(238, 236, 125), rgb(191, 71, 228))`,
+      background: "rgb(0, 208, 255)", // celeste
       color: "#fff",
       minHeight: "100vh",
       display: "flex",
@@ -155,6 +156,7 @@ function HomePage() {
       fontWeight: "bold",
       textTransform: "uppercase",
       letterSpacing: "2px",
+      color: "#000000",
     },
     subtitle: {
       fontSize: "24px",
@@ -163,10 +165,10 @@ function HomePage() {
       color: "black",
     },
     infoBox: {
-      background: "rgba(255, 255, 255, 0.38)",
+      background: "rgb(20, 70, 140)",
       padding: "20px",
       borderRadius: "10px",
-      marginTop: "550px",
+      marginTop: "500px",
       marginBottom: "20px",
       textAlign: "center",
       width: "80%",
@@ -180,17 +182,20 @@ function HomePage() {
       fontSize: "24px",
       fontWeight: "bold",
       marginBottom: "10px",
-      color: "#000000"
+      // color: "#000000", // negro
+      color: "#ffffff", // blanco
     },
     infoDescription: {
       fontSize: "16px",
       marginBottom: "10px",
-      color: "#000000",
+      // color: "#000000", // negro
+      color: "#ffffff", // blanco
     },
     infoDate: {
       fontSize: "16px",
       fontStyle: "italic",
-      color: "#000000",
+      // color: "#000000", // negro
+      color: "#ffffff", // blanco
     },
     carouselContainer: {
       marginBottom: "100px",
