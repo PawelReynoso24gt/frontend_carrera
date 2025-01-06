@@ -6,7 +6,10 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 function HorariosComponent() {
   const [horarios, setHorarios] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [filteredHorarios, setFilteredHorarios] = useState([]);
   const [editingHorario, setEditingHorario] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [newHorario, setNewHorario] = useState({
     horarioInicio: "",
     horarioFinal: "",
@@ -134,6 +137,71 @@ function HorariosComponent() {
       console.error("Error toggling estado of horario:", error);
     }
   };
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentHorarios = filteredHorarios.slice(indexOfFirstRow, indexOfLastRow);
+  
+  const totalPages = Math.ceil(filteredHorarios.length / rowsPerPage);
+  
+    const renderPagination = () => (
+      <div className="d-flex justify-content-between align-items-center mt-3">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+          }}
+          style={{
+            color: currentPage === 1 ? "gray" : "#007AC3",
+            cursor: currentPage === 1 ? "default" : "pointer",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
+          Anterior
+        </a>
+  
+        <div className="d-flex align-items-center">
+          <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+          <Form.Control
+            as="select"
+            value={rowsPerPage}
+            onChange={(e) => {
+              setRowsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            style={{
+              width: "100px",
+              height: "40px",
+            }}
+          >
+            {[5, 10, 20, 50].map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </Form.Control>
+        </div>
+  
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+          }}
+          style={{
+            color: currentPage === totalPages ? "gray" : "#007AC3",
+            cursor: currentPage === totalPages ? "default" : "pointer",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
+          Siguiente
+        </a>
+      </div>
+    );
+
 
   return (
     <>
@@ -285,6 +353,8 @@ function HorariosComponent() {
             ))}
           </tbody>
         </Table>
+
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header

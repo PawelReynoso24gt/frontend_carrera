@@ -76,7 +76,7 @@ import AutorizacionSolicitud from "./pages/autorizacionSolicitud/autorizacionSol
 import AsignacionStands from "./pages/asignacionStand/asignacionStand";
 import AutorizacionTalonarios from "./pages/autorizacionTalonarios/autorizacionTalonarios";
 import ReporteProblemas from "./pages/reporteProblemas/reporteProblemas";
-import SoporteTecnico from "./pages/soporteTecnico/soporteTecnico";
+import SoporteSituaciones from "./pages/soporteSituaciones/soporteSituaciones";
 import Desarrolladores from "./pages/desarrolladores/desarrolladores";
 import PaginaPrincipal from "./pages/paginaPrincipal/paginaPrincipal";
 import ReporteEventos from "./pages/reporteEventos/reporteEventos";
@@ -84,6 +84,10 @@ import ReporteStands from "./pages/reporteStands/reporteStands";
 import ReporteMercanciaVoluntariosPage from "./pages/reporteMercanciaVoluntarios/reporteMercanciaVoluntarios";
 import ReporteAspirantesPage from "./pages/reporteAspirantes/reporteAspirantes";
 import ReporteRifasPage from "./pages/reporteRifas/reporteRifas"
+import VentasVoluntarios from "./pages/ventas_voluntarios/ventas_voluntarios";
+import VentasStands from "./pages/ventas_stands/ventas_stands";
+import RecaudacionRifas from "./pages/recaudacion_rifas/recaudacion_rifas";
+import RecaudacionEventos from "./pages/recaudaciones_eventos/recaudaciones_eventos";
 
 
 const router = createBrowserRouter([
@@ -183,6 +187,14 @@ const router = createBrowserRouter([
         element: <TipoPago />,
       },
       {
+        path: "/ventas_voluntarios",
+        element: <VentasVoluntarios />,
+      },
+      {
+        path: "/ventas_stands",
+        element: <VentasStands />,
+      },
+      {
         path: "/categoria_bitacoras",
         element: <CategoriaBitacoras />,
       },
@@ -201,6 +213,14 @@ const router = createBrowserRouter([
       {
         path: "/rifas",
         element: <Rifas />,
+      },
+      {
+        path: "/recaudacion_rifas",
+        element: <RecaudacionRifas />,
+      },
+      {
+        path: "/recaudacion_eventos",
+        element: <RecaudacionEventos />,
       },
       {
         path: "/productos",
@@ -311,8 +331,8 @@ const router = createBrowserRouter([
         element: <AsignacionStands/>,
       },
       {
-        path: "/soporteTecnico",
-        element: <SoporteTecnico/>,
+        path: "/soporteSituaciones",
+        element: <SoporteSituaciones/>,
       },
       {
         path: "/reporteProblemas",

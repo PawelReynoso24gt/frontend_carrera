@@ -86,7 +86,7 @@ function AutorizacionTalonarios() {
               <Card.Body>
                 <Card.Title>Solicitud ID: {solicitud.idSolicitudTalonario}</Card.Title>
                 <Card.Text>Estado: {solicitud.estado === 1 ? "Pendiente" : solicitud.estado === 2 ? "Aceptado" : "Denegado"}</Card.Text>
-                <Card.Text>Fecha de Solicitud: {solicitud.fechaSolicitud}</Card.Text>
+                <Card.Text>Fecha de Solicitud: {new Date(solicitud.fechaSolicitud).toLocaleDateString("es-ES")}</Card.Text>
                 <Card.Text>Voluntario: {solicitud.voluntario.persona.nombre}</Card.Text>
                 <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
                   {/* Mostrar botones dinámicamente según el estado */}

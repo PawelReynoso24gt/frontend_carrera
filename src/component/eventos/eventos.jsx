@@ -11,6 +11,7 @@ import {
   Pagination,
 } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { getUserDataFromToken } from "../../utils/jwtUtils";
 
 // Utilidad para formatear fechas
 const formatDate = (date) => {
@@ -38,9 +39,20 @@ function Eventos() {
   const [sedes, setSedes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+
+  // extraer el dato para idSede
+  const sedeId = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
+
+  if (!sedeId) {
+    setMensaje(
+      "No se encontró el ID de la sede en el almacenamiento local."
+    );
+
+    return;
+  }
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -55,7 +67,7 @@ function Eventos() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchEventos();
     fetchSedes();
@@ -131,7 +143,7 @@ function Eventos() {
         .toISOString()
         .slice(0, 16);
     }
-  
+
     setEditingEvento(evento);
     setNewEvento(
       evento || {
@@ -141,7 +153,7 @@ function Eventos() {
         descripcion: "",
         direccion: "",
         estado: 1,
-        idSede: "",
+        idSede: sedeId || "",
       }
     );
     setShowModal(true);
@@ -159,6 +171,10 @@ function Eventos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const data = {
+        ...newEvento,
+        idSede: sedeId || newEvento.idSede, // Priorizar el `sedeId` almacenado
+      };
       if (editingEvento) {
         await axios.put(
           `http://localhost:5000/eventos/${editingEvento.idEvento}`,
@@ -535,17 +551,17 @@ function Eventos() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

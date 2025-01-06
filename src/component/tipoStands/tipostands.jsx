@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function TipoStandsComponent() {
   const [tipoStands, setTipoStands] = useState([]);
@@ -198,7 +199,7 @@ function TipoStandsComponent() {
             marginTop: "20px",
           }}
         >
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff",  textAlign: "center"  }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
               <th>Tipo</th>
@@ -215,46 +216,51 @@ function TipoStandsComponent() {
                 <td>{tipoStand.descripcion}</td>
                 <td>{tipoStand.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => {
                       if (checkPermission('Editar tipo stand', 'No tienes permisos para editar tipo stand')) {
                         handleShowModal(tipoStand);
                       }
                     }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: tipoStand.estado ? "#6c757d" : "#28a745",
-                      borderColor: tipoStand.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => {
-                      const actionPermission = tipoStand.estado ? 'Desactivar tipo stand' : 'Activar tipo stand';
-                      const actionMessage = tipoStand.estado
-                        ? 'No tienes permisos para desactivar tipo stand'
-                        : 'No tienes permisos para activar tipo stand';
-  
-                      if (checkPermission(actionPermission, actionMessage)) {
-                        toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado);
-                      }
-                    }}
-                  >
-                    {tipoStand.estado ? "Desactivar" : "Activar"}
-                  </Button>
+                  />
+                  {tipoStand.estado === 1 ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => {
+                        if (checkPermission('Desactivar tipo stand', 'No tienes permisos para desactivar tipo stand')) {
+                          toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => {
+                        if (checkPermission('Activar tipo stand', 'No tienes permisos para activar tipo stand')) {
+                          toggleTipoStandEstado(tipoStand.idTipoStands, tipoStand.estado);
+                        }
+                      }}
+                    />
+                  )}
                 </td>
               </tr>
             ))}

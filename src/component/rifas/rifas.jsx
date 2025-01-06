@@ -1,21 +1,27 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
-function Comisiones() {
-  const [comisiones, setComisiones] = useState([]);
-  const [filteredComisiones, setFilteredComisiones] = useState([]);
+function Rifas() {
+  const [rifas, setRifas] = useState([]);
+  const [sedes, setSedes] = useState([]);
+  const [filteredRifas, setFilteredRifas] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [eventos, setEventos] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingComision, setEditingComision] = useState(null);
-  const [newComision, setNewComision] = useState({
-    comision: "",
+  const [editingRifa, setEditingRifa] = useState(null);
+  const [newRifa, setNewRifa] = useState({
+    nombreRifa: "",
     descripcion: "",
+    precioBoleto: "",
+    fechaInicio: "",
+    fechaFin: "",
+    ventaTotal: "",
+    idSede: "",
     estado: 1,
-    idEvento: "",
-    idDetalleHorario: "",
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -24,6 +30,10 @@ function Comisiones() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+
+
+  // extraer el dato para idSede
+  const sedeId = localStorage.getItem("sedeId");
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -38,10 +48,10 @@ function Comisiones() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchComisiones();
-    fetchEventos();
+    fetchRifas();
+    fetchSedes();
   }, []);
 
   const checkPermission = (permission, message) => {
@@ -53,104 +63,144 @@ function Comisiones() {
     return true;
   };
 
-  const fetchComisiones = async () => {
+  // Obtener el idPersona desde localStorage
+  const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
+
+  if (!idSede) {
+    setMensaje(
+      "No se encontró el ID de la sede en el almacenamiento local."
+    );
+
+    return;
+  }
+
+  const fetchRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/comisiones");
-      setComisiones(response.data);
-      setFilteredComisiones(response.data);
+      const response = await axios.get("http://localhost:5000/rifas");
+      setRifas(response.data);
+      setFilteredRifas(response.data);
     } catch (error) {
-      console.error("Error fetching comisiones:", error);
+      console.error("Error fetching rifas:", error);
     }
   };
 
-  const fetchEventos = async () => {
+  const fetchSedes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos");
-      setEventos(response.data);
+      const response = await axios.get("http://localhost:5000/sedes");
+      setSedes(response.data);
     } catch (error) {
-      console.error("Error fetching eventos:", error);
+      console.error("Error fetching sedes:", error);
     }
   };
 
-  const fetchActiveComisiones = async () => {
+  const fetchActiveRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/comisiones/activos");
-      setFilteredComisiones(response.data);
+      const response = await axios.get("http://localhost:5000/rifas/activos");
+      setFilteredRifas(response.data);
     } catch (error) {
-      console.error("Error fetching active comisiones:", error);
+      console.error("Error fetching active rifas:", error);
     }
   };
 
-  const fetchInactiveComisiones = async () => {
+  const fetchInactiveRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/comisiones/inactivos");
-      setFilteredComisiones(response.data);
+      const response = await axios.get("http://localhost:5000/rifas/inactivos");
+      setFilteredRifas(response.data);
     } catch (error) {
-      console.error("Error fetching inactive comisiones:", error);
+      console.error("Error fetching inactive rifas:", error);
     }
   };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    const filtered = comisiones.filter((comision) =>
-      comision.comision.toLowerCase().includes(value)
+
+    const filtered = rifas.filter((rifa) =>
+      rifa.nombreRifa.toLowerCase().includes(value) ||
+      rifa.descripcion.toLowerCase().includes(value)
     );
-    setFilteredComisiones(filtered);
+
+    setFilteredRifas(filtered);
     setCurrentPage(1);
   };
 
-  const handleShowModal = (comision = null) => {
-    setEditingComision(comision);
-    setNewComision(
-      comision || {
-        comision: "",
-        descripcion: "",
-        estado: 1,
-        idEvento: "",
-        idDetalleHorario: "",
-      }
+  const handleShowModal = (rifa = null) => {
+    setEditingRifa(rifa);
+    setNewRifa(
+      rifa
+        ? {
+          ...rifa,
+          fechaInicio: rifa.fechaInicio
+            ? format(parseISO(rifa.fechaInicio), "yyyy-MM-dd")
+            : "",
+          fechaFin: rifa.fechaFin
+            ? format(parseISO(rifa.fechaFin), "yyyy-MM-dd")
+            : "",
+        }
+        : {
+          nombreRifa: "",
+          descripcion: "",
+          precioBoleto: "",
+          fechaInicio: "",
+          fechaFin: "",
+          ventaTotal: "",
+          idSede: idSede || "",
+          estado: 1,
+        }
     );
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingComision(null);
+    setEditingRifa(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewComision({ ...newComision, [name]: value });
+    setNewRifa({ ...newRifa, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validar las fechas
+    if (newRifa.fechaInicio && newRifa.fechaFin && new Date(newRifa.fechaInicio) > new Date(newRifa.fechaFin)) {
+      setAlertMessage("La fecha de inicio no puede ser mayor que la fecha de fin.");
+      setShowAlert(true);
+      return;
+    }
+
     try {
-      if (editingComision) {
-        await axios.put(
-          `http://localhost:5000/comisiones/update/${editingComision.idComision}`,
-          newComision
-        );
-        setAlertMessage("Comisión actualizada con éxito");
+      const data = {
+        ...newRifa,
+        estado: parseInt(newRifa.estado, 10),
+        idSede: idSede || parseInt(newRifa.idSede, 10),
+      };
+
+      if (editingRifa) {
+        await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, data);
+        setAlertMessage("Rifa actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/comisiones/create", newComision);
-        setAlertMessage("Comisión creada con éxito");
+        await axios.post("http://localhost:5000/rifas", data);
+        setAlertMessage("Rifa creada con éxito");
       }
-      fetchComisiones();
+      fetchRifas();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting comision:", error);
+      console.error("Error submitting rifa:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/comisiones/update/${id}`, { estado: nuevoEstado });
-      fetchComisiones();
-      setAlertMessage(`Comisión ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
+      await axios.put(`http://localhost:5000/rifas/${id}`, { estado: nuevoEstado });
+      fetchRifas();
+      setAlertMessage(
+        `Rifa ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+      );
       setShowAlert(true);
     } catch (error) {
       console.error("Error toggling estado:", error);
@@ -159,9 +209,9 @@ function Comisiones() {
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentComisiones = filteredComisiones.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRifas = filteredRifas.slice(indexOfFirstRow, indexOfLastRow);
 
-  const totalPages = Math.ceil(filteredComisiones.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredRifas.length / rowsPerPage);
 
   const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
@@ -226,7 +276,7 @@ function Comisiones() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Comisiones
+            Gestión de Rifas
           </h3>
         </div>
       </div>
@@ -242,7 +292,7 @@ function Comisiones() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar comisión por nombre..."
+            placeholder="Buscar rifa por nombre o descripción..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -254,18 +304,18 @@ function Comisiones() {
               backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
-              width: "180px",
+              width: "130px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
             }}
             onClick={() => {
-              if (checkPermission('Crear comision', 'No tienes permisos para crear comision')) {
+              if (checkPermission('Crear rifa', 'No tienes permisos para crear rifa')) {
                 handleShowModal();
               }
             }}
           >
-            Agregar Comisión
+            Agregar Rifa
           </Button>
           <Button
             style={{
@@ -277,7 +327,7 @@ function Comisiones() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchActiveComisiones}
+            onClick={fetchActiveRifas}
           >
             Activas
           </Button>
@@ -290,7 +340,7 @@ function Comisiones() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchInactiveComisiones}
+            onClick={fetchInactiveRifas}
           >
             Inactivas
           </Button>
@@ -314,31 +364,42 @@ function Comisiones() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "20px",
+            borderRadius: "10px",
             overflow: "hidden",
             marginTop: "20px",
+            textAlign: "center",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
-              <th>Comisión</th>
+              <th>Nombre Rifa</th>
               <th>Descripción</th>
-              <th>Evento</th>
-              <th>Detalle Horario</th>
+              <th>Precio del boleto</th>
+              <th>Fecha de inicio</th>
+              <th>Fecha de fin</th>
+              <th>Venta total</th>
+              <th>Sede</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody style={{ textAlign: "center" }}>
-            {currentComisiones.map((comision) => (
-              <tr key={comision.idComision}>
-                <td>{comision.idComision}</td>
-                <td>{comision.comision}</td>
-                <td>{comision.descripcion}</td>
-                <td>{eventos.find((evento) => evento.idEvento === comision.idEvento)?.nombreEvento || "No asignado"}</td>
-                <td>{comision.idDetalleHorario || "No asignado"}</td>
-                <td>{comision.estado === 1 ? "Activo" : "Inactivo"}</td>
+            {currentRifas.map((rifa) => (
+              <tr key={rifa.idRifa}>
+                <td>{rifa.idRifa}</td>
+                <td>{rifa.nombreRifa}</td>
+                <td>{rifa.descripcion}</td>
+                <td>Q. {rifa.precioBoleto}</td>
+                <td>{rifa.fechaInicio ? format(parseISO(rifa.fechaInicio), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td>{rifa.fechaFin ? format(parseISO(rifa.fechaFin), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td>Q. {rifa.ventaTotal}</td>
+                <td>
+                  {
+                    sedes.find((sede) => sede.idSede === rifa.idSede)?.nombreSede || "Sin sede"
+                  }
+                </td>
+                <td>{rifa.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                   <FaPencilAlt
                     style={{
@@ -349,12 +410,12 @@ function Comisiones() {
                     }}
                     title="Editar"
                     onClick={() => {
-                      if (checkPermission('Editar comision', 'No tienes permisos para editar comision')) {
-                        handleShowModal(comision);
+                      if (checkPermission('Editar rifa', 'No tienes permisos para editar rifa')) {
+                        handleShowModal(rifa);
                       }
                     }}
                   />
-                  {comision.estado ? (
+                  {rifa.estado ? (
                     <FaToggleOn
                       style={{
                         color: "#30c10c",
@@ -364,8 +425,8 @@ function Comisiones() {
                       }}
                       title="Inactivar"
                       onClick={() => {
-                        if (checkPermission('Desactivar comision', 'No tienes permisos para desactivar comision')) {
-                          toggleEstado(comision.idComision, comision.estado);
+                        if (checkPermission('Desactivar rifa', 'No tienes permisos para desactivar rifa')) {
+                          toggleEstado(rifa.idRifa, rifa.estado);
                         }
                       }}
                     />
@@ -379,8 +440,8 @@ function Comisiones() {
                       }}
                       title="Activar"
                       onClick={() => {
-                        if (checkPermission('Activar comision', 'No tienes permisos para activar comision')) {
-                          toggleEstado(comision.idComision, comision.estado);
+                        if (checkPermission('Activar rifa', 'No tienes permisos para activar rifa')) {
+                          toggleEstado(rifa.idRifa, rifa.estado);
                         }
                       }}
                     />
@@ -399,17 +460,17 @@ function Comisiones() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingComision ? "Editar Comisión" : "Agregar Comisión"}
+              {editingRifa ? "Editar Rifa" : "Agregar Rifa"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="comision">
-                <Form.Label>Comisión</Form.Label>
+              <Form.Group controlId="nombreRifa">
+                <Form.Label>Nombre de la Rifa</Form.Label>
                 <Form.Control
                   type="text"
-                  name="comision"
-                  value={newComision.comision}
+                  name="nombreRifa"
+                  value={newRifa.nombreRifa}
                   onChange={handleChange}
                   required
                 />
@@ -419,44 +480,64 @@ function Comisiones() {
                 <Form.Control
                   type="text"
                   name="descripcion"
-                  value={newComision.descripcion}
+                  value={newRifa.descripcion}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="idEvento">
-                <Form.Label>Evento</Form.Label>
+              <Form.Group controlId="fechaInicio">
+                <Form.Label>Fecha de Inicio</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="fechaInicio"
+                  value={newRifa.fechaInicio}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="fechaFin">
+                <Form.Label>Fecha de Fin</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="fechaFin"
+                  value={newRifa.fechaFin}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="precioBoleto">
+                <Form.Label>Precio del Boleto</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="precioBoleto"
+                  value={newRifa.precioBoleto}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="idSede">
+                <Form.Label>Sede</Form.Label>
                 <Form.Control
                   as="select"
-                  name="idEvento"
-                  value={newComision.idEvento}
+                  name="idSede"
+                  value={newRifa.idSede}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccionar Evento</option>
-                  {eventos.map((evento) => (
-                    <option key={evento.idEvento} value={evento.idEvento}>
-                      {evento.nombreEvento}
+                  <option value="">Seleccionar Sede</option>
+                  {sedes.map((sede) => (
+                    <option key={sede.idSede} value={sede.idSede}>
+                      {sede.nombreSede}
                     </option>
                   ))}
                 </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idDetalleHorario">
-                <Form.Label>Detalle Horario</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="idDetalleHorario"
-                  value={newComision.idDetalleHorario}
-                  onChange={handleChange}
-                  required
-                />
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newComision.estado}
+                  value={newRifa.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -474,25 +555,25 @@ function Comisiones() {
                 }}
                 type="submit"
               >
-                {editingComision ? "Actualizar" : "Crear"}
+                {editingRifa ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
         </Modal>
-          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                         <Modal.Header closeButton>
-                          <Modal.Title>Permiso Denegado</Modal.Title>
-                          </Modal.Header>
-                          <Modal.Body>{permissionMessage}</Modal.Body>
-                          <Modal.Footer>
-                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                            Aceptar
-                          </Button>
-                         </Modal.Footer>
-                      </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );
 }
 
-export default Comisiones;
+export default Rifas;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Talonarios() {
   const [talonarios, setTalonarios] = useState([]);
@@ -19,9 +20,9 @@ function Talonarios() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [rifas, setRifas] = useState([]);
-      const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-      const [permissionMessage, setPermissionMessage] = useState('');
-      const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -36,7 +37,7 @@ function Talonarios() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchTalonarios();
     fetchRifas();
@@ -127,9 +128,9 @@ function Talonarios() {
         name
       )
     ) {
-      const regex = /^[0-9]*$/; 
+      const regex = /^[0-9]*$/;
       if (!regex.test(value)) {
-        return; 
+        return;
       }
     }
 
@@ -295,46 +296,51 @@ function Talonarios() {
                 </td>
                 <td>{talonario.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => {
                       if (checkPermission('Editar talonario', 'No tienes permisos para editar talonario')) {
                         handleShowModal(talonario);
                       }
                     }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: talonario.estado ? "#6c757d" : "#28a745",
-                      borderColor: talonario.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => {
-                      const actionPermission = talonario.estado ? 'Desactivar talonario' : 'Activar talonario';
-                      const actionMessage = talonario.estado
-                        ? 'No tienes permisos para desactivar talonario'
-                        : 'No tienes permisos para activar talonario';
-  
-                      if (checkPermission(actionPermission, actionMessage)) {
-                        toggleEstado(talonario.idTalonario, talonario.estado);
-                      }
-                    }}
-                  >
-                    {talonario.estado ? "Inactivar" : "Activar"}
-                  </Button>
+                  />
+                  {talonario.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => {
+                        if (checkPermission('Desactivar talonario', 'No tienes permisos para desactivar talonario')) {
+                          toggleEstado(talonario.idTalonario, talonario.estado);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => {
+                        if (checkPermission('Activar talonario', 'No tienes permisos para activar talonario')) {
+                          toggleEstado(talonario.idTalonario, talonario.estado);
+                        }
+                      }}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -437,17 +443,17 @@ function Talonarios() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                       <Modal.Header closeButton>
-                        <Modal.Title>Permiso Denegado</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>{permissionMessage}</Modal.Body>
-                        <Modal.Footer>
-                        <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                          Aceptar
-                        </Button>
-                       </Modal.Footer>
-                    </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

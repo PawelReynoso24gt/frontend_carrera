@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Roles() {
   const [roles, setRoles] = useState([]);
@@ -250,53 +251,58 @@ function Roles() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {filteredRoles.map((role) => (
               <tr key={role.idRol}>
                 <td>{role.idRol}</td>
                 <td>{role.roles}</td>
                 <td>{role.estado === 1 ? "Activo" : "Inactivo"}</td>
-                <td>
-                  <Button
+                <td> 
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => {
                       if (checkPermission('Editar rol', 'No tienes permisos para editar rol')) {
                         handleShowModal(role);
                       }
                     }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
+                  />
+                  {role.estado ? (
+                  <FaToggleOn
                   style={{
-                    backgroundColor: role.estado ? "#6c757d" : "#28a745",
-                    borderColor: role.estado ? "#6c757d" : "#28a745",
-                    padding: "5px 10px",
-                    width: "100px",
-                    fontWeight: "bold",
-                    color: "#fff",
+                    color: "#30c10c",
+                    cursor: "pointer",
+                    marginLeft: "10px",
+                    fontSize: "20px",
                   }}
-                  onClick={() => {
-                    const actionPermission = role.estado ? 'Desactivar rol' : 'Activar rol';
-                    const actionMessage = role.estado
-                      ? 'No tienes permisos para desactivar roles'
-                      : 'No tienes permisos para activar roles';
-
-                    if (checkPermission(actionPermission, actionMessage)) {
-                      toggleEstado(role.idRol, role.estado);
-                    }
-                  }}
-                >
-                  {role.estado ? "Inactivar" : "Activar"}
-                </Button>
+                    title="Inactivar"
+                    onClick={() => {
+                      if (checkPermission('Desactivar rol', 'No tienes permisos para desactivar rol')) {
+                        toggleEstado(role.idRol, role.estado);
+                      }
+                    }}
+                  />
+                ) : (
+                  <FaToggleOff
+                    style={{
+                      color: "#e10f0f",
+                      cursor: "pointer",
+                      marginLeft: "10px",
+                      fontSize: "20px",
+                    }}
+                      title="Activar"
+                      onClick={() => {
+                        if (checkPermission('Activar rol', 'No tienes permisos para activar rol')) {
+                          toggleEstado(role.idRol, role.estado);
+                        }
+                      }}
+                 />
+                )}
                 </td>
               </tr>
             ))}

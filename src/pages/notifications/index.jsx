@@ -8,7 +8,7 @@ function Notifications() {
   useMenu();
   return (
     <Layout>
-      <BreadCrumb title="Notifications" link="notifications" />
+      <BreadCrumb title="Notificaciones" link="notifications" />
       <NotificationsCom />
     </Layout>
   );

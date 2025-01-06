@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function FotosSedesComponent() {
   const [fotos, setFotos] = useState([]);
@@ -229,34 +230,41 @@ function FotosSedesComponent() {
                 <td>{foto.idSede}</td>
                 <td>{foto.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => {
                       if (checkPermission('Editar foto sede', 'No tienes permisos para editar foto sede')) {
                         handleShowModal(foto);
                       }
                     }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: foto.estado ? "#6c757d" : "#28a745",
-                      borderColor: foto.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => {
+                  />
+                  {foto.estado === 1 ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleFotoEstado(foto.idFotoSede, foto.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => {
                       const actionPermission = foto.estado ? 'Activar foto sede' : 'Desactivar foto sede';
                       const actionMessage = foto.estado
                         ? 'No tienes permisos para desactivar fotos sedes'
@@ -266,9 +274,8 @@ function FotosSedesComponent() {
                         toggleFotoEstado(foto.idFotoSede, foto.estado);
                       }
                     }}
-                  >
-                    {foto.estado ? "Desactivar" : "Activar"}
-                  </Button>
+                    />
+                  )}
                 </td>
               </tr>
             ))}
