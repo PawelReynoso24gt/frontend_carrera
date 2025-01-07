@@ -15,6 +15,7 @@ function Productos() {
     precio: "",
     nombreProducto: "",
     descripcion: "",
+    foto: "",
     cantidadMinima: "",
     cantidadMaxima: "",
     idCategoria: "",
@@ -134,20 +135,33 @@ function Productos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = {
-        ...newProducto,
-        precio: parseFloat(newProducto.precio),
-        cantidadMinima: parseInt(newProducto.cantidadMinima, 10),
-        cantidadMaxima: parseInt(newProducto.cantidadMaxima, 10),
-        idCategoria: parseInt(newProducto.idCategoria, 10),
-        estado: parseInt(newProducto.estado, 10), // Convertir estado a número
-      };
-
+      const formData = new FormData();
+      formData.append("talla", newProducto.talla);
+      formData.append("precio", parseFloat(newProducto.precio));
+      formData.append("nombreProducto", newProducto.nombreProducto);
+      formData.append("descripcion", newProducto.descripcion);
+      formData.append("cantidadMinima", parseInt(newProducto.cantidadMinima, 10));
+      formData.append("cantidadMaxima", parseInt(newProducto.cantidadMaxima, 10));
+      formData.append("idCategoria", parseInt(newProducto.idCategoria, 10));
+      formData.append("estado", parseInt(newProducto.estado, 10));
+      
+      if (newProducto.foto) {
+        formData.append("foto", newProducto.foto); // Agregar la foto seleccionada
+      }
+  
       if (editingProducto) {
-        await axios.put(`http://localhost:5000/productos/${editingProducto.idProducto}`, data);
+        await axios.put(`http://localhost:5000/productos/${editingProducto.idProducto}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         setAlertMessage("Producto actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/productos", data);
+        await axios.post("http://localhost:5000/productos", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         setAlertMessage("Producto creado con éxito");
       }
       fetchProductos();
@@ -157,6 +171,7 @@ function Productos() {
       console.error("Error submitting producto:", error);
     }
   };
+  
 
   const toggleEstado = async (id, estadoActual) => {
     try {
@@ -337,6 +352,7 @@ function Productos() {
               <th>Talla</th>
               <th>Precio</th>
               <th>Descripción</th>
+              <th>Foto</th>
               <th>Cantidad Mínima</th>
               <th>Cantidad Máxima</th>
               <th>Categoría</th>
@@ -344,7 +360,7 @@ function Productos() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {currentProductos.map((producto) => (
               <tr key={producto.idProducto}>
                 <td>{producto.idProducto}</td>
@@ -352,6 +368,13 @@ function Productos() {
                 <td>{producto.talla}</td>
                 <td>{producto.precio}</td>
                 <td>{producto.descripcion}</td>
+                <td>
+                  <img
+                    src={`http://localhost:5000/${producto.foto}`}
+                    alt={producto.nombreProducto}
+                    style={{ width: "100px", height: "auto", objectFit: "cover", borderRadius: "8px" }}
+                  />
+                </td>
                 <td>{producto.cantidadMinima}</td>
                 <td>{producto.cantidadMaxima}</td>
                 <td>
@@ -462,6 +485,16 @@ function Productos() {
                   name="descripcion"
                   value={newProducto.descripcion}
                   onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="foto">
+                <Form.Label>Foto</Form.Label>
+                <Form.Control
+                  type="file"
+                  name="foto"
+                  onChange={(e) => setNewProducto({ ...newProducto, foto: e.target.files[0] })}
+                  accept="image/*" // Solo permitir imágenes
                   required
                 />
               </Form.Group>
