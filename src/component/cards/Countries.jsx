@@ -56,7 +56,7 @@ function Countries() {
       labels: ["Evento Anterior", "Evento Más Reciente"],
       datasets: [
         {
-          label: "Recaudación ($)",
+          label: "Recaudación (Q)",
           data: [previousEvent.recaudacion, latestEvent.recaudacion],
           backgroundColor: ["#BDE038", "#36A2EB"],
           borderWidth: 1,

@@ -88,7 +88,7 @@ import VentasVoluntarios from "./pages/ventas_voluntarios/ventas_voluntarios";
 import VentasStands from "./pages/ventas_stands/ventas_stands";
 import RecaudacionRifas from "./pages/recaudacion_rifas/recaudacion_rifas";
 import RecaudacionEventos from "./pages/recaudaciones_eventos/recaudaciones_eventos";
-
+import ProductosVentVoluntario from "./pages/productosVentVoluntario/productosVentVoluntario";
 
 const router = createBrowserRouter([
   {
@@ -225,6 +225,10 @@ const router = createBrowserRouter([
       {
         path: "/productos",
         element: <Productos />,
+      },
+      {
+        path: "/productosVentVoluntarios",
+        element: <ProductosVentVoluntario />,
       },
       {
         path: "/personas",
