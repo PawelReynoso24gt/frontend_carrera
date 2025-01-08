@@ -32,7 +32,8 @@ function SidebarProfile() {
 
         if (loggedUser) {
           setUserData(loggedUser);
-          setPreview(loggedUser.foto || profileImg);
+          const photoPath = loggedUser.persona.foto !== "sin foto" ? `http://localhost:5000/${loggedUser.persona.foto.replace(/\\/g, '/')}` : profileImg;
+          setPreview(photoPath);
         } else {
           setError("Usuario no encontrado.");
         }
@@ -71,6 +72,8 @@ function SidebarProfile() {
         console.log("Foto actualizada:", response.data);
         setSuccessMessage("Se han guardado los cambios correctamente.");
         setSelectedFile(null);
+        const photoPath = response.data.foto !== "sin foto" ? `http://localhost:5000/${response.data.foto.replace(/\\/g, '/')}` : profileImg;
+        setPreview(photoPath);
       } catch (err) {
         console.error("Error al actualizar la foto:", err);
       }
@@ -79,7 +82,8 @@ function SidebarProfile() {
 
   const handleDiscardChanges = () => {
     setSelectedFile(null);
-    setPreview(userData.foto || profileImg);
+    const photoPath = userData.persona.foto !== "sin foto" ? `http://localhost:5000/${userData.persona.foto.replace(/\\/g, '/')}` : profileImg;
+    setPreview(photoPath);
   };
 
   if (loading) {
