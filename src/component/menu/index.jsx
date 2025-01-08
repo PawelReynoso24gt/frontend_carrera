@@ -73,7 +73,7 @@ function Menu({ toggleMenu, menu }) {
               options={[
                 { link: "Administradores", title: "Usuarios" },
                 { link: "voluntarios", title: "Voluntarios" },
-                { link: "usuarios-clientes", title: "Empleados" }, //aqui pawel empleados
+                { link: "empleados", title: "Empleados" }, //aqui pawel empleados
                 { link: "roles", title: "Roles" },
                 { link: "permisos", title: "Asignación de Permisos" },
               ]}
