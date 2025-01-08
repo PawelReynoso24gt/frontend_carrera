@@ -210,7 +210,7 @@ function SoporteTecnico() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Soporte Técnico
+            Gestión de situaciones que se han reportado
           </h3>
         </div>
       </div>

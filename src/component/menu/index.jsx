@@ -128,6 +128,7 @@ function Menu({ toggleMenu, menu }) {
                 { link: "actividades", title: "Gestión Actividades" },
                 { link: "Materiales", title: "Gestión Materiales" },
                 { link: "asistencia_eventos", title: "Inscripciones y Asistenciass" },
+                { link: "recaudacion_eventos", title: "Gestión de Recaudación de Eventos" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-balloon" viewBox="0 0 16 16">
@@ -143,7 +144,10 @@ function Menu({ toggleMenu, menu }) {
               options={[
                 { link: "traslados", title: "Gestión de traslados" },
                 { link: "tipoTraslado", title: "Gestión de tipo traslado" },
+                { link: "Categorias", title: "Gestión de categoría productos" },
+                { link: "pedidos", title: "Gestión de pedidos" },
                 { link: "productos", title: "Gestión Productos" },
+                { link: "productosVentVoluntarios", title: "Productos de venta para voluntarios" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-basket" viewBox="0 0 16 16">
@@ -160,8 +164,6 @@ function Menu({ toggleMenu, menu }) {
                 { link: "Stands", title: "Gestión Stands" },
                 { link: "tipoStands", title: "Gestión Tipo Stands" },
                 { link: "asignacionStand", title: "Asignación de Stands" },
-                { link: "Categorias", title: "Gestión de categoría productos" },
-                { link: "pedidos", title: "Gestión de pedidos" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop" viewBox="0 0 16 16">
@@ -177,6 +179,7 @@ function Menu({ toggleMenu, menu }) {
                 { link: "rifas", title: "Gestión Rifas" },
                 { link: "talonarios", title: "Gestión Talonarios" },
                 { link: "autorizacionTalonarios", title: "Autorización de talonarios" },
+                { link: "recaudacion_rifas", title: "Gestión de Recaudación de Rifas" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-ticket-perforated" viewBox="0 0 16 16">
@@ -194,6 +197,8 @@ function Menu({ toggleMenu, menu }) {
                 { link: "inventarioMventas", title: "Inventario de mercancía para ventas" },
                 { link: "TipoPago", title: "Gestión Tipo Pago" },
                 { link: "tipo_publicos", title: "Gestión Tipo Público" },
+                { link: "ventas_voluntarios", title: "Gestión de Ventas de Voluntarios" },
+                { link: "ventas_stands", title: "Gestión de Ventas de Stands" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-piggy-bank" viewBox="0 0 16 16">
@@ -242,8 +247,21 @@ function Menu({ toggleMenu, menu }) {
               }
             />
 
-            
-   
+            <Dropdown
+              name="Gestión de Situaciones"
+              dropdown={dropdown}
+              setDropdown={handleDropdown}
+              options={[
+                { link: "soporteSituaciones", title: "Registros de Situaciones" },
+              ]}
+              img={
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                </svg>
+              }
+            />
+
           {[
             { 
               link: "categoria_bitacoras", 
@@ -262,16 +280,6 @@ function Menu({ toggleMenu, menu }) {
                 <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
                 <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"/>
               </svg>
-              ),
-            },
-            {
-              link: "soporteTecnico",
-              title: "Registros de Soporte Técnico",
-              icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
-                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-                </svg>
               ),
             },
             {

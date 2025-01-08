@@ -3,17 +3,18 @@ import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
-function Rifas() {
-  const [rifas, setRifas] = useState([]);
-  const [sedes, setSedes] = useState([]);
-  const [filteredRifas, setFilteredRifas] = useState([]);
+function DetalleProductoVoluntario() {
+  const [detalles, setDetalles] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [voluntarios, setVoluntarios] = useState([]);
+  const [filteredDetalles, setFilteredDetalles] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingRifa, setEditingRifa] = useState(null);
-  const [newRifa, setNewRifa] = useState({
-    nombreRifa: "",
-    descripcion: "",
-    idSede: "",
+  const [editingDetalle, setEditingDetalle] = useState(null);
+  const [newDetalle, setNewDetalle] = useState({
+    idProducto: "",
+    idVoluntario: "",
+    cantidad: "",
     estado: 1,
   });
   const [showAlert, setShowAlert] = useState(false);
@@ -22,67 +23,93 @@ function Rifas() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchRifas();
-    fetchSedes();
+    fetchDetalles();
+    fetchProductos();
+    fetchVoluntarios();
   }, []);
 
-  const fetchRifas = async () => {
+  const fetchDetalles = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/rifas");
-      setRifas(response.data);
-      setFilteredRifas(response.data);
+      const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios");
+      const data = Array.isArray(response.data) ? response.data : []; // Asegurarse de que sea un array
+      setDetalles(data);
+      setFilteredDetalles(data);
     } catch (error) {
-      console.error("Error fetching rifas:", error);
+      console.error("Error fetching detalles:", error);
+      setDetalles([]);
+      setFilteredDetalles([]);
     }
   };
 
-  const fetchSedes = async () => {
+  const fetchActiveProductosVol = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes");
-      setSedes(response.data);
+      const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios/activos");
+      setDetalles(response.data);
+      setFilteredDetalles(response.data);
     } catch (error) {
-      console.error("Error fetching sedes:", error);
+      console.error("Error fetching active productos:", error);
     }
   };
 
-  const fetchActiveRifas = async () => {
+  const fetchInactiveProductosVol = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/rifas/activos");
-      setFilteredRifas(response.data);
+      const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios/inactivos");
+      setDetalles(response.data);
+      setFilteredDetalles(response.data);
     } catch (error) {
-      console.error("Error fetching active rifas:", error);
+      console.error("Error fetching inactive productos:", error);
     }
   };
 
-  const fetchInactiveRifas = async () => {
+  const fetchProductos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/rifas/inactivos");
-      setFilteredRifas(response.data);
+      const response = await axios.get("http://localhost:5000/productos");
+      setProductos(response.data);
     } catch (error) {
-      console.error("Error fetching inactive rifas:", error);
+      console.error("Error fetching productos:", error);
     }
   };
+
+  const fetchVoluntarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/voluntarios"); // Ajusta tu endpoint si es necesario
+      // Aseguramos que cada voluntario tenga acceso a su nombre desde la tabla de personas
+      const data = response.data.map((voluntario) => ({
+        ...voluntario,
+        nombre: voluntario.persona?.nombre || "Sin nombre", // Suponiendo que la relación con la tabla persona se llama 'persona'
+      }));
+      setVoluntarios(data);
+    } catch (error) {
+      console.error("Error fetching voluntarios:", error);
+      setVoluntarios([]);
+    }
+  };
+
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
 
-    const filtered = rifas.filter((rifa) =>
-      rifa.nombreRifa.toLowerCase().includes(value) ||
-      rifa.descripcion.toLowerCase().includes(value)
+    if (!Array.isArray(detalles)) return;
+
+    const filtered = detalles.filter(
+      (detalle) =>
+        productos.find((producto) => producto.idProducto === detalle.idProducto)?.nombreProducto.toLowerCase().includes(value) ||
+        voluntarios.find((voluntario) => voluntario.idVoluntario === detalle.idVoluntario)?.nombre.toLowerCase().includes(value)
     );
 
-    setFilteredRifas(filtered);
+    setFilteredDetalles(filtered);
     setCurrentPage(1);
   };
 
-  const handleShowModal = (rifa = null) => {
-    setEditingRifa(rifa);
-    setNewRifa(
-      rifa || {
-        nombreRifa: "",
-        descripcion: "",
-        idSede: "",
+
+  const handleShowModal = (detalle = null) => {
+    setEditingDetalle(detalle);
+    setNewDetalle(
+      detalle || {
+        idProducto: "",
+        idVoluntario: "",
+        cantidad: "",
         estado: 1,
       }
     );
@@ -91,45 +118,43 @@ function Rifas() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingRifa(null);
+    setEditingDetalle(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewRifa({ ...newRifa, [name]: value });
+    setNewDetalle({ ...newDetalle, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = {
-        ...newRifa,
-        estado: parseInt(newRifa.estado, 10),
-        idSede: parseInt(newRifa.idSede, 10),
-      };
-
-      if (editingRifa) {
-        await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, data);
-        setAlertMessage("Rifa actualizada con éxito");
+      if (editingDetalle) {
+        await axios.put(
+          `http://localhost:5000/detalle_productos_voluntarios/update/${editingDetalle.idDetalleProductoVoluntario}`,
+          newDetalle
+        );
+        setAlertMessage("Detalle actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/rifas", data);
-        setAlertMessage("Rifa creada con éxito");
+        console.log(newDetalle);
+        await axios.post("http://localhost:5000/detalle_productos_voluntarios/create", newDetalle);
+        setAlertMessage("Detalle creado con éxito");
       }
-      fetchRifas();
+      fetchDetalles();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting rifa:", error);
+      console.error("Error submitting detalle:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/rifas/${id}`, { estado: nuevoEstado });
-      fetchRifas();
+      await axios.put(`http://localhost:5000/detalle_productos_voluntarios/update/${id}`, { estado: nuevoEstado });
+      fetchDetalles();
       setAlertMessage(
-        `Rifa ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+        `Detalle ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
       );
       setShowAlert(true);
     } catch (error) {
@@ -139,9 +164,9 @@ function Rifas() {
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRifas = filteredRifas.slice(indexOfFirstRow, indexOfLastRow);
+  const currentDetalles = filteredDetalles.slice(indexOfFirstRow, indexOfLastRow);
 
-  const totalPages = Math.ceil(filteredRifas.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredDetalles.length / rowsPerPage);
 
   const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
@@ -206,7 +231,7 @@ function Rifas() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Rifas
+            Gestión de Detalles de Producto Voluntario
           </h3>
         </div>
       </div>
@@ -222,7 +247,7 @@ function Rifas() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar rifa por nombre o descripción..."
+            placeholder="Buscar detalle por producto o voluntario..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -234,14 +259,15 @@ function Rifas() {
               backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
-              width: "130px",
+              width: "180px",
+              marginBottom: "1px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
             }}
             onClick={() => handleShowModal()}
           >
-            Agregar Rifa
+            Agregar Detalle
           </Button>
           <Button
             style={{
@@ -253,9 +279,9 @@ function Rifas() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchActiveRifas}
+            onClick={fetchActiveProductosVol}
           >
-            Activas
+            Activos
           </Button>
           <Button
             style={{
@@ -266,9 +292,9 @@ function Rifas() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchInactiveRifas}
+            onClick={fetchInactiveProductosVol}
           >
-            Inactivas
+            Inactivos
           </Button>
         </div>
 
@@ -298,25 +324,31 @@ function Rifas() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
-              <th>Nombre Rifa</th>
-              <th>Descripción</th>
-              <th>Sede</th>
+              <th>Producto</th>
+              <th>Voluntario</th>
+              <th>Cantidad</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody style={{ textAlign: "center" }}>
-            {currentRifas.map((rifa) => (
-              <tr key={rifa.idRifa}>
-                <td>{rifa.idRifa}</td>
-                <td>{rifa.nombreRifa}</td>
-                <td>{rifa.descripcion}</td>
+            {currentDetalles.map((detalle) => (
+              <tr key={detalle.idDetalleProductoVoluntario}>
+                <td>{detalle.idDetalleProductoVoluntario}</td>
                 <td>
                   {
-                    sedes.find((sede) => sede.idSede === rifa.idSede)?.nombreSede || "Sin sede"
+                    productos.find((producto) => producto.idProducto === detalle.idProducto)
+                      ?.nombreProducto || "Producto no encontrado"
                   }
                 </td>
-                <td>{rifa.estado === 1 ? "Activo" : "Inactivo"}</td>
+                <td>
+                  {
+                    voluntarios.find((voluntario) => voluntario.idVoluntario === detalle.idVoluntario)
+                      ?.nombre || "Voluntario no encontrado"
+                  }
+                </td>
+                <td>{detalle.cantidad}</td>
+                <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
                 <td>
                   <FaPencilAlt
                     style={{
@@ -326,9 +358,9 @@ function Rifas() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(rifa)}
+                    onClick={() => handleShowModal(detalle)}
                   />
-                  {rifa.estado ? (
+                  {detalle.estado ? (
                     <FaToggleOn
                       style={{
                         color: "#30c10c",
@@ -337,7 +369,7 @@ function Rifas() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
+                      onClick={() => toggleEstado(detalle.idDetalleProductoVoluntario, detalle.estado)}
                     />
                   ) : (
                     <FaToggleOff
@@ -348,7 +380,7 @@ function Rifas() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
+                      onClick={() => toggleEstado(detalle.idDetalleProductoVoluntario, detalle.estado)}
                     />
                   )}
                 </td>
@@ -365,54 +397,61 @@ function Rifas() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingRifa ? "Editar Rifa" : "Agregar Rifa"}
+              {editingDetalle ? "Editar Detalle" : "Agregar Detalle"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="nombreRifa">
-                <Form.Label>Nombre de la Rifa</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="nombreRifa"
-                  value={newRifa.nombreRifa}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="descripcion">
-                <Form.Label>Descripción</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="descripcion"
-                  value={newRifa.descripcion}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="idSede">
-                <Form.Label>Sede</Form.Label>
+              <Form.Group controlId="idProducto">
+                <Form.Label>Producto</Form.Label>
                 <Form.Control
                   as="select"
-                  name="idSede"
-                  value={newRifa.idSede}
+                  name="idProducto"
+                  value={newDetalle.idProducto}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccionar Sede</option>
-                  {sedes.map((sede) => (
-                    <option key={sede.idSede} value={sede.idSede}>
-                      {sede.nombreSede}
+                  <option value="">Seleccionar Producto</option>
+                  {productos.map((producto) => (
+                    <option key={producto.idProducto} value={producto.idProducto}>
+                      {producto.nombreProducto}
                     </option>
                   ))}
                 </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="idVoluntario">
+                <Form.Label>Voluntario</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idVoluntario"
+                  value={newDetalle.idVoluntario}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar Voluntario</option>
+                  {voluntarios.map((voluntario) => (
+                    <option key={voluntario.idVoluntario} value={voluntario.idVoluntario}>
+                      {voluntario.nombre}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="cantidad">
+                <Form.Label>Cantidad</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="cantidad"
+                  value={newDetalle.cantidad}
+                  onChange={handleChange}
+                  required
+                />
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newRifa.estado}
+                  value={newDetalle.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -430,7 +469,7 @@ function Rifas() {
                 }}
                 type="submit"
               >
-                {editingRifa ? "Actualizar" : "Crear"}
+                {editingDetalle ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -440,4 +479,4 @@ function Rifas() {
   );
 }
 
-export default Rifas;
+export default DetalleProductoVoluntario;

@@ -1,180 +1,151 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  Button,
-  Form,
-  Table,
-  Modal,
-  Alert,
-  InputGroup,
-  FormControl,
-  Pagination,
-} from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
-import { getUserDataFromToken } from "../../utils/jwtUtils";
 
-// Utilidad para formatear fechas
-const formatDate = (date) => {
-  const options = { day: "2-digit", month: "2-digit", year: "numeric" };
-  return new Date(date).toLocaleDateString("es-ES", options);
-};
-
-function Eventos() {
-  const [eventos, setEventos] = useState([]);
-  const [filteredEventos, setFilteredEventos] = useState([]);
+function Comisiones() {
+  const [comisiones, setComisiones] = useState([]);
+  const [filteredComisiones, setFilteredComisiones] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [eventos, setEventos] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingEvento, setEditingEvento] = useState(null);
-  const [newEvento, setNewEvento] = useState({
-    nombreEvento: "",
-    fechaHoraInicio: "",
-    fechaHoraFin: "",
+  const [editingComision, setEditingComision] = useState(null);
+  const [detallesHorarios, setDetallesHorarios] = useState([]); // para horarios
+  const [newComision, setNewComision] = useState({
+    comision: "",
     descripcion: "",
-    direccion: "",
     estado: 1,
-    idSede: "",
+    idEvento: "",
+    idDetalleHorario: "",
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [sedes, setSedes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // extraer el dato para idSede
-  const sedeId = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
-  
-    if (!sedeId) {
-      setMensaje(
-        "No se encontró el ID de la sede en el almacenamiento local."
-      );
-      
-      return;
-    }
-
   useEffect(() => {
+    fetchComisiones();
     fetchEventos();
-    fetchSedes();
+    fetchDetallesHorarios();
   }, []);
+
+  const fetchComisiones = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/comisiones");
+      setComisiones(response.data);
+      setFilteredComisiones(response.data);
+    } catch (error) {
+      console.error("Error fetching comisiones:", error);
+    }
+  };
+
+  const fetchDetallesHorarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/detalle_horarios/comisiones"); // Endpoint para obtener todos los detalles
+      setDetallesHorarios(response.data);
+    } catch (error) {
+      console.error("Error fetching detalle horarios:", error);
+    }
+  };
 
   const fetchEventos = async () => {
     try {
       const response = await axios.get("http://localhost:5000/eventos");
       setEventos(response.data);
-      setFilteredEventos(response.data);
     } catch (error) {
       console.error("Error fetching eventos:", error);
     }
   };
 
-  const fetchActiveEventos = async () => {
+  const fetchActiveComisiones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos/activas");
-      setEventos(response.data);
-      setFilteredEventos(response.data);
+      const response = await axios.get("http://localhost:5000/comisiones/activos");
+      setFilteredComisiones(response.data);
     } catch (error) {
-      console.error("Error fetching active eventos:", error);
+      console.error("Error fetching active comisiones:", error);
     }
   };
 
-  const fetchInactiveEventos = async () => {
+  const fetchInactiveComisiones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos/inactivas");
-      setEventos(response.data);
-      setFilteredEventos(response.data);
+      const response = await axios.get("http://localhost:5000/comisiones/inactivos");
+      setFilteredComisiones(response.data);
     } catch (error) {
-      console.error("Error fetching inactive eventos:", error);
+      console.error("Error fetching inactive comisiones:", error);
     }
   };
 
-  const fetchSedes = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/sedes");
-      setSedes(response.data);
-    } catch (error) {
-      console.error("Error fetching sedes:", error);
+  const validateForm = () => {
+    if (!newComision.comision || !newComision.descripcion || !newComision.idEvento) {
+      setAlertMessage("Por favor, completa todos los campos requeridos.");
+      setShowAlert(true);
+      return false;
     }
+    return true;
   };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-
-    const filtered = eventos.filter((evento) =>
-      evento.nombreEvento.toLowerCase().includes(value)
+    const filtered = comisiones.filter((comision) =>
+      comision.comision.toLowerCase().includes(value)
     );
-
-    setFilteredEventos(filtered);
+    setFilteredComisiones(filtered);
     setCurrentPage(1);
   };
 
-  const handleShowModal = (evento = null) => {
-    if (evento) {
-      // Convertir fechas al formato requerido por datetime-local
-      evento.fechaHoraInicio = new Date(evento.fechaHoraInicio)
-        .toISOString()
-        .slice(0, 16);
-      evento.fechaHoraFin = new Date(evento.fechaHoraFin)
-        .toISOString()
-        .slice(0, 16);
-    }
-  
-    setEditingEvento(evento);
-    setNewEvento(
-      evento || {
-        nombreEvento: "",
-        fechaHoraInicio: "",
-        fechaHoraFin: "",
+  const handleShowModal = (comision = null) => {
+    setEditingComision(comision);
+    setNewComision(
+      comision || {
+        comision: "",
         descripcion: "",
-        direccion: "",
         estado: 1,
-        idSede: sedeId || "",
+        idEvento: "",
+        idDetalleHorario: "",
       }
     );
     setShowModal(true);
   };
+
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingEvento(null);
+    setEditingComision(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewEvento({ ...newEvento, [name]: value });
+    setNewComision({ ...newComision, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     try {
-      const data = {
-        ...newEvento,
-        idSede: sedeId || newEvento.idSede, // Priorizar el `sedeId` almacenado
-      };
-      if (editingEvento) {
+      if (editingComision) {
         await axios.put(
-          `http://localhost:5000/eventos/${editingEvento.idEvento}`,
-          newEvento
+          `http://localhost:5000/comisiones/update/${editingComision.idComision}`,
+          newComision
         );
-        setAlertMessage("Evento actualizado con éxito");
+        setAlertMessage("Comisión actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/eventos", newEvento);
-        setAlertMessage("Evento creado con éxito");
+        await axios.post("http://localhost:5000/comisiones/create", newComision);
+        setAlertMessage("Comisión creada con éxito");
       }
-      fetchEventos();
+      fetchComisiones();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting evento:", error);
+      console.error("Error submitting comision:", error);
     }
   };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/eventos/${id}`, { estado: nuevoEstado });
-      fetchEventos();
-      setAlertMessage(
-        `Evento ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
-      );
+      await axios.put(`http://localhost:5000/comisiones/update/${id}`, { estado: nuevoEstado });
+      fetchComisiones();
+      setAlertMessage(`Comisión ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
       setShowAlert(true);
     } catch (error) {
       console.error("Error toggling estado:", error);
@@ -183,9 +154,9 @@ function Eventos() {
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentEventos = filteredEventos.slice(indexOfFirstRow, indexOfLastRow);
+  const currentComisiones = filteredComisiones.slice(indexOfFirstRow, indexOfLastRow);
 
-  const totalPages = Math.ceil(filteredEventos.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredComisiones.length / rowsPerPage);
 
   const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
@@ -250,7 +221,7 @@ function Eventos() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Eventos
+            Gestión de Comisiones
           </h3>
         </div>
       </div>
@@ -266,7 +237,7 @@ function Eventos() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar evento por nombre..."
+            placeholder="Buscar comisión por nombre..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -285,7 +256,7 @@ function Eventos() {
             }}
             onClick={() => handleShowModal()}
           >
-            Agregar Evento
+            Agregar Comisión
           </Button>
           <Button
             style={{
@@ -297,9 +268,9 @@ function Eventos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchActiveEventos}
+            onClick={fetchActiveComisiones}
           >
-            Activos
+            Activas
           </Button>
           <Button
             style={{
@@ -310,9 +281,9 @@ function Eventos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchInactiveEventos}
+            onClick={fetchInactiveComisiones}
           >
-            Inactivos
+            Inactivas
           </Button>
         </div>
 
@@ -339,42 +310,40 @@ function Eventos() {
             marginTop: "20px",
           }}
         >
-          <thead
-            style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}
-          >
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
-              <th style={{ textAlign: "center" }}>ID</th>
-              <th style={{ textAlign: "center" }}>Evento</th>
-              <th style={{ textAlign: "center" }}>Fecha Inicio</th>
-              <th style={{ textAlign: "center" }}>Fecha Fin</th>
-              <th style={{ textAlign: "center" }}>Descripción</th>
-              <th style={{ textAlign: "center" }}>Dirección</th>
-              <th style={{ textAlign: "center" }}>Estado</th>
-              <th style={{ textAlign: "center" }}>Sede</th>
-              <th style={{ textAlign: "center" }}>Acciones</th>
+              <th>ID</th>
+              <th>Comisión</th>
+              <th>Descripción</th>
+              <th>Evento</th>
+              <th>Detalle Horario</th>
+              <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {currentEventos.map((evento) => (
-              <tr key={evento.idEvento}>
-                <td style={{ textAlign: "center" }}>{evento.idEvento}</td>
-                <td style={{ textAlign: "center" }}>{evento.nombreEvento}</td>
-                <td style={{ textAlign: "center" }}>
-                  {formatDate(evento.fechaHoraInicio)}
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  {formatDate(evento.fechaHoraFin)}
-                </td>
-                <td style={{ textAlign: "center" }}>{evento.descripcion}</td>
-                <td style={{ textAlign: "center" }}>{evento.direccion}</td>
-                <td style={{ textAlign: "center" }}>
-                  {evento.estado === 1 ? "Activo" : "Inactivo"}
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  {sedes.find((sede) => sede.idSede === evento.idSede)?.nombreSede ||
-                    "N/A"}
-                </td>
-                <td style={{ textAlign: "center" }}>
+          <tbody style={{ textAlign: "center" }}>
+            {currentComisiones.map((comision) => (
+              <tr key={comision.idComision}>
+                <td>{comision.idComision}</td>
+                <td>{comision.comision}</td>
+                <td>{comision.descripcion}</td>
+                <td>{eventos.find((evento) => evento.idEvento === comision.idEvento)?.nombreEvento || "No asignado"}</td>
+                <td>
+                  {comision.detalleHorario ? (
+                    <>
+                      <div>{comision.detalleHorario.cantidadPersonas} personas</div>
+                        <div>
+                          {comision.detalleHorario.horario
+                            ? `${new Date(`1970-01-01T${comision.detalleHorario.horario.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${comision.detalleHorario.horario.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`
+                            : "Sin horario"}
+                        </div>
+                      </>
+                    ) : (
+                      "No asignado"
+                    )}
+                  </td>
+                <td>{comision.estado === 1 ? "Activo" : "Inactivo"}</td>
+                <td>
                   <FaPencilAlt
                     style={{
                       color: "#007AC3",
@@ -383,9 +352,9 @@ function Eventos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(evento)}
+                    onClick={() => handleShowModal(comision)}
                   />
-                  {evento.estado === 1 ? (
+                  {comision.estado ? (
                     <FaToggleOn
                       style={{
                         color: "#30c10c",
@@ -394,7 +363,7 @@ function Eventos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(evento.idEvento, evento.estado)}
+                      onClick={() => toggleEstado(comision.idComision, comision.estado)}
                     />
                   ) : (
                     <FaToggleOff
@@ -405,7 +374,7 @@ function Eventos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(evento.idEvento, evento.estado)}
+                      onClick={() => toggleEstado(comision.idComision, comision.estado)}
                     />
                   )}
                 </td>
@@ -422,37 +391,17 @@ function Eventos() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingEvento ? "Editar Evento" : "Agregar Evento"}
+              {editingComision ? "Editar Comisión" : "Agregar Comisión"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="nombreEvento">
-                <Form.Label>Nombre Evento</Form.Label>
+              <Form.Group controlId="comision">
+                <Form.Label>Comisión</Form.Label>
                 <Form.Control
                   type="text"
-                  name="nombreEvento"
-                  value={newEvento.nombreEvento}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="fechaHoraInicio">
-                <Form.Label>Fecha Inicio</Form.Label>
-                <Form.Control
-                  type="datetime-local"
-                  name="fechaHoraInicio"
-                  value={newEvento.fechaHoraInicio}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="fechaHoraFin">
-                <Form.Label>Fecha Fin</Form.Label>
-                <Form.Control
-                  type="datetime-local"
-                  name="fechaHoraFin"
-                  value={newEvento.fechaHoraFin}
+                  name="comision"
+                  value={newComision.comision}
                   onChange={handleChange}
                   required
                 />
@@ -460,39 +409,62 @@ function Eventos() {
               <Form.Group controlId="descripcion">
                 <Form.Label>Descripción</Form.Label>
                 <Form.Control
-                  as="textarea"
-                  name="descripcion"
-                  value={newEvento.descripcion}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-              <Form.Group controlId="direccion">
-                <Form.Label>Dirección</Form.Label>
-                <Form.Control
                   type="text"
-                  name="direccion"
-                  value={newEvento.direccion}
+                  name="descripcion"
+                  value={newComision.descripcion}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="idSede">
-                <Form.Label>Sede</Form.Label>
+              <Form.Group controlId="idEvento">
+                <Form.Label>Evento</Form.Label>
                 <Form.Control
                   as="select"
-                  name="idSede"
-                  value={newEvento.idSede}
+                  name="idEvento"
+                  value={newComision.idEvento}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccione una sede</option>
-                  {sedes.map((sede) => (
-                    <option key={sede.idSede} value={sede.idSede}>
-                      {sede.nombreSede}
+                  <option value="">Seleccionar Evento</option>
+                  {eventos.map((evento) => (
+                    <option key={evento.idEvento} value={evento.idEvento}>
+                      {evento.nombreEvento}
                     </option>
                   ))}
                 </Form.Control>
               </Form.Group>
+              <Form.Group controlId="idDetalleHorario">
+                  <Form.Label>Detalle Horario</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="idDetalleHorario"
+                    value={newComision.idDetalleHorario}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccionar Detalle Horario</option>
+                    {detallesHorarios.map((detalle) => (
+                      <option key={detalle.idDetalleHorario} value={detalle.idDetalleHorario}>
+                        {`${detalle.cantidadPersonas} personas - ${new Date(`1970-01-01T${detalle.horario?.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${detalle.horario?.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+
+                {/* Campo: Estado */}
+                <Form.Group controlId="estado">
+                  <Form.Label>Estado</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="estado"
+                    value={newComision.estado}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value={1}>Activo</option>
+                    <option value={0}>Inactivo</option>
+                  </Form.Control>
+                </Form.Group>
               <Button
                 style={{
                   backgroundColor: "#007AC3",
@@ -504,7 +476,7 @@ function Eventos() {
                 }}
                 type="submit"
               >
-                {editingEvento ? "Actualizar" : "Crear"}
+                {editingComision ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -514,4 +486,4 @@ function Eventos() {
   );
 }
 
-export default Eventos;
+export default Comisiones;
