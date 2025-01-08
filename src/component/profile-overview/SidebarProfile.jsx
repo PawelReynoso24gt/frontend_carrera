@@ -17,7 +17,6 @@ function SidebarProfile() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Obtener el idUsuario desde el localStorage
         const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
         if (!idUsuario) {
           setError("No se ha iniciado sesión correctamente.");
@@ -25,11 +24,7 @@ function SidebarProfile() {
           return;
         }
 
-        // Hacer la petición al backend
         const response = await axios.get(`http://localhost:5000/usuarios/activos`);
-
-        // console.log("Usuarios activos desde la API:", response.data); // Debug
-        // Buscar el usuario logueado en los datos retornados
         const loggedUser = response.data.find((user) => user.idUsuario === idUsuario);
 
         if (loggedUser) {
@@ -46,7 +41,28 @@ function SidebarProfile() {
     };
 
     fetchUserData();
-  }, []); // Solo se ejecuta una vez al montar el componente
+  }, []);
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file && (file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/jpg")) {
+      const formData = new FormData();
+      formData.append('foto', file);
+
+      try {
+        const response = await axios.put(`http://localhost:5000/personasFoto/${userData.idPersona}/foto`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        console.log("Foto actualizada:", response.data);
+      } catch (err) {
+        console.error("Error al actualizar la foto:", err);
+      }
+    } else {
+      alert("Solo se permiten archivos JPG, JPEG y PNG.");
+    }
+  };
 
   if (loading) {
     return <p>Cargando...</p>;
@@ -62,11 +78,19 @@ function SidebarProfile() {
 
   return (
     <div className="col-lg-4 col-12 crancy-upinner__column1">
-      {/* Profile Card */}
       <div className="crancy-upcard mg-top-30">
         <div className="crancy-upcard__thumb">
           <img src={profileImg} alt="Profile" />
-          <button className="update-photo-btn" >Actualizar mi foto</button>
+          <input
+            type="file"
+            accept="image/jpeg, image/png, image/jpg"
+            style={{ display: "none" }}
+            id="fileInput"
+            onChange={handleFileChange}
+          />
+          <button className="update-photo-btn" onClick={() => document.getElementById('fileInput').click()}>
+            Actualizar mi foto
+          </button>
         </div>
         <div className="crancy-upcard__heading">
           <h3 className="crancy-upcard__title">{userData.persona.nombre}</h3>
@@ -93,35 +117,7 @@ function SidebarProfile() {
             </span>
           </li>
         </ul>
-        {/*<ul className="crancy-upcard__social">
-          <li>
-            <a href="#">
-              <img src={socialImg} alt="Social 1" />
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <img src={socialImg2} alt="Social 2" />
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <img src={socialImg3} alt="Social 3" />
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <img src={socialImg4} alt="Social 4" />
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <img src={socialImg5} alt="Social 5" />
-            </a>
-          </li>
-        </ul>*/}
       </div>
-      {/* End Profile Card */}
     </div>
   );
 }
