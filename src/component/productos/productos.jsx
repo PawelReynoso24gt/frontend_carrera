@@ -10,6 +10,7 @@ function Productos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingProducto, setEditingProducto] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [newProducto, setNewProducto] = useState({
     talla: "",
     precio: "",
@@ -106,6 +107,15 @@ function Productos() {
     setEditingProducto(null);
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setNewProducto({ ...newProducto, foto: file });
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -488,16 +498,25 @@ function Productos() {
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="foto">
-                <Form.Label>Foto</Form.Label>
-                <Form.Control
-                  type="file"
-                  name="foto"
-                  onChange={(e) => setNewProducto({ ...newProducto, foto: e.target.files[0] })}
-                  accept="image/*" // Solo permitir imágenes
-                  required
-                />
-              </Form.Group>
+              <Form.Group>
+              <Form.Label>Foto</Form.Label>
+              <Form.Control type="file" onChange={handleFileChange} accept="image/*" />
+              {previewImage && (
+                <div style={{ marginTop: "10px", textAlign: "center" }}>
+                  <img
+                    src={previewImage}
+                    alt="Vista previa"
+                    style={{
+                      width: "150px",
+                      height: "150px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                </div>
+              )}
+            </Form.Group>
               <Form.Group controlId="cantidadMinima">
                 <Form.Label>Cantidad Mínima</Form.Label>
                 <Form.Control
