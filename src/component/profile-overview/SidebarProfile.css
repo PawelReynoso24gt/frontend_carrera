@@ -1,0 +1,17 @@
+.update-photo-btn {
+    background: #0a82fd;
+    color: black;
+    border-radius: 10px;
+}
+
+.save-photo-btn {
+    background: #0ddb30;
+    color: black;
+    border-radius: 10px;
+}
+
+.discard-photo-btn {
+    background: #ff0000ad;
+    color: black;
+    border-radius: 10px;
+}
