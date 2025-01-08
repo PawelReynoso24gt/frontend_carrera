@@ -13,6 +13,9 @@ function SidebarProfile() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(profileImg);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -29,6 +32,7 @@ function SidebarProfile() {
 
         if (loggedUser) {
           setUserData(loggedUser);
+          setPreview(loggedUser.foto || profileImg);
         } else {
           setError("Usuario no encontrado.");
         }
@@ -43,11 +47,20 @@ function SidebarProfile() {
     fetchUserData();
   }, []);
 
-  const handleFileChange = async (event) => {
+  const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file && (file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/jpg")) {
+      setSelectedFile(file);
+      setPreview(URL.createObjectURL(file));
+    } else {
+      alert("Solo se permiten archivos JPG, JPEG y PNG.");
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    if (selectedFile) {
       const formData = new FormData();
-      formData.append('foto', file);
+      formData.append('foto', selectedFile);
 
       try {
         const response = await axios.put(`http://localhost:5000/personasFoto/${userData.idPersona}/foto`, formData, {
@@ -56,12 +69,17 @@ function SidebarProfile() {
           }
         });
         console.log("Foto actualizada:", response.data);
+        setSuccessMessage("Se han guardado los cambios correctamente.");
+        setSelectedFile(null);
       } catch (err) {
         console.error("Error al actualizar la foto:", err);
       }
-    } else {
-      alert("Solo se permiten archivos JPG, JPEG y PNG.");
     }
+  };
+
+  const handleDiscardChanges = () => {
+    setSelectedFile(null);
+    setPreview(userData.foto || profileImg);
   };
 
   if (loading) {
@@ -80,7 +98,7 @@ function SidebarProfile() {
     <div className="col-lg-4 col-12 crancy-upinner__column1">
       <div className="crancy-upcard mg-top-30">
         <div className="crancy-upcard__thumb">
-          <img src={profileImg} alt="Profile" />
+          <img src={preview} alt="Profile" />
           <input
             type="file"
             accept="image/jpeg, image/png, image/jpg"
@@ -91,6 +109,17 @@ function SidebarProfile() {
           <button className="update-photo-btn" onClick={() => document.getElementById('fileInput').click()}>
             Actualizar mi foto
           </button>
+          {selectedFile && (
+            <>
+              <button className="save-photo-btn" onClick={handleSaveChanges}>
+                Guardar cambios
+              </button>
+              <button className="discard-photo-btn" onClick={handleDiscardChanges}>
+                Descartar cambios
+              </button>
+            </>
+          )}
+          {successMessage && <p>{successMessage}</p>}
         </div>
         <div className="crancy-upcard__heading">
           <h3 className="crancy-upcard__title">{userData.persona.nombre}</h3>
