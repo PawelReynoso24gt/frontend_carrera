@@ -3,183 +3,158 @@ import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
-function Productos() {
+function DetalleProductoVoluntario() {
+  const [detalles, setDetalles] = useState([]);
   const [productos, setProductos] = useState([]);
-  const [categorias, setCategorias] = useState([]);
-  const [filteredProductos, setFilteredProductos] = useState([]);
+  const [voluntarios, setVoluntarios] = useState([]);
+  const [filteredDetalles, setFilteredDetalles] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingProducto, setEditingProducto] = useState(null);
-  const [newProducto, setNewProducto] = useState({
-    talla: "",
-    precio: "",
-    nombreProducto: "",
-    descripcion: "",
-    foto: "",
-    cantidadMinima: "",
-    cantidadMaxima: "",
-    idCategoria: "",
+  const [editingDetalle, setEditingDetalle] = useState(null);
+  const [newDetalle, setNewDetalle] = useState({
+    idProducto: "",
+    idVoluntario: "",
+    cantidad: "",
     estado: 1,
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [showValidationError, setShowValidationError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
+    fetchDetalles();
     fetchProductos();
-    fetchCategorias();
+    fetchVoluntarios();
   }, []);
 
-  const fetchProductos = async () => {
+  const fetchDetalles = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/productos");
-      setProductos(response.data);
-      setFilteredProductos(response.data);
+      const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios");
+      const data = Array.isArray(response.data) ? response.data : []; // Asegurarse de que sea un array
+      setDetalles(data);
+      setFilteredDetalles(data);
     } catch (error) {
-      console.error("Error fetching productos:", error);
+      console.error("Error fetching detalles:", error);
+      setDetalles([]);
+      setFilteredDetalles([]);
     }
   };
 
-  const fetchCategorias = async () => {
+  const fetchActiveProductosVol = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/categorias");
-      setCategorias(response.data);
-    } catch (error) {
-      console.error("Error fetching categorias:", error);
-    }
-  };
-
-  const fetchActiveProductos = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/productos/activos");
-      setProductos(response.data);
-      setFilteredProductos(response.data);
+      const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios/activos");
+      setDetalles(response.data);
+      setFilteredDetalles(response.data);
     } catch (error) {
       console.error("Error fetching active productos:", error);
     }
   };
 
-  const fetchInactiveProductos = async () => {
+  const fetchInactiveProductosVol = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/productos/inactivos");
-      setProductos(response.data);
-      setFilteredProductos(response.data);
+      const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios/inactivos");
+      setDetalles(response.data);
+      setFilteredDetalles(response.data);
     } catch (error) {
       console.error("Error fetching inactive productos:", error);
     }
   };
 
+  const fetchProductos = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/productos");
+      setProductos(response.data);
+    } catch (error) {
+      console.error("Error fetching productos:", error);
+    }
+  };
+
+  const fetchVoluntarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/voluntarios"); // Ajusta tu endpoint si es necesario
+      // Aseguramos que cada voluntario tenga acceso a su nombre desde la tabla de personas
+      const data = response.data.map((voluntario) => ({
+        ...voluntario,
+        nombre: voluntario.persona?.nombre || "Sin nombre", // Suponiendo que la relación con la tabla persona se llama 'persona'
+      }));
+      setVoluntarios(data);
+    } catch (error) {
+      console.error("Error fetching voluntarios:", error);
+      setVoluntarios([]);
+    }
+  };
+
+
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
 
-    const filtered = productos.filter((producto) =>
-      producto.nombreProducto.toLowerCase().includes(value)
+    if (!Array.isArray(detalles)) return;
+
+    const filtered = detalles.filter(
+      (detalle) =>
+        productos.find((producto) => producto.idProducto === detalle.idProducto)?.nombreProducto.toLowerCase().includes(value) ||
+        voluntarios.find((voluntario) => voluntario.idVoluntario === detalle.idVoluntario)?.nombre.toLowerCase().includes(value)
     );
 
-    setFilteredProductos(filtered);
+    setFilteredDetalles(filtered);
     setCurrentPage(1);
   };
 
-  const handleShowModal = (producto = null) => {
-    setEditingProducto(producto);
-    setNewProducto(
-      producto || {
-        talla: "",
-        precio: "",
-        nombreProducto: "",
-        descripcion: "",
-        cantidadMinima: "",
-        cantidadMaxima: "",
-        idCategoria: "",
+
+  const handleShowModal = (detalle = null) => {
+    setEditingDetalle(detalle);
+    setNewDetalle(
+      detalle || {
+        idProducto: "",
+        idVoluntario: "",
+        cantidad: "",
         estado: 1,
       }
     );
-    setShowValidationError(false);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingProducto(null);
+    setEditingDetalle(null);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === "talla") {
-      const regexTalla = /^(?:\d+|S|M|L|XL|XXL|XXXL|NA)$/;
-      if (!regexTalla.test(value)) {
-        setShowValidationError(true);
-      } else {
-        setShowValidationError(false);
-      }
-    }
-
-    setNewProducto({ ...newProducto, [name]: value });
-  };
-
-  const handleKeyPressOnlyLetters = (e) => {
-    const regex = /^[A-Za-záéíóúÁÉÍÓÚÑñ\s]*$/;
-
-    if (!regex.test(e.key)) {
-      e.preventDefault();
-      setShowValidationError(true);
-    } else {
-      setShowValidationError(false);
-    }
+    setNewDetalle({ ...newDetalle, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formData = new FormData();
-      formData.append("talla", newProducto.talla);
-      formData.append("precio", parseFloat(newProducto.precio));
-      formData.append("nombreProducto", newProducto.nombreProducto);
-      formData.append("descripcion", newProducto.descripcion);
-      formData.append("cantidadMinima", parseInt(newProducto.cantidadMinima, 10));
-      formData.append("cantidadMaxima", parseInt(newProducto.cantidadMaxima, 10));
-      formData.append("idCategoria", parseInt(newProducto.idCategoria, 10));
-      formData.append("estado", parseInt(newProducto.estado, 10));
-      
-      if (newProducto.foto) {
-        formData.append("foto", newProducto.foto); // Agregar la foto seleccionada
-      }
-  
-      if (editingProducto) {
-        await axios.put(`http://localhost:5000/productos/${editingProducto.idProducto}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        setAlertMessage("Producto actualizado con éxito");
+      if (editingDetalle) {
+        await axios.put(
+          `http://localhost:5000/detalle_productos_voluntarios/update/${editingDetalle.idDetalleProductoVoluntario}`,
+          newDetalle
+        );
+        setAlertMessage("Detalle actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/productos", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        setAlertMessage("Producto creado con éxito");
+        console.log(newDetalle);
+        await axios.post("http://localhost:5000/detalle_productos_voluntarios/create", newDetalle);
+        setAlertMessage("Detalle creado con éxito");
       }
-      fetchProductos();
+      fetchDetalles();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting producto:", error);
+      console.error("Error submitting detalle:", error);
     }
   };
-  
 
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/productos/${id}`, { estado: nuevoEstado });
-      fetchProductos();
+      await axios.put(`http://localhost:5000/detalle_productos_voluntarios/update/${id}`, { estado: nuevoEstado });
+      fetchDetalles();
       setAlertMessage(
-        `Producto ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
+        `Detalle ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
       );
       setShowAlert(true);
     } catch (error) {
@@ -189,9 +164,9 @@ function Productos() {
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentProductos = filteredProductos.slice(indexOfFirstRow, indexOfLastRow);
+  const currentDetalles = filteredDetalles.slice(indexOfFirstRow, indexOfLastRow);
 
-  const totalPages = Math.ceil(filteredProductos.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredDetalles.length / rowsPerPage);
 
   const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
@@ -256,7 +231,7 @@ function Productos() {
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Productos
+            Gestión de Detalles de Producto Voluntario
           </h3>
         </div>
       </div>
@@ -272,7 +247,7 @@ function Productos() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar producto por nombre..."
+            placeholder="Buscar detalle por producto o voluntario..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -285,13 +260,14 @@ function Productos() {
               borderColor: "#007AC3",
               padding: "5px 10px",
               width: "180px",
+              marginBottom: "1px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
             }}
             onClick={() => handleShowModal()}
           >
-            Agregar Producto
+            Agregar Detalle
           </Button>
           <Button
             style={{
@@ -303,7 +279,7 @@ function Productos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchActiveProductos}
+            onClick={fetchActiveProductosVol}
           >
             Activos
           </Button>
@@ -316,7 +292,7 @@ function Productos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchInactiveProductos}
+            onClick={fetchInactiveProductosVol}
           >
             Inactivos
           </Button>
@@ -348,43 +324,32 @@ function Productos() {
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
-              <th>Nombre Producto</th>
-              <th>Talla</th>
-              <th>Precio</th>
-              <th>Descripción</th>
-              <th>Foto</th>
-              <th>Cantidad Mínima</th>
-              <th>Cantidad Máxima</th>
-              <th>Categoría</th>
+              <th>Producto</th>
+              <th>Voluntario</th>
+              <th>Cantidad</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody style={{ textAlign: "center" }}>
-            {currentProductos.map((producto) => (
-              <tr key={producto.idProducto}>
-                <td>{producto.idProducto}</td>
-                <td>{producto.nombreProducto}</td>
-                <td>{producto.talla}</td>
-                <td>{producto.precio}</td>
-                <td>{producto.descripcion}</td>
-                <td>
-                  <img
-                    src={`http://localhost:5000/${producto.foto}`}
-                    alt={producto.nombreProducto}
-                    style={{ width: "100px", height: "auto", objectFit: "cover", borderRadius: "8px" }}
-                  />
-                </td>
-                <td>{producto.cantidadMinima}</td>
-                <td>{producto.cantidadMaxima}</td>
+            {currentDetalles.map((detalle) => (
+              <tr key={detalle.idDetalleProductoVoluntario}>
+                <td>{detalle.idDetalleProductoVoluntario}</td>
                 <td>
                   {
-                    categorias.find((categoria) => categoria.idCategoria === producto.idCategoria)
-                      ?.nombreCategoria || "Sin categoría"
+                    productos.find((producto) => producto.idProducto === detalle.idProducto)
+                      ?.nombreProducto || "Producto no encontrado"
                   }
                 </td>
-                <td>{producto.estado ? "Activo" : "Inactivo"}</td>
-                <td style={{ textAlign: "center" }}>
+                <td>
+                  {
+                    voluntarios.find((voluntario) => voluntario.idVoluntario === detalle.idVoluntario)
+                      ?.nombre || "Voluntario no encontrado"
+                  }
+                </td>
+                <td>{detalle.cantidad}</td>
+                <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
+                <td>
                   <FaPencilAlt
                     style={{
                       color: "#007AC3",
@@ -393,9 +358,9 @@ function Productos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(producto)}
+                    onClick={() => handleShowModal(detalle)}
                   />
-                  {producto.estado ? (
+                  {detalle.estado ? (
                     <FaToggleOn
                       style={{
                         color: "#30c10c",
@@ -404,7 +369,7 @@ function Productos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(producto.idProducto, producto.estado)}
+                      onClick={() => toggleEstado(detalle.idDetalleProductoVoluntario, detalle.estado)}
                     />
                   ) : (
                     <FaToggleOff
@@ -415,7 +380,7 @@ function Productos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(producto.idProducto, producto.estado)}
+                      onClick={() => toggleEstado(detalle.idDetalleProductoVoluntario, detalle.estado)}
                     />
                   )}
                 </td>
@@ -432,115 +397,61 @@ function Productos() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingProducto ? "Editar Producto" : "Agregar Producto"}
+              {editingDetalle ? "Editar Detalle" : "Agregar Detalle"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="nombreProducto">
-                <Form.Label>Nombre Producto</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="nombreProducto"
-                  value={newProducto.nombreProducto}
-                  onChange={handleChange}
-                  onKeyPress={handleKeyPressOnlyLetters} // Validación de solo letras
-                  required
-                />
-                {showValidationError && (
-                  <Alert variant="danger" style={{ marginTop: "10px", fontWeight: "bold" }}>
-                    Solamente letras
-                  </Alert>
-                )}
-              </Form.Group>
-              <Form.Group controlId="talla">
-                <Form.Label>Talla</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="talla"
-                  value={newProducto.talla}
-                  onChange={handleChange}
-                  required
-                />
-                {showValidationError && (
-                  <Alert variant="danger" style={{ marginTop: "10px", fontWeight: "bold" }}>
-                    Solamente números o las tallas: S, M, L, XL, XXL, XXXL, NA
-                  </Alert>
-                )}
-              </Form.Group>
-              <Form.Group controlId="precio">
-                <Form.Label>Precio</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="precio"
-                  value={newProducto.precio}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="descripcion">
-                <Form.Label>Descripción</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="descripcion"
-                  value={newProducto.descripcion}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="foto">
-                <Form.Label>Foto</Form.Label>
-                <Form.Control
-                  type="file"
-                  name="foto"
-                  onChange={(e) => setNewProducto({ ...newProducto, foto: e.target.files[0] })}
-                  accept="image/*" // Solo permitir imágenes
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="cantidadMinima">
-                <Form.Label>Cantidad Mínima</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="cantidadMinima"
-                  value={newProducto.cantidadMinima}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="cantidadMaxima">
-                <Form.Label>Cantidad Máxima</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="cantidadMaxima"
-                  value={newProducto.cantidadMaxima}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="idCategoria">
-                <Form.Label>Categoría</Form.Label>
+              <Form.Group controlId="idProducto">
+                <Form.Label>Producto</Form.Label>
                 <Form.Control
                   as="select"
-                  name="idCategoria"
-                  value={newProducto.idCategoria}
+                  name="idProducto"
+                  value={newDetalle.idProducto}
                   onChange={handleChange}
                   required
                 >
-                  <option value="">Seleccionar Categoría</option>
-                  {categorias.map((categoria) => (
-                    <option key={categoria.idCategoria} value={categoria.idCategoria}>
-                      {categoria.nombreCategoria}
+                  <option value="">Seleccionar Producto</option>
+                  {productos.map((producto) => (
+                    <option key={producto.idProducto} value={producto.idProducto}>
+                      {producto.nombreProducto}
                     </option>
                   ))}
                 </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="idVoluntario">
+                <Form.Label>Voluntario</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idVoluntario"
+                  value={newDetalle.idVoluntario}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar Voluntario</option>
+                  {voluntarios.map((voluntario) => (
+                    <option key={voluntario.idVoluntario} value={voluntario.idVoluntario}>
+                      {voluntario.nombre}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="cantidad">
+                <Form.Label>Cantidad</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="cantidad"
+                  value={newDetalle.cantidad}
+                  onChange={handleChange}
+                  required
+                />
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newProducto.estado}
+                  value={newDetalle.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -558,7 +469,7 @@ function Productos() {
                 }}
                 type="submit"
               >
-                {editingProducto ? "Actualizar" : "Crear"}
+                {editingDetalle ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
@@ -568,4 +479,4 @@ function Productos() {
   );
 }
 
-export default Productos;
+export default DetalleProductoVoluntario;
