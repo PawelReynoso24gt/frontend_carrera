@@ -7,6 +7,7 @@ import socialImg3 from "../../assets/img/social-3.png";
 import socialImg4 from "../../assets/img/social-4.png";
 import socialImg5 from "../../assets/img/social-5.png";
 import { getUserDataFromToken } from "../../utils/jwtUtils";
+import './SidebarProfile.css';
 
 function SidebarProfile() {
   const [userData, setUserData] = useState(null);
@@ -65,6 +66,7 @@ function SidebarProfile() {
       <div className="crancy-upcard mg-top-30">
         <div className="crancy-upcard__thumb">
           <img src={profileImg} alt="Profile" />
+          <button className="update-photo-btn" >Actualizar mi foto</button>
         </div>
         <div className="crancy-upcard__heading">
           <h3 className="crancy-upcard__title">{userData.persona.nombre}</h3>
