@@ -155,9 +155,9 @@ function Productos() {
       formData.append("idCategoria", parseInt(newProducto.idCategoria, 10));
       formData.append("estado", parseInt(newProducto.estado, 10));
       
-      if (newProducto.foto) {
-        formData.append("foto", newProducto.foto); // Agregar la foto seleccionada
-      }
+      if (newProducto.foto && typeof newProducto.foto !== "string") {
+        formData.append("foto", newProducto.foto);
+      }      
   
       if (editingProducto) {
         await axios.put(`http://localhost:5000/productos/${editingProducto.idProducto}`, formData, {
@@ -178,7 +178,7 @@ function Productos() {
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-      console.error("Error submitting producto:", error);
+      console.error("Error submitting producto:", error.response?.data || error);
     }
   };
   
