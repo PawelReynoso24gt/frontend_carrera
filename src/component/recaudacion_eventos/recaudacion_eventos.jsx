@@ -32,24 +32,44 @@ function RecaudacionesEventos() {
         idEvento: "",
         idEmpleado: "",
         estado: 1,
-      });
+    });
+    const [Mensaje, setMensaje] = useState("");
+    const [idEmpleado, setIdEmpleado] = useState(null);
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
+
 
     useEffect(() => {
+        const fetchPermissions = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+                    },
+                });
+                setPermissions(response.data.permisos || {});
+            } catch (error) {
+                console.error('Error fetching permissions:', error);
+            }
+        };
+
+        fetchPermissions();
         fetchRecaudaciones();
         fetchEventos();
         fetchEmpleados();
     }, []);
 
-      // Obtener el idPersona desde localStorage
-          const idEmpleado = getUserDataFromToken(localStorage.getItem("token"))?.idEmpleado; // ! USO DE LA FUNCIÓN getUserDataFromToken
-      
-          if (!idEmpleado) {
-            setMensaje(
-              "No se encontró el ID de la sede en el almacenamiento local."
-            );
-            
-            return;
-          }
+    useEffect(() => {
+        const id = getUserDataFromToken(localStorage.getItem("token"))?.idEmpleado;
+
+        if (!id) {
+            setMensaje("No se encontró el ID de la sede en el almacenamiento local.");
+        } else {
+            setIdEmpleado(id); // Guardar el idEmpleado en el estado
+            setNewRecaudaciones((prev) => ({ ...prev, idEmpleado: id }));
+        }
+    }, []);
 
     const fetchRecaudaciones = async () => {
         try {
@@ -59,6 +79,15 @@ function RecaudacionesEventos() {
         } catch (error) {
             console.error("Error fetching recaudaciones:", error);
         }
+    };
+
+    const checkPermission = (permission, message) => {
+        if (!permissions[permission]) {
+            setPermissionMessage(message);
+            setShowPermissionModal(true);
+            return false;
+        }
+        return true;
     };
 
     const fetchActiveRecaudaciones = async () => {
@@ -73,7 +102,7 @@ function RecaudacionesEventos() {
             setShowAlert(true);
         }
     };
-    
+
     const fetchInactiveRecaudaciones = async () => {
         try {
             const response = await axios.get("http://localhost:5000/recaudacion_evento/inactivas");
@@ -85,7 +114,7 @@ function RecaudacionesEventos() {
             setAlertMessage("Error al cargar las recaudaciones inactivas.");
             setShowAlert(true);
         }
-    };    
+    };
 
     const fetchEventos = async () => {
         try {
@@ -103,12 +132,12 @@ function RecaudacionesEventos() {
         } catch (error) {
             console.error("Error fetching empleados:", error);
         }
-    };  
+    };
 
     const handleShowModal = (action, recaudacion = null) => {
         setModalAction(action);
         setEditingRecaudacion(recaudacion);
-    
+
         if (action === "create") {
             setNewRecaudaciones({
                 recaudacion: "",
@@ -132,14 +161,16 @@ function RecaudacionesEventos() {
         setShowModal(true);
     };
 
-      const handleCloseModal = () => {
+    const handleCloseModal = () => {
         setShowModal(false);
         setEditingRecaudacion(null);
-        setNewRecaudaciones(recaudacion || { recaudacion: "", numeroPersonas: "",
+        setNewRecaudaciones(recaudacion || {
+            recaudacion: "", numeroPersonas: "",
             fechaRegistro: "",
             idEvento: "",
-            idEmpleado: idEmpleado, estado: 1 });
-      };
+            idEmpleado: idEmpleado, estado: 1
+        });
+    };
 
     const handleCreateRecaudacion = async () => {
 
@@ -167,7 +198,7 @@ function RecaudacionesEventos() {
     };
 
     const handleUpdateRecaudacion = async () => {
-    
+
         try {
             const updatedData = {
                 recaudacion: newRecaudaciones.recaudacion,
@@ -177,12 +208,12 @@ function RecaudacionesEventos() {
                 idEmpleado: newRecaudaciones.idEmpleado,
                 estado: newRecaudaciones.estado,
             };
-    
+
             const response = await axios.put(
                 `http://localhost:5000/recaudacion_evento/update/${editingRecaudacion.idRecaudacionEvento}`,
                 updatedData
             );
-    
+
             if (response.status === 200) {
                 setAlertMessage("Recaudación actualizada con éxito.");
                 setShowAlert(true);
@@ -193,7 +224,7 @@ function RecaudacionesEventos() {
             console.error("Error actualizando recaudación:", error);
             alert("Error al actualizar la recaudación. Intente nuevamente.");
         }
-    };    
+    };
 
     const handleSearch = (e) => {
         const value = e.target.value.toLowerCase();
@@ -290,17 +321,17 @@ function RecaudacionesEventos() {
             boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
         >
-             <h3
-            style={{
-            fontSize: "24px",
-            fontWeight: "bold",
-            color: "#333",
-            textAlign: "center",
-            marginBottom: "20px",
-            }}
-        >
-            Gestión de recaudaciones de eventos
-        </h3>
+            <h3
+                style={{
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    color: "#333",
+                    textAlign: "center",
+                    marginBottom: "20px",
+                }}
+            >
+                Gestión de recaudaciones de eventos
+            </h3>
             <InputGroup className="mb-3">
                 <FormControl
                     placeholder="Buscar por nombre del evento..."
@@ -319,7 +350,7 @@ function RecaudacionesEventos() {
                 </Alert>
             )}
             <div className="d-flex justify-content-start align-items-center mb-3">
-            <Button
+                <Button
                     style={{
                         backgroundColor: "#007abf",
                         borderColor: "#007AC3",
@@ -329,36 +360,40 @@ function RecaudacionesEventos() {
                         fontWeight: "bold",
                         color: "#fff",
                     }}
-                    onClick={() => handleShowModal("create")}
+                    onClick={() => {
+                        if (checkPermission('Crear recaudación de evento', 'No tienes permisos para crear recaudación de evento')) {
+                            handleShowModal("create");
+                        }
+                    }}
                 >
                     Crear Recaudación
                 </Button>
                 <Button
-                style={{
-                    backgroundColor: "#009B85",
-                    borderColor: "#007AC3",
-                    padding: "5px 10px",
-                    width: "100px",
-                    marginRight: "10px",
-                    fontWeight: "bold",
-                    color: "#fff",
-                }}
-                onClick={fetchActiveRecaudaciones}
+                    style={{
+                        backgroundColor: "#009B85",
+                        borderColor: "#007AC3",
+                        padding: "5px 10px",
+                        width: "100px",
+                        marginRight: "10px",
+                        fontWeight: "bold",
+                        color: "#fff",
+                    }}
+                    onClick={fetchActiveRecaudaciones}
                 >
-                Activas
+                    Activas
                 </Button>
                 <Button
-                style={{
-                    backgroundColor: "#bf2200",
-                    borderColor: "#007AC3",
-                    padding: "5px 10px",
-                    width: "100px",
-                    fontWeight: "bold",
-                    color: "#fff",
-                }}
-                onClick={fetchInactiveRecaudaciones}
+                    style={{
+                        backgroundColor: "#bf2200",
+                        borderColor: "#007AC3",
+                        padding: "5px 10px",
+                        width: "100px",
+                        fontWeight: "bold",
+                        color: "#fff",
+                    }}
+                    onClick={fetchInactiveRecaudaciones}
                 >
-                Inactivas
+                    Inactivas
                 </Button>
             </div>
 
@@ -369,10 +404,10 @@ function RecaudacionesEventos() {
                 responsive
                 className="mt-3"
                 style={{
-                backgroundColor: "#ffffff",
-                borderRadius: "10px",
-                overflow: "hidden",
-                textAlign: "center",
+                    backgroundColor: "#ffffff",
+                    borderRadius: "10px",
+                    overflow: "hidden",
+                    textAlign: "center",
                 }}
             >
                 <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
@@ -388,51 +423,59 @@ function RecaudacionesEventos() {
                     </tr>
                 </thead>
                 <tbody>
-                {currentRecaudaciones.length > 0 ? (
-                    currentRecaudaciones.map((recaudacion) => {
-                        return (
-                        <tr key={recaudacion.idRecaudacionEvento}>
-                            <td>{recaudacion.idRecaudacionEvento}</td>
-                            <td>{recaudacion.evento?.nombreEvento}</td>
-                            <td>{recaudacion.empleado?.persona?.nombre}</td>
-                            <td>{recaudacion.fechaRegistro ? format(parseISO(recaudacion.fechaRegistro), "dd-MM-yyyy") : "Sin fecha"}</td>
-                            <td>{recaudacion.recaudacion}</td>
-                            <td>{recaudacion.numeroPersonas} personas</td>
-                            <td>{recaudacion.estado === 1 ? "Activo" : "Inactivo"}</td>
-                            <td>
-                                <FaPencilAlt
-                                style={{ cursor: "pointer", marginRight: "10px", fontSize: "20px", color: "#007AC3" }}
-                                title="Editar"
-                                onClick={() => handleShowModal("update", recaudacion)}
-                                />
-                                {recaudacion.estado === 1 ? (
-                                <FaToggleOn
-                                    style={{ color: "#30c10c", cursor: "pointer", fontSize: "20px" }}
-                                    title="Inactivar"
-                                    onClick={() =>
-                                    toggleEstado(recaudacion.idRecaudacionEvento, recaudacion.estado)
-                                    }
-                                />
-                                ) : (
-                                <FaToggleOff
-                                    style={{ color: "#e10f0f", cursor: "pointer", fontSize: "20px" }}
-                                    title="Activar"
-                                    onClick={() =>
-                                    toggleEstado(recaudacion.idRecaudacionEvento, recaudacion.estado)
-                                    }
-                                />
-                                )}
+                    {currentRecaudaciones.length > 0 ? (
+                        currentRecaudaciones.map((recaudacion) => {
+                            return (
+                                <tr key={recaudacion.idRecaudacionEvento}>
+                                    <td>{recaudacion.idRecaudacionEvento}</td>
+                                    <td>{recaudacion.evento?.nombreEvento}</td>
+                                    <td>{recaudacion.empleado?.persona?.nombre}</td>
+                                    <td>{recaudacion.fechaRegistro ? format(parseISO(recaudacion.fechaRegistro), "dd-MM-yyyy") : "Sin fecha"}</td>
+                                    <td>{recaudacion.recaudacion}</td>
+                                    <td>{recaudacion.numeroPersonas} personas</td>
+                                    <td>{recaudacion.estado === 1 ? "Activo" : "Inactivo"}</td>
+                                    <td>
+                                        <FaPencilAlt
+                                            style={{ cursor: "pointer", marginRight: "10px", fontSize: "20px", color: "#007AC3" }}
+                                            title="Editar"
+                                            onClick={() => {
+                                                if (checkPermission('Editar recaudación de evento', 'No tienes permisos para editar recaudación de evento')) {
+                                                    handleShowModal("update", recaudacion);
+                                                }
+                                            }}
+                                        />
+                                        {recaudacion.estado === 1 ? (
+                                            <FaToggleOn
+                                                style={{ color: "#30c10c", cursor: "pointer", fontSize: "20px" }}
+                                                title="Inactivar"
+                                                onClick={() => {
+                                                    if (checkPermission('Desactivar recaudación de evento', 'No tienes permisos para desactivar recaudación de evento')) {
+                                                        toggleEstado(recaudacion.idRecaudacionEvento, recaudacion.estado)
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <FaToggleOff
+                                                style={{ color: "#e10f0f", cursor: "pointer", fontSize: "20px" }}
+                                                title="Activar"
+                                                onClick={() => {
+                                                    if (checkPermission('Activar recaudación de evento', 'No tienes permisos para activar recaudación de evento')) {
+                                                        toggleEstado(recaudacion.idRecaudacionEvento, recaudacion.estado)
+                                                    }
+                                                }}
+                                            />
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    ) : (
+                        <tr>
+                            <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
+                                No hay recaudaciones disponibles.
                             </td>
                         </tr>
-                    );
-                })
-            ) : (
-                <tr>
-                <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
-                    No hay recaudaciones disponibles.
-                </td>
-                </tr>
-            )}
+                    )}
                 </tbody>
             </Table>
             {renderPagination()}
@@ -441,23 +484,23 @@ function RecaudacionesEventos() {
                     <Modal.Title>{modalAction === "create" ? "Agregar Recaudación" : "Editar Recaudación"}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                <Form.Group>
-                    <Form.Label>Evento</Form.Label>
-                    <Form.Control
-                        as="select"
-                        value={newRecaudaciones.idEvento}
-                        onChange={(e) =>
-                            setNewRecaudaciones({ ...newRecaudaciones, idEvento: e.target.value })
-                        }
-                    >
-                        <option value="">Seleccione un evento</option>
-                        {eventos.map((evento) => (
-                            <option key={evento.idEvento} value={evento.idEvento}>
-                                {evento.nombreEvento}
-                            </option>
-                        ))}
-                    </Form.Control>
-                </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Evento</Form.Label>
+                        <Form.Control
+                            as="select"
+                            value={newRecaudaciones.idEvento}
+                            onChange={(e) =>
+                                setNewRecaudaciones({ ...newRecaudaciones, idEvento: e.target.value })
+                            }
+                        >
+                            <option value="">Seleccione un evento</option>
+                            {eventos.map((evento) => (
+                                <option key={evento.idEvento} value={evento.idEvento}>
+                                    {evento.nombreEvento}
+                                </option>
+                            ))}
+                        </Form.Control>
+                    </Form.Group>
                     <Form.Group>
                         <Form.Label>Registrado por</Form.Label>
                         <Form.Control
@@ -518,6 +561,17 @@ function RecaudacionesEventos() {
                     </Button>
                     <Button variant="secondary" onClick={handleCloseModal}>
                         Cancelar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Permiso Denegado</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{permissionMessage}</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                        Aceptar
                     </Button>
                 </Modal.Footer>
             </Modal>

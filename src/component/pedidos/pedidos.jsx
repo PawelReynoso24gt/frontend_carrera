@@ -10,7 +10,9 @@ import {
   FormControl,
   Pagination,
 } from "react-bootstrap";
-import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 // Utilidad para formatear fechas
 const formatDate = (date) => {
@@ -37,9 +39,14 @@ function Pedidos() {
   const [usuarios, setUsuarios] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [detallesProductos, setDetallesProductos] = useState([]);
+  const [showDetalleModal, setShowDetalleModal] = useState(false);
+  const [detallePedido, setDetallePedido] = useState(null);
+  const [productos, setProductos] = useState([]);
+
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -54,11 +61,12 @@ function Pedidos() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchPedidos();
     fetchSedes();
     fetchUsuarios();
+    fetchProductos();
   }, []);
 
   const checkPermission = (permission, message) => {
@@ -69,7 +77,40 @@ function Pedidos() {
     }
     return true;
   };
-  
+
+  const handleAddDetalle = () => {
+    setDetallesProductos([...detallesProductos, { idProducto: "", cantidad: "" }]);
+  };
+
+  const handleDetalleChange = (index, field, value) => {
+    const nuevosDetalles = [...detallesProductos];
+    nuevosDetalles[index][field] = value;
+    setDetallesProductos(nuevosDetalles);
+  };
+
+  const handleRemoveDetalle = (index) => {
+    setDetallesProductos(detallesProductos.filter((_, i) => i !== index));
+  };
+
+  const fetchDetallePedido = async (idPedido) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/detalle_pedido/${idPedido}`);
+      setDetallePedido(response.data.pedido);
+      setShowDetalleModal(true);
+    } catch (error) {
+      console.error("Error fetching pedido details:", error);
+    }
+  };
+
+  const fetchProductos = async () => {
+    try {
+        const response = await axios.get("http://localhost:5000/productos");
+        setProductos(response.data);
+    } catch (error) {
+        console.error("Error fetching productos:", error);
+    }
+};
+
 
   const fetchPedidos = async () => {
     try {
@@ -90,7 +131,7 @@ function Pedidos() {
       console.error("Error fetching active pedidos:", error);
     }
   };
-  
+
   const fetchInactivePedidos = async () => {
     try {
       const response = await axios.get("http://localhost:5000/pedidos/inactivas");
@@ -100,7 +141,7 @@ function Pedidos() {
       console.error("Error fetching inactive pedidos:", error);
     }
   };
-  
+
   const fetchSedes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/sedes");
@@ -163,26 +204,23 @@ function Pedidos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const regexDescripcion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
-    if (!regexDescripcion.test(newPedido.descripcion)) {
-      setAlertMessage(
-        "La descripción solo debe contener letras, números, espacios y los signos permitidos (.,-)."
-      );
-      setShowAlert(true);
-      return;
-    }
+    const pedidoConDetalle = {
+      ...newPedido,
+      detalles: detallesProductos,
+    };
 
     try {
       if (editingPedido) {
         await axios.put(
-          `http://localhost:5000/pedidos/${editingPedido.idPedido}`,
-          newPedido
+          `http://localhost:5000/pedidosCompletos/${editingPedido.idPedido}`,
+          pedidoConDetalle
         );
         setAlertMessage("Pedido actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/pedidos", newPedido);
+        await axios.post("http://localhost:5000/pedidosCompletos", pedidoConDetalle);
         setAlertMessage("Pedido creado con éxito");
       }
+
       fetchPedidos();
       setShowAlert(true);
       handleCloseModal();
@@ -384,7 +422,7 @@ function Pedidos() {
             {currentPedidos.map((pedido) => (
               <tr key={pedido.idPedido}>
                 <td style={{ textAlign: "center" }}>{pedido.idPedido}</td>
-                <td style={{ textAlign: "center" }}>{formatDate(pedido.fecha)}</td>
+                <td style={{ textAlign: "center" }}>{formatDate(pedido.fecha) ? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</td>
                 <td style={{ textAlign: "center" }}>{pedido.descripcion}</td>
                 <td style={{ textAlign: "center" }}>
                   {sedes.find((sede) => sede.idSede === pedido.idSede)?.nombreSede ||
@@ -398,6 +436,17 @@ function Pedidos() {
                   {pedido.estado === 1 ? "Activo" : "Inactivo"}
                 </td>
                 <td style={{ textAlign: "center" }}>
+                  <FaEye
+                    style={{
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
+                    }}
+                    title="Ver Detalles"
+                    onClick={() => fetchDetallePedido(pedido.idPedido)}
+                  />
+
                   <FaPencilAlt
                     style={{
                       color: "#007AC3",
@@ -516,6 +565,51 @@ function Pedidos() {
                   ))}
                 </Form.Control>
               </Form.Group>
+              <hr />
+              <h5>Detalles de Productos</h5>
+              {detallesProductos.map((detalle, index) => (
+                <div key={index} className="mb-3">
+                  <Form.Group controlId={`idProducto-${index}`}>
+                    <Form.Label>Producto</Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={detalle.idProducto}
+                      onChange={(e) => handleDetalleChange(index, "idProducto", e.target.value)}
+                      required
+                    >
+                      <option value="">Seleccionar Producto</option>
+                      {productos.map((producto) => (
+                        <option key={producto.idProducto} value={producto.idProducto}>
+                          {producto.nombreProducto}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                  <Form.Group controlId={`cantidad-${index}`}>
+                    <Form.Label>Cantidad</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="1"
+                      value={detalle.cantidad}
+                      onChange={(e) => handleDetalleChange(index, "cantidad", e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleRemoveDetalle(index)}
+                    className="mt-2"
+                  >
+                    Eliminar Detalle
+                  </Button>
+                  <hr />
+                </div>
+              ))}
+
+              <Button variant="secondary" onClick={handleAddDetalle} className="mb-3">
+                Agregar Detalle
+              </Button>
+
               <Button
                 style={{
                   backgroundColor: "#007AC3",
@@ -532,17 +626,49 @@ function Pedidos() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-              </Modal>
+
+        <Modal show={showDetalleModal} onHide={() => setShowDetalleModal(false)}>
+    <Modal.Header closeButton>
+        <Modal.Title>Detalle del Pedido</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+        {detallePedido ? (
+            <div>
+                <p><strong>Fecha:</strong> {detallePedido.fecha ? format(parseISO(detallePedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</p>
+                <p><strong>Descripción:</strong> {detallePedido.descripcion}</p>
+                <p><strong>Estado:</strong> {detallePedido.estado === 1 ? "Activo" : "Inactivo"}</p>
+                <p><strong>Detalles:</strong></p>
+                <ul>
+                    {detallePedido.detalle_pedidos.map((detalle) => (
+                        <li key={detalle.idDetallePedido}>
+                            Producto: {detalle.producto.nombreProducto} | Cantidad: {detalle.cantidad}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        ) : (
+            <p>Cargando detalles...</p>
+        )}
+    </Modal.Body>
+    <Modal.Footer>
+        <Button variant="secondary" onClick={() => setShowDetalleModal(false)}>
+            Cerrar
+        </Button>
+    </Modal.Footer>
+</Modal>
+
+        
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );
