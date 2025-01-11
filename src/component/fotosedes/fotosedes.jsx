@@ -51,7 +51,7 @@ function FotosSedesComponent() {
 
   const handleShowModal = (foto = null) => {
     setEditingFoto(foto);
-    setNewFoto(foto || { foto: '', idSede: '', estado: 1 });
+    setNewFoto(foto || { foto: '', idSede: sedes.length > 0 ? sedes[0].idSede : '', estado: 1 });
     setShowModal(true);
   };
 
@@ -67,23 +67,36 @@ function FotosSedesComponent() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewFoto({ ...newFoto, foto: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
+    setNewFoto({ ...newFoto, foto: file });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append('foto', newFoto.foto);
+    formData.append('idSede', Number(newFoto.idSede)); // Convertir idSede a número
+    formData.append('estado', Number(newFoto.estado)); // Convertir estado a número
+
+    console.log("Datos enviados al backend:", {
+      foto: newFoto.foto,
+      idSede: Number(newFoto.idSede),
+      estado: Number(newFoto.estado)
+    });
+
     try {
       if (editingFoto) {
-        await axios.put(`http://localhost:5000/fotos_sedes/${editingFoto.idFotoSede}`, newFoto);
+        await axios.put(`http://localhost:5000/fotos_sedes/${editingFoto.idFotoSede}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
         setAlertMessage('Foto de sede actualizada con éxito');
       } else {
-        await axios.post('http://localhost:5000/fotos_sedes', newFoto);
+        await axios.post('http://localhost:5000/fotos_sedes', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
         setAlertMessage('Foto de sede creada con éxito');
       }
       fetchActiveFotos();
