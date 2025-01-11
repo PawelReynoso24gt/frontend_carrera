@@ -22,7 +22,11 @@ function FotosSedesComponent() {
   const fetchActiveFotos = async () => {
     try {
       const response = await axios.get('http://localhost:5000/fotos_sedes/activos');
-      setFotos(response.data);
+      const fotosWithFullPath = response.data.map(foto => ({
+        ...foto,
+        foto: foto.foto !== "sin foto" ? `http://localhost:5000/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
+      }));
+      setFotos(fotosWithFullPath);
     } catch (error) {
       console.error('Error fetching active fotos:', error);
     }
@@ -33,7 +37,10 @@ function FotosSedesComponent() {
       const response = await axios.get('http://localhost:5000/fotos_sedes', {
         params: { estado: 0 }
       });
-      const inactiveFotos = response.data.filter(foto => foto.estado === 0);
+      const inactiveFotos = response.data.filter(foto => foto.estado === 0).map(foto => ({
+        ...foto,
+        foto: foto.foto !== "sin foto" ? `http://localhost:5000/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
+      }));
       setFotos(inactiveFotos);
     } catch (error) {
       console.error('Error fetching inactive fotos:', error);
