@@ -5,6 +5,7 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function FotosSedesComponent() {
   const [fotos, setFotos] = useState([]);
+  const [sedes, setSedes] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingFoto, setEditingFoto] = useState(null);
   const [newFoto, setNewFoto] = useState({ foto: '', idSede: '', estado: 1 });
@@ -13,6 +14,7 @@ function FotosSedesComponent() {
 
   useEffect(() => {
     fetchActiveFotos();
+    fetchSedes();
   }, []);
 
   const fetchActiveFotos = async () => {
@@ -33,6 +35,15 @@ function FotosSedesComponent() {
       setFotos(inactiveFotos);
     } catch (error) {
       console.error('Error fetching inactive fotos:', error);
+    }
+  };
+
+  const fetchSedes = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/sedes');
+      setSedes(response.data);
+    } catch (error) {
+      console.error('Error fetching sedes:', error);
     }
   };
 
@@ -181,7 +192,7 @@ function FotosSedesComponent() {
             <tr>
               <th>ID</th>
               <th>Foto</th>
-              <th>ID Sede</th>
+              <th>Nombre de la Sede</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -197,7 +208,7 @@ function FotosSedesComponent() {
                     style={{ width: '100px' }}
                   />
                 </td>
-                <td>{foto.idSede}</td>
+                <td>{sedes.find(sede => sede.idSede === foto.idSede)?.nombreSede || 'N/A'}</td>
                 <td>{foto.estado ? "Activo" : "Inactivo"}</td>
                 <td>
                   <FaPencilAlt
@@ -263,15 +274,21 @@ function FotosSedesComponent() {
               </Form.Group>
               <Form.Group controlId="idSede">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Sede
+                  Nombre de la Sede
                 </Form.Label>
                 <Form.Control
-                  type="number"
+                  as="select"
                   name="idSede"
                   value={newFoto.idSede}
                   onChange={handleChange}
                   required
-                />
+                >
+                  {sedes.map((sede) => (
+                    <option key={sede.idSede} value={sede.idSede}>
+                      {sede.nombreSede}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>

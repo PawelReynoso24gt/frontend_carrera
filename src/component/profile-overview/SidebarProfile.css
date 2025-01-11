@@ -2,16 +2,82 @@
     background: #0a82fd;
     color: black;
     border-radius: 10px;
+    width: 80%;
+    margin-top: 10px;
+    text-align: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.update-photo-btn:hover {
+    background: #0b7dda;
 }
 
 .save-photo-btn {
-    background: #0ddb30;
+    background: #04AA6D;
     color: black;
     border-radius: 10px;
+    width: 80%;
+    margin-top: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.save-photo-btn:hover {
+    background: #46a049;
 }
 
 .discard-photo-btn {
-    background: #ff0000ad;
+    background: #f44336;
     color: black;
     border-radius: 10px;
+    width: 80%;
+    margin-top: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.discard-photo-btn:hover {
+    background: #da190b;
+}
+
+.crancy-upinner__column1 {
+    width: 100%;
+    display: block;
+    position: static;
+}
+
+.col-lg-4 {
+    width: 100%;
+}
+
+.col-12 {
+    width: 100%;
+}
+
+.crancy-upcard {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.crancy-upcard__thumb {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.user-data {
+    color: blue; /* Change this to your desired color */
+}
+
+.crancy-upcard__heading {
+    display: inline-block;
+}
+
+.crancy-upcard__list {
+    display: block;
 }

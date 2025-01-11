@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import profileImg from "../../assets/img/withoutProfilePicture.png";
-import socialImg from "../../assets/img/social-1.png";
-import socialImg2 from "../../assets/img/social-2.png";
-import socialImg3 from "../../assets/img/social-3.png";
-import socialImg4 from "../../assets/img/social-4.png";
-import socialImg5 from "../../assets/img/social-5.png";
 import { getUserDataFromToken } from "../../utils/jwtUtils";
+import { format } from 'date-fns';
 import './SidebarProfile.css';
 
 function SidebarProfile() {
@@ -135,18 +131,18 @@ function SidebarProfile() {
         </div>
         <ul className="crancy-upcard__list">
           <li>
-            <b>Usuario:</b> <span>{userData.usuario}</span>
+            <b>Usuario:</b> <span className="crancy-pcolor">{userData.usuario}</span>
           </li>
           <li>
-            <b>Teléfono:</b> <span>{userData.persona.telefono}</span>
+            <b>Teléfono:</b> <span className="crancy-pcolor">{userData.persona.telefono}</span>
           </li>
           <li>
-            <b>Email:</b> <span>{userData.persona.correo}</span>
+            <b>Email:</b> <span className="crancy-pcolor">{userData.persona.correo}</span>
           </li>
           <li>
             <b>Fecha de registro:</b>{" "}
             <span className="crancy-pcolor crancy-upcard__list--label">
-              {new Date(userData.persona.createdAt).toLocaleDateString()}
+              {format(new Date(userData.persona.createdAt), 'dd/MM/yyyy')}
             </span>
           </li>
         </ul>
