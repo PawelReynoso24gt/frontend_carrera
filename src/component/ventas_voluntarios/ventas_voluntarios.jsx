@@ -627,7 +627,7 @@ function Ventas() {
             Inactivos
           </Button>
         </div>
-        <Table striped bordered hover responsive className="mt-3">
+        <Table striped bordered hover responsive className="mt-3" style ={{ textAlign: "center" }}>
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
@@ -645,7 +645,7 @@ function Ventas() {
               <tr key={venta.idVenta}>
                 <td>{venta.idVenta}</td>
                 <td>{venta.fechaVenta}</td>
-                <td>{venta.totalVenta}</td>
+                <td>Q. {venta.totalVenta}</td>
                 <td>{tiposPublico.find((tp) => tp.idTipoPublico === venta.idTipoPublico)?.nombreTipo || "N/A"}</td>
                 <td>{venta.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
