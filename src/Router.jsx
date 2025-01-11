@@ -88,7 +88,8 @@ import VentasVoluntarios from "./pages/ventas_voluntarios/ventas_voluntarios";
 import VentasStands from "./pages/ventas_stands/ventas_stands";
 import RecaudacionRifas from "./pages/recaudacion_rifas/recaudacion_rifas";
 import RecaudacionEventos from "./pages/recaudaciones_eventos/recaudaciones_eventos";
-
+import ProductosVentVoluntario from "./pages/productosVentVoluntario/productosVentVoluntario";
+import Empleados from "./pages/empleados/empleados";
 
 const router = createBrowserRouter([
   {
@@ -227,6 +228,10 @@ const router = createBrowserRouter([
         element: <Productos />,
       },
       {
+        path: "/productosVentVoluntarios",
+        element: <ProductosVentVoluntario />,
+      },
+      {
         path: "/personas",
         element: <Personas />,
       },
@@ -357,6 +362,10 @@ const router = createBrowserRouter([
       {
         path: "/reporteRifas",
         element: <ReporteRifasPage/>,
+      },
+      {
+        path: "/empleados",
+        element: <Empleados/>,
       },
       {
         path: "/gallery",

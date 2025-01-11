@@ -73,7 +73,7 @@ function Menu({ toggleMenu, menu }) {
               options={[
                 { link: "Administradores", title: "Usuarios" },
                 { link: "voluntarios", title: "Voluntarios" },
-                { link: "usuarios-clientes", title: "Empleados" }, //aqui pawel empleados
+                { link: "empleados", title: "Empleados" }, //aqui pawel empleados
                 { link: "roles", title: "Roles" },
                 { link: "permisos", title: "Asignación de Permisos" },
               ]}
@@ -147,6 +147,7 @@ function Menu({ toggleMenu, menu }) {
                 { link: "Categorias", title: "Gestión de categoría productos" },
                 { link: "pedidos", title: "Gestión de pedidos" },
                 { link: "productos", title: "Gestión Productos" },
+                { link: "productosVentVoluntarios", title: "Productos de venta para voluntarios" },
               ]}
               img={
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-basket" viewBox="0 0 16 16">

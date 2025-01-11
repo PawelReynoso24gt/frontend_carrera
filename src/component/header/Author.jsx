@@ -1,11 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import profile from '../../assets/img/profile-pic.png';
 import axios from 'axios';
+import profileImg from '../../assets/img/profile-pic.png';
 import { getUserDataFromToken } from '../../utils/jwtUtils';
 
 function Author({ subNav, setSubNav, title }) {
   const navigate = useNavigate();
+  const [profilePicture, setProfilePicture] = useState(profileImg);
+
+  useEffect(() => {
+    const fetchUserProfilePicture = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const userData = getUserDataFromToken(token);
+
+        if (!userData) {
+          return;
+        }
+
+        const response = await axios.get(`http://localhost:5000/usuarios/activos`);
+        const loggedUser = response.data.find((user) => user.idUsuario === userData.idUsuario);
+
+        if (loggedUser) {
+          const photoPath = loggedUser.persona.foto !== "sin foto" ? `http://localhost:5000/${loggedUser.persona.foto.replace(/\\/g, '/')}` : profileImg;
+          setProfilePicture(photoPath);
+        }
+      } catch (err) {
+        console.error("Error al obtener la foto del usuario:", err);
+      }
+    };
+
+    fetchUserProfilePicture();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -13,21 +39,17 @@ function Author({ subNav, setSubNav, title }) {
       const userData = getUserDataFromToken(token);
 
       if (token) {
-        // Obtener el id del usuario decodificando el token (siempre que el id esté incluido en el payload)
         const idUsuario = userData ? userData.idUsuario : null;
 
-        // Llamar al endpoint de logout para eliminar el token de la base de datos
         await axios.put(`http://localhost:5000/usuarios/logout/${idUsuario}`, {}, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
-        // Eliminar el token del localStorage
         localStorage.clear();
       }
 
-      // Navegar a la página de login
       navigate('/login');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -35,24 +57,13 @@ function Author({ subNav, setSubNav, title }) {
     }
   };
 
-  const parseJwt = (token) => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(window.atob(base64));
-    } catch (e) {
-      return null;
-    }
-  };
-
   return (
     <div className="crancy-header__author" onMouseOver={() => setSubNav(title)}>
       <Link to="/profile-overview">
         <div className="crancy-header__author-img">
-          <img src={profile} alt="#" />
+          <img src={profilePicture} alt="Profile" />
         </div>
       </Link>
-      {/* crancy Profile Hover */}
       <div
         className="crancy-balance crancy-profile__hover fm-hover-animation"
         style={{ display: subNav === title ? 'block' : 'none' }}
@@ -84,7 +95,6 @@ function Author({ subNav, setSubNav, title }) {
               </h4>
             </div>
           </li>
-          {/* Logout Button */}
           <li onClick={handleLogout}>
             <div className="crancy-balance-info">
               <div className="crancy-balance__img crancy-color4__bg">
