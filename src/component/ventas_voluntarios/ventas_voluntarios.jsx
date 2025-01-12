@@ -650,12 +650,16 @@ function Ventas() {
                 <td>{venta.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                 <FaEye
-                    style={{ cursor: "pointer", marginRight: "10px", color: "#007AC3" }}
+                    style={{ cursor: "pointer", marginRight: "10px", color: "#007AC3", fontSize: "20px" }}
                     title="Ver Detalle"
                     onClick={() => handleViewDetails(venta.idVenta)}
                   />
                   <FaPencilAlt
-                    style={{ cursor: "pointer", marginRight: "10px"}}
+                    style={{
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
+                    }}
                     title="Editar"
                     onClick={() => {
                       handleLoadVentaForEdit(venta.idVenta); // Cargar la venta completa
@@ -664,13 +668,13 @@ function Ventas() {
                   />
                   {venta.estado ? (
                     <FaToggleOn
-                      style={{ cursor: "pointer", color: "#30c10c" }}
+                      style={{ cursor: "pointer", color: "#30c10c", marginLeft: "10px", fontSize: "20px" }}
                       title="Inactivar"
                       onClick={() => toggleEstado(venta.idVenta, venta.estado)}
                     />
                   ) : (
                     <FaToggleOff
-                      style={{ cursor: "pointer", color: "#e10f0f" }}
+                      style={{ cursor: "pointer", color: "#e10f0f", marginLeft: "10px", fontSize: "20px" }}
                       title="Activar"
                       onClick={() => toggleEstado(venta.idVenta, venta.estado)}
                     />
