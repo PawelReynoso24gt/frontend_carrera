@@ -89,18 +89,22 @@ function DetalleProductoVoluntario() {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-
-    if (!Array.isArray(detalles)) return;
-
-    const filtered = detalles.filter(
-      (detalle) =>
-        productos.find((producto) => producto.idProducto === detalle.idProducto)?.nombreProducto.toLowerCase().includes(value) ||
-        voluntarios.find((voluntario) => voluntario.idVoluntario === detalle.idVoluntario)?.nombre.toLowerCase().includes(value)
-    );
-
+  
+    // Filtrar los detalles en función del producto y el voluntario
+    const filtered = detalles.filter((detalle) => {
+      const productoNombre = detalle.producto?.nombreProducto?.toLowerCase() || "";
+      const voluntarioNombre = detalle.voluntario?.nombre?.toLowerCase() || "";
+  
+      return 
+      productoNombre.includes(value) ||
+       voluntarioNombre.includes(value);
+    });
+  
     setFilteredDetalles(filtered);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reinicia a la primera página después de filtrar
   };
+  
+  
 
 
   const handleShowModal = (detalle = null) => {
@@ -335,18 +339,8 @@ function DetalleProductoVoluntario() {
             {currentDetalles.map((detalle) => (
               <tr key={detalle.idDetalleProductoVoluntario}>
                 <td>{detalle.idDetalleProductoVoluntario}</td>
-                <td>
-                  {
-                    productos.find((producto) => producto.idProducto === detalle.idProducto)
-                      ?.nombreProducto || "Producto no encontrado"
-                  }
-                </td>
-                <td>
-                  {
-                    voluntarios.find((voluntario) => voluntario.idVoluntario === detalle.idVoluntario)
-                      ?.nombre || "Voluntario no encontrado"
-                  }
-                </td>
+                <td>{detalle.producto?.nombreProducto}</td>
+                <td>{detalle.voluntario?.persona?.nombre}</td>
                 <td>{detalle.cantidad}</td>
                 <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
                 <td>
