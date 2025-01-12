@@ -78,6 +78,26 @@ const Desarrolladores = () => {
       </div>
 
       
+      <div
+        style={{
+          backgroundColor: "#F9F7ED",
+          color: "#ffffff",
+          padding: "15px",
+          borderRadius: "8px",
+          marginBottom: "20px",
+          textAlign: "center",
+        }}
+      >
+        <p style={{ margin: 0,  fontWeight: "bold", fontSize: "20px" }}>
+        Todas las imágenes utilizadas en este proyecto son propiedad exclusiva de AYUVI, y su uso está destinado únicamente para los fines específicos de este sistema. 
+        Asimismo, al finalizar el proyecto, el código fuente y el programa completo serán entregados a AYUVI para su uso, permitiéndoles realizar las modificaciones y 
+        adaptaciones necesarias según se requiera a futuro. El sistema será donado en su totalidad a la organización, bajo la condición de que su uso se limite exclusivamente a 
+        AYUVI y sus operaciones. Además, se incluirá una sección en el sistema para reconocer a los desarrolladores que participaron en su creación, como parte del compromiso y 
+        la transparencia del proyecto.
+        </p>
+      </div>
+
+
       <Row>
         {developers.map((developer, index) => (
           <Col key={index} md={6} lg={4} className="mb-4">
