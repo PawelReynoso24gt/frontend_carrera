@@ -1,5 +1,7 @@
 // src/utils/renewToken.js
 
+import axios from 'axios';
+
 async function renewToken() {
     const token = localStorage.getItem("token");
 
@@ -7,20 +9,22 @@ async function renewToken() {
         throw new Error("No se encontró un token.");
     }
 
-    const response = await fetch("/api/renew", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    try {
+        const response = await axios.post("http://localhost:5000/renew", null, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
-    if (!response.ok) {
-        throw new Error("No se pudo renovar el token.");
+        if (response.status !== 200) {
+            throw new Error("No se pudo renovar el token.");
+        }
+
+        localStorage.setItem("token", response.data.token);
+    } catch (error) {
+        console.error("Error al renovar el token:", error);
+        throw error;
     }
-
-    const data = await response.json();
-    localStorage.setItem("token", data.token);
 }
 
 export default renewToken;

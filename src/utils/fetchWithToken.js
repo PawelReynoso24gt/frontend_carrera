@@ -1,7 +1,5 @@
 // src/utils/fetchWithToken.js
 
-import renewToken from './renewToken';
-
 async function fetchWithToken(url, options = {}) {
   const token = localStorage.getItem("token");
 
