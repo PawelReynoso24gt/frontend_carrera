@@ -251,9 +251,17 @@ const handleSelectVoluntarioGlobal = (id) => {
   
   const handlePagoChange = (index, field, value) => {
     const nuevosPagos = [...tiposPagos];
+  
+    if (field === "idTipoPago" && parseInt(value) === 5) {
+      // Si el tipo de pago es "solicitado", asignar valores predeterminados
+      nuevosPagos[index].imagenTransferencia = "solicitado";
+      nuevosPagos[index].correlativo = "NA";
+    }
+  
     nuevosPagos[index][field] = value;
     setTiposPagos(nuevosPagos);
-    console.log(`Pago actualizado en el índice ${index}:`, nuevosPagos[index]); // Agrega este log
+  
+    console.log(`Pago actualizado en el índice ${index}:`, nuevosPagos[index]);
   };
   
   const handleFileUpload = (e, index) => {
@@ -320,37 +328,59 @@ const handleSelectVoluntarioGlobal = (id) => {
   
       console.log("Detalles válidos con subtotales y donación:", detallesVentaValidos);
   
-      // Si todos los pagos son donaciones (monto = 0), totalVenta debe ser 0
-      const allPaymentsAreDonations = tiposPagos.every((pago) => pago.monto === 0);
-      const totalVenta = allPaymentsAreDonations
-        ? 0 // Venta total es 0 si todos los pagos son donaciones
-        : detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0); // Sumar subtotales de los detalles
+      // Calcular el subtotal de los productos y el total de la venta
+      const subtotal = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0);
+      const totalVenta = subtotal + (newVenta.donacion || 0); // Sumar la donación al subtotal
   
       // Actualizar newVenta con el total calculado
       setNewVenta({ ...newVenta, totalVenta });
   
-      // Validar que la suma de los montos de los pagos coincida con el total calculado
-      const totalPagado = tiposPagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
-      if (!allPaymentsAreDonations && totalPagado !== totalVenta) {
-        alert(`La suma de los pagos (Q${totalPagado.toFixed(2)}) no coincide con el total (Q${totalVenta.toFixed(2)}).`);
-        return;
-      }
+     // Validar que la suma de los montos de los pagos coincida con el total calculado
+    const totalPagado = tiposPagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
+    if (totalPagado !== totalVenta) {
+      alert(
+        `La suma de los pagos (Q${totalPagado.toFixed(
+          2
+        )}) no coincide con el total de la venta (Q${totalVenta.toFixed(2)}).`
+      );
+      return;
+    }
   
-      // Validar los pagos
+       // Validar los pagos
       const pagosValidados = tiposPagos.map((pago) => {
-        const isDonation = pago.monto === 0;
-  
-        if (!pago.idTipoPago || (!isDonation && !pago.monto) || !pago.idProducto) {
+        if (!pago.idTipoPago || pago.monto < 0 || !pago.idProducto) {
           throw new Error("Cada pago debe tener un tipo, monto válido y producto asociado.");
         }
-  
-        // Validar correlativo e imagen solo para ciertos tipos de pagos (que no son donaciones)
-        if (!isDonation && [1, 2, 4].includes(pago.idTipoPago)) {
+
+        // Validar lógica específica para el tipo de pago
+        if ([1, 2, 4].includes(pago.idTipoPago)) {
+          // Validar correlativo e imagen para estos tipos de pago
           if (!pago.correlativo || !pago.imagenTransferencia) {
-            throw new Error(`El tipo de pago ${pago.idTipoPago} requiere correlativo e imagen.`);
+            throw new Error(
+              `El tipo de pago ${pago.idTipoPago} requiere correlativo e imagen.`
+            );
           }
+          return {
+            ...pago,
+            correlativo: pago.correlativo,
+            imagenTransferencia: pago.imagenTransferencia,
+          };
+        } else if (pago.idTipoPago === 5) {
+          // Manejar tipo de pago solicitado
+          return {
+            ...pago,
+            correlativo: "NA",
+            imagenTransferencia: "solicitado",
+          };
+        } else if (pago.idTipoPago === 3) {
+          // Manejar tipo de pago en efectivo
+          return {
+            ...pago,
+            correlativo: "NA",
+            imagenTransferencia: "efectivo",
+          };
         }
-  
+
         return {
           ...pago,
           correlativo: pago.correlativo || "NA", // Valores por defecto
@@ -562,7 +592,7 @@ const handleSelectVoluntarioGlobal = (id) => {
             Inactivos
           </Button>
         </div>
-        <Table striped bordered hover responsive className="mt-3">
+        <Table striped bordered hover responsive className="mt-3" style={{textAlign: "center"}} >
             <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
                 <tr>
                 <th>ID</th>
@@ -580,7 +610,7 @@ const handleSelectVoluntarioGlobal = (id) => {
                 <tr key={venta.idVenta}>
                     <td>{venta.idVenta}</td>
                     <td>{venta.fechaVenta}</td>
-                    <td>{venta.totalVenta}</td>
+                    <td>Q. {venta.totalVenta}</td>
                     <td>{venta.tipo_publico?.nombreTipo || "N/A"}</td>
                     <td>{venta.estado === 1 ? "Activo" : "Inactivo"}</td>
                     <td>
