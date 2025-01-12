@@ -97,6 +97,34 @@ function Ventas() {
     }
   };
 
+  const resetForm = () => {
+    setVentaEditada({
+      venta: null,
+      detalles: [],
+      pagos: []
+    });
+    setDetallesVenta([]);
+    setTiposPagos([]);
+    setNewVenta({
+      totalVenta: 0,
+      idTipoPublico: "",
+      estado: 1,
+      donacion: 0, // Asegúrate de incluir la donación aquí
+    });
+    setIsEditMode(false);
+  };
+
+  const handleCloseModal = () => {
+    setDetalleSeleccionado(null);
+    setShowModal(false);
+    resetForm(); // Restablecer el formulario al cerrar el modal
+  };
+  
+  const handleCloseDetailsModal = () => {
+    setShowDetailsModal(false);
+    resetForm(); // Restablecer el formulario al cerrar el modal
+  };
+
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
@@ -153,11 +181,6 @@ function Ventas() {
           setShowModal(false); // Oculta el modal si no se obtienen datos
       }
   };
-  
-  const handleCloseModal = () => {
-    setDetalleSeleccionado(null);
-    setShowModal(false);
-  };  
 
   const fetchActiveVentas = async () => {
     try {
@@ -329,11 +352,10 @@ function Ventas() {
       // Construir JSON para enviar
       const ventaData = {
         venta: {
-          ...newVenta,
+          ...ventaEditada.venta,
           totalVenta: totalVenta.toFixed(2), // Asignar el total como número
         },
         detalles: detallesVenta.map((detalle) => ({
-          idDetalleVentaVoluntario: detalle.idDetalleVentaVoluntario,
           idProducto: detalle.idProducto,
           cantidad: detalle.cantidad,
           subTotal: detalle.cantidad * detalle.precio,
@@ -342,13 +364,12 @@ function Ventas() {
           idVoluntario: detalle.idVoluntario,
         })),
         pagos: tiposPagos.map((pago) => ({
-          idDetallePagoVentaVoluntario: pago.idDetallePagoVentaVoluntario,
-          idDetalleVentaVoluntario: pago.idDetalleVentaVoluntario,
           idTipoPago: pago.idTipoPago,
           monto: Number(pago.monto),
           correlativo: pago.correlativo,
           imagenTransferencia: pago.imagenTransferencia,
           estado: pago.estado,
+          idProducto: pago.idProducto,
         })),
       };
   
@@ -391,12 +412,12 @@ function Ventas() {
           .flatMap((detalle) => detalle.detalle_pago_ventas_voluntarios)
           .map((pago) => ({
             idDetallePagoVentaVoluntario: pago.idDetallePagoVentaVoluntario,
-            idDetalleVentaVoluntario: pago.idDetalleVentaVoluntario,
             idTipoPago: pago.idTipoPago,
             monto: parseFloat(pago.pago), // Aseguramos que sea un número
             correlativo: pago.correlativo,
             imagenTransferencia: pago.imagenTransferencia,
             estado: pago.estado,
+            idProducto: pago.idProducto, // Asociar el pago con el producto
           }));
   
         const venta = {
@@ -430,17 +451,7 @@ function Ventas() {
             estado: response.data[0]?.venta?.estado || 1,
           },
           detalles,
-          pagos: response.data.flatMap((detalle) =>
-            detalle.detalle_pago_ventas_voluntarios.map((pago) => ({
-              idDetallePagoVentaVoluntario: pago.idDetallePagoVentaVoluntario,
-              idDetalleVentaVoluntario: pago.idDetalleVentaVoluntario,
-              idTipoPago: pago.idTipoPago,
-              monto: parseFloat(pago.pago),
-              correlativo: pago.correlativo,
-              imagenTransferencia: pago.imagenTransferencia,
-              estado: pago.estado,
-            }))
-          ),
+          pagos,
         });
         setDetallesVenta(detalles);
         setTiposPagos(pagos);
@@ -450,7 +461,7 @@ function Ventas() {
         console.log("Venta recibida:", venta); // Para revisar los datos de la venta
 
          // Actualizar donación en newVenta
-         setNewVenta((prevVenta) => ({
+        setNewVenta((prevVenta) => ({
           ...prevVenta,
           donacion: totalDonacion,
         }));
