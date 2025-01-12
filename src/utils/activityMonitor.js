@@ -2,41 +2,46 @@
 
 import renewToken from './renewToken';
 
-let timeoutId;
-const ACTIVITY_TIMEOUT = 1 * 60 * 1000; // 1 minuto
+const ACTIVITY_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutos
+let lastActivityTime = Date.now();
 
-function resetTimeout() {
-    clearTimeout(timeoutId);
-
-    timeoutId = setTimeout(() => {
-        console.log("No ha habido actividad durante 1 minuto. Redirigiendo al login...");
-        localStorage.clear();
-        window.location.href = "/login";
-    }, ACTIVITY_TIMEOUT);
+function updateLastActivityTime() {
+    lastActivityTime = Date.now();
 }
 
 function setupActivityListeners() {
-    const events = ['mousemove', 'keydown', 'scroll', 'click'];
+    const events = ['keydown', 'scroll', 'click'];
 
     events.forEach(event => {
-        window.addEventListener(event, async () => {
-            console.log(`Evento detectado: ${event}`);
-            resetTimeout();
-
-            // Intentar renovar el token si hay actividad
-            try {
-                console.log('Intentando renovar el token...');
-                await renewToken();
-                console.log('Token renovado exitosamente.');
-            } catch (error) {
-                console.error("Error al renovar el token:", error);
-                localStorage.clear();
-                window.location.href = "/login";
-            }
+        window.addEventListener(event, () => {
+            //console.log(`Evento detectado: ${event}`);
+            updateLastActivityTime();
         });
     });
 }
 
+function startActivityCheckInterval() {
+    setInterval(async () => {
+        const currentTime = Date.now();
+        const timeSinceLastActivity = currentTime - lastActivityTime;
+
+        // Si ha habido actividad en los últimos 5 minutos, intenta renovar el token
+        if (timeSinceLastActivity < ACTIVITY_CHECK_INTERVAL) {
+            //console.log('Actividad reciente detectada, intentando renovar el token...');
+            try {
+                await renewToken();
+                //console.log('Token renovado exitosamente.');
+            } catch (error) {
+                //console.error("Error al renovar el token:", error);
+                localStorage.clear();
+                window.location.href = "/login";
+            }
+        } else {
+            //console.log('No ha habido actividad reciente, no se renueva el token.');
+        }
+    }, ACTIVITY_CHECK_INTERVAL);
+}
+
 // Inicializar el monitor de actividad
 setupActivityListeners();
-resetTimeout();
+startActivityCheckInterval();

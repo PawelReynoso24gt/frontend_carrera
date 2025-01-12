@@ -27,7 +27,7 @@ async function fetchWithToken(url, options = {}) {
 
     return response;
   } catch (error) {
-    console.error("Error en fetchWithToken:", error);
+    //console.error("Error en fetchWithToken:", error);
     throw error;
   }
 }
