@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
 function Alarm() {
   const navigate = useNavigate();
@@ -8,12 +9,15 @@ function Alarm() {
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      const personId = localStorage.getItem("personId");
-
-      if (!personId) {
-        console.error("personId no encontrado en el localStorage.");
-        return;
-      }
+      const personId = getUserDataFromToken(localStorage.getItem("token"))?.idPersona; // ! USO DE LA FUNCIÓN getUserDataFromToken
+    
+        if (!personId) {
+          setMensaje(
+            "No se encontró el ID de la sede en el almacenamiento local."
+          );
+          
+          return;
+        }
 
       try {
         const response = await axios.get(
