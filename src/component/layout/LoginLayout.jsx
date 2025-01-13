@@ -1,14 +1,15 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import logoW from "../../assets/img/logo-white.png";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import bg from "../../assets/img/BannerAYUVILOGIN2.png";
 
 const LoginLayout = () => {
   const [usuario, setUsuario] = useState(""); // Estado para el usuario
   const [contrasenia, setContrasenia] = useState(""); // Estado para la contraseña
   const [error, setError] = useState(null); // Estado para los mensajes de error
   const [showPassword, setShowPassword] = useState(false);
+  const [bgImageLoaded, setBgImageLoaded] = useState(false);
 
   const navigate = useNavigate();
 
@@ -35,6 +36,13 @@ const LoginLayout = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   }, []);
 
+  // Pre-cargar la imagen de fondo después de que el componente se haya montado
+  useEffect(() => {
+    const img = new Image();
+    img.src = bg;
+    img.onload = () => setBgImageLoaded(true);
+  }, []);
+
   return (
     <div className="body-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
       <section
@@ -45,10 +53,13 @@ const LoginLayout = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#f0f2f5"
+          backgroundColor: "#f0f2f5",
+          backgroundImage: bgImageLoaded ? `url(${bg})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
-        <div className="container" style={{ maxWidth: "450px", padding: "80px", backgroundColor: "#D5F8FB", borderRadius: "16px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
+        <div className="container" style={{ maxWidth: "450px", padding: "80px", backgroundColor: "#D5F8FB", borderRadius: "30px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
           <div className="text-center mb-4">
             <h4 style={{ color: "#333", fontWeight: "bold" }}>Iniciar Sesión</h4>
           </div>
