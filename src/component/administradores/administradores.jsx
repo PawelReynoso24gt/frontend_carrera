@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from 'react-bootstrap';
-import { FaPencilAlt, FaToggleOn, FaToggleOff , FaKey} from "react-icons/fa";
+import { FaPencilAlt, FaToggleOn, FaToggleOff, FaKey } from "react-icons/fa";
 
 function UsuariosAdminComponent() {
   const [usuarios, setUsuarios] = useState([]);
@@ -110,7 +110,7 @@ function UsuariosAdminComponent() {
 
   const handlePasswordChange = (e) => {
     setNewPassword(e.target.value);
-  };  
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -144,7 +144,7 @@ function UsuariosAdminComponent() {
       setAlertMessage('Error al resetear la contraseña');
       setShowAlert(true);
     }
-  };  
+  };
 
   const toggleUsuarioEstado = async (id, currentEstado) => {
     try {
@@ -164,64 +164,64 @@ function UsuariosAdminComponent() {
 
   const totalPages = Math.ceil(filteredUsuarios.length / rowsPerPage);
 
-   const renderPagination = () => (
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
           }}
           style={{
-            color: currentPage === 1 ? "gray" : "#007AC3",
-            cursor: currentPage === 1 ? "default" : "pointer",
-            textDecoration: "none",
-            fontWeight: "bold",
+            width: "100px",
+            height: "40px",
           }}
         >
-          Anterior
-        </a>
-  
-        <div className="d-flex align-items-center">
-          <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
-          <Form.Control
-            as="select"
-            value={rowsPerPage}
-            onChange={(e) => {
-              setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            style={{
-              width: "100px",
-              height: "40px",
-            }}
-          >
-            {[5, 10, 20, 50].map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Form.Control>
-        </div>
-  
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-          }}
-          style={{
-            color: currentPage === totalPages ? "gray" : "#007AC3",
-            cursor: currentPage === totalPages ? "default" : "pointer",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          Siguiente
-        </a>
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
       </div>
-    );
-  
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+
 
   return (
     <>
@@ -318,20 +318,20 @@ function UsuariosAdminComponent() {
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
-              <th style={{textAlign : "center"}}>ID</th>
-              <th style={{textAlign : "center"}}>Usuario</th>
-              <th style={{textAlign : "center"}}>Estado</th>
-              <th style={{textAlign : "center"}}>Rol</th>
-              <th style={{textAlign : "center"}}>Acciones</th>
+              <th style={{ textAlign: "center" }}>ID</th>
+              <th style={{ textAlign: "center" }}>Usuario</th>
+              <th style={{ textAlign: "center" }}>Estado</th>
+              <th style={{ textAlign: "center" }}>Rol</th>
+              <th style={{ textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {currentUsuarios.map((usuario) => (
               <tr key={usuario.idUsuario}>
-                <td style={{textAlign : "center"}}>{usuario.idUsuario}</td>
-                <td style={{textAlign : "center"}}>{usuario.usuario}</td>
-                <td style={{textAlign : "center"}}>{usuario.estado ? "Activo" : "Inactivo"}</td>
-                <td style={{textAlign : "center"}}>{usuario.role?.roles}</td>
+                <td style={{ textAlign: "center" }}>{usuario.idUsuario}</td>
+                <td style={{ textAlign: "center" }}>{usuario.usuario}</td>
+                <td style={{ textAlign: "center" }}>{usuario.estado ? "Activo" : "Inactivo"}</td>
+                <td style={{ textAlign: "center" }}>{usuario.role?.roles}</td>
                 <td style={{ textAlign: "center" }}>
                   <FaPencilAlt
                     style={{
@@ -384,114 +384,114 @@ function UsuariosAdminComponent() {
         {renderPagination()}
 
         {/* Modal para agregar o editar un administrador */}
-<Modal show={showModal} onHide={handleCloseModal}>
-  <Modal.Header
-    closeButton
-    style={{ backgroundColor: "#007AC3", color: "#fff" }}
-  >
-    <Modal.Title>
-      {editingUsuario ? "Editar Administrador" : "Agregar Administrador"}
-    </Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <Form onSubmit={handleSubmit}>
-      <Form.Group controlId="usuario">
-        <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-          Usuario
-        </Form.Label>
-        <Form.Control
-          type="text"
-          name="usuario"
-          value={newUsuario.usuario}
-          onChange={handleChange}
-          required
-        />
-      </Form.Group>
-
-      {/* Nuevo Campo para la Contraseña */}
-            {!editingUsuario && ( // Mostrar solo cuando se está agregando un usuario
-              <Form.Group controlId="contrasenia">
+        <Modal show={showModal} onHide={handleCloseModal}>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingUsuario ? "Editar Administrador" : "Agregar Administrador"}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleSubmit}>
+              <Form.Group controlId="usuario">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Contraseña
+                  Usuario
                 </Form.Label>
                 <Form.Control
-                  type="password"
-                  name="contrasenia"
-                  value={newUsuario.contrasenia || ""} // Manejar el caso si está vacío
+                  type="text"
+                  name="usuario"
+                  value={newUsuario.usuario}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
-            )}
 
-<Form.Group controlId="idSede">
-  <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-    Sede
-  </Form.Label>
-  <Form.Control
-    as="select"
-    name="idSede"
-    value={newUsuario.idSede}
-    onChange={handleChange}
-    required
-  >
-    <option value="">Seleccionar Sede</option>
-    {sedes.map((sede) => (
-      <option key={sede.idSede} value={sede.idSede}>
-        {sede.nombreSede}
-      </option>
-    ))}
-  </Form.Control>
-</Form.Group>
-            <Form.Group controlId="idPersona">
-              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                Persona
-              </Form.Label>
-              <Form.Control
-                as="select"
-                name="idPersona"
-                value={newUsuario.idPersona}
-                onChange={handleChange}
-                required
+              {/* Nuevo Campo para la Contraseña */}
+              {!editingUsuario && ( // Mostrar solo cuando se está agregando un usuario
+                <Form.Group controlId="contrasenia">
+                  <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                    Contraseña
+                  </Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="contrasenia"
+                    value={newUsuario.contrasenia || ""} // Manejar el caso si está vacío
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              )}
+
+              <Form.Group controlId="idSede">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Sede
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idSede"
+                  value={newUsuario.idSede}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar Sede</option>
+                  {sedes.map((sede) => (
+                    <option key={sede.idSede} value={sede.idSede}>
+                      {sede.nombreSede}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="idPersona">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Persona
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idPersona"
+                  value={newUsuario.idPersona}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar Persona</option>
+                  {personas.map((persona) => (
+                    <option key={persona.idPersona} value={persona.idPersona}>
+                      {persona.nombre}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="estado">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="estado"
+                  value={newUsuario.estado}
+                  onChange={handleChange}
+                >
+                  <option value={1}>Activo</option>
+                  <option value={0}>Inactivo</option>
+                </Form.Control>
+              </Form.Group>
+              <Button
+                style={{
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
+                type="submit"
               >
-                <option value="">Seleccionar Persona</option>
-                {personas.map((persona) => (
-                  <option key={persona.idPersona} value={persona.idPersona}>
-                    {persona.nombre}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="estado">
-              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                Estado
-              </Form.Label>
-              <Form.Control
-                as="select"
-                name="estado"
-                value={newUsuario.estado}
-                onChange={handleChange}
-              >
-                <option value={1}>Activo</option>
-                <option value={0}>Inactivo</option>
-              </Form.Control>
-            </Form.Group>
-            <Button
-              style={{
-                backgroundColor: "#007AC3",
-                borderColor: "#007AC3",
-                padding: "5px 10px",
-                width: "100%",
-                fontWeight: "bold",
-                color: "#fff",
-              }}
-              type="submit"
-            >
-              {editingUsuario ? "Actualizar" : "Crear"}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+                {editingUsuario ? "Actualizar" : "Crear"}
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
 
         {/* Modal para cambiar la contraseña */}
         <Modal show={showPasswordModal} onHide={handleClosePasswordModal}>
