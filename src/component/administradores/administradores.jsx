@@ -6,6 +6,7 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff , FaKey} from "react-icons/fa";
 function UsuariosAdminComponent() {
   const [usuarios, setUsuarios] = useState([]);
   const [personas, setPersonas] = useState([]); // Estado para almacenar las personas
+  const [sedes, setSedes] = useState([]); // Estado para almacenar las sedes
   const [showModal, setShowModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState(null);
@@ -23,6 +24,7 @@ function UsuariosAdminComponent() {
   useEffect(() => {
     fetchActiveUsuarios();
     fetchPersonas(); // Obtener la lista de personas al cargar el componente
+    fetchSedes(); // Obtener la lista de sedes al cargar el componente
   }, []);
 
   const fetchActiveUsuarios = async () => {
@@ -57,6 +59,15 @@ function UsuariosAdminComponent() {
       setPersonas(response.data);
     } catch (error) {
       console.error('Error fetching personas:', error);
+    }
+  };
+
+  const fetchSedes = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/sedes');
+      setSedes(response.data);
+    } catch (error) {
+      console.error('Error fetching sedes:', error);
     }
   };
 
@@ -413,18 +424,25 @@ function UsuariosAdminComponent() {
               </Form.Group>
             )}
 
-            <Form.Group controlId="idSede">
-              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                ID Sede
-              </Form.Label>
-              <Form.Control
-                type="number"
-                name="idSede"
-                value={newUsuario.idSede}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
+<Form.Group controlId="idSede">
+  <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+    Sede
+  </Form.Label>
+  <Form.Control
+    as="select"
+    name="idSede"
+    value={newUsuario.idSede}
+    onChange={handleChange}
+    required
+  >
+    <option value="">Seleccionar Sede</option>
+    {sedes.map((sede) => (
+      <option key={sede.idSede} value={sede.idSede}>
+        {sede.nombreSede}
+      </option>
+    ))}
+  </Form.Control>
+</Form.Group>
             <Form.Group controlId="idPersona">
               <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
                 Persona
