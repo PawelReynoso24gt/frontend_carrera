@@ -35,6 +35,7 @@ function Traslados() {
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [detallesProductos, setDetallesProductos] = useState([]);
   const [productos, setProductos] = useState([]);
+  const [modalAlertMessage, setModalAlertMessage] = useState("");
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -193,6 +194,7 @@ const handleRemoveDetalle = (index) => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingTraslado(null);
+    setModalAlertMessage(""); 
   };
 
   const handleChange = (e) => {
@@ -202,43 +204,63 @@ const handleRemoveDetalle = (index) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const regexDescripcion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
     if (!regexDescripcion.test(newTraslado.descripcion)) {
-        setAlertMessage(
-            "La descripción solo debe contener letras, números, espacios y los signos permitidos (.,-)."
-        );
-        setShowAlert(true);
-        return;
+      setModalAlertMessage(
+        "La descripción solo debe contener letras, números, espacios y los signos permitidos (.,-)."
+      );
+      return;
     }
-
+  
     try {
-        const trasladoConDetalle = {
-            ...newTraslado,
-            detalles: detallesProductos.map((detalle) => ({
-                idProducto: detalle.idProducto,
-                cantidad: detalle.cantidad,
-            })),
-        };
-
-        if (editingTraslado) {
-            await axios.put(
-                `http://localhost:5000/trasladosCompletos/${editingTraslado.idTraslado}`,
-                trasladoConDetalle
-            );
-            setAlertMessage("Traslado actualizado con éxito");
-        } else {
-            await axios.post("http://localhost:5000/trasladosCompletos", trasladoConDetalle);
-            setAlertMessage("Traslado creado con éxito");
-        }
-
-        fetchTraslados();
-        setShowAlert(true);
-        handleCloseModal();
+      const trasladoConDetalle = {
+        ...newTraslado,
+        detalles: detallesProductos.map((detalle) => ({
+          idProducto: detalle.idProducto,
+          cantidad: detalle.cantidad,
+        })),
+      };
+  
+      if (editingTraslado) {
+        await axios.put(
+          `http://localhost:5000/trasladosCompletos/${editingTraslado.idTraslado}`,
+          trasladoConDetalle
+        );
+        setAlertMessage("Traslado actualizado con éxito");
+      } else {
+        await axios.post("http://localhost:5000/trasladosCompletos", trasladoConDetalle);
+        setAlertMessage("Traslado creado con éxito");
+      }
+  
+      fetchTraslados();
+      setShowAlert(true);
+      handleCloseModal();
     } catch (error) {
-        console.error("Error submitting traslado:", error);
+      console.error("Error submitting traslado:", error);
+  
+      // Mostrar el error específico de inventario insuficiente en el modal
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message.includes("Inventario insuficiente")
+      ) {
+        const regex = /ID (\d+)/;
+        const match = error.response.data.message.match(regex);
+        
+        if (match) {
+          const idProducto = parseInt(match[1], 10);
+          const producto = productos.find((p) => p.idProducto === idProducto);
+          const nombreProducto = producto ? producto.nombreProducto : `ID ${idProducto}`;
+          setModalAlertMessage(`Inventario insuficiente para el producto "${nombreProducto}".`);
+        } else {
+          setModalAlertMessage(error.response.data.message);
+        }
+      } else {
+        setModalAlertMessage("Error al crear o actualizar el traslado. Inténtalo nuevamente.");
+      }
     }
-};
+  };
 
 
   const toggleEstado = async (id, estadoActual) => {
@@ -448,6 +470,11 @@ const handleRemoveDetalle = (index) => {
         </Modal.Title>
     </Modal.Header>
     <Modal.Body>
+    {modalAlertMessage && (
+          <Alert variant="danger" onClose={() => setModalAlertMessage("")} dismissible>
+            {modalAlertMessage}
+          </Alert>
+        )}
         <Form onSubmit={handleSubmit}>
             <Form.Group controlId="fecha">
                 <Form.Label>Fecha</Form.Label>
