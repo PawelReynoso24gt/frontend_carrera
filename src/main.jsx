@@ -9,6 +9,11 @@ import "./assets/css/reset.css";
 import "./assets/css/style.css";
 import "./assets/js/main.js";
 import "react-daypicker/lib/DayPicker.css";
+import PermissionModal from "./PermissionModal.jsx";
+import "./utils/activityMonitor"; // Importa el archivo activityMonitor
+
+const Main = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Configuración global de Axios
   axios.interceptors.request.use(
@@ -45,5 +50,6 @@ import "react-daypicker/lib/DayPicker.css";
       <PermissionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </React.StrictMode>
   );
+};
 
-
+ReactDOM.createRoot(document.getElementById("root")).render(<Main />);

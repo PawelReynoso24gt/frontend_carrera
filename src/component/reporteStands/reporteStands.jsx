@@ -10,7 +10,8 @@ function ReportePlayeras() {
   const [reportes, setReportes] = useState([]);
   const [alerta, setAlerta] = useState("");
   const [revisor, setRevisor] = useState("");
-   const [nombreUsuario, setNombreUsuario] = useState("");
+  const [nombreUsuario, setNombreUsuario] = useState("");
+  const [cargo, setCargo] = useState("");
 
   useEffect(() => {
     const fetchLoggedUser = async () => {
@@ -27,7 +28,7 @@ function ReportePlayeras() {
       }
     };
 
-    
+
     const fetchReportes = async () => {
       try {
         const fechaInicioFormato = fechaInicio.split("-").reverse().join("-"); // Convierte de DD-MM-YYYY a YYYY-MM-DD
@@ -113,67 +114,67 @@ function ReportePlayeras() {
     doc.setFont("helvetica", "bold");
     doc.text("Productos Asignados por Stand", 105, 56, { align: "center" });
 
-       // Tabla de productos asignados
-       doc.setFontSize(14);
-       doc.setTextColor(0);
-       doc.setFont("helvetica", "bold");
-       doc.text("Productos Asignados por Stand", 105, 56, { align: "center" });
-   
-       doc.autoTable({
-        startY: 60,
-        head: [["Stand", "Producto", "Talla", "Cantidad Asignada"]],
-        body: reportes.flatMap((stand) =>
-          Object.entries(stand.productosAsignados || {}).flatMap(([producto, tallas]) =>
-            Object.entries(tallas).map(([talla, cantidad]) => [
-              stand.nombreStand,
-              producto,
-              talla,
-              cantidad,
-            ])
-          )
-        ),
-        styles: { fontSize: 10, cellPadding: 2 },
-        headStyles: { fillColor: [0, 122, 195], textColor: 255 },
-        theme: "grid",
-      });
-  
-       // Línea de separación
-       doc.setLineWidth(0.5);
-       doc.setDrawColor("#007AC3");
-       doc.line(10, doc.lastAutoTable.finalY + 10, 200, doc.lastAutoTable.finalY + 10);
-   
-       // Tabla de productos vendidos
-       doc.setFontSize(14);
-       doc.setTextColor(0);
-       doc.setFont("helvetica", "bold");
-       doc.text("Productos Vendidos por Stand", 105, doc.lastAutoTable.finalY + 15, { align: "center" });
-   
-       doc.autoTable({
-        startY: doc.lastAutoTable.finalY + 20,
-        head: [["Stand", "Producto", "Talla", "Cantidad Vendida", "Subtotal"]],
-        body: reportes.flatMap((stand) =>
-          Object.entries(stand.productosVendidos || {}).flatMap(([producto, tallas]) =>
-            Object.entries(tallas).map(([talla, detalles]) => [
-              stand.nombreStand,
-              producto,
-              talla,
-              detalles.cantidad,
-              `Q${(detalles.subTotal || 0).toFixed(2)}`,
-            ])
-          )
-        ),
-        styles: { fontSize: 10, cellPadding: 2 },
-        headStyles: { fillColor: [0, 122, 195], textColor: 255 },
-        theme: "grid",
-      });
+    // Tabla de productos asignados
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "bold");
+    doc.text("Productos Asignados por Stand", 105, 56, { align: "center" });
 
-      const startY = doc.lastAutoTable.finalY + 10; // Punto inicial después de la tabla
+    doc.autoTable({
+      startY: 60,
+      head: [["Stand", "Producto", "Talla", "Cantidad Asignada"]],
+      body: reportes.flatMap((stand) =>
+        Object.entries(stand.productosAsignados || {}).flatMap(([producto, tallas]) =>
+          Object.entries(tallas).map(([talla, cantidad]) => [
+            stand.nombreStand,
+            producto,
+            talla,
+            cantidad,
+          ])
+        )
+      ),
+      styles: { fontSize: 10, cellPadding: 2 },
+      headStyles: { fillColor: [0, 122, 195], textColor: 255 },
+      theme: "grid",
+    });
 
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Total Productos Asignados: ${totalGeneral.totalAsignadas}`, 105, startY, { align: "center" });
-      doc.text(`Total Productos Vendidos: ${totalGeneral.totalVendidas}`, 105, startY + 6, { align: "center" });
-      doc.text(`Total Recaudado: Q${totalGeneral.totalRecaudado.toFixed(2)}`, 105, startY + 12, { align: "center" });
+    // Línea de separación
+    doc.setLineWidth(0.5);
+    doc.setDrawColor("#007AC3");
+    doc.line(10, doc.lastAutoTable.finalY + 10, 200, doc.lastAutoTable.finalY + 10);
+
+    // Tabla de productos vendidos
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "bold");
+    doc.text("Productos Vendidos por Stand", 105, doc.lastAutoTable.finalY + 15, { align: "center" });
+
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 20,
+      head: [["Stand", "Producto", "Talla", "Cantidad Vendida", "Subtotal"]],
+      body: reportes.flatMap((stand) =>
+        Object.entries(stand.productosVendidos || {}).flatMap(([producto, tallas]) =>
+          Object.entries(tallas).map(([talla, detalles]) => [
+            stand.nombreStand,
+            producto,
+            talla,
+            detalles.cantidad,
+            `Q${(detalles.subTotal || 0).toFixed(2)}`,
+          ])
+        )
+      ),
+      styles: { fontSize: 10, cellPadding: 2 },
+      headStyles: { fillColor: [0, 122, 195], textColor: 255 },
+      theme: "grid",
+    });
+
+    const startY = doc.lastAutoTable.finalY + 10; // Punto inicial después de la tabla
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total Productos Asignados: ${totalGeneral.totalAsignadas}`, 105, startY, { align: "center" });
+    doc.text(`Total Productos Vendidos: ${totalGeneral.totalVendidas}`, 105, startY + 6, { align: "center" });
+    doc.text(`Total Recaudado: Q${totalGeneral.totalRecaudado.toFixed(2)}`, 105, startY + 12, { align: "center" });
 
 
     const firmaStartY = doc.lastAutoTable.finalY + 35; // Calcula un espacio fijo después de la última tabla
@@ -181,7 +182,7 @@ function ReportePlayeras() {
     doc.setFont("helvetica", "normal");
     doc.text("_______________________________", 105, firmaStartY, { align: "center" });
     doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
-      
+    doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
     // Guardar el documento
     doc.save(`Reporte_Playeras_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
   };
@@ -228,19 +229,33 @@ function ReportePlayeras() {
           </div>
         </div>
         <div className="text-center mb-4">
-        <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Revisado por:</label>
-        <input
-          type="text"
-          className="form-control mx-auto"
-          value={revisor}
-          onChange={(e) => setRevisor(e.target.value)}
-          placeholder="Nombre del revisor"
-          style={{
-            width: "250px",
-            textAlign: "center",
-          }}
-        />
-       </div>
+          <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Revisado por:</label>
+          <input
+            type="text"
+            className="form-control mx-auto"
+            value={revisor}
+            onChange={(e) => setRevisor(e.target.value)}
+            placeholder="Nombre del revisor"
+            style={{
+              width: "250px",
+              textAlign: "center",
+            }}
+          />
+        </div>
+        <div className="text-center mb-4">
+          <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Cargo:</label>
+          <input
+            type="text"
+            className="form-control mx-auto"
+            value={cargo}
+            onChange={(e) => setCargo(e.target.value)}
+            placeholder="Cargo"
+            style={{
+              width: "250px",
+              textAlign: "center",
+            }}
+          />
+        </div>
       </div>
 
       <div className="text-center mb-4">
@@ -260,7 +275,7 @@ function ReportePlayeras() {
         </button>
       </div>
 
-        <h5>Productos Asignados por Stand</h5>
+      <h5>Productos Asignados por Stand</h5>
       <table
         className="table mt-4"
         style={{
@@ -310,20 +325,20 @@ function ReportePlayeras() {
           </tr>
         </thead>
         <tbody>
-  {reportes.flatMap((stand) =>
-    Object.entries(stand.productosVendidos || {}).flatMap(([producto, tallas]) =>
-      Object.entries(tallas).map(([talla, detalles]) => (
-        <tr key={`${stand.nombreStand}-${producto}-${talla}`}>
-          <td>{stand.nombreStand}</td>
-          <td>{producto}</td>
-          <td>{talla}</td>
-          <td>{detalles.cantidad}</td>
-          <td>Q{(detalles.subTotal || 0).toFixed(2)}</td>
-        </tr>
-      ))
-    )
-  )}
-</tbody>
+          {reportes.flatMap((stand) =>
+            Object.entries(stand.productosVendidos || {}).flatMap(([producto, tallas]) =>
+              Object.entries(tallas).map(([talla, detalles]) => (
+                <tr key={`${stand.nombreStand}-${producto}-${talla}`}>
+                  <td>{stand.nombreStand}</td>
+                  <td>{producto}</td>
+                  <td>{talla}</td>
+                  <td>{detalles.cantidad}</td>
+                  <td>Q{(detalles.subTotal || 0).toFixed(2)}</td>
+                </tr>
+              ))
+            )
+          )}
+        </tbody>
       </table>
     </div>
   );

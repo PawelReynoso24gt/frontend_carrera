@@ -13,6 +13,10 @@ function FotosSedesComponent() {
   const [alertMessage, setAlertMessage] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  
 
   useEffect(() => {
     const fetchPermissions = async () => {
