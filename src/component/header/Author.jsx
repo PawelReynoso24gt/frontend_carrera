@@ -68,7 +68,7 @@ function Author({ subNav, setSubNav, title }) {
         className="crancy-balance crancy-profile__hover fm-hover-animation"
         style={{ display: subNav === title ? 'block' : 'none' }}
       >
-        <h3 className="crancy-balance__title">My Profile</h3>
+        <h3 className="crancy-balance__title">Mi perfil</h3>
         <ul className="crancy-balance_list">
           <li>
             <div className="crancy-balance-info">
@@ -91,7 +91,7 @@ function Author({ subNav, setSubNav, title }) {
                 </svg>
               </div>
               <h4 className="crancy-balance-name">
-                <Link to="/profile-overview">My Profile</Link>
+                <Link to="/profile-overview">Mi perfil</Link>
               </h4>
             </div>
           </li>
@@ -109,7 +109,7 @@ function Author({ subNav, setSubNav, title }) {
                 </svg>
               </div>
               <h4 className="crancy-balance-name">
-                <a href="#">Log Out</a>
+                <a href="#">Cerrar sesión</a>
               </h4>
             </div>
           </li>
