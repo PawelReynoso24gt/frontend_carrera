@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Modal, Card, Row, Col } from "react-bootstrap";
+import { Button, Modal, Card, Row, Col, Form } from "react-bootstrap";
 
 function AutorizacionTalonarios() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [modalContent, setModalContent] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [cardsPerPage, setCardsPerPage] = useState(9);
 
   useEffect(() => {
     fetchSolicitudes();
@@ -36,14 +38,79 @@ function AutorizacionTalonarios() {
   const updateSolicitud = async (idSolicitud, estado) => {
     try {
       await axios.put(`http://localhost:5000/solicitudes/${idSolicitud}`, {
-        estado, // Solo enviamos el estado
+        estado,
       });
-      fetchSolicitudes(); // Actualizamos la lista de solicitudes después de cambiar el estado
+      fetchSolicitudes();
       setShowConfirmationModal(false);
     } catch (error) {
       console.error(`Error al actualizar la solicitud ${idSolicitud}:`, error);
     }
   };
+
+  // Pagination Logic
+  const indexOfLastCard = currentPage * cardsPerPage;
+  const indexOfFirstCard = indexOfLastCard - cardsPerPage;
+  const currentSolicitudes = solicitudes.slice(indexOfFirstCard, indexOfLastCard);
+
+  const totalPages = Math.ceil(solicitudes.length / cardsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Tarjetas por página</span>
+        <Form.Control
+          as="select"
+          value={cardsPerPage}
+          onChange={(e) => {
+            setCardsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[9, 18, 27].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
 
   return (
     <div className="container mt-4">
@@ -51,7 +118,7 @@ function AutorizacionTalonarios() {
         AUTORIZACIÓN DE SOLICITUDES DE TALONARIOS
       </h3>
       <Row>
-        {solicitudes.map((solicitud) => (
+        {currentSolicitudes.map((solicitud) => (
           <Col key={solicitud.idSolicitudTalonario} sm={12} md={6} lg={4}>
             <Card
               className="mb-3"
@@ -63,7 +130,6 @@ function AutorizacionTalonarios() {
                 <Card.Text>Fecha de Solicitud: {new Date(solicitud.fechaSolicitud).toLocaleDateString("es-ES")}</Card.Text>
                 <Card.Text>Voluntario: {solicitud.voluntario.persona.nombre}</Card.Text>
                 <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-                  {/* Mostrar botones dinámicamente según el estado */}
                   {solicitud.estado === 1 && (
                     <>
                       <Button
@@ -111,7 +177,8 @@ function AutorizacionTalonarios() {
         ))}
       </Row>
 
-      {/* Modal de confirmación */}
+      {renderPagination()}
+
       <Modal show={showConfirmationModal} onHide={() => setShowConfirmationModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Confirmación</Modal.Title>

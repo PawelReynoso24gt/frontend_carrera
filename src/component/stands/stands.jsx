@@ -431,7 +431,7 @@ const fetchInactiveStands = async () => {
                 <option value="">Seleccionar Tipo</option>
                 {tiposStands.map((tipo) => (
                   <option key={tipo.idTipoStands} value={tipo.idTipoStands}>
-                    {tipo.nombreTipo}
+                    {tipo.tipo}
                   </option>
                 ))}
               </Form.Control>
