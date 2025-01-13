@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
-import axios from "axios"; // Importa Axios
+import axios from "axios";
 import App from "./App.jsx";
 import "./assets/css/bootstrap.min.css";
 import "./assets/css/font-awesome-all.min.css";
@@ -9,10 +9,6 @@ import "./assets/css/reset.css";
 import "./assets/css/style.css";
 import "./assets/js/main.js";
 import "react-daypicker/lib/DayPicker.css";
-import PermissionModal from "./PermissionModal.jsx";
-
-const Main = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Configuración global de Axios
   axios.interceptors.request.use(
@@ -49,6 +45,5 @@ const Main = () => {
       <PermissionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </React.StrictMode>
   );
-};
 
-ReactDOM.createRoot(document.getElementById("root")).render(<Main />);
+

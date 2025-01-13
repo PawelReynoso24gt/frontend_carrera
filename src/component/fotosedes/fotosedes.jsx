@@ -11,9 +11,8 @@ function FotosSedesComponent() {
   const [newFoto, setNewFoto] = useState({ foto: '', idSede: '', estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-      const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-      const [permissionMessage, setPermissionMessage] = useState('');
-      const [permissions, setPermissions] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -46,7 +45,11 @@ function FotosSedesComponent() {
   const fetchActiveFotos = async () => {
     try {
       const response = await axios.get('http://localhost:5000/fotos_sedes/activos');
-      setFotos(response.data);
+      const fotosWithFullPath = response.data.map(foto => ({
+        ...foto,
+        foto: foto.foto !== "sin foto" ? `http://localhost:5000/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
+      }));
+      setFotos(fotosWithFullPath);
     } catch (error) {
       console.error('Error fetching active fotos:', error);
     }
@@ -57,7 +60,10 @@ function FotosSedesComponent() {
       const response = await axios.get('http://localhost:5000/fotos_sedes', {
         params: { estado: 0 }
       });
-      const inactiveFotos = response.data.filter(foto => foto.estado === 0);
+      const inactiveFotos = response.data.filter(foto => foto.estado === 0).map(foto => ({
+        ...foto,
+        foto: foto.foto !== "sin foto" ? `http://localhost:5000/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
+      }));
       setFotos(inactiveFotos);
     } catch (error) {
       console.error('Error fetching inactive fotos:', error);
@@ -75,7 +81,7 @@ function FotosSedesComponent() {
 
   const handleShowModal = (foto = null) => {
     setEditingFoto(foto);
-    setNewFoto(foto || { foto: '', idSede: '', estado: 1 });
+    setNewFoto(foto || { foto: '', idSede: sedes.length > 0 ? sedes[0].idSede : '', estado: 1 });
     setShowModal(true);
   };
 
@@ -91,23 +97,36 @@ function FotosSedesComponent() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewFoto({ ...newFoto, foto: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
+    setNewFoto({ ...newFoto, foto: file });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append('foto', newFoto.foto);
+    formData.append('idSede', Number(newFoto.idSede)); // Convertir idSede a número
+    formData.append('estado', Number(newFoto.estado)); // Convertir estado a número
+
+    console.log("Datos enviados al backend:", {
+      foto: newFoto.foto,
+      idSede: Number(newFoto.idSede),
+      estado: Number(newFoto.estado)
+    });
+
     try {
       if (editingFoto) {
-        await axios.put(`http://localhost:5000/fotos_sedes/${editingFoto.idFotoSede}`, newFoto);
+        await axios.put(`http://localhost:5000/fotos_sedes/${editingFoto.idFotoSede}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
         setAlertMessage('Foto de sede actualizada con éxito');
       } else {
-        await axios.post('http://localhost:5000/fotos_sedes', newFoto);
+        await axios.post('http://localhost:5000/fotos_sedes', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
         setAlertMessage('Foto de sede creada con éxito');
       }
       fetchActiveFotos();
@@ -129,6 +148,70 @@ function FotosSedesComponent() {
       console.error('Error toggling estado of foto de sede:', error);
     }
   };
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentFotos = fotos.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(fotos.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
 
   return (
     <>
@@ -228,7 +311,7 @@ function FotosSedesComponent() {
             </tr>
           </thead>
           <tbody style={{ textAlign: "center" }}>
-            {fotos.map((foto) => (
+            {currentFotos.map((foto) => (
               <tr key={foto.idFotoSede}>
                 <td>{foto.idFotoSede}</td>
                 <td>
@@ -292,6 +375,7 @@ function FotosSedesComponent() {
             ))}
           </tbody>
         </Table>
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header

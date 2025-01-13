@@ -21,6 +21,8 @@ function Recaudaciones() {
     const [pagos, setPagos] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [tiposPagosOptions, setTiposPagosOptions] = useState([]);
+        const [showUpdateModal, setShowUpdateModal] = useState(false);
+        const [recaudacionToUpdate, setRecaudacionToUpdate] = useState(null);
     const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
     const [permissionMessage, setPermissionMessage] = useState('');
     const [permissions, setPermissions] = useState({});
@@ -86,9 +88,7 @@ function Recaudaciones() {
             const response = await axios.get("http://localhost:5000/rifas");
             setRifas(response.data);
         } catch (error) {
-            console.error("Error fetching rifas:", error);
-            setAlertMessage("Error al cargar las rifas.");
-            setShowAlert(true);
+        console.error("Error fetching rifas:", error);
         }
     };
 
@@ -97,9 +97,7 @@ function Recaudaciones() {
             const response = await axios.get(`http://localhost:5000/rifas/talonarios/${idRifa}`);
             setTalonarios(response.data);
         } catch (error) {
-            console.error("Error fetching talonarios:", error);
-            setAlertMessage("Error al cargar los talonarios.");
-            setShowAlert(true);
+        console.error("Error fetching talonarios:", error);
         }
     };
 
@@ -169,9 +167,90 @@ function Recaudaciones() {
         }
     };
 
+    const handleOpenUpdateModal = async (idRecaudacionRifa) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/recaudaciones/detalle/${idRecaudacionRifa}`);
+            setRecaudacionToUpdate(response.data);
+            setSelectedRifa(response.data.solicitudTalonario.talonario.idRifa);
+            setSelectedTalonario(response.data.solicitudTalonario.idTalonario);
+            setBoletosVendidos(response.data.boletosVendidos);
+            setPagos(response.data.detalle_pago_recaudacion_rifas.map(pago => ({
+                idTipoPago: pago.idTipoPago,
+                monto: pago.pago,
+                correlativo: pago.correlativo,
+                imagenTransferencia: pago.imagenTransferencia
+            })));
+            await fetchRifas(); // Cargar rifas disponibles
+            await fetchTalonarios(response.data.solicitudTalonario.talonario.idRifa); // Cargar talonarios para la rifa seleccionada
+            setShowUpdateModal(true);
+        } catch (error) {
+            console.error("Error fetching detalle recaudación:", error);
+            setAlertMessage("Error al cargar los detalles de la recaudación.");
+            setShowAlert(true);
+        }
+    };
+
+    const resetModalState = () => {
+        setRecaudacionToUpdate(null);
+        setSelectedRifa("");
+        setSelectedTalonario("");
+        setBoletosVendidos(0);
+        setPagos([]);
+    };
+
     const handleCloseModal = () => {
         setShowModal(false);
         setDetalleRecaudacion(null);
+    };
+    
+    const handleCloseUpdateModal = () => {
+        setShowUpdateModal(false);
+        resetModalState();
+    };
+
+    const handleUpdateRecaudacion = async () => {
+        if (!selectedRifa) {
+            alert("Seleccione una rifa.");
+            return;
+        }
+        if (!selectedTalonario) {
+            alert("Seleccione un talonario.");
+            return;
+        }
+        if (boletosVendidos <= 0) {
+            alert("Ingrese la cantidad de boletos vendidos.");
+            return;
+        }
+        if (pagos.length === 0) {
+            alert("Agregue al menos un pago.");
+            return;
+        }
+    
+        try {
+            const recaudacionData = {
+                idRecaudacionRifa: recaudacionToUpdate.idRecaudacionRifa,
+                idTalonario: selectedTalonario,
+                boletosVendidos,
+                pagos,
+            };
+
+            console.log("Datos enviados para actualizar recaudación:", recaudacionData);
+    
+            const response = await axios.put(
+                "http://localhost:5000/recaudaciones/rifa/completa/update/${recaudacionToUpdate.idRecaudacionRifa}",
+                recaudacionData
+            );
+    
+            if (response.status === 200) {
+                alert("Recaudación actualizada con éxito.");
+                setShowUpdateModal(false); // Cierra el modal
+                resetModalState(); // Limpiar estado del modal
+                fetchRecaudaciones(); // Refresca la lista de recaudaciones
+            }
+        } catch (error) {
+            console.error("Error actualizando recaudación:", error.response?.data || error.message);
+            alert("Error al actualizar la recaudación. Revise los datos ingresados.");
+        }
     };
 
     const handleSearch = (e) => {
@@ -414,7 +493,7 @@ function Recaudaciones() {
                 className="mt-3"
                 style={{
                     backgroundColor: "#ffffff",
-                    borderRadius: "10px",
+                    borderRadius: "20px",
                     overflow: "hidden",
                     textAlign: "center",
                 }}
@@ -447,38 +526,39 @@ function Recaudaciones() {
                                     <td>{recaudacion.boletosVendidos || 0}</td>
                                     <td>Q. {recaudacion.subTotal || "0.00"}</td>
                                     <td>
-                                        <FaPencilAlt
+                                    <FaPencilAlt
                                             style={{ cursor: "pointer", marginRight: "10px", fontSize: "20px" }}
                                             title="Editar"
-                                        />
-                                        <FaEye
+                        onClick={() => handleOpenUpdateModal(recaudacion.idRecaudacionRifa)}
+                                    />
+                                    <FaEye
                                             style={{ color: "#007AC3", cursor: "pointer", marginRight: "10px", fontSize: "20px" }}
                                             title="Ver Detalle"
                                             onClick={() => handleViewDetail(recaudacion.idRecaudacionRifa)}
-                                        />
-                                        {recaudacion.estado === 1 ? (
-                                            <FaToggleOn
-                                                style={{ color: "#30c10c", cursor: "pointer", fontSize: "20px" }}
-                                                title="Inactivar"
-                                                onClick={() => {
+                                    />
+                                    {recaudacion.estado === 1 ? (
+                                        <FaToggleOn
+                                            style={{ color: "#30c10c", cursor: "pointer", fontSize: "20px" }}
+                                            title="Inactivar"
+                                            onClick={() => {
                                                     if (checkPermission('Desactivar recaudación de rifa', 'No tienes permisos para desactivar recaudación de rifa')) {
-                                                        toggleEstado(recaudacion.idRecaudacionRifa, recaudacion.estado)
-                                                    }
+                                                    toggleEstado(recaudacion.idRecaudacionRifa, recaudacion.estado)
+                                                }
                                                 }}
-                                            />
-                                        ) : (
-                                            <FaToggleOff
-                                                style={{ color: "#e10f0f", cursor: "pointer", fontSize: "20px" }}
-                                                title="Activar"
-                                                onClick={() => {
+                                        />
+                                    ) : (
+                                        <FaToggleOff
+                                            style={{ color: "#e10f0f", cursor: "pointer", fontSize: "20px" }}
+                                            title="Activar"
+                                            onClick={() => {
                                                     if (checkPermission('Activar recaudación de rifa', 'No tienes permisos para activar recaudación de rifa')) {
-                                                        toggleEstado(recaudacion.idRecaudacionRifa, recaudacion.estado)
-                                                    }
+                                                    toggleEstado(recaudacion.idRecaudacionRifa, recaudacion.estado)
+                                                }
                                                 }}
-                                            />
-                                        )}
-                                    </td>
-                                </tr>
+                                        />
+                                    )}
+                                </td>
+                            </tr>
                             );
                         })
                     ) : (
@@ -672,9 +752,119 @@ function Recaudaciones() {
                         Crear Recaudación
                     </Button>
                     <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
-                        Cancelar
+                Cancelar
+                </Button>
+            </Modal.Footer>
+            </Modal>
+            {/* Actualizar */}
+            <Modal show={showUpdateModal} onHide={handleCloseUpdateModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Actualizar Recaudación</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form.Group>
+                        <Form.Label>Seleccionar Rifa</Form.Label>
+                        <Form.Control
+                            as="select"
+                            value={selectedRifa}
+                            onChange={(e) => {
+                                setSelectedRifa(e.target.value);
+                                fetchTalonarios(e.target.value);
+                            }}
+                        >
+                            <option value="">Seleccione una rifa</option>
+                            {rifas.map((rifa) => (
+                                <option key={rifa.idRifa} value={rifa.idRifa}>
+                                    {rifa.nombreRifa}
+                                </option>
+                            ))}
+                        </Form.Control>
+                    </Form.Group>
+
+                    <Form.Group>
+                        <Form.Label>Seleccionar Talonario</Form.Label>
+                        <Form.Control
+                            as="select"
+                            value={selectedTalonario}
+                            onChange={(e) => setSelectedTalonario(e.target.value)}
+                        >
+                            <option value="">Seleccione un talonario</option>
+                            {talonarios.map((talonario) => (
+                                <option key={talonario.idTalonario} value={talonario.idTalonario}>
+                                    {`Código: ${talonario.codigoTalonario} - Boletos disponibles: ${talonario.cantidadBoletos}`}
+                                </option>
+                            ))}
+                        </Form.Control>
+                    </Form.Group>
+
+                    <Form.Group>
+                        <Form.Label>Boletos Vendidos</Form.Label>
+                        <Form.Control
+                            type="number"
+                            min="1"
+                            value={boletosVendidos}
+                            onChange={(e) => setBoletosVendidos(parseInt(e.target.value) || 0)}
+                        />
+                    </Form.Group>
+
+                    <h5>Pagos</h5>
+                    <Button onClick={handleAddPago} style={{ marginBottom: "10px" }}>
+                        Agregar Pago
                     </Button>
-                </Modal.Footer>
+                    {pagos.map((pago, idx) => (
+                        <div key={idx} style={{ borderBottom: "1px solid #ccc", marginBottom: "10px" }}>
+                            <Form.Group>
+                                <Form.Label>Tipo de Pago</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    value={pago.idTipoPago}
+                                    onChange={(e) => handlePagoChange(idx, "idTipoPago", e.target.value)}
+                                >
+                                    <option value="">Seleccione un tipo de pago</option>
+                                    {tiposPagosOptions.map((tipo) => (
+                                        <option key={tipo.idTipoPago} value={tipo.idTipoPago}>
+                                            {tipo.tipo}
+                                        </option>
+                                    ))}
+                                </Form.Control>
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Monto</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    value={pago.monto}
+                                    onChange={(e) => handlePagoChange(idx, "monto", parseFloat(e.target.value))}
+                                />
+                            </Form.Group>
+
+                            <Form.Group>
+                                <Form.Label>Correlativo</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={pago.correlativo}
+                                    onChange={(e) => handlePagoChange(idx, "correlativo", e.target.value)}
+                                />
+                            </Form.Group>
+
+                            <Form.Group>
+                                <Form.Label>Comprobante</Form.Label>
+                                <Form.Control type="file" onChange={(e) => handleFileUpload(e, idx)} />
+                            </Form.Group>
+
+                            <Button variant="danger" onClick={() => handleRemovePago(idx)}>
+                                Quitar Pago
+                            </Button>
+                        </div>
+                    ))}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button onClick={handleUpdateRecaudacion}>
+                        Actualizar Recaudación
+                    </Button>
+                    <Button variant="secondary" onClick={handleCloseUpdateModal}>
+                                Cancelar
+                        </Button>
+                    </Modal.Footer>
             </Modal>
             <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
                 <Modal.Header closeButton>

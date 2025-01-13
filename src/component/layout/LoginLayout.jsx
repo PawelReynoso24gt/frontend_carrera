@@ -1,20 +1,20 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import bg from "../../assets/img/BannerAYUVILOGIN.png";
-import logoW from "../../assets/img/logo-white.png";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import bg from "../../assets/img/BannerAYUVILOGIN2.png";
 
-function LoginLayout() {
+const LoginLayout = () => {
   const [usuario, setUsuario] = useState(""); // Estado para el usuario
   const [contrasenia, setContrasenia] = useState(""); // Estado para la contraseña
   const [error, setError] = useState(null); // Estado para los mensajes de error
   const [showPassword, setShowPassword] = useState(false);
-  
+  const [bgImageLoaded, setBgImageLoaded] = useState(false);
+
   const navigate = useNavigate();
 
   // Manejar la solicitud de inicio de sesión
-  const handleLogin = async (e) => {
+  const handleLogin = useCallback(async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post("http://localhost:5000/usuarios/login", {
@@ -30,27 +30,42 @@ function LoginLayout() {
     } catch (err) {
       setError("Usuario o contraseña incorrectos. Por favor, intenta de nuevo.");
     }
-  
-  };
+  }, [usuario, contrasenia, navigate]);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
+  }, []);
+
+  // Pre-cargar la imagen de fondo después de que el componente se haya montado
+  useEffect(() => {
+    const img = new Image();
+    img.src = bg;
+    img.onload = () => setBgImageLoaded(true);
+  }, []);
 
   return (
-    <div className="body-bg" style={{  display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div className="body-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
       <section
-        className="crancy-wc crancy-wc__full crancy-bg-cover"
-        style={{ backgroundImage: `url(${bg})`, width: "100%", height: "100vh", backgroundSize: "cover"}}
+        className="crancy-wc crancy-wc__full"
+        style={{
+          width: "100%",
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#f0f2f5",
+          backgroundImage: bgImageLoaded ? `url(${bg})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
       >
-        <div className="container" style={{ maxWidth: "450px", padding: "80px", backgroundColor: "#D5F8FB", borderRadius: "16px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)", marginTop: "350px" }}>
+        <div className="container" style={{ maxWidth: "450px", padding: "80px", backgroundColor: "#D5F8FB", borderRadius: "30px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
           <div className="text-center mb-4">
-            
             <h4 style={{ color: "#333", fontWeight: "bold" }}>Iniciar Sesión</h4>
           </div>
           {/* Formulario de Inicio de Sesión */}
-          <form onSubmit={handleLogin} >
-            <div className="form-group" >
+          <form onSubmit={handleLogin}>
+            <div className="form-group">
               <label htmlFor="usuario" style={{ color: "#333", fontWeight: "bold", fontSize: "20px" }}>Usuario</label>
               <input
                 type="text"
@@ -69,12 +84,12 @@ function LoginLayout() {
                 onClick={togglePasswordVisibility}
                 style={{
                   position: "absolute",
-                  right: "20px", 
-                  top: "70%", 
+                  right: "20px",
+                  top: "70%",
                   transform: "translateY(-50%)",
-                  cursor: "pointer", 
-                  fontSize: "18px", 
-                  color: "#333", 
+                  cursor: "pointer",
+                  fontSize: "18px",
+                  color: "#333",
                 }}
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -89,7 +104,6 @@ function LoginLayout() {
                 placeholder="Ingrese su contraseña"
                 style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
               />
-              
             </div>
             {error && (
               <div className="alert alert-danger mt-3" role="alert">
