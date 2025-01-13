@@ -333,7 +333,7 @@ function Rifas() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "10px",
+            borderRadius: "20px",
             overflow: "hidden",
             marginTop: "20px",
             textAlign: "center",

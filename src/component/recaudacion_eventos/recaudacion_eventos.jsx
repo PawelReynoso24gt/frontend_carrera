@@ -370,7 +370,7 @@ function RecaudacionesEventos() {
                 className="mt-3"
                 style={{
                 backgroundColor: "#ffffff",
-                borderRadius: "10px",
+                borderRadius: "20px",
                 overflow: "hidden",
                 textAlign: "center",
                 }}
@@ -396,7 +396,7 @@ function RecaudacionesEventos() {
                             <td>{recaudacion.evento?.nombreEvento}</td>
                             <td>{recaudacion.empleado?.persona?.nombre}</td>
                             <td>{recaudacion.fechaRegistro ? format(parseISO(recaudacion.fechaRegistro), "dd-MM-yyyy") : "Sin fecha"}</td>
-                            <td>{recaudacion.recaudacion}</td>
+                            <td>Q. {recaudacion.recaudacion}</td>
                             <td>{recaudacion.numeroPersonas} personas</td>
                             <td>{recaudacion.estado === 1 ? "Activo" : "Inactivo"}</td>
                             <td>

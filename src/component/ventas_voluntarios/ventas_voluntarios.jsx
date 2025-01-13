@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 function Ventas() {
   const [ventas, setVentas] = useState([]);
@@ -52,10 +54,6 @@ function Ventas() {
   
     setSubtotal(nuevoSubtotal.toFixed(2)); // Opcionalmente, formatea a 2 decimales
     setTotalAPagar(nuevoTotalAPagar.toFixed(2));
-
-    console.log("Subtotal recalculado:", nuevoSubtotal);
-    console.log("Donación:", nuevaDonacion);
-    console.log("Total a pagar recalculado:", nuevoTotalAPagar);
   }, [detallesVenta, newVenta.donacion]);
 
   const fetchVentas = async () => {
@@ -71,7 +69,6 @@ function Ventas() {
   const fetchVoluntarios = async () => {
     try {
       const response = await axios.get("http://localhost:5000/voluntarios/conProductos");
-      console.log("Voluntarios con productos asignados recibidos:", response.data);
       setVoluntarios(response.data); // Almacena los voluntarios con productos asignados
     } catch (error) {
       console.error("Error fetching voluntarios con productos asignados:", error);
@@ -160,8 +157,6 @@ function Ventas() {
             `http://localhost:5000/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`
         );
 
-        console.log("JSON recibido:", response.data);
-
         if (response.data && response.data.length > 0) {
             setDetalleSeleccionado(response.data); // Guarda todos los detalles de la venta
             const imagen = response.data[0]?.detalle_pago_ventas_voluntarios[0]?.imagenTransferencia || null;
@@ -221,15 +216,12 @@ function Ventas() {
       idProducto: productosValidos[0]?.idProducto || null, // Asociar al primer producto válido
     };
     setTiposPagos((prevPagos) => [...prevPagos, nuevoPago]);
-    console.log("Pago agregado:", nuevoPago); // Agrega este log
-    console.log("Lista de pagos actualizada:", [...tiposPagos, nuevoPago]); // Agrega este log
   };  
   
   const handlePagoChange = (index, field, value) => {
     const nuevosPagos = [...tiposPagos];
     nuevosPagos[index][field] = value;
     setTiposPagos(nuevosPagos);
-    console.log(`Pago actualizado en el índice ${index}:`, nuevosPagos[index]); // Agrega este log
   };
   
   const handleFileUpload = (e, index) => {
@@ -252,7 +244,6 @@ function Ventas() {
         .filter((detalle) => detalle.cantidad > 0 && detalle.estado !== 0)
         .map((detalle) => {
             const subTotal = detalle.cantidad * detalle.precio;
-            console.log("Calculando subtotal para:", detalle.nombreProducto, subTotal);
             return {
                 ...detalle,
                 subTotal, // Asegura que el subtotal se incluya correctamente
@@ -260,26 +251,16 @@ function Ventas() {
             };
         });
 
-        console.log("Detalles válidos con subtotales y donación:", detallesVentaValidos);
 
         // Calcular el subtotal de los productos y el total de la venta
         const subtotalVenta = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0);
         const totalVenta = subtotalVenta + (newVenta.donacion || 0);
 
-        console.log("Subtotal calculado:", subtotalVenta);
-        console.log("Donación:", newVenta.donacion);
-        console.log("Total calculado (incluyendo donación):", totalVenta);
-
         // Validar que la suma de los montos de los pagos coincida con el total calculado
         const totalPagado = tiposPagos.reduce((sum, pago) => sum + (parseFloat(pago.monto) || 0), 0);
 
-        console.log("Validando pagos...");
-        console.log("Subtotal calculado:", subtotal);
-        console.log("Total de la venta (subtotal + donación):", totalAPagar);
-        console.log("Total de los pagos:", totalPagado);
-
         // Verifica si el total pagado coincide con el total calculado (incluyendo la donación ya sumada)
-        if (totalPagado !== totalAPagar) {
+        if (totalPagado !== parseFloat(totalAPagar)) {
             alert(
                 `La suma de los pagos (Q${totalPagado.toFixed(2)}) no coincide con el total a pagar (Q${totalAPagar.toFixed(2)}).`
             );
@@ -312,16 +293,12 @@ function Ventas() {
             };
         });
 
-        console.log("Pagos validados:", pagosValidados);
-
         // Construir los datos de la venta para enviar al backend
         const ventaData = {
             venta: { ...newVenta, totalVenta }, // Incluye la donación y el total
             detalles: detallesVentaValidos, // Incluye los subtotales y donaciones
             pagos: pagosValidados, // Pagos validados con sus requisitos
         };
-
-        console.log("Datos para enviar al backend:", ventaData);
 
         // Enviar los datos al backend
         const response = await axios.post("http://localhost:5000/ventas/create/completa", ventaData);
@@ -373,8 +350,6 @@ function Ventas() {
         })),
       };
   
-      console.log("Datos para actualizar la venta:", ventaData);
-  
       const response = await axios.put(
         `http://localhost:5000/ventas/update/completa/${ventaEditada.venta.idVenta}`,
         ventaData
@@ -386,7 +361,6 @@ function Ventas() {
         setShowDetailsModal(false); // Cerrar el modal
       }
     } catch (error) {
-      console.error("Error al actualizar la venta:", error);
       alert("Error al actualizar la venta.");
     }
   };  
@@ -438,10 +412,6 @@ function Ventas() {
         );
         const totalVenta = subtotal + totalDonacion;
 
-        console.log("Subtotal:", subtotal);
-        console.log("Total Donación:", totalDonacion);
-        console.log("Total Venta:", totalVenta);
-
         // Actualizar estados
         setVentaEditada({
           venta: {
@@ -457,16 +427,12 @@ function Ventas() {
         setTiposPagos(pagos);
         setSubtotal(subtotal);
         setTotalAPagar(totalVenta);
-        console.log("Detalles recibidos:", detalles); // Para revisar si `donacion` está incluida
-        console.log("Venta recibida:", venta); // Para revisar los datos de la venta
 
          // Actualizar donación en newVenta
         setNewVenta((prevVenta) => ({
           ...prevVenta,
           donacion: totalDonacion,
         }));
-
-        console.log("Donación cargada en el formulario:", totalDonacion);
       }
     } catch (error) {
       console.error("Error cargando venta para edición:", error);
@@ -501,7 +467,6 @@ function Ventas() {
     // Crear una nueva copia del array sin el elemento en el índice proporcionado
     const nuevosPagos = tiposPagos.filter((_, i) => i !== index);
     setTiposPagos(nuevosPagos); // Actualizar el estado con los pagos restantes
-    console.log(`Pago eliminado en el índice ${index}. Lista actualizada:`, nuevosPagos); // Log para depuración
   };
 
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -638,7 +603,8 @@ function Ventas() {
             Inactivos
           </Button>
         </div>
-        <Table striped bordered hover responsive className="mt-3" style ={{ textAlign: "center" }}>
+        <Table striped bordered hover responsive className="mt-3" style ={{ textAlign: "center", borderRadius: "20px",
+            overflow: "hidden", }}>
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
@@ -655,7 +621,7 @@ function Ventas() {
               return (
               <tr key={venta.idVenta}>
                 <td>{venta.idVenta}</td>
-                <td>{venta.fechaVenta}</td>
+                <td>{venta.fechaVenta ? format(parseISO(venta.fechaVenta), "dd-MM-yyyy") : "Sin fecha"}</td>
                 <td>Q. {venta.totalVenta}</td>
                 <td>{tiposPublico.find((tp) => tp.idTipoPublico === venta.idTipoPublico)?.nombreTipo || "N/A"}</td>
                 <td>{venta.estado === 1 ? "Activo" : "Inactivo"}</td>
@@ -715,9 +681,7 @@ function Ventas() {
                       <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
                       <p><strong>Nombre Producto:</strong> {detalle.producto?.nombreProducto || "N/A"}</p>
                       <p><strong>Cantidad:</strong> {detalle.cantidad || "N/A"}</p>
-                      {console.log("Subtotal recibido en detalle:", detalle.subTotal)} {/* LOG AQUÍ */}
                       <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
-                      {console.log("Detalle seleccionado para el modal:", detalleSeleccionado)}
                       <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
 
                       <h5>Pagos Asociados</h5>
@@ -815,7 +779,6 @@ function Ventas() {
                     donacion: detalle.donacion || 0, // Incluye el campo donación
                     estado: 1,
                   }));
-                  console.log("Productos cargados para el voluntario seleccionado:", productos); // Agrega este log
                   setDetallesVenta(productos); // Carga los productos asignados
                 } else {
                   setDetallesVenta([]); // Limpia los productos si no hay selección
@@ -863,8 +826,6 @@ function Ventas() {
                         setSubtotal(nuevoSubtotal);
                         setTotalAPagar(nuevoTotal);
                         setNewVenta((prevVenta) => ({ ...prevVenta, donacion: nuevaDonacion }));
-                        console.log("Donación almacenada en el estado:", totalDonacion);
-                        console.log("Detalles actualizados:", nuevosDetalles); // Agrega este log
                       }}
                     />
                   </td>
@@ -900,10 +861,6 @@ function Ventas() {
                 }));
                 setSubtotal(nuevoSubtotal);
                 setTotalAPagar(nuevoTotalAPagar);
-
-                console.log("Donación actualizada:", nuevaDonacion);
-                console.log("Detalles actualizados con nueva donación:", nuevosDetalles);
-                console.log("Nuevo total a pagar:", nuevoTotalAPagar);
               }}
             />
           </Form.Group>
@@ -998,20 +955,6 @@ function Ventas() {
           <Button onClick={ventaEditada.venta ? handleUpdateVenta : handleCreateVenta}>
             {ventaEditada.venta ? "Actualizar Venta" : "Crear Venta"}
           </Button>
-            <Button
-              style={{
-                backgroundColor: "#6c757d",
-                borderColor: "#6c757d",
-                padding: "5px 10px",
-                width: "130px",
-                marginRight: "10px",
-                fontWeight: "bold",
-                color: "#fff",
-              }}
-              onClick={() => setShowPreviewModal(true)}
-            >
-              Ver Datos
-            </Button>
           </Modal.Footer>
         </Modal>
       </div>
