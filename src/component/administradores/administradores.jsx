@@ -5,6 +5,7 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff , FaKey} from "react-icons/fa";
 
 function UsuariosAdminComponent() {
   const [usuarios, setUsuarios] = useState([]);
+  const [personas, setPersonas] = useState([]); // Estado para almacenar las personas
   const [showModal, setShowModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState(null);
@@ -21,6 +22,7 @@ function UsuariosAdminComponent() {
 
   useEffect(() => {
     fetchActiveUsuarios();
+    fetchPersonas(); // Obtener la lista de personas al cargar el componente
   }, []);
 
   const fetchActiveUsuarios = async () => {
@@ -46,6 +48,15 @@ function UsuariosAdminComponent() {
       setFilter('inactivos');
     } catch (error) {
       console.error('Error fetching inactive usuarios:', error);
+    }
+  };
+
+  const fetchPersonas = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/personas');
+      setPersonas(response.data);
+    } catch (error) {
+      console.error('Error fetching personas:', error);
     }
   };
 
@@ -416,15 +427,22 @@ function UsuariosAdminComponent() {
             </Form.Group>
             <Form.Group controlId="idPersona">
               <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                ID Persona
+                Persona
               </Form.Label>
               <Form.Control
-                type="number"
+                as="select"
                 name="idPersona"
                 value={newUsuario.idPersona}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Seleccionar Persona</option>
+                {personas.map((persona) => (
+                  <option key={persona.idPersona} value={persona.idPersona}>
+                    {persona.nombre}
+                  </option>
+                ))}
+              </Form.Control>
             </Form.Group>
             <Form.Group controlId="estado">
               <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
