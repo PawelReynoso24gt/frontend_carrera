@@ -2,7 +2,7 @@
 
 import renewToken from './renewToken';
 
-const ACTIVITY_CHECK_INTERVAL = 60 * 1000; // 1 minuto
+const ACTIVITY_CHECK_INTERVAL = 15 * 60 * 1000; // 15 minuto
 let lastActivityTime = Date.now();
 
 function updateLastActivityTime() {
