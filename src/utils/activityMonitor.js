@@ -2,7 +2,7 @@
 
 import renewToken from './renewToken';
 
-const ACTIVITY_CHECK_INTERVAL = 15 * 60 * 1000; // 15 minuto
+const ACTIVITY_CHECK_INTERVAL = 15 * 60 * 1000; // 15 minutos
 let lastActivityTime = Date.now();
 
 function updateLastActivityTime() {
@@ -24,16 +24,16 @@ function startActivityCheckInterval() {
         const currentTime = Date.now();
         const timeSinceLastActivity = currentTime - lastActivityTime;
 
-        if (timeSinceLastActivity < ACTIVITY_CHECK_INTERVAL) {
+        if (timeSinceLastActivity >= ACTIVITY_CHECK_INTERVAL) {
+            localStorage.clear();
+            window.location.href = "/login";
+        } else {
             try {
                 await renewToken();
             } catch (error) {
                 localStorage.clear();
                 window.location.href = "/login";
             }
-        } else {
-            localStorage.clear();
-            window.location.href = "/login";
         }
     }, ACTIVITY_CHECK_INTERVAL);
 }
