@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
+import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap"; // Asegúrate de importar InputGroup y FormControl
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 
@@ -11,9 +11,14 @@ function TipoPago() {
   const [newTipoPago, setNewTipoPago] = useState({ tipo: "", estado: 1 });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [filteredTiposPago, setFilteredTiposPago] = useState([]);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -28,7 +33,7 @@ function TipoPago() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchTiposPago();
   }, []);
@@ -46,6 +51,7 @@ function TipoPago() {
     try {
       const response = await axios.get("http://localhost:5000/tipospagos");
       setTiposPago(response.data);
+      setFilteredTiposPago(response.data); // Inicializa filteredTiposPago
     } catch (error) {
       console.error("Error fetching tipos de pago:", error);
     }
@@ -122,6 +128,80 @@ function TipoPago() {
     }
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    const filtered = tiposPago.filter((tipoPago) => 
+      tipoPago.tipo.toLowerCase().includes(value)
+    );
+    setFilteredTiposPago(filtered);
+    setCurrentPage(1);
+  };
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentTiposPago = filteredTiposPago.slice(indexOfFirstRow, indexOfFirstRow + rowsPerPage);
+
+  const totalPages = Math.ceil(filteredTiposPago.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -141,6 +221,14 @@ function TipoPago() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
+        <InputGroup className="mb-3">
+          <FormControl
+            placeholder="Buscar tipo de pago..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </InputGroup>
+
         <div className="d-flex justify-content-start align-items-center mb-3">
           <Button
             style={{
@@ -227,7 +315,7 @@ function TipoPago() {
             </tr>
           </thead>
           <tbody style={{ textAlign: "center" }}>
-            {tiposPago.map((tipoPago) => (
+            {currentTiposPago.map((tipoPago) => (
               <tr key={tipoPago.idTipoPago}>
                 <td>{tipoPago.idTipoPago}</td>
                 <td>{tipoPago.tipo}</td>
@@ -283,7 +371,7 @@ function TipoPago() {
             ))}
           </tbody>
         </Table>
-
+        {renderPagination()}
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
             closeButton
@@ -339,17 +427,17 @@ function TipoPago() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );
