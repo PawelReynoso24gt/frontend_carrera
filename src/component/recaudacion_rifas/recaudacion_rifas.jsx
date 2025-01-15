@@ -2,6 +2,7 @@
     import axios from "axios";
     import { Table, Alert, InputGroup, FormControl, Button, Modal, Form } from "react-bootstrap";
     import { FaPencilAlt, FaEye, FaToggleOn, FaToggleOff } from "react-icons/fa";
+    import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
     function Recaudaciones() {
         const [recaudaciones, setRecaudaciones] = useState([]);
@@ -23,6 +24,7 @@
         const [tiposPagosOptions, setTiposPagosOptions] = useState([]);
         const [showUpdateModal, setShowUpdateModal] = useState(false);
         const [recaudacionToUpdate, setRecaudacionToUpdate] = useState(null);
+        const [precioBoleto, setPrecioBoleto] = useState(0);
 
 
     useEffect(() => {
@@ -30,6 +32,8 @@
         fetchRifas();
         fetchTiposPagos();
     }, []);
+
+    const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
     const fetchRecaudaciones = async () => {
         try {
@@ -74,10 +78,18 @@
         }
     };  
 
+    const calcularResumenPago = (boletosVendidos, precioBoleto) => {
+        const subtotal = boletosVendidos * precioBoleto;
+        return {
+            precioBoleto,
+            boletosVendidos,
+            subtotal
+        };
+    };
+
     const fetchActiveRecaudaciones = async () => {
         try {
         const response = await axios.get("http://localhost:5000/recaudaciones/todas");
-        console.log("Recaudaciones activas:", response.data);
         if (Array.isArray(response.data)) {
             setFilteredRecaudaciones(response.data);
         } else {
@@ -95,7 +107,6 @@
     const fetchInactiveRecaudaciones = async () => {
         try {
         const response = await axios.get("http://localhost:5000/recaudaciones/todas/inactivas");
-        console.log("Recaudaciones inactivas:", response.data);
         if (Array.isArray(response.data)) {
             setFilteredRecaudaciones(response.data);
         } else {
@@ -143,6 +154,8 @@
     const handleOpenUpdateModal = async (idRecaudacionRifa) => {
         try {
             const response = await axios.get(`http://localhost:5000/recaudaciones/detalle/${idRecaudacionRifa}`);
+            const precioBoleto = response.data.solicitudTalonario?.talonario?.rifa?.precioBoleto || 0;
+        
             setRecaudacionToUpdate(response.data);
             setSelectedRifa(response.data.solicitudTalonario.talonario.idRifa);
             setSelectedTalonario(response.data.solicitudTalonario.idTalonario);
@@ -206,8 +219,6 @@
                 boletosVendidos,
                 pagos,
             };
-
-            console.log("Datos enviados para actualizar recaudación:", recaudacionData);
     
             const response = await axios.put(
                 "http://localhost:5000/recaudaciones/rifa/completa/update/${recaudacionToUpdate.idRecaudacionRifa}",
@@ -215,6 +226,14 @@
             );
     
             if (response.status === 200) {
+                const bitacoraData = {
+                    descripcion: "Nueva recaudación de rifas actualizada",
+                    idCategoriaBitacora: 32, // ID de categoría para creación
+                    idUsuario: idUsuario,
+                    fechaHora: new Date()
+                };
+                await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+
                 alert("Recaudación actualizada con éxito.");
                 setShowUpdateModal(false); // Cierra el modal
                 resetModalState(); // Limpiar estado del modal
@@ -269,6 +288,15 @@
         );
     
         if (response.status === 201) {
+
+            const bitacoraData = {
+                descripcion: "Nueva recaudación de rifas creada",
+                idCategoriaBitacora: 33, // ID de categoría para creación
+                idUsuario: idUsuario,
+                fechaHora: new Date()
+            };
+            await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+
             alert("Recaudación creada con éxito.");
             setShowCreateModal(false); // Cierra el modal
             fetchRecaudaciones(); // Refresca la lista de recaudaciones
@@ -625,9 +653,14 @@
                     as="select"
                     value={selectedRifa}
                     onChange={(e) => {
-                    setSelectedRifa(e.target.value);
-                    fetchTalonarios(e.target.value);
-                    }}
+                        const selectedIdRifa = e.target.value;
+                        setSelectedRifa(selectedIdRifa);
+                        fetchTalonarios(selectedIdRifa);
+                        
+                        const rifaSeleccionada = rifas.find(rifa => rifa.idRifa === parseInt(selectedIdRifa));
+                        const precio = parseFloat(rifaSeleccionada?.precioBoleto) || 0; // Convertir a número
+                        setPrecioBoleto(precio);
+                        }}
                     >
                     <option value="">Seleccione una rifa</option>
                     {rifas.map((rifa) => (
@@ -663,6 +696,25 @@
                     onChange={(e) => setBoletosVendidos(parseInt(e.target.value) || 0)}
                 />
                 </Form.Group>
+
+                {/* Resumen de Pago */}
+                <h5>Resumen de Pago</h5>
+                    <Table>
+                        <tbody>
+                            <tr>
+                                <td><strong>Precio por Boleto:</strong></td>
+                                <td>Q{precioBoleto.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Boletos Vendidos:</strong></td>
+                                <td>{boletosVendidos}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Subtotal:</strong></td>
+                                <td>Q{(boletosVendidos * precioBoleto).toFixed(2)}</td>
+                            </tr>
+                        </tbody>
+                    </Table>
 
                 <h5>Pagos</h5>
                 <Button onClick={handleAddPago} style={{ marginBottom: "10px" }}>
@@ -735,8 +787,13 @@
                             as="select"
                             value={selectedRifa}
                             onChange={(e) => {
-                                setSelectedRifa(e.target.value);
-                                fetchTalonarios(e.target.value);
+                                const selectedIdRifa = e.target.value;
+                                setSelectedRifa(selectedIdRifa);
+                                fetchTalonarios(selectedIdRifa);
+                                
+                                const rifaSeleccionada = rifas.find(rifa => rifa.idRifa === parseInt(selectedIdRifa));
+                                const precio = parseFloat(rifaSeleccionada?.precioBoleto) || 0; // Convertir a número
+                                setPrecioBoleto(precio);
                             }}
                         >
                             <option value="">Seleccione una rifa</option>
@@ -773,6 +830,25 @@
                             onChange={(e) => setBoletosVendidos(parseInt(e.target.value) || 0)}
                         />
                     </Form.Group>
+
+                    {/* Resumen de Pago */}
+                    <h5>Resumen de Pago</h5>
+                    <Table>
+                        <tbody>
+                            <tr>
+                                <td><strong>Precio por Boleto:</strong></td>
+                                <td>Q{precioBoleto.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Boletos Vendidos:</strong></td>
+                                <td>{boletosVendidos}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Subtotal:</strong></td>
+                                <td>Q{(boletosVendidos * precioBoleto).toFixed(2)}</td>
+                            </tr>
+                        </tbody>
+                    </Table>
 
                     <h5>Pagos</h5>
                     <Button onClick={handleAddPago} style={{ marginBottom: "10px" }}>

@@ -140,7 +140,6 @@ function DetalleProductoVoluntario() {
         );
         setAlertMessage("Detalle actualizado con éxito");
       } else {
-        console.log(newDetalle);
         await axios.post("http://localhost:5000/detalle_productos_voluntarios/create", newDetalle);
         setAlertMessage("Detalle creado con éxito");
       }

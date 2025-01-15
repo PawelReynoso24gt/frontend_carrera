@@ -10,7 +10,7 @@ function DetalleProductosComponent() {
   const [productos, setProductos] = useState([]);
   const [sedes, setSedes] = useState([]);
   const [editingDetalle, setEditingDetalle] = useState(null);
-  const [newDetalle, setNewDetalle] = useState({ nombreProducto: "", cantidad: "", nombreSede: "", estado: 1 });
+  const [newDetalle, setNewDetalle] = useState({ nombreProducto: "", cantidad: "", nombreSede: "", estado: 1, descripcion: "" });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,13 +20,7 @@ function DetalleProductosComponent() {
 
   const sedeId = getUserDataFromToken(localStorage.getItem("token"))?.idSede;
 
-  if (!sedeId) {
-    setMensaje(
-      "No se encontró el ID de la sede en el almacenamiento local."
-    );
-    
-    return;
-  }
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
 
 
   useEffect(() => {
@@ -106,7 +100,7 @@ function DetalleProductosComponent() {
 
   const handleShowModal = (detalle = null) => {
     setEditingDetalle(detalle);
-    setNewDetalle(detalle || { nombreProducto: "", cantidad: "", idSede: sedeId || "", estado: 1 });
+    setNewDetalle(detalle || { nombreProducto: "", cantidad: "", idSede: sedeId || "", estado: 1,  descripcion: "" });
     setShowModal(true);
   };
 
@@ -120,15 +114,32 @@ function DetalleProductosComponent() {
     setNewDetalle({ ...newDetalle, [name]: value });
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingDetalle) {
         await axios.put(`http://localhost:5000/detalle_productos/update/${editingDetalle.idDetalleProductos}`, newDetalle);
         setAlertMessage("Detalle actualizado con éxito");
+        logBitacora(`Detalle de producto ${editingDetalle.idDetalleProductos} actualizado: ${newDetalle.descripcion}`, 3);
       } else {
         await axios.post("http://localhost:5000/detalle_productos/create", newDetalle);
         setAlertMessage("Detalle creado con éxito");
+        logBitacora(`Detalle de producto creado`, 40);
       }
       fetchDetalles();
       setShowAlert(true);
@@ -386,6 +397,18 @@ const renderPagination = () => (
                 ))}
               </Form.Control>
               </Form.Group>
+              {editingDetalle && (
+                <Form.Group controlId="descripcion">
+                  <Form.Label>Razón del Cambio</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    name="descripcion"
+                    value={newDetalle.descripcion}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              )}
             <Form.Group>
               <Form.Label>Estado</Form.Label>
               <Form.Control

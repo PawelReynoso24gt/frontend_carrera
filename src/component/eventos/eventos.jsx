@@ -42,19 +42,28 @@ function Eventos() {
 
   // extraer el dato para idSede
   const sedeId = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
-  
-    if (!sedeId) {
-      setMensaje(
-        "No se encontró el ID de la sede en el almacenamiento local."
-      );
-      
-      return;
-    }
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
   useEffect(() => {
     fetchEventos();
     fetchSedes();
   }, []);
+
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
 
   const fetchEventos = async () => {
     try {
@@ -155,9 +164,13 @@ function Eventos() {
           newEvento
         );
         setAlertMessage("Evento actualizado con éxito");
+        // Log the update action in the bitacora
+        await logBitacora(`Evento ${newEvento.nombreEvento} actualizado`, 27);
       } else {
         await axios.post("http://localhost:5000/eventos", newEvento);
         setAlertMessage("Evento creado con éxito");
+         // Log the create action in the bitacora
+        await logBitacora(`Evento ${newEvento.nombreEvento} creado`, 23);
       }
       fetchEventos();
       setShowAlert(true);

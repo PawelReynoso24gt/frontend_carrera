@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Modal, Card, Row, Col, Form } from "react-bootstrap";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
 function AutorizacionTalonarios() {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -13,6 +14,8 @@ function AutorizacionTalonarios() {
   useEffect(() => {
     fetchSolicitudes();
   }, []);
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
   const fetchSolicitudes = async () => {
     try {
@@ -35,6 +38,21 @@ function AutorizacionTalonarios() {
     setShowConfirmationModal(true);
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const updateSolicitud = async (idSolicitud, estado) => {
     try {
       await axios.put(`http://localhost:5000/solicitudes/${idSolicitud}`, {
@@ -42,6 +60,9 @@ function AutorizacionTalonarios() {
       });
       fetchSolicitudes();
       setShowConfirmationModal(false);
+
+      // Log de bitácora
+      await logBitacora(`Solicitud de talonario ${idSolicitud} actualizada`, 21); 
     } catch (error) {
       console.error(`Error al actualizar la solicitud ${idSolicitud}:`, error);
     }

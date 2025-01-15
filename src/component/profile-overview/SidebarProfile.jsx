@@ -65,7 +65,6 @@ function SidebarProfile() {
             'Content-Type': 'multipart/form-data'
           }
         });
-        console.log("Foto actualizada:", response.data);
         setSuccessMessage("Se han guardado los cambios correctamente.");
         setSelectedFile(null);
         const photoPath = response.data.foto !== "sin foto" ? `http://localhost:5000/${response.data.foto.replace(/\\/g, '/')}` : profileImg;

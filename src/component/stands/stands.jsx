@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
 function Stand() {
   const [stands, setStands] = useState([]);
@@ -27,6 +28,8 @@ function Stand() {
     fetchSedes();
     fetchTiposStands();
   }, []);
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
   const fetchStands = async () => {
     try {
@@ -88,6 +91,21 @@ function Stand() {
     setNewStand({ ...newStand, [name]: value });
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -97,9 +115,13 @@ function Stand() {
           newStand
         );
         setAlertMessage("Stand actualizado con éxito");
+        // Log the update action in the bitacora
+        await logBitacora(`Stand ${newStand.nombreStand} actualizado`, 17);
       } else {
         await axios.post("http://localhost:5000/stand/create", newStand);
         setAlertMessage("Stand creado con éxito");
+         // Log the create action in the bitacora
+        await logBitacora(`Stand ${newStand.nombreStand} creado`, 13);
       }
       fetchStands();
       setShowAlert(true);
