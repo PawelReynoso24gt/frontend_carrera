@@ -27,7 +27,7 @@ function Voluntarios() {
   const [alertMessage, setAlertMessage] = useState("");
   const [personas, setPersonas] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10); 
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchVoluntarios();
@@ -120,7 +120,7 @@ function Voluntarios() {
     setQrCodeUrl(`http://localhost:5000/generateQR?data=${codigoQR}`);
     setShowQRModal(true);
   };
-  
+
   const handleCloseQRModal = () => {
     setShowQRModal(false);
   };
@@ -128,14 +128,20 @@ function Voluntarios() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const voluntarioToSubmit = {
+        ...newVoluntario,
+        fechaRegistro: new Date(newVoluntario.fechaRegistro).toISOString().split('T')[0],
+        fechaSalida: new Date(newVoluntario.fechaSalida).toISOString().split('T')[0],
+      };
+
       if (editingVoluntario) {
         await axios.put(
           `http://localhost:5000/voluntarios/update/${editingVoluntario.idVoluntario}`,
-          newVoluntario
+          voluntarioToSubmit
         );
         setAlertMessage("Voluntario actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/voluntarios/create", newVoluntario);
+        await axios.post("http://localhost:5000/voluntarios/create", voluntarioToSubmit);
         setAlertMessage("Voluntario creado con éxito");
       }
       fetchVoluntarios();
@@ -183,7 +189,7 @@ function Voluntarios() {
       >
         Anterior
       </a>
-  
+
       <div className="d-flex align-items-center">
         <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
         <Form.Control
@@ -191,7 +197,7 @@ function Voluntarios() {
           value={rowsPerPage}
           onChange={(e) => {
             setRowsPerPage(Number(e.target.value));
-            setCurrentPage(1); 
+            setCurrentPage(1);
           }}
           style={{
             width: "100px",
@@ -205,7 +211,7 @@ function Voluntarios() {
           ))}
         </Form.Control>
       </div>
-  
+
       <a
         href="#"
         onClick={(e) => {
@@ -223,7 +229,7 @@ function Voluntarios() {
       </a>
     </div>
   );
-  
+
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -233,7 +239,7 @@ function Voluntarios() {
           </h3>
         </div>
       </div>
-  
+
       <div
         className="container mt-4"
         style={{
@@ -250,7 +256,7 @@ function Voluntarios() {
             onChange={handleSearch}
           />
         </InputGroup>
-  
+
         <div className="d-flex justify-content-start align-items-center mb-3">
           <Button
             style={{
@@ -294,7 +300,7 @@ function Voluntarios() {
             Inactivos
           </Button>
         </div>
-  
+
         <Alert
           variant="success"
           show={showAlert}
@@ -304,8 +310,8 @@ function Voluntarios() {
         >
           {alertMessage}
         </Alert>
-  
-        <Table 
+
+        <Table
           striped
           bordered
           hover
@@ -363,7 +369,7 @@ function Voluntarios() {
                   />
                   {voluntario.estado ? (
                     <FaToggleOn
-                      style={{ 
+                      style={{
                         color: "#30c10c",
                         cursor: "pointer",
                         marginLeft: "10px",
@@ -390,9 +396,9 @@ function Voluntarios() {
           </tbody>
         </Table>
 
-  
+
         {renderPagination()}
-        
+
         <Modal show={showQRModal} onHide={handleCloseQRModal} centered>
           <Modal.Header closeButton>
             <Modal.Title>Código QR</Modal.Title>
