@@ -42,14 +42,8 @@ function RecaudacionesEventos() {
 
       // Obtener el idPersona desde localStorage
           const idEmpleado = getUserDataFromToken(localStorage.getItem("token"))?.idEmpleado; // ! USO DE LA FUNCIÓN getUserDataFromToken
-      
-          if (!idEmpleado) {
-            setMensaje(
-              "No se encontró el ID de la sede en el almacenamiento local."
-            );
-            
-            return;
-          }
+
+          const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
     const fetchRecaudaciones = async () => {
         try {
@@ -159,6 +153,15 @@ function RecaudacionesEventos() {
                 setShowAlert(true);
                 fetchRecaudaciones();
                 handleCloseModal();
+
+                const bitacoraData = {
+                    descripcion: "Nueva recaudación de eventos creada",
+                    idCategoriaBitacora: 30,
+                    idUsuario: idUsuario, // Asegúrate de que idUsuario sea el valor correcto extraído del token
+                    fechaHora: new Date()
+                };
+
+                await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
             }
         } catch (error) {
             console.error("Error creando recaudación:", error);
@@ -184,6 +187,15 @@ function RecaudacionesEventos() {
             );
     
             if (response.status === 200) {
+                // Crear entrada en la bitácora
+                const bitacoraData = {
+                    descripcion: "Recaudación de eventos actualizada",
+                    idCategoriaBitacora: 16,
+                    idUsuario: idUsuario, // Asegúrate de que idUsuario sea el valor correcto extraído del token
+                    fechaHora: new Date()
+                };
+
+                await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
                 setAlertMessage("Recaudación actualizada con éxito.");
                 setShowAlert(true);
                 fetchRecaudaciones();

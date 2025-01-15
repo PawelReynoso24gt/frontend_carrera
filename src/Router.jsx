@@ -91,6 +91,7 @@ import RecaudacionEventos from "./pages/recaudaciones_eventos/recaudaciones_even
 import ProductosVentVoluntario from "./pages/productosVentVoluntario/productosVentVoluntario";
 import Empleados from "./pages/empleados/empleados";
 import DetalleProductos from "./pages/detalleProductos/detalleProductos";
+import Bitacoras from "./pages/bitacoras/bitacoras";
 
 
 const router = createBrowserRouter([
@@ -372,6 +373,10 @@ const router = createBrowserRouter([
       {
         path: "/empleados",
         element: <Empleados/>,
+      },
+      {
+        path: "/bitacoras",
+        element: <Bitacoras/>,
       },
       {
         path: "/gallery",
