@@ -12,6 +12,7 @@ import {
 import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
 import { format } from "date-fns";
 import { parseISO } from "date-fns";
+import { getUserDataFromToken } from "../../utils/jwtUtils";
 
 function Traslados() {
   const [traslados, setTraslados] = useState([]);
@@ -36,6 +37,8 @@ function Traslados() {
   const [detallesProductos, setDetallesProductos] = useState([]);
   const [productos, setProductos] = useState([]);
   const [modalAlertMessage, setModalAlertMessage] = useState("");
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // Obtener el ID del usuario desde el token
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -202,6 +205,21 @@ const handleRemoveDetalle = (index) => {
     setNewTraslado({ ...newTraslado, [name]: value });
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -228,9 +246,11 @@ const handleRemoveDetalle = (index) => {
           trasladoConDetalle
         );
         setAlertMessage("Traslado actualizado con éxito");
+        logBitacora(`Actualizó el traslado #${editingTraslado.idTraslado}`, 15);
       } else {
         await axios.post("http://localhost:5000/trasladosCompletos", trasladoConDetalle);
         setAlertMessage("Traslado creado con éxito");
+        logBitacora("Creó un nuevo traslado", 11);
       }
   
       fetchTraslados();

@@ -45,6 +45,9 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
 
+  // para bitacora
+  const UserID = getUserDataFromToken(localStorage.getItem("token")).idUsuario;
+
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -163,6 +166,21 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
     setShowModal(true);
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario: UserID,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSave = async () => {
     try {
       if (editMode) {
@@ -176,6 +194,8 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
             observaciones: formData.observaciones,
           }
         );
+        // Log bitacora for editing
+        await logBitacora(`Situación actualizada: ${formData.descripcion}`, 6);
       } else {
         // Crear una nueva situación con el estado "Reportada" por defecto
         await axios.post("http://localhost:5000/situaciones/create", {
@@ -183,6 +203,8 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
           estado: "Reportada",
           idUsuario: formData.idUsuario
         });
+        // Log bitacora for creating
+        await logBitacora(`Nueva situación creada: ${formData.descripcion}`, 5);
       }
       fetchSituacionesByEstado(selectedEstado);
       setShowModal(false);
