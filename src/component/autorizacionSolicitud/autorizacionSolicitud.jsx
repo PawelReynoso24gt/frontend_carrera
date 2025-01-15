@@ -16,12 +16,29 @@ function SolicitudesVoluntariado() {
   const [modalContent, setModalContent] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   // Estados para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6); // Número de elementos por página
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchAspirantes();
     fetchPersonas();
   }, []);
@@ -41,6 +58,15 @@ function SolicitudesVoluntariado() {
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
+  };
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
   };
 
   const fetchAspirantes = async () => {
@@ -136,16 +162,24 @@ function SolicitudesVoluntariado() {
                   <Button
                     variant="success"
                     size="sm"
-                    onClick={() => handleAccept(aspirante.idAspirante)}
-                    style={{ minWidth: "70px", width: "100px" }}
+                    onClick={() => {
+                      if (checkPermission('Aceptar solicitud de aspirantes', 'No tienes permisos para aceptar la solicitud de aspirantes')) {
+                        handleAccept(aspirante.idAspirante);
+                      }
+                    }}
+                    style={{ minWidth: "70px" , width: "100px"}}
                   >
                     Aceptar
                   </Button>
                   <Button
                     variant="danger"
                     size="sm"
-                    onClick={() => handleDeny(aspirante.idAspirante)}
-                    style={{ minWidth: "70px", width: "100px" }}
+                    onClick={() => {
+                      if (checkPermission('Denegar solicitud de aspirantes', 'No tienes permisos para denegar la solicitud de aspirantes')) {
+                        handleDeny(aspirante.idAspirante);
+                      }
+                    }}
+                    style={{ minWidth: "70px",  width: "100px" }}
                   >
                     Denegar
                   </Button>
@@ -252,6 +286,17 @@ function SolicitudesVoluntariado() {
           </Button>
         </Modal.Footer>
       </Modal>
+          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+               <Modal.Header closeButton>
+                <Modal.Title>Permiso Denegado</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{permissionMessage}</Modal.Body>
+                <Modal.Footer>
+                <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                  Aceptar
+                </Button>
+               </Modal.Footer>
+             </Modal>
     </div>
   );
 }

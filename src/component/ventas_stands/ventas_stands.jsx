@@ -32,7 +32,7 @@ function Ventas() {
     venta: null,
     detalles: [],
     pagos: []
-  });  
+  });
   // temporal
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [newVenta, setNewVenta] = useState({
@@ -51,8 +51,25 @@ function Ventas() {
     donacion: 0,
     totalVenta: 0,
   });
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchVentas();
     fetchTiposPagos();
     fetchTiposPublico();
@@ -134,7 +151,7 @@ function Ventas() {
   };
 
   // Fetch de los stands
-    const fetchStands = async () => {
+  const fetchStands = async () => {
     try {
       const response = await axios.get("http://localhost:5000/stand");
       const standsActivos = response.data.filter((stand) => stand.estado === 1);
@@ -162,7 +179,7 @@ function Ventas() {
       console.error("Error al obtener voluntarios por stand:", error.message);
       setVoluntarios([]);
     }
-  };  
+  };
 
   const fetchVoluntarios = async () => {
     try {
@@ -417,12 +434,12 @@ function Ventas() {
   };
 
   const handleSelectVoluntarioStand = (id) => {
-  setVoluntarioStandSeleccionado(id);
-};
+    setVoluntarioStandSeleccionado(id);
+  };
 
-const handleSelectVoluntarioGlobal = (id) => {
-  setVoluntarioGlobalSeleccionado(id);
-};
+  const handleSelectVoluntarioGlobal = (id) => {
+    setVoluntarioGlobalSeleccionado(id);
+  };
 
   const handleShowVoluntarios = () => {
     setShowVoluntariosModal(true);
@@ -453,14 +470,14 @@ const handleSelectVoluntarioGlobal = (id) => {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-  
+
     const filtered = ventas.filter((venta) =>
       venta.fechaVenta.toLowerCase().includes(value)
     );
-  
+
     setFilteredVentas(filtered);
     setCurrentPage(1);
-  };  
+  };
 
   const handleViewDetails = async (idVenta) => {
     try {
@@ -468,15 +485,15 @@ const handleSelectVoluntarioGlobal = (id) => {
             `http://localhost:5000/detalle_ventas_stands/ventaCompleta/${idVenta}`
         );
 
-        if (response.data && response.data.length > 0) {
-            setDetalleSeleccionado(response.data); // Guarda todos los detalles de la venta
-            const imagen = response.data[0]?.detalle_pago_ventas_stands[0]?.imagenTransferencia || null;
-            setImagenBase64(imagen); // Establecer la imagen Base64
-        } else {
-            alert("No se encontraron detalles para esta venta.");
-            setDetalleSeleccionado(null);
-            setImagenBase64(null);
-        }
+      if (response.data && response.data.length > 0) {
+        setDetalleSeleccionado(response.data); // Guarda todos los detalles de la venta
+        const imagen = response.data[0]?.detalle_pago_ventas_stands[0]?.imagenTransferencia || null;
+        setImagenBase64(imagen); // Establecer la imagen Base64
+      } else {
+        alert("No se encontraron detalles para esta venta.");
+        setDetalleSeleccionado(null);
+        setImagenBase64(null);
+      }
 
         setShowModal(true);
       } catch (error) {
@@ -506,18 +523,18 @@ const handleSelectVoluntarioGlobal = (id) => {
     } catch (error) {
       console.error("Error fetching inactive ventas:", error);
     }
-  }; 
+  };
 
   const handleAddPago = () => {
     // Filtrar productos con cantidad > 0
-  const productosValidos = detallesVenta.filter((detalle) => detalle.cantidad > 0);
+    const productosValidos = detallesVenta.filter((detalle) => detalle.cantidad > 0);
 
-  if (productosValidos.length === 0) {
-    alert("No hay productos válidos para asociar al pago.");
-    return;
-  };
+    if (productosValidos.length === 0) {
+      alert("No hay productos válidos para asociar al pago.");
+      return;
+    };
 
-  // Crear un nuevo pago
+    // Crear un nuevo pago
     const nuevoPago = {
       idTipoPago: "", // Campo vacío para que el usuario lo seleccione
       monto: 0.0,
@@ -541,7 +558,7 @@ const handleSelectVoluntarioGlobal = (id) => {
     nuevosPagos[index][field] = value;
     setTiposPagos(nuevosPagos);
   };
-  
+
   const handleFileUpload = (e, index) => {
     const file = e.target.files[0];
     if (file) {
@@ -553,25 +570,25 @@ const handleSelectVoluntarioGlobal = (id) => {
       };
       reader.readAsDataURL(file);
     }
-  };  
+  };
 
   const calcularTotales = (detallesVenta, pagos, donacion) => {
     let subtotal = 0;
     let totalPagado = 0;
-  
+
     for (const detalle of detallesVenta) {
       subtotal += detalle.subTotal || 0;
     }
-  
+
     for (const pago of pagos) {
       totalPagado += pago.monto || 0;
     }
-  
+
     // Total de la venta = subtotal + donación (o 0 si no aplica)
     const totalVenta = subtotal + (donacion || 0);
-  
+
     return { subtotal, totalPagado, totalVenta };
-  };  
+  };
 
   const handleCreateVenta = async () => {
     try {
@@ -593,15 +610,15 @@ const handleSelectVoluntarioGlobal = (id) => {
           const isDonation = tiposPagos.some(
             (pago) => pago.idProducto === detalle.idProducto && pago.monto === 0 // Verificar si es una donación
           );
-  
+
           // Si es donación, establecer subtotal como 0, de lo contrario calcular normalmente
           const subTotal = isDonation ? 0 : detalle.cantidad * detalle.precio;
-  
+
           return {
             ...detalle,
             subTotal, // Asignar el subtotal calculado
             donacion: detalle.donacion || newVenta.donacion, // Asignar la donación
-            idVoluntario: 
+            idVoluntario:
               standSeleccionado?.idStand === 1 || voluntarios.length > 0
                 ? voluntarioStandSeleccionado || voluntarioGlobalSeleccionado
                 : null, // Asignar el voluntario si aplica
@@ -695,7 +712,7 @@ const handleSelectVoluntarioGlobal = (id) => {
       console.error("Error creando venta:", error.response?.data || error.message);
       alert(`Error al crear la venta: ${error.response?.data || "Revisa los datos ingresados."}`);
     }
-  };  
+  };
 
   const handleCreateVentaClick = () => {
     setNewVenta({
@@ -708,7 +725,7 @@ const handleSelectVoluntarioGlobal = (id) => {
     setTiposPagos([]); // Limpia los pagos
     setIsEditMode(false); // Cambia a modo creación
     setShowDetailsModal(true);
-  };  
+  };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
@@ -820,9 +837,9 @@ const handleSelectVoluntarioGlobal = (id) => {
           {alertMessage}
         </Alert>
         <div className="d-flex justify-content-start align-items-center mb-3">
-        <Button
-          style={{
-            backgroundColor: "#007abf",
+          <Button
+            style={{
+              backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
               width: "130px",
@@ -876,22 +893,22 @@ const handleSelectVoluntarioGlobal = (id) => {
             </thead>
             <tbody>
             {currentVentas.length > 0 ? (
-            currentVentas.map((venta) => {
-              return (
-                <tr key={venta.idVenta}>
+              currentVentas.map((venta) => {
+                return (
+                  <tr key={venta.idVenta}>
                     <td>{venta.idVenta}</td>
                     <td>{venta.fechaVenta ? format(parseISO(venta.fechaVenta), "dd-MM-yyyy") : "Sin fecha"}</td>
                     <td>Q. {venta.totalVenta}</td>
                     <td>{venta.tipo_publico?.nombreTipo || "N/A"}</td>
                     <td>{venta.estado === 1 ? "Activo" : "Inactivo"}</td>
                     <td>
-                    <FaEye
-                         style={{
-                            color: "#007AC3",
-                            cursor: "pointer",
-                            marginRight: "10px",
-                            fontSize: "20px",
-                          }}
+                      <FaEye
+                        style={{
+                          color: "#007AC3",
+                          cursor: "pointer",
+                          marginRight: "10px",
+                          fontSize: "20px",
+                        }}
                         title="Ver Detalle"
                         onClick={() => handleViewDetails(venta.idVenta)}
                     />
@@ -906,91 +923,99 @@ const handleSelectVoluntarioGlobal = (id) => {
                     />
                     {venta.estado ? (
                         <FaToggleOn
-                        style={{
+                          style={{
                             color: "#30c10c",
                             cursor: "pointer",
                             marginLeft: "10px",
                             fontSize: "20px",
-                        }}
-                        title="Inactivar"
-                        onClick={() => toggleEstado(venta.idVenta, venta.estado)}
+                          }}
+                          title="Inactivar"
+                          onClick={() => {
+                            if (checkPermission('Desactivar venta stand', 'No tienes permisos para desactivar venta stand')) {
+                              toggleEstado(venta.idVenta, venta.estado)
+                            }
+                          }}
                         />
-                    ) : (
+                      ) : (
                         <FaToggleOff
-                        style={{
+                          style={{
                             color: "#e10f0f",
                             cursor: "pointer",
                             marginLeft: "10px",
                             fontSize: "20px",
-                        }}
-                        title="Activar"
-                        onClick={() => toggleEstado(venta.idVenta, venta.estado)}
+                          }}
+                          title="Activar"
+                          onClick={() => {
+                            if (checkPermission('Activar venta stand', 'No tienes permisos para activar venta stand')) {
+                              toggleEstado(venta.idVenta, venta.estado)
+                            }
+                          }}
                         />
-                    )}
+                      )}
                     </td>
-                </tr>
+                  </tr>
                 );
-            })
-        ) : (
-            <tr>
-            <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
-                No hay ventas disponibles.
-            </td>
-            </tr>
-        )}
-            </tbody>
-            </Table>
+              })
+            ) : (
+              <tr>
+                <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
+                  No hay ventas disponibles.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
         {renderPagination()}
         <Modal show={showModal} onHide={handleCloseModal}>
-            <Modal.Header closeButton style={{ backgroundColor: "#007AC3", color: "#fff" }}>
-                <Modal.Title>Detalle de Venta</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                {detalleSeleccionado ? (
-                detalleSeleccionado.map((detalle, index) => (
-                    <div key={index} style={{ marginBottom: "20px" }}>
-                    <h5>Detalle #{index + 1}</h5>
+          <Modal.Header closeButton style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+            <Modal.Title>Detalle de Venta</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {detalleSeleccionado ? (
+              detalleSeleccionado.map((detalle, index) => (
+                <div key={index} style={{ marginBottom: "20px" }}>
+                  <h5>Detalle #{index + 1}</h5>
 
-                    {/* Detalles del Producto */}
-                    <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
-                    <p><strong>Nombre Producto:</strong> {detalle.producto?.nombreProducto || "N/A"}</p>
-                    <p><strong>Cantidad:</strong> {detalle.cantidad || "N/A"}</p>
-                    <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
-                    <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
+                  {/* Detalles del Producto */}
+                  <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
+                  <p><strong>Nombre Producto:</strong> {detalle.producto?.nombreProducto || "N/A"}</p>
+                  <p><strong>Cantidad:</strong> {detalle.cantidad || "N/A"}</p>
+                  <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
+                  <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
 
-                    {/* Pagos Asociados */}
-                    <h5>Pagos Asociados</h5>
-                    {detalle.detalle_pago_ventas_stands?.length > 0 ? (
-                        detalle.detalle_pago_ventas_stands.map((pago, idx) => (
-                        <div key={idx} style={{ marginBottom: "10px" }}>
-                            <p><strong>Tipo de Pago:</strong> {pago.tipo_pago?.tipo || "N/A"}</p>
-                            <p><strong>Monto:</strong> Q{pago.pago || "N/A"}</p>
-                            <p><strong>Correlativo:</strong> {pago.correlativo || "N/A"}</p>
-                            {pago.imagenTransferencia && (
-                            <p>
-                                <strong>Comprobante:</strong>
-                                {pago.imagenTransferencia === "efectivo" ? (
-                                "Efectivo"
-                                ) : (
-                                <img
-                                    src={`data:image/png;base64,${pago.imagenTransferencia}`}
-                                    alt="Comprobante de Pago"
-                                    style={{ width: "150px", marginTop: "10px", borderRadius: "8px" }}
-                                />
-                                )}
-                            </p>
+                  {/* Pagos Asociados */}
+                  <h5>Pagos Asociados</h5>
+                  {detalle.detalle_pago_ventas_stands?.length > 0 ? (
+                    detalle.detalle_pago_ventas_stands.map((pago, idx) => (
+                      <div key={idx} style={{ marginBottom: "10px" }}>
+                        <p><strong>Tipo de Pago:</strong> {pago.tipo_pago?.tipo || "N/A"}</p>
+                        <p><strong>Monto:</strong> Q{pago.pago || "N/A"}</p>
+                        <p><strong>Correlativo:</strong> {pago.correlativo || "N/A"}</p>
+                        {pago.imagenTransferencia && (
+                          <p>
+                            <strong>Comprobante:</strong>
+                            {pago.imagenTransferencia === "efectivo" ? (
+                              "Efectivo"
+                            ) : (
+                              <img
+                                src={`data:image/png;base64,${pago.imagenTransferencia}`}
+                                alt="Comprobante de Pago"
+                                style={{ width: "150px", marginTop: "10px", borderRadius: "8px" }}
+                              />
                             )}
-                        </div>
-                        ))
-                    ) : (
-                        <p>No hay pagos asociados.</p>
-                    )}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p>No hay pagos asociados.</p>
+                  )}
 
-                    {/* Información del Stand */}
-                    <h5>Información del Stand</h5>
-                    <p><strong>Nombre del Stand:</strong> {detalle.stand?.nombreStand || "N/A"}</p>
-                    <p><strong>Dirección:</strong> {detalle.stand?.direccion || "N/A"}</p>
-                    <p><strong>Tipo de Stand:</strong> {detalle.stand?.tipo_stand?.tipo || "N/A"}</p>
+                  {/* Información del Stand */}
+                  <h5>Información del Stand</h5>
+                  <p><strong>Nombre del Stand:</strong> {detalle.stand?.nombreStand || "N/A"}</p>
+                  <p><strong>Dirección:</strong> {detalle.stand?.direccion || "N/A"}</p>
+                  <p><strong>Tipo de Stand:</strong> {detalle.stand?.tipo_stand?.tipo || "N/A"}</p>
 
                       {/* Información del Voluntario */}
                       <h5>Información del Voluntario</h5>
@@ -1176,65 +1201,65 @@ const handleSelectVoluntarioGlobal = (id) => {
                                     );
                                     setVoluntarioStandSeleccionado(voluntarioSeleccionado?.inscripcionEvento?.voluntario?.idVoluntario || null);
 
-                                    setStandSeleccionado((prev) => ({
-                                        ...prev,
-                                        voluntarioAsignado: voluntarioSeleccionado,
-                                    }));
-                                    }}
-                                >
-                                    <option value="">Seleccione un voluntario</option>
-                                    {voluntarios.map((voluntario) => (
-                                    <option
-                                    key={voluntario.inscripcionEvento?.voluntario?.idVoluntario}
-                                    value={voluntario.inscripcionEvento?.voluntario?.idVoluntario}
-                                    >
-                                        {voluntario?.inscripcionEvento?.voluntario?.persona?.nombre || "Sin Nombre"}
-                                    </option>
-                                    ))}
-                                </Form.Control>
-                                </Form.Group>
-                            ) : (
-                                <p>No hay voluntarios asignados a este stand.</p>
-                            )}
-                            </>
-                            )}
-                        </>
-                    {/* Detalles de los productos */}
-                    <h5>Productos Asignados</h5>
-                    <Table>
-                    <thead>
-                        <tr>
-                        <th>Producto</th>
-                        <th>Precio</th>
-                        <th>Cantidad</th>
-                        <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {detallesVenta.map((detalle, idx) => (
-                        <tr key={detalle.idProducto}>
-                            <td>{detalle.nombreProducto}</td>
-                            <td>Q{detalle.precio.toFixed(2)}</td>
-                            <td>
-                            <Form.Control
-                                type="number"
-                                min="0"
-                                max={detalle.cantidad}
-                                value={detalle.cantidad}
-                                onChange={(e) => {
-                                const nuevosDetalles = [...detallesVenta];
-                                nuevosDetalles[idx].cantidad = Number(e.target.value);
-                                nuevosDetalles[idx].subTotal =
-                                    nuevosDetalles[idx].cantidad * nuevosDetalles[idx].precio;
-                                setDetallesVenta(nuevosDetalles);
-                                }}
-                            />
-                            </td>
-                            <td>Q{detalle.subTotal.toFixed(2)}</td>
-                        </tr>
+                          setStandSeleccionado((prev) => ({
+                            ...prev,
+                            voluntarioAsignado: voluntarioSeleccionado,
+                          }));
+                        }}
+                      >
+                        <option value="">Seleccione un voluntario</option>
+                        {voluntarios.map((voluntario) => (
+                          <option
+                            key={voluntario.inscripcionEvento?.voluntario?.idVoluntario}
+                            value={voluntario.inscripcionEvento?.voluntario?.idVoluntario}
+                          >
+                            {voluntario?.inscripcionEvento?.voluntario?.persona?.nombre || "Sin Nombre"}
+                          </option>
                         ))}
-                    </tbody>
-                    </Table>
+                      </Form.Control>
+                    </Form.Group>
+                  ) : (
+                    <p>No hay voluntarios asignados a este stand.</p>
+                  )}
+                </>
+              )}
+            </>
+            {/* Detalles de los productos */}
+            <h5>Productos Asignados</h5>
+            <Table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Precio</th>
+                  <th>Cantidad</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detallesVenta.map((detalle, idx) => (
+                  <tr key={detalle.idProducto}>
+                    <td>{detalle.nombreProducto}</td>
+                    <td>Q{detalle.precio.toFixed(2)}</td>
+                    <td>
+                      <Form.Control
+                        type="number"
+                        min="0"
+                        max={detalle.cantidad}
+                        value={detalle.cantidad}
+                        onChange={(e) => {
+                          const nuevosDetalles = [...detallesVenta];
+                          nuevosDetalles[idx].cantidad = Number(e.target.value);
+                          nuevosDetalles[idx].subTotal =
+                            nuevosDetalles[idx].cantidad * nuevosDetalles[idx].precio;
+                          setDetallesVenta(nuevosDetalles);
+                        }}
+                      />
+                    </td>
+                    <td>Q{detalle.subTotal.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
 
                     {/* Donación */}
                     <Form.Group>

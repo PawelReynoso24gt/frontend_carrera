@@ -11,6 +11,7 @@ function ReporteEventos() {
   const [revisor, setRevisor] = useState("");
   const [alerta, setAlerta] = useState("");
   const [nombreUsuario, setNombreUsuario] = useState("");
+    const [cargo, setCargo] = useState("");
 
   useEffect(() => {
     const fetchEventos = async () => {
@@ -109,6 +110,7 @@ function ReporteEventos() {
             "Nombre Evento",
             "Recaudación Total",
             "Asistencia de voluntarios",
+            "Número de participantes",
             "Fecha Inicio",
             "Fecha Fin",
           ],
@@ -117,6 +119,7 @@ function ReporteEventos() {
           evento.nombreEvento,
           `Q ${evento.recaudacionTotal.toFixed(2)}`,
           evento.cantidadVoluntariosAsistieron,
+          evento.numeroPersonas,
           new Date(evento.fechaHoraInicio).toLocaleDateString("es-ES"),
           new Date(evento.fechaHoraFin).toLocaleDateString("es-ES"),
         ]),
@@ -158,6 +161,7 @@ function ReporteEventos() {
       doc.setFont("helvetica", "normal");
       doc.text("_______________________________", 105, firmaStartY, { align: "center" });
       doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
+      doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
         
 
       doc.save(`Reporte_Eventos_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
@@ -218,6 +222,20 @@ function ReporteEventos() {
           }}
         />
       </div>
+      <div className="text-center mb-4">
+          <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Cargo:</label>
+          <input
+            type="text"
+            className="form-control mx-auto"
+            value={cargo}
+            onChange={(e) => setCargo(e.target.value)}
+            placeholder="Cargo"
+            style={{
+              width: "250px",
+              textAlign: "center",
+            }}
+          />
+        </div>
       </div>
 
       <div className="text-center mb-4">
@@ -249,6 +267,7 @@ function ReporteEventos() {
             <th>Nombre Evento</th>
             <th>Recaudación Total</th>
             <th>Cantidad Voluntarios Asistieron</th>
+            <th>Número de participantes</th>
             <th>Fecha Inicio</th>
             <th>Fecha Fin</th>
           </tr>
@@ -259,6 +278,7 @@ function ReporteEventos() {
               <td>{evento.nombreEvento}</td>
               <td>{evento.recaudacionTotal}</td>
               <td>{evento.cantidadVoluntariosAsistieron}</td>
+              <td>{evento.numeroPersonas}</td>
               <td>
                 {new Date(evento.fechaHoraInicio).toLocaleString("es-ES", {
                   timeZone: "UTC",

@@ -28,11 +28,37 @@ function Voluntarios() {
   const [personas, setPersonas] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10); 
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, 
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchVoluntarios();
     fetchPersonas();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchVoluntarios = async () => {
     try {
@@ -262,7 +288,11 @@ function Voluntarios() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear voluntario', 'No tienes permisos para crear voluntario')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Voluntario
           </Button>
@@ -359,7 +389,11 @@ function Voluntarios() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(voluntario)}
+                    onClick={() => {
+                      if (checkPermission('Editar voluntario', 'No tienes permisos para editar voluntario')) {
+                        handleShowModal(voluntario);
+                      }
+                    }}
                   />
                   {voluntario.estado ? (
                     <FaToggleOn
@@ -370,7 +404,11 @@ function Voluntarios() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(voluntario.idVoluntario, voluntario.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar voluntario', 'No tienes permisos para desactivar voluntario')) {
+                          toggleEstado(voluntario.idVoluntario, voluntario.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -381,7 +419,11 @@ function Voluntarios() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(voluntario.idVoluntario, voluntario.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar voluntario', 'No tienes permisos para activar voluntario')) {
+                          toggleEstado(voluntario.idVoluntario, voluntario.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -484,6 +526,17 @@ function Voluntarios() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{permissionMessage}</Modal.Body>
+                <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                </Modal.Footer>
+              </Modal>
       </div>
     </>
   );

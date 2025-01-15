@@ -14,10 +14,36 @@ function Departamentos() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageModalContent, setMessageModalContent] = useState("");
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchDepartamentos();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchDepartamentos = async () => {
     try {
@@ -227,7 +253,11 @@ function Departamentos() {
               color: "#fff",
               width: "200px"
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear departamento', 'No tienes permisos para crear departamento')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Departamento
           </Button>
@@ -298,7 +328,11 @@ function Departamentos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(departamento)}
+                    onClick={() => {
+                      if (checkPermission('Editar departamento', 'No tienes permisos para editar departamento')) {
+                        handleShowModal(departamento);
+                      }
+                    }}
                   />
                   {departamento.estado ? (
                     <FaToggleOn
@@ -309,7 +343,11 @@ function Departamentos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(departamento.idDepartamento, departamento.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar departamento', 'No tienes permisos para desactivar departamento')) {
+                          toggleEstado(departamento.idDepartamento, departamento.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -320,7 +358,11 @@ function Departamentos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(departamento.idDepartamento, departamento.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar departamento', 'No tienes permisos para activar departamento')) {
+                          toggleEstado(departamento.idDepartamento, departamento.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -381,6 +423,17 @@ function Departamentos() {
           </Form>
         </Modal.Body>
       </Modal>
+       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+               <Modal.Header closeButton>
+                <Modal.Title>Permiso Denegado</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{permissionMessage}</Modal.Body>
+                <Modal.Footer>
+                <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                  Aceptar
+                </Button>
+               </Modal.Footer>
+            </Modal>
     </>
   );
 }
