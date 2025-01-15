@@ -161,6 +161,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
       estado: situacion.estado,
       respuesta: situacion.respuesta || "",
       observaciones: situacion.observaciones || "",
+      idPersona: situacion.usuario.persona.idPersona, // Agregar idPersona (para notificación)
     });
     setEditMode(true);
     setShowModal(true);
@@ -168,24 +169,41 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
 
   const logBitacora = async (descripcion, idCategoriaBitacora) => {
     const bitacoraData = {
-      descripcion,
-      idCategoriaBitacora,
-      idUsuario: UserID,
-      fechaHora: new Date()
+        descripcion,
+        idCategoriaBitacora,
+        idUsuario: UserID,
+        fechaHora: new Date(),
     };
   
     try {
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
-      console.error("Error logging bitacora:", error);
+        console.error("Error logging bitacora:", error);
+        throw error; // Lanza el error para manejarlo en handleSave
+    }
+  };
+
+  const createNotification = async (idBitacora, idTipoNotificacion, idPersona) => {
+    const notificationData = {
+      idBitacora,
+      idTipoNotificacion,
+      idPersona,
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/notificaciones/create", notificationData);
+    } catch (error) {
+      console.error("Error creating notification:", error);
     }
   };
 
   const handleSave = async () => {
+    let response; // Define response outside the try block
     try {
       if (editMode) {
         // Actualizar situación usando la ruta de actualización de respuesta
-        await axios.put(
+        response = await axios.put(
           `http://localhost:5000/situaciones/update/respuesta/${selectedSituacion.idSituacion}`,
           {
             idTipoSituacion: formData.idTipoSituacion,
@@ -194,25 +212,36 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
             observaciones: formData.observaciones,
           }
         );
-        // Log bitacora for editing
-        await logBitacora(`Situación actualizada: ${formData.descripcion}`, 6);
+        // Log bitacora for editing and obtain idBitacora
+        const idBitacora = await logBitacora(`Situación actualizada: ${formData.descripcion}`, 6);
+  
+        // Obtener idPersona del usuario que reportó la situación
+        const idPersona = selectedSituacion.usuario.persona.idPersona;
+  
+        // Verifica que todos los campos necesarios estén presentes
+        if (idBitacora && idPersona) {
+          const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
+          await createNotification(idBitacora, idTipoNotificacion, idPersona);
+        } else {
+          console.error("Faltan datos necesarios para crear la notificación");
+        }
       } else {
         // Crear una nueva situación con el estado "Reportada" por defecto
-        await axios.post("http://localhost:5000/situaciones/create", {
+        response = await axios.post("http://localhost:5000/situaciones/create", {
           ...formData,
           estado: "Reportada",
-          idUsuario: formData.idUsuario
+          idUsuario: formData.idUsuario,
         });
         // Log bitacora for creating
         await logBitacora(`Nueva situación creada: ${formData.descripcion}`, 5);
       }
+  
       fetchSituacionesByEstado(selectedEstado);
       setShowModal(false);
     } catch (error) {
       console.error("Error saving situación:", error);
     }
   };
-
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

@@ -64,29 +64,88 @@ function AutorizacionTalonarios() {
 
   const logBitacora = async (descripcion, idCategoriaBitacora) => {
     const bitacoraData = {
-      descripcion,
-      idCategoriaBitacora,
-      idUsuario,
-      fechaHora: new Date()
+        descripcion,
+        idCategoriaBitacora,
+        idUsuario,
+        fechaHora: new Date(),
     };
   
     try {
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
-      console.error("Error logging bitacora:", error);
+        console.error("Error logging bitacora:", error);
+        throw error; // Lanza el error para manejarlo en handleSave
+    }
+  };
+
+  const createNotification = async (idBitacora, idTipoNotificacion, idPersona) => {
+    const notificationData = {
+      idBitacora,
+      idTipoNotificacion,
+      idPersona,
+    };
+  
+    //console.log("Datos enviados para crear la notificación:", notificationData);
+  
+    try {
+      await axios.post("http://localhost:5000/notificaciones/create", notificationData);
+    } catch (error) {
+      console.error("Error creating notification:", error);
+    }
+  };
+
+  const getVoluntario = async (idVoluntario) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/voluntarios/${idVoluntario}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error al obtener el voluntario ${idVoluntario}:`, error);
+      throw error;
     }
   };
 
   const updateSolicitud = async (idSolicitud, estado) => {
     try {
-      await axios.put(`http://localhost:5000/solicitudes/${idSolicitud}`, {
-        estado, // Solo enviamos el estado
-      });
-      fetchSolicitudes(); // Actualizamos la lista de solicitudes después de cambiar el estado
+      // Actualizar estado de la solicitud
+      await axios.put(`http://localhost:5000/solicitudes/${idSolicitud}`, { estado });
+  
+      // Obtener nuevamente la solicitud completa
+      const responseSolicitud = await axios.get(`http://localhost:5000/solicitudes/${idSolicitud}`);
+      //console.log("API Response Solicitud:", responseSolicitud);
+  
+      const solicitud = responseSolicitud.data;
+  
+      // Verificar la estructura de la respuesta antes de acceder a voluntario
+      if (solicitud && solicitud.idVoluntario) {
+        // Obtener la información del voluntario
+        const voluntario = await getVoluntario(solicitud.idVoluntario);
+        //console.log("API Response Voluntario:", voluntario);
+  
+        // Verificar que voluntario y persona existan
+        if (voluntario && voluntario.persona && voluntario.persona.idPersona) {
+          const idPersona = voluntario.persona.idPersona;
+  
+          // Log de bitácora y obtener idBitacora
+          const idBitacora = await logBitacora(`Solicitud de talonario ${idSolicitud} actualizada`, 21);
+  
+          // Verifica que todos los campos necesarios estén presentes
+          if (idBitacora && idPersona) {
+            const idTipoNotificacion = 4; 
+            await createNotification(idBitacora, idTipoNotificacion, idPersona);
+          } else {
+            console.error("Faltan datos necesarios para crear la notificación");
+          }
+        } else {
+          console.error("La estructura de la respuesta del voluntario no contiene los datos esperados");
+        }
+      } else {
+        console.error("La estructura de la respuesta de la solicitud no contiene los datos esperados");
+      }
+  
+      // Actualizamos la lista de solicitudes después de cambiar el estado
+      fetchSolicitudes();
       setShowConfirmationModal(false);
-
-      // Log de bitácora
-      await logBitacora(`Solicitud de talonario ${idSolicitud} actualizada`, 21); 
     } catch (error) {
       console.error(`Error al actualizar la solicitud ${idSolicitud}:`, error);
     }

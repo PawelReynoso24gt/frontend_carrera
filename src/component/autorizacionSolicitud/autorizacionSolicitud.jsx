@@ -50,13 +50,41 @@ function SolicitudesVoluntariado() {
       descripcion,
       idCategoriaBitacora,
       idUsuario,
-      fechaHora: new Date()
+      fechaHora: new Date(),
     };
   
     try {
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
       console.error("Error logging bitacora:", error);
+      throw error; // Lanza el error para manejarlo en handleSave
+    }
+  };
+
+  const createNotification = async (idBitacora, idTipoNotificacion, idPersona) => {
+    const notificationData = {
+      idBitacora,
+      idTipoNotificacion,
+      idPersona,
+    };
+  
+    //console.log("Datos enviados para crear la notificación:", notificationData);
+  
+    try {
+      await axios.post("http://localhost:5000/notificaciones/create", notificationData);
+    } catch (error) {
+      console.error("Error creating notification:", error);
+    }
+  };
+
+  const getAspirante = async (idAspirante) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/aspirantes/${idAspirante}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error al obtener el aspirante ${idAspirante}:`, error);
+      throw error;
     }
   };
 
@@ -112,23 +140,63 @@ function SolicitudesVoluntariado() {
 
   const acceptSolicitud = async (idAspirante) => {
     try {
+      // Actualizar estado del aspirante
       await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
       fetchAspirantes();
       setShowConfirmationModal(false);
-      // MANDAR A BITACORA
-      await logBitacora(`Solicitud de aspirante ${idAspirante} aceptada`, 20); // aspirante aceptado para voluntariadoW
+  
+      // Obtener la información del aspirante
+      const aspirante = await getAspirante(idAspirante);
+  
+      // Verificar que aspirante y persona existan
+      if (aspirante && aspirante.idPersona) {
+        const idPersona = aspirante.idPersona;
+  
+        // Log de bitácora y obtener idBitacora
+        const idBitacora = await logBitacora(`Solicitud de aspirante ${idAspirante} aceptada`, 20);
+  
+        // Crear la notificación
+        if (idBitacora && idPersona) {
+          const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
+          await createNotification(idBitacora, idTipoNotificacion, idPersona);
+        } else {
+          console.error("Faltan datos necesarios para crear la notificación");
+        }
+      } else {
+        console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
+      }
     } catch (error) {
       console.error("Error accepting solicitud:", error);
     }
   };
-
+  
   const denySolicitud = async (idAspirante) => {
     try {
+      // Actualizar estado del aspirante
       await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
       fetchAspirantes();
       setShowConfirmationModal(false);
-      // MANDAR A BITACORA
-      await logBitacora(`Solicitud de aspirante ${idAspirante} denegada`, 21); // aspirante denegado para voluntariado
+  
+      // Obtener la información del aspirante
+      const aspirante = await getAspirante(idAspirante);
+  
+      // Verificar que aspirante y persona existan
+      if (aspirante && aspirante.idPersona) {
+        const idPersona = aspirante.idPersona;
+  
+        // Log de bitácora y obtener idBitacora
+        const idBitacora = await logBitacora(`Solicitud de aspirante ${idAspirante} denegada`, 26);
+  
+        // Crear la notificación
+        if (idBitacora && idPersona) {
+          const idTipoNotificacion = 4; 
+          await createNotification(idBitacora, idTipoNotificacion, idPersona);
+        } else {
+          console.error("Faltan datos necesarios para crear la notificación");
+        }
+      } else {
+        console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
+      }
     } catch (error) {
       console.error("Error denying solicitud:", error);
     }
