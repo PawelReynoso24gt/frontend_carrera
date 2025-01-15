@@ -152,18 +152,39 @@ function CategoriasHorarios() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
+  
+      // Realiza la solicitud para cambiar el estado
       await axios.put(`http://localhost:5000/categoriaHorarios/${id}`, {
         estado: nuevoEstado,
       });
-      fetchCategoriasHorarios();
+  
+      // Actualiza la lista de categorías global
+      const updatedCategorias = categoriasHorarios.map((categoria) =>
+        categoria.idCategoriaHorario === id
+          ? { ...categoria, estado: nuevoEstado }
+          : categoria
+      );
+      setCategoriasHorarios(updatedCategorias);
+  
+      // Filtra nuevamente las categorías para actualizar la vista actual
+      const updatedFilteredCategorias = updatedCategorias.filter(
+        (categoria) => categoria.estado === (estadoActual === 1 ? 1 : 0)
+      );
+      setFilteredCategoriasHorarios(
+        filteredCategoriasHorarios.filter((categoria) => categoria.idCategoriaHorario !== id)
+      );
+  
       setAlertMessage(
-        `Categoría de horario ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
+        `Categoría de horario ${
+          nuevoEstado === 1 ? "activada" : "inactivada"
+        } con éxito`
       );
       setShowAlert(true);
     } catch (error) {
-      console.error("Error toggling estado:", error);
+      console.error("Error toggling estado:", error.response?.data || error);
     }
   };
+  
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
