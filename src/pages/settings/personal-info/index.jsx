@@ -111,7 +111,7 @@ function PersonalInfo() {
                             className="crancy__item-input"
                             type="text"
                             name="telefono"
-                            placeholder="+502 12345678"
+                            placeholder="12345678"
                             required="required"
                             value={formData.telefono}
                             onChange={handleInputChange}
