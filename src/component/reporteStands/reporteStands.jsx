@@ -168,7 +168,7 @@ function ReportePlayeras() {
       theme: "grid",
     });
 
-    const startY = doc.lastAutoTable.finalY + 10; // Punto inicial después de la tabla
+    let startY = doc.lastAutoTable.finalY + 10; // Punto inicial después de la tabla
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text("RESUMEN", 14, startY);

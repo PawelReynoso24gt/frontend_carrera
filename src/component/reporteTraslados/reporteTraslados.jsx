@@ -91,7 +91,7 @@ function ReporteTraslados() {
     });
 
   // Resumen
-  const startY = doc.lastAutoTable.finalY + 10;
+  let startY = doc.lastAutoTable.finalY + 10;
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text("RESUMEN", 14, startY);
