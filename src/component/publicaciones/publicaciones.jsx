@@ -44,7 +44,6 @@ function Publicaciones() {
     fetchSedes();
     fetchEventos(); // Cargar eventos
     fetchRifas(); // Cargar rifas
-    console.log("Estado de photoToConfirm cambiado:", photoToConfirm); // Debug
   }, [photoToConfirm]);
 
   // Obtener el idPersona desde localStorage
@@ -72,19 +71,14 @@ function Publicaciones() {
       setPhotosToRemove(photosToRemove.filter((id) => id !== photoId));
       setPhotosToKeep([...photosToKeep, photoId]);
     }
-    console.log("Fotos actuales:");
-    console.log("Fotos a mantener:", photosToKeep);
-    console.log("Fotos a eliminar:", photosToRemove);
   };
 
   const handleRemovePhotoWithConfirmation = (photoId) => {
-    console.log("Foto seleccionada para confirmar eliminación:", photoId); // Debug
     setPhotoToConfirm(photoId);
     setShowConfirmModal(true);
   };  
 
   const confirmRemovePhoto = () => {
-    console.log("Confirmando eliminación de foto:", photoToConfirm); // Debug
     if (photoToConfirm) {
       setPhotosToRemove((prev) => [...prev, photoToConfirm]); // Añadir la foto a la lista de eliminación
       setPhotosToKeep((prev) => prev.filter((id) => id !== photoToConfirm)); // Remover la foto de la lista a mantener
@@ -134,7 +128,6 @@ function Publicaciones() {
     try {
       const response = await axios.get("http://localhost:5000/publicaciones/inactivos");
       setFilteredPublicaciones(response.data);
-      console.log("Datos de publicaciones inactivas:", response.data);
     } catch (error) {
       console.error("Error fetching inactive publicaciones:", error);
     }
@@ -230,7 +223,6 @@ function Publicaciones() {
     try {
       const response = await axios.get("http://localhost:5000/eventos");
       setEventos(response.data);
-      console.log("Eventos obtenidos:", response.data); // Debug
     } catch (error) {
       console.error("Error fetching eventos:", error);
     }
@@ -240,7 +232,6 @@ function Publicaciones() {
     try {
       const response = await axios.get("http://localhost:5000/rifas");
       setRifas(response.data);
-      console.log("Rifas obtenidas:", response.data); // Debug
     } catch (error) {
       console.error("Error fetching rifas:", error);
     }
@@ -291,9 +282,7 @@ function Publicaciones() {
       files.forEach((file) => formData.append("fotos", file));
 
       // Log para inspeccionar los datos que se están enviando
-      console.log("Datos enviados al backend:");
       for (let pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
       }
 
       const endpoint = editingPublicacion

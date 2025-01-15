@@ -17,7 +17,6 @@ function InscripcionesActividades() {
       // Hacer la solicitud al backend
       const response = await axios.get("http://localhost:5000/detalle_inscripcion_actividades");
       
-      console.log("Datos recibidos del backend:", response.data);
 
       // Procesar los datos
       const inscripcionesData = response.data.map((inscripcion) => ({
