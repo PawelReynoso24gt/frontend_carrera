@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Form, Table, Modal, Alert } from 'react-bootstrap';
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { getUserDataFromToken } from '../../utils/jwtUtils';
 
 function FotosSedesComponent() {
   const [fotos, setFotos] = useState([]);
@@ -13,6 +14,8 @@ function FotosSedesComponent() {
   const [alertMessage, setAlertMessage] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
 
   useEffect(() => {
     fetchActiveFotos();
@@ -77,6 +80,21 @@ function FotosSedesComponent() {
     setNewFoto({ ...newFoto, foto: file });
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -98,6 +116,7 @@ function FotosSedesComponent() {
           }
         });
         setAlertMessage('Foto de sede actualizada con éxito');
+        await logBitacora(`Foto de sede ${editingFoto.idFotoSede} actualizada`, 37);
       } else {
         await axios.post('http://localhost:5000/fotos_sedes', formData, {
           headers: {
@@ -105,6 +124,7 @@ function FotosSedesComponent() {
           }
         });
         setAlertMessage('Foto de sede creada con éxito');
+        await logBitacora('Nueva foto de sede creada', 36);
       }
       fetchActiveFotos();
       setShowAlert(true);

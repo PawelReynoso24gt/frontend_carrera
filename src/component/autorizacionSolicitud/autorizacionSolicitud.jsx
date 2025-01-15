@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Modal, Card, Row, Col, Pagination } from "react-bootstrap";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
 const formatDate = (date) => {
   const options = { day: "2-digit", month: "2-digit", year: "numeric" };
@@ -24,6 +25,23 @@ function SolicitudesVoluntariado() {
     fetchAspirantes();
     fetchPersonas();
   }, []);
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
+
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
 
   const fetchAspirantes = async () => {
     try {
@@ -71,6 +89,8 @@ function SolicitudesVoluntariado() {
       await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
       fetchAspirantes();
       setShowConfirmationModal(false);
+      // MANDAR A BITACORA
+      await logBitacora(`Solicitud de aspirante ${idAspirante} aceptada`, 20); // aspirante aceptado para voluntariadoW
     } catch (error) {
       console.error("Error accepting solicitud:", error);
     }
@@ -81,6 +101,8 @@ function SolicitudesVoluntariado() {
       await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
       fetchAspirantes();
       setShowConfirmationModal(false);
+      // MANDAR A BITACORA
+      await logBitacora(`Solicitud de aspirante ${idAspirante} denegada`, 21); // aspirante denegado para voluntariado
     } catch (error) {
       console.error("Error denying solicitud:", error);
     }

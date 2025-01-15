@@ -48,14 +48,8 @@ function Publicaciones() {
 
   // Obtener el idPersona desde localStorage
   const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
-
-  if (!idSede) {
-    setMensaje(
-      "No se encontró el ID de la sede en el almacenamiento local."
-    );
-    
-    return;
-  }
+  // usuario
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
   const fetchPublicaciones = async () => {
     try {
@@ -243,48 +237,6 @@ function Publicaciones() {
     }
   };  
 
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-
-//     try {
-//         const data = {
-//             ...newPublicacion,
-//             fechaPublicacion: newPublicacion.fechaPublicacion
-//               ? format(new Date(newPublicacion.fechaPublicacion), "yyyy-MM-dd hh:mm a")
-//               : null,
-//             idSede: idSede || newPublicacion.idSede,
-//         };
-
-//         console.log("Datos enviados al backend:", data);
-
-//         const endpoint = editingPublicacion
-//             ? `http://localhost:5000/publicaciones/update/${editingPublicacion.idPublicacion}`
-//             : "http://localhost:5000/publicaciones/create";
-
-//         const method = editingPublicacion ? "put" : "post";
-
-//         await axios({
-//             method,
-//             url: endpoint,
-//             data,
-//             headers: {
-//                 "Content-Type": "application/json", // Cabecera para JSON
-//             },
-//         });
-
-//         setAlertMessage(
-//             editingPublicacion
-//                 ? "Publicación actualizada con éxito"
-//                 : "Publicación creada con éxito"
-//         );
-//         fetchPublicaciones();
-//         setShowAlert(true);
-//         handleCloseModal();
-//     } catch (error) {
-//         console.error("Error enviando la publicación:", error.response?.data || error.message);
-//     }
-// };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -313,12 +265,6 @@ function Publicaciones() {
         }
         formData.append("idRifa", newPublicacion.idRifa);
       }
-
-      // // Adjuntar IDs de fotos existentes
-      // formData.append(
-      //   "existingPhotos",
-      //   JSON.stringify(existingPhotos.map((foto) => foto.idPublicacionGeneral || foto.idPublicacionEvento || foto.idPublicacionRifa))
-      // );
 
       // Fotos a mover de una tabla a otra
       const photosToMove = existingPhotos
@@ -353,6 +299,16 @@ function Publicaciones() {
           "Content-Type": "multipart/form-data",
         },
       });
+
+      // Creación de la bitácora después de crear o actualizar la publicación
+      const bitacoraData = {
+        descripcion: editingPublicacion ? "Publicación actualizada" : "Nueva publicación creada",
+        idCategoriaBitacora: editingPublicacion ? 29 : 25,
+        idUsuario: idUsuario,
+        fechaHora: new Date()
+      };
+
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
 
       setAlertMessage(
         editingPublicacion

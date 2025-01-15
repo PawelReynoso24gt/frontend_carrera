@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 import { format } from "date-fns";
 import { parseISO } from "date-fns";
 
@@ -45,17 +46,27 @@ function Ventas() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  const [resumenPagos, setResumenPagos] = useState({
+    subtotal: 0,
+    donacion: 0,
+    totalVenta: 0,
+  });
 
   useEffect(() => {
     fetchVentas();
     fetchTiposPagos();
     fetchTiposPublico();
-    //fetchVoluntariosByStand();
     fetchStands();
     fetchVoluntarios();
     actualizarTotales();
+    
     // Validar si todos los pagos son del tipo solicitado
-  const pagosSolicitados = tiposPagos.filter((pago) => pago.idTipoPago === 5);
+    const pagosSolicitados = tiposPagos.filter((pago) => pago.idTipoPago === 5);
+
+    // Usar la donación de `ventaEditada` si está en modo edición
+    const donacionActual = isEditMode ? ventaEditada.venta?.donacion : newVenta.donacion;
+
+    calcularResumenPagos(detallesVenta, tiposPagos, donacionActual);
 
   if (pagosSolicitados.length === tiposPagos.length) {
     // Modo de tipo solicitado
@@ -69,7 +80,9 @@ function Ventas() {
     setSubtotal(calculatedSubtotal);
     setTotalAPagar(total);
   }
-  }, [detallesVenta, newVenta.donacion, voluntarios, ventaEditada.venta?.donacion]);
+  }, [detallesVenta, newVenta.donacion, voluntarios, ventaEditada.venta?.donacion, tiposPagos]);
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
   const resetForm = () => {
     setVentaEditada({
@@ -94,6 +107,20 @@ function Ventas() {
   const handleCloseDetailsModal = () => {
     setShowDetailsModal(false);
     resetForm(); // Restablecer el formulario al cerrar el modal
+  };
+
+  const calcularResumenPagos = (detallesVenta, pagos, donacion) => {
+    let subtotal = 0;
+    let totalPagado = 0;
+  
+    for (const detalle of detallesVenta) {
+      subtotal += detalle.subTotal || 0;
+    }
+  
+    // Total de la venta = subtotal + donación (o 0 si no aplica)
+    const totalVenta = subtotal + (donacion || 0);
+  
+    setResumenPagos({ subtotal, donacion: donacion || 0, totalVenta });
   };
 
   const fetchVentas = async () => {
@@ -370,6 +397,15 @@ function Ventas() {
       );
   
       if (response.status === 200) {
+
+        const bitacoraData = {
+          descripcion: "Venta de stands actualizada",
+          idCategoriaBitacora: 18, // ID de categoría para creación
+          idUsuario: idUsuario,
+          fechaHora: new Date()
+      };
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+
         alert("Venta actualizada con éxito");
         setShowDetailsModal(false); // Cerrar el modal
         fetchVentas(); // Refrescar lista de ventas
@@ -544,6 +580,11 @@ const handleSelectVoluntarioGlobal = (id) => {
         alert("Debe seleccionar un voluntario para este stand.");
         return; // Detener la ejecución si no se ha seleccionado un voluntario
       }
+
+      if (standSeleccionado?.idTipoStands === 2 && !standSeleccionado?.voluntarioAsignado) {
+        alert("Debe seleccionar un voluntario para este stand.");
+        return; // Detener la ejecución si no se ha seleccionado un voluntario
+      }
   
       // Validar y calcular los subtotales de los productos
       const detallesVentaValidos = detallesVenta
@@ -633,15 +674,19 @@ const handleSelectVoluntarioGlobal = (id) => {
         venta: { ...newVenta, totalVenta, idTipoPublico: newVenta.idTipoPublico ? parseInt(newVenta.idTipoPublico) : null }, // Incluye la donación y el total
         detalles: detallesVentaValidos, // Incluye los subtotales y donaciones
         pagos: pagosValidados, // Pagos validados con sus requisitos
-        idVoluntario:
-          voluntarios.length > 0
-            ? voluntarioStandSeleccionado || voluntarioGlobalSeleccionado
-            : null, // Si no hay voluntarios, establecer como null
+        idVoluntario: standSeleccionado?.idStand === 1 ? (voluntarioStandSeleccionado || voluntarioGlobalSeleccionado) : null, // Asegurarse de tener un voluntario si el idStand es 1
       };
   
       // Enviar los datos al backend
       const response = await axios.post("http://localhost:5000/ventas/create/stands/completa", ventaData);
       if (response.status === 201) {
+        const bitacoraData = {
+          descripcion: "Nueva venta de stands creada",
+          idCategoriaBitacora: 19, // ID de categoría para creación
+          idUsuario: idUsuario,
+          fechaHora: new Date()
+      };
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
         alert("Venta creada con éxito");
         setShowDetailsModal(false); // Cerrar el modal
         fetchVentas(); // Actualizar la lista de ventas
@@ -947,25 +992,21 @@ const handleSelectVoluntarioGlobal = (id) => {
                     <p><strong>Dirección:</strong> {detalle.stand?.direccion || "N/A"}</p>
                     <p><strong>Tipo de Stand:</strong> {detalle.stand?.tipo_stand?.tipo || "N/A"}</p>
 
-                    {/* Información del Voluntario */}
-                    <h5>Información del Voluntario</h5>
-                    {detalle.idVoluntario && detalle.stand?.asignaciones?.length > 0 ? (
-                        detalle.stand.asignaciones.map((asignacion, idx) => (
-                        <div key={idx}>
-                            <p><strong>Nombre:</strong> {asignacion.inscripcionEvento?.voluntario?.persona?.nombre || "N/A"}</p>
-                            <p><strong>Teléfono:</strong> {asignacion.inscripcionEvento?.voluntario?.persona?.telefono || "N/A"}</p>
-                            <p><strong>Domicilio:</strong> {asignacion.inscripcionEvento?.voluntario?.persona?.domicilio || "N/A"}</p>
-                            <p><strong>Código QR:</strong> {asignacion.inscripcionEvento?.voluntario?.codigoQR || "N/A"}</p>
-                            <p><strong>Evento:</strong> {asignacion.inscripcionEvento?.evento?.nombreEvento || "N/A"}</p>
-                            <p><strong>Descripción del Evento:</strong> {asignacion.inscripcionEvento?.evento?.descripcion || "N/A"}</p>
+                      {/* Información del Voluntario */}
+                      <h5>Información del Voluntario</h5>
+                      {detalle.voluntario ? (
+                        <div>
+                          <p><strong>Nombre:</strong> {detalle.voluntario.persona?.nombre || "N/A"}</p>
+                          <p><strong>Teléfono:</strong> {detalle.voluntario.persona?.telefono || "N/A"}</p>
+                          <p><strong>Domicilio:</strong> {detalle.voluntario.persona?.domicilio || "N/A"}</p>
+                          <p><strong>Código QR:</strong> {detalle.voluntario.codigoQR || "N/A"}</p>
                         </div>
-                        ))
-                    ) : (
-                        <p>No hay voluntarios asignados.</p>
-                    )}
-                    <hr />
+                      ) : (
+                        <p>No hay información del voluntario.</p>
+                      )}
+                      <hr />
                     </div>
-                ))
+                  ))
                 ) : (
                 <p>No se encontraron detalles.</p>
                 )}
@@ -1225,23 +1266,24 @@ const handleSelectVoluntarioGlobal = (id) => {
                         }}
                       />
                     </Form.Group>
-                        {/* <h5>Resumen de Pago</h5>
-                        <Table>
-                            <tbody>
-                            <tr>
-                                <td><strong>Subtotal:</strong></td>
-                                <td>Q{subtotal.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Donación:</strong></td>
-                                <td>Q{(newVenta.donacion || 0).toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Total a Pagar:</strong></td>
-                                <td>Q{totalAPagar.toFixed(2)}</td>
-                            </tr>
-                            </tbody>
-                        </Table> */}
+                    {/* Resumen de pagos */}
+                    <h5>Resumen de Pagos</h5>
+                      <Table>
+                        <tbody>
+                          <tr>
+                            <td><strong>Subtotal:</strong></td>
+                            <td>Q{resumenPagos.subtotal.toFixed(2)}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Donación:</strong></td>
+                            <td>Q{resumenPagos.donacion.toFixed(2)}</td>
+                          </tr>
+                          <tr>
+                            <td><strong>Total de la Venta:</strong></td>
+                            <td>Q{resumenPagos.totalVenta.toFixed(2)}</td>
+                          </tr>
+                        </tbody>
+                      </Table>
                     {/* Pagos */}
                     <h5>Pagos</h5>
                     <Button onClick={handleAddPago} style={{ marginBottom: "10px" }}>
@@ -1324,16 +1366,6 @@ const handleSelectVoluntarioGlobal = (id) => {
                   >
                     {isEditMode ? "Actualizar Venta" : "Crear Venta"}
                   </Button>
-                    <Button
-                    style={{
-                        backgroundColor: "#6c757d",
-                        borderColor: "#6c757d",
-                        color: "#fff",
-                    }}
-                    onClick={() => setShowPreviewModal(true)}
-                    >
-                    Ver Datos
-                    </Button>
                 </Modal.Footer>
                 </Modal>
                 {/* Modal para mostrar voluntarios en formato JSON */}
