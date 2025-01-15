@@ -91,8 +91,13 @@ import RecaudacionEventos from "./pages/recaudaciones_eventos/recaudaciones_even
 import ProductosVentVoluntario from "./pages/productosVentVoluntario/productosVentVoluntario";
 import Empleados from "./pages/empleados/empleados";
 import DetalleProductos from "./pages/detalleProductos/detalleProductos";
+<<<<<<< HEAD
 import ReporteTraslados from "./pages/reporteTraslados/reporteTraslados";
 import ReportePedidos from "./pages/reportePedidos/reportePedidos";
+=======
+import Bitacoras from "./pages/bitacoras/bitacoras";
+
+>>>>>>> 75c4aa9ce04daefe7b5365130144d079bc4cfcc4
 
 const router = createBrowserRouter([
   {
@@ -381,6 +386,10 @@ const router = createBrowserRouter([
       {
         path: "/empleados",
         element: <Empleados/>,
+      },
+      {
+        path: "/bitacoras",
+        element: <Bitacoras/>,
       },
       {
         path: "/gallery",

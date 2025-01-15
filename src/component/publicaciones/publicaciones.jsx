@@ -61,19 +61,12 @@ function Publicaciones() {
     fetchSedes();
     fetchEventos(); // Cargar eventos
     fetchRifas(); // Cargar rifas
-    console.log("Estado de photoToConfirm cambiado:", photoToConfirm); // Debug
   }, [photoToConfirm]);
 
   // Obtener el idPersona desde localStorage
   const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
-
-  if (!idSede) {
-    setMensaje(
-      "No se encontró el ID de la sede en el almacenamiento local."
-    );
-
-    return;
-  }
+  // usuario
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -104,19 +97,14 @@ function Publicaciones() {
       setPhotosToRemove(photosToRemove.filter((id) => id !== photoId));
       setPhotosToKeep([...photosToKeep, photoId]);
     }
-    console.log("Fotos actuales:");
-    console.log("Fotos a mantener:", photosToKeep);
-    console.log("Fotos a eliminar:", photosToRemove);
   };
 
   const handleRemovePhotoWithConfirmation = (photoId) => {
-    console.log("Foto seleccionada para confirmar eliminación:", photoId); // Debug
     setPhotoToConfirm(photoId);
     setShowConfirmModal(true);
   };
 
   const confirmRemovePhoto = () => {
-    console.log("Confirmando eliminación de foto:", photoToConfirm); // Debug
     if (photoToConfirm) {
       setPhotosToRemove((prev) => [...prev, photoToConfirm]); // Añadir la foto a la lista de eliminación
       setPhotosToKeep((prev) => prev.filter((id) => id !== photoToConfirm)); // Remover la foto de la lista a mantener
@@ -166,7 +154,6 @@ function Publicaciones() {
     try {
       const response = await axios.get("http://localhost:5000/publicaciones/inactivos");
       setFilteredPublicaciones(response.data);
-      console.log("Datos de publicaciones inactivas:", response.data);
     } catch (error) {
       console.error("Error fetching inactive publicaciones:", error);
     }
@@ -262,7 +249,6 @@ function Publicaciones() {
     try {
       const response = await axios.get("http://localhost:5000/eventos");
       setEventos(response.data);
-      console.log("Eventos obtenidos:", response.data); // Debug
     } catch (error) {
       console.error("Error fetching eventos:", error);
     }
@@ -272,53 +258,10 @@ function Publicaciones() {
     try {
       const response = await axios.get("http://localhost:5000/rifas");
       setRifas(response.data);
-      console.log("Rifas obtenidas:", response.data); // Debug
     } catch (error) {
       console.error("Error fetching rifas:", error);
     }
-  };
-
-  //   const handleSubmit = async (e) => {
-  //     e.preventDefault();
-
-  //     try {
-  //         const data = {
-  //             ...newPublicacion,
-  //             fechaPublicacion: newPublicacion.fechaPublicacion
-  //               ? format(new Date(newPublicacion.fechaPublicacion), "yyyy-MM-dd hh:mm a")
-  //               : null,
-  //             idSede: idSede || newPublicacion.idSede,
-  //         };
-
-  //         console.log("Datos enviados al backend:", data);
-
-  //         const endpoint = editingPublicacion
-  //             ? `http://localhost:5000/publicaciones/update/${editingPublicacion.idPublicacion}`
-  //             : "http://localhost:5000/publicaciones/create";
-
-  //         const method = editingPublicacion ? "put" : "post";
-
-  //         await axios({
-  //             method,
-  //             url: endpoint,
-  //             data,
-  //             headers: {
-  //                 "Content-Type": "application/json", // Cabecera para JSON
-  //             },
-  //         });
-
-  //         setAlertMessage(
-  //             editingPublicacion
-  //                 ? "Publicación actualizada con éxito"
-  //                 : "Publicación creada con éxito"
-  //         );
-  //         fetchPublicaciones();
-  //         setShowAlert(true);
-  //         handleCloseModal();
-  //     } catch (error) {
-  //         console.error("Error enviando la publicación:", error.response?.data || error.message);
-  //     }
-  // };
+  };  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -349,12 +292,6 @@ function Publicaciones() {
         formData.append("idRifa", newPublicacion.idRifa);
       }
 
-      // // Adjuntar IDs de fotos existentes
-      // formData.append(
-      //   "existingPhotos",
-      //   JSON.stringify(existingPhotos.map((foto) => foto.idPublicacionGeneral || foto.idPublicacionEvento || foto.idPublicacionRifa))
-      // );
-
       // Fotos a mover de una tabla a otra
       const photosToMove = existingPhotos
         .filter((foto) => photosToKeep.includes(foto.id)) // Solo las fotos que se quieren mantener
@@ -371,9 +308,7 @@ function Publicaciones() {
       files.forEach((file) => formData.append("fotos", file));
 
       // Log para inspeccionar los datos que se están enviando
-      console.log("Datos enviados al backend:");
       for (let pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
       }
 
       const endpoint = editingPublicacion
@@ -390,6 +325,16 @@ function Publicaciones() {
           "Content-Type": "multipart/form-data",
         },
       });
+
+      // Creación de la bitácora después de crear o actualizar la publicación
+      const bitacoraData = {
+        descripcion: editingPublicacion ? "Publicación actualizada" : "Nueva publicación creada",
+        idCategoriaBitacora: editingPublicacion ? 29 : 25,
+        idUsuario: idUsuario,
+        fechaHora: new Date()
+      };
+
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
 
       setAlertMessage(
         editingPublicacion

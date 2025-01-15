@@ -24,7 +24,6 @@ function DetalleHorariosComponent() {
   const fetchCategorias = async () => {
     try {
       const response = await axios.get('http://localhost:5000/categoriaHorarios');
-      //console.log('Response de categorías:', response.data); // Depuración
       const data = Array.isArray(response.data) ? response.data : Object.values(response.data); // Si es objeto, convierte en array
       setCategorias(data);
     } catch (error) {

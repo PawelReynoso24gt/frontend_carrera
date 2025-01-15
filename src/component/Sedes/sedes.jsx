@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 import axios from "axios";
 import {
   Button,
@@ -48,6 +49,8 @@ function Sedes() {
     fetchPermissions();
     fetchSedes();
   }, []);
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -114,6 +117,21 @@ function Sedes() {
     setNewSede({ ...newSede, [name]: value });
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -128,9 +146,14 @@ function Sedes() {
       if (editingSede) {
         await axios.put(`http://localhost:5000/sedes/${editingSede.idSede}`, newSede);
         setAlertMessage("Sede actualizada con éxito");
+        // Log the update action in the bitacora
+      await logBitacora(`Sede ${newSede.nombreSede} actualizada`, 35);
       } else {
         await axios.post("http://localhost:5000/sedes", newSede);
         setAlertMessage("Sede creada con éxito");
+
+        // Log the create action in the bitacora
+        await logBitacora(`Sede ${newSede.nombreSede} creada`, 34); 
       }
       fetchSedes();
       setShowAlert(true);

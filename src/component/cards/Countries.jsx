@@ -24,7 +24,6 @@ function Countries() {
         return response.json();
       })
       .then((data) => {
-        // console.log("Datos obtenidos del backend:", data);
         setEventos(data);
         setLoading(false);
       })

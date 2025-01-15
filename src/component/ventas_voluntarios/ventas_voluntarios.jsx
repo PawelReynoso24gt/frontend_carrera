@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 import { format } from "date-fns";
 import { parseISO } from "date-fns";
 
@@ -72,6 +73,8 @@ function Ventas() {
     setSubtotal(nuevoSubtotal.toFixed(2)); // Opcionalmente, formatea a 2 decimales
     setTotalAPagar(nuevoTotalAPagar.toFixed(2));
   }, [detallesVenta, newVenta.donacion]);
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
   const fetchVentas = async () => {
     try {
@@ -329,6 +332,14 @@ function Ventas() {
         // Enviar los datos al backend
         const response = await axios.post("http://localhost:5000/ventas/create/completa", ventaData);
         if (response.status === 201) {
+
+          const bitacoraData = {
+            descripcion: "Nueva venta de voluntario creada",
+            idCategoriaBitacora: 19, // ID de categoría para creación
+            idUsuario: idUsuario,
+            fechaHora: new Date()
+        };
+        await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
             alert("Venta creada con éxito");
             setShowDetailsModal(false); // Cerrar el modal
             fetchVentas(); // Actualizar la lista de ventas
@@ -382,6 +393,17 @@ function Ventas() {
       );
   
       if (response.status === 200) {
+
+        // Crear entrada en la bitácora
+        const bitacoraData = {
+          descripcion: "Venta de voluntarios actualizada",
+          idCategoriaBitacora: 18,
+          idUsuario: idUsuario, // Asegúrate de que idUsuario sea el valor correcto extraído del token
+          fechaHora: new Date()
+      };
+
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+
         alert("Venta actualizada con éxito");
         fetchVentas(); // Actualizar la lista de ventas
         setShowDetailsModal(false); // Cerrar el modal

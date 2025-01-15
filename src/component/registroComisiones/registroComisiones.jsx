@@ -68,20 +68,31 @@ function EventosActivos() {
   const fetchVoluntariosByComision = async (idComision, idEvento) => {
     setIsLoadingVoluntarios(true);
     setIsVoluntariosLoaded(false);
-
+  
     try {
+      console.log("ID del evento:", idEvento);
+      console.log("ID de la comisión:", idComision);
+  
       const response = await axios.get(
         `http://localhost:5000/inscripcion_comisiones/activos?eventoId=${idEvento}`
       );
-
+  
+      console.log("Respuesta completa de la API:", response.data);
+  
+      // Filtrar inscripciones por idComision y mapear datos del voluntario
       const voluntarios = response.data
-        .filter((inscripcion) => inscripcion.comision?.idComision === idComision)
+        .filter((inscripcion) => {
+          console.log("ID Comisión en inscripción:", inscripcion.idComision);
+          return inscripcion.idComision === idComision; // Comparar directamente con idComision
+        })
         .map((inscripcion) => ({
-          idComision: inscripcion.comision?.idComision,
+          idComision: inscripcion.idComision,
           idVoluntario: inscripcion.voluntario?.idVoluntario || "N/A",
-          nombre: inscripcion.voluntario?.persona?.nombre || "Nombre no disponible",
+          nombre: inscripcion.voluntario?.persona?.nombre || "Nombre no disponible", // Extraer nombre desde persona
         }));
-
+  
+      console.log("Voluntarios filtrados:", voluntarios);
+  
       setSelectedVoluntarios(voluntarios);
       setIsVoluntariosLoaded(true);
     } catch (error) {
@@ -91,7 +102,7 @@ function EventosActivos() {
       setIsLoadingVoluntarios(false);
     }
   };
-
+  
   return (
     <Container className="mt-5">
       <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>

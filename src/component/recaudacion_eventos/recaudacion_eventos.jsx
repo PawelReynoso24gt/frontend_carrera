@@ -34,7 +34,6 @@ function RecaudacionesEventos() {
         estado: 1,
     });
     const [Mensaje, setMensaje] = useState("");
-    const [idEmpleado, setIdEmpleado] = useState(null);
     const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
     const [permissionMessage, setPermissionMessage] = useState('');
     const [permissions, setPermissions] = useState({});
@@ -60,16 +59,10 @@ function RecaudacionesEventos() {
         fetchEmpleados();
     }, []);
 
-    useEffect(() => {
-        const id = getUserDataFromToken(localStorage.getItem("token"))?.idEmpleado;
+      // Obtener el idPersona desde localStorage
+          const idEmpleado = getUserDataFromToken(localStorage.getItem("token"))?.idEmpleado; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
-        if (!id) {
-            setMensaje("No se encontró el ID de la sede en el almacenamiento local.");
-        } else {
-            setIdEmpleado(id); // Guardar el idEmpleado en el estado
-            setNewRecaudaciones((prev) => ({ ...prev, idEmpleado: id }));
-        }
-    }, []);
+          const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
     const fetchRecaudaciones = async () => {
         try {
@@ -190,6 +183,15 @@ function RecaudacionesEventos() {
                 setShowAlert(true);
                 fetchRecaudaciones();
                 handleCloseModal();
+
+                const bitacoraData = {
+                    descripcion: "Nueva recaudación de eventos creada",
+                    idCategoriaBitacora: 30,
+                    idUsuario: idUsuario, // Asegúrate de que idUsuario sea el valor correcto extraído del token
+                    fechaHora: new Date()
+                };
+
+                await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
             }
         } catch (error) {
             console.error("Error creando recaudación:", error);
@@ -215,6 +217,15 @@ function RecaudacionesEventos() {
             );
 
             if (response.status === 200) {
+                // Crear entrada en la bitácora
+                const bitacoraData = {
+                    descripcion: "Recaudación de eventos actualizada",
+                    idCategoriaBitacora: 16,
+                    idUsuario: idUsuario, // Asegúrate de que idUsuario sea el valor correcto extraído del token
+                    fechaHora: new Date()
+                };
+
+                await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
                 setAlertMessage("Recaudación actualizada con éxito.");
                 setShowAlert(true);
                 fetchRecaudaciones();

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
 function Productos() {
   const [productos, setProductos] = useState([]);
@@ -49,6 +50,8 @@ function Productos() {
     fetchProductos();
     fetchCategorias();
   }, []);
+
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -114,7 +117,7 @@ function Productos() {
     setEditingProducto(producto);
     setNewProducto(
       producto || {
-        talla: "",
+        talla: "NA", // Valor por defecto
         precio: "",
         nombreProducto: "",
         descripcion: "",
@@ -168,11 +171,30 @@ function Productos() {
     }
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Establecer valor por defecto de "NA" para talla si está vacío
+    const talla = newProducto.talla.trim() === "" ? "NA" : newProducto.talla;
+
     try {
       const formData = new FormData();
-      formData.append("talla", newProducto.talla);
+      formData.append("talla", talla);
       formData.append("precio", parseFloat(newProducto.precio));
       formData.append("nombreProducto", newProducto.nombreProducto);
       formData.append("descripcion", newProducto.descripcion);
@@ -192,6 +214,7 @@ function Productos() {
           },
         });
         setAlertMessage("Producto actualizado con éxito");
+        await logBitacora(`Producto ${newProducto.nombreProducto} actualizado`, 12);
       } else {
         await axios.post("http://localhost:5000/productos", formData, {
           headers: {
@@ -199,6 +222,7 @@ function Productos() {
           },
         });
         setAlertMessage("Producto creado con éxito");
+        await logBitacora(`Producto ${newProducto.nombreProducto} creado`, 4);
       }
       fetchProductos();
       setShowAlert(true);
@@ -212,7 +236,7 @@ function Productos() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/productos/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/productos/estado/${id}`, { estado: nuevoEstado });
       fetchProductos();
       setAlertMessage(
         `Producto ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
@@ -406,7 +430,7 @@ function Productos() {
                 <td>{producto.idProducto}</td>
                 <td>{producto.nombreProducto}</td>
                 <td>{producto.talla}</td>
-                <td>{producto.precio}</td>
+                <td>Q. {producto.precio}</td>
                 <td>{producto.descripcion}</td>
                 <td>
                   <img

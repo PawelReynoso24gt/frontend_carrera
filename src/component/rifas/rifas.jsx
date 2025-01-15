@@ -64,15 +64,9 @@ function Rifas() {
   };
 
   // Obtener el idPersona desde localStorage
-  const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
+      const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
-  if (!idSede) {
-    setMensaje(
-      "No se encontró el ID de la sede en el almacenamiento local."
-    );
-
-    return;
-  }
+      const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
   const fetchRifas = async () => {
     try {
@@ -161,6 +155,21 @@ function Rifas() {
     setNewRifa({ ...newRifa, [name]: value });
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -181,9 +190,13 @@ function Rifas() {
       if (editingRifa) {
         await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, data);
         setAlertMessage("Rifa actualizada con éxito");
+        // bitacora
+        await logBitacora(`Rifa actualizada: ${editingRifa.nombreRifa}`, 28);
       } else {
         await axios.post("http://localhost:5000/rifas", data);
         setAlertMessage("Rifa creada con éxito");
+        // bitacora
+        await logBitacora(`Rifa creada: ${newRifa.nombreRifa}`, 24);
       }
       fetchRifas();
       setShowAlert(true);
