@@ -77,7 +77,6 @@
     const fetchActiveRecaudaciones = async () => {
         try {
         const response = await axios.get("http://localhost:5000/recaudaciones/todas");
-        console.log("Recaudaciones activas:", response.data);
         if (Array.isArray(response.data)) {
             setFilteredRecaudaciones(response.data);
         } else {
@@ -95,7 +94,6 @@
     const fetchInactiveRecaudaciones = async () => {
         try {
         const response = await axios.get("http://localhost:5000/recaudaciones/todas/inactivas");
-        console.log("Recaudaciones inactivas:", response.data);
         if (Array.isArray(response.data)) {
             setFilteredRecaudaciones(response.data);
         } else {
@@ -207,7 +205,6 @@
                 pagos,
             };
 
-            console.log("Datos enviados para actualizar recaudación:", recaudacionData);
     
             const response = await axios.put(
                 "http://localhost:5000/recaudaciones/rifa/completa/update/${recaudacionToUpdate.idRecaudacionRifa}",

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from 'react-bootstrap';
+import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+
 
 function MaterialesComponent() {
   const [materiales, setMateriales] = useState([]);
@@ -101,67 +103,67 @@ function MaterialesComponent() {
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentMateriales = filteredMateriales.slice(indexOfFirstRow, indexOfLastRow);
-  
+
   const totalPages = Math.ceil(filteredMateriales.length / rowsPerPage);
-  
-    const renderPagination = () => (
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
           }}
           style={{
-            color: currentPage === 1 ? "gray" : "#007AC3",
-            cursor: currentPage === 1 ? "default" : "pointer",
-            textDecoration: "none",
-            fontWeight: "bold",
+            width: "100px",
+            height: "40px",
           }}
         >
-          Anterior
-        </a>
-  
-        <div className="d-flex align-items-center">
-          <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
-          <Form.Control
-            as="select"
-            value={rowsPerPage}
-            onChange={(e) => {
-              setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            style={{
-              width: "100px",
-              height: "40px",
-            }}
-          >
-            {[5, 10, 20, 50].map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Form.Control>
-        </div>
-  
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-          }}
-          style={{
-            color: currentPage === totalPages ? "gray" : "#007AC3",
-            cursor: currentPage === totalPages ? "default" : "pointer",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          Siguiente
-        </a>
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
       </div>
-    );
-  
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+
 
 
   return (
@@ -173,6 +175,16 @@ function MaterialesComponent() {
           </h3>
         </div>
       </div>
+
+      <InputGroup className="mt-3">
+        <FormControl
+          placeholder="Buscar por nombre"
+          aria-label="Buscar por nombre"
+          aria-describedby="basic-addon2"
+          value={searchTerm}
+          onChange={handleSearch}
+        />
+      </InputGroup>
 
       <div
         className="container mt-4"
@@ -225,15 +237,7 @@ function MaterialesComponent() {
           Inactivos
         </Button>
 
-        <InputGroup className="mt-3">
-          <FormControl
-            placeholder="Buscar por nombre"
-            aria-label="Buscar por nombre"
-            aria-describedby="basic-addon2"
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </InputGroup>
+
 
         <Alert
           variant="success"
@@ -279,33 +283,39 @@ function MaterialesComponent() {
                 <td>{material.comisione?.comision}</td>
                 <td>{material.estado ? "Activo" : "Inactivo"}</td>
                 <td>
-                  <Button
+                  <FaPencilAlt
                     style={{
-                      backgroundColor: "#007AC3",
-                      borderColor: "#007AC3",
-                      padding: "5px 10px",
-                      width: "100px",
-                      marginRight: "5px",
-                      fontWeight: "bold",
-                      color: "#fff",
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
                     }}
+                    title="Editar"
                     onClick={() => handleShowModal(material)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    style={{
-                      backgroundColor: material.estado ? "#6c757d" : "#28a745",
-                      borderColor: material.estado ? "#6c757d" : "#28a745",
-                      padding: "5px 10px",
-                      width: "100px",
-                      fontWeight: "bold",
-                      color: "#fff",
-                    }}
-                    onClick={() => toggleMaterialEstado(material.idMaterial, material.estado)}
-                  >
-                    {material.estado ? "Desactivar" : "Activar"}
-                  </Button>
+                  />
+                  {material.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => toggleMaterialEstado(material.idMaterial, material.estado)}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => toggleMaterialEstado(material.idMaterial, material.estado)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
