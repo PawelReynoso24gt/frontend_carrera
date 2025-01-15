@@ -91,7 +91,8 @@ import RecaudacionEventos from "./pages/recaudaciones_eventos/recaudaciones_even
 import ProductosVentVoluntario from "./pages/productosVentVoluntario/productosVentVoluntario";
 import Empleados from "./pages/empleados/empleados";
 import DetalleProductos from "./pages/detalleProductos/detalleProductos";
-
+import ReporteTraslados from "./pages/reporteTraslados/reporteTraslados";
+import ReportePedidos from "./pages/reportePedidos/reportePedidos";
 
 const router = createBrowserRouter([
   {
@@ -368,6 +369,14 @@ const router = createBrowserRouter([
       {
         path: "/reporteRifas",
         element: <ReporteRifasPage/>,
+      },
+      {
+        path: "/reporteTraslados",
+        element: <ReporteTraslados/>,
+      },
+      {
+        path: "/reportePedidos",
+        element: <ReportePedidos/>,
       },
       {
         path: "/empleados",

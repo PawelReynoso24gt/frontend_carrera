@@ -200,14 +200,18 @@ function ReporteTecnico() {
       doc.text(`• ${estado}: ${total}`, 14, startY + 20 + index * 10);
     });
 
-
+    startY += 20 + Object.keys(totalPorEstado).length * 10;
+    if (startY + 30> pageHeight) {
+        doc.addPage();
+        startY = 10;
+    }
+    
     // Espacio para la firma
-    const firmaStartY = startY + 100; // Ajustamos para que quede más cerca del resumen
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text("_______________________________", 105, firmaStartY, { align: "center" });
-    doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
-    doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
+    doc.text("_______________________________", 105, startY + 15, { align: "center" });
+    doc.text(revisor || "Sin nombre", 105, startY + 20, { align: "center" });
+    doc.text(cargo || "Sin cargo", 105, startY + 25, { align: "center" });
 
     doc.save(`Reporte_Soporte_Tecnico_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
   };

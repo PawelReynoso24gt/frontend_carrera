@@ -169,15 +169,62 @@ function ReportePlayeras() {
     });
 
     const startY = doc.lastAutoTable.finalY + 10; // Punto inicial después de la tabla
-
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text(`Total Productos Asignados: ${totalGeneral.totalAsignadas}`, 105, startY, { align: "center" });
-    doc.text(`Total Productos Vendidos: ${totalGeneral.totalVendidas}`, 105, startY + 6, { align: "center" });
-    doc.text(`Total Recaudado: Q${totalGeneral.totalRecaudado.toFixed(2)}`, 105, startY + 12, { align: "center" });
+    doc.text("RESUMEN", 14, startY);
+
+    let totalRegistros = 0;
+    const totalPorStand = {};
+    let totalRecaudadoGeneral = 0;
+    const totalRecaudadoPorStand = {};
+
+    reportes.forEach((stand) => {
+        const totalVendidasStand = Object.values(stand.productosVendidos || {}).reduce(
+            (sum, tallas) =>
+                sum + Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + detalles.cantidad, 0),
+            0
+        );
+
+        totalPorStand[stand.nombreStand] = totalVendidasStand;
+        totalRegistros += totalVendidasStand;
+    });
+
+    reportes.forEach((stand) => {
+      const totalRecaudadoStand = Object.values(stand.productosVendidos || {}).reduce(
+          (sum, tallas) =>
+              sum + Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + (detalles.subTotal || 0), 0),
+          0
+      );
+
+      totalRecaudadoPorStand[stand.nombreStand] = totalRecaudadoStand;
+      totalRecaudadoGeneral += totalRecaudadoStand;
+  });
 
 
-    const firmaStartY = doc.lastAutoTable.finalY + 35; // Calcula un espacio fijo después de la última tabla
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`• Total Productos Vendidos: ${totalRegistros}`, 14, startY + 10);
+
+    Object.entries(totalPorStand).forEach(([stand, total], index) => {
+        doc.text(`• ${stand}: ${total} productos vendidos`, 14, startY + 20 + index * 10);
+    });
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`• Total Recaudado General: Q${totalRecaudadoGeneral.toFixed(2)}`, 14, startY + 40);
+
+    Object.entries(totalRecaudadoPorStand).forEach(([stand, total], index) => {
+        doc.text(`• ${stand}: Q${total.toFixed(2)}`, 14, startY + 50 + index * 10);
+    });
+    
+    // Espacio para la firma
+    const firmaStartY = doc.lastAutoTable.finalY + 90;
+    if (firmaStartY + 30 > doc.internal.pageSize.height) {
+        doc.addPage();
+        startY = 10;
+    }
+
+   
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.text("_______________________________", 105, firmaStartY, { align: "center" });
