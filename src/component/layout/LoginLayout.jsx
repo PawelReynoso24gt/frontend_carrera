@@ -26,7 +26,7 @@ const LoginLayout = () => {
       const token = response.data.token;
       localStorage.setItem("token", token); // Almacenar el token en localStorage
       
-      navigate("/dashboard-sass"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)
+      navigate("/paginaPrincipal"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)
     } catch (err) {
       setError("Usuario o contraseña incorrectos. Por favor, intenta de nuevo.");
     }

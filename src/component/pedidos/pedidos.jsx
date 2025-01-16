@@ -16,9 +16,13 @@ import { parseISO } from "date-fns";
 import { getUserDataFromToken } from "../../utils/jwtUtils";
 
 // Utilidad para formatear fechas
-const formatDate = (date) => {
-  const options = { day: "2-digit", month: "2-digit", year: "numeric" };
-  return new Date(date).toLocaleDateString("es-ES", options);
+const formatDateDMY = (date) => {
+  if (!date) return ""; // Manejar fechas vacías
+  const fecha = new Date(date);
+  const day = String(fecha.getDate()).padStart(2, "0");
+  const month = String(fecha.getMonth() + 1).padStart(2, "0"); // Los meses son 0-11
+  const year = fecha.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 function Pedidos() {
@@ -442,7 +446,7 @@ function Pedidos() {
             {currentPedidos.map((pedido) => (
               <tr key={pedido.idPedido}>
                 <td style={{ textAlign: "center" }}>{pedido.idPedido}</td>
-                <td style={{ textAlign: "center" }}>{formatDate(pedido.fecha) ? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td style={{ textAlign: "center" }}>{formatDateDMY(pedido.fecha)}</td>
                 <td style={{ textAlign: "center" }}>{pedido.descripcion}</td>
                 <td style={{ textAlign: "center" }}>
                   {sedes.find((sede) => sede.idSede === pedido.idSede)?.nombreSede ||

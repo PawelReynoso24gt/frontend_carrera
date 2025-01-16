@@ -19,6 +19,7 @@ function DetalleHorariosComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [horarios, setHorarios] = useState([]);
 
 
   const fetchCategorias = async () => {
@@ -29,6 +30,17 @@ function DetalleHorariosComponent() {
     } catch (error) {
       console.error('Error fetching categorias:', error);
       setCategorias([]); // Manejo de errores: asegura un array vacío
+    }
+  };
+
+  // Cargar los horarios
+  const fetchHorarios = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/horarios'); // Cambiar al endpoint real
+      setHorarios(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Error fetching horarios:', error);
+      setHorarios([]);
     }
   };
 
@@ -48,6 +60,7 @@ function DetalleHorariosComponent() {
   
     1,
       fetchCategorias();
+      fetchHorarios(); 
     fetchActiveDetalles();
     fetchPermissions();
   }, []);
@@ -420,7 +433,14 @@ function DetalleHorariosComponent() {
                   value={newDetalle.idHorario}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Seleccione un horario</option>
+                  {horarios.map((horario) => (
+                    <option key={horario.idHorario} value={horario.idHorario}>
+                      {horario.nombreHorario || `Horario ${horario.idHorario}`}
+                    </option>
+                    ))}
+                 </Form.Control>
               </Form.Group>
               <Form.Group controlId="idCategoriaHorario">
                 <Form.Label>Categoría Horario</Form.Label>
