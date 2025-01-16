@@ -1,445 +1,482 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Table, Modal, Form, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
-import { FaPencilAlt, FaTrash } from "react-icons/fa";
+import {
+  Container,
+  Tabs,
+  Tab,
+  Card,
+  Button,
+  Row,
+  Col,
+  Modal,
+  Form,
+  Spinner,
+  Pagination,
+} from "react-bootstrap";
+import { getUserDataFromToken } from "../../utils/jwtUtils";
 
-function SoporteTecnico() {
-  const [bitacoras, setBitacoras] = useState([]);
-  const [filteredBitacoras, setFilteredBitacoras] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingBitacora, setEditingBitacora] = useState(null);
-  const [newBitacora, setNewBitacora] = useState({
+function SituacionesPorEstado() {
+  const [estados] = useState([
+    "Reportada",
+    "En Revisión",
+    "Próximo a Solucionarse",
+    "Resuelta",
+    "Sin Solución",
+  ]);
+  const [situaciones, setSituaciones] = useState([]);
+  const [tiposSituaciones, setTiposSituaciones] = useState([]);
+  const [selectedEstado, setSelectedEstado] = useState("Reportada");
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
     descripcion: "",
-    idUsuario: 3, // Valor quemado para pruebas
+    idTipoSituacion: "",
+    estado: "",
+    idUsuario: null, // Temporal: Cambia esto según tu sistema de usuarios
   });
-  const [alertMessage, setAlertMessage] = useState("");
-  const [showAlert, setShowAlert] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedSituacion, setSelectedSituacion] = useState(null);
+
+  // Estados para la paginación
+const [currentPage, setCurrentPage] = useState(1);
+const [itemsPerPage] = useState(6); // Número de elementos por página
+
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+
+  // para bitacora
+  const UserID = getUserDataFromToken(localStorage.getItem("token")).idUsuario;
+
 
   useEffect(() => {
-    fetchProblemasDetectados(); // Cargar problemas detectados por defecto
-  }, []);
-
-  const fetchProblemasDetectados = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/bitacora/problemas");
-      setBitacoras(response.data);
-      setFilteredBitacoras(response.data);
-    } catch (error) {
-      console.error("Error fetching problemas detectados:", error);
-    }
-  };
-
-  const fetchProblemasRevision = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/bitacora/problemasRevision");
-      setBitacoras(response.data);
-      setFilteredBitacoras(response.data);
-    } catch (error) {
-      console.error("Error fetching problemas en revisión:", error);
-    }
-  };
-
-  const fetchProblemasSolucionados = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/bitacora/problemasSolucionados");
-      setBitacoras(response.data);
-      setFilteredBitacoras(response.data);
-    } catch (error) {
-      console.error("Error fetching problemas solucionados:", error);
-    }
-  };
-
-  const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
-    const filtered = bitacoras.filter((bitacora) =>
-      bitacora.descripcion.toLowerCase().includes(value)
-    );
-    setFilteredBitacoras(filtered);
-    setCurrentPage(1);
-  };
-
-  const handleShowCreateModal = () => {
-    setShowCreateModal(true);
-    setNewBitacora({
-      descripcion: "",
-      idUsuario: 3,
-    });
-  };
-
-  const handleCloseCreateModal = () => {
-    setShowCreateModal(false);
-  };
-
-  const handleShowEditModal = (bitacora) => {
-    setEditingBitacora(bitacora);
-    setShowEditModal(true);
-  };
-
-  const handleCloseEditModal = () => {
-    setShowEditModal(false);
-    setEditingBitacora(null);
-  };
-
-  const handleCreateChange = (e) => {
-    const { name, value } = e.target;
-    setNewBitacora({ ...newBitacora, [name]: value });
-  };
-
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditingBitacora({ ...editingBitacora, [name]: value });
-  };
-
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault();
-    const bitacoraToCreate = {
-      ...newBitacora,
-      fechaHora: new Date().toISOString(), // Fecha y hora actual
-      estado: "problema detectado",
-      idCategoriaBitacora: 5,
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
     };
 
+    fetchPermissions();
+    fetchTiposSituaciones();
+    fetchSituacionesByEstado(selectedEstado);
+    obtenerIdUsuario();
+  }, [selectedEstado]);
+
+  // Paginación
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentSituaciones = situaciones.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(situaciones.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+
+  const fetchTiposSituaciones = async () => {
     try {
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraToCreate);
-      setAlertMessage("Registro creado con éxito");
-      setShowAlert(true);
-      handleCloseCreateModal();
-      fetchProblemasDetectados();
-      setTimeout(() => setShowAlert(false), 3000);
+      const response = await axios.get("http://localhost:5000/tipo_situaciones");
+      setTiposSituaciones(response.data);
     } catch (error) {
-      console.error("Error creating registro:", error);
-      setAlertMessage("Error al crear la registro");
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
+      console.error("Error fetching tipos de situaciones:", error);
     }
   };
 
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
+  const fetchSituacionesByEstado = async (estado) => {
+    setIsLoading(true);
     try {
-      await axios.put(`http://localhost:5000/bitacora/update/${editingBitacora.idBitacora}`, {
-        descripcion: editingBitacora.descripcion,
-        estado: editingBitacora.estado,
-        fechaHora: new Date().toISOString(), // Actualizar la fecha y hora
-      });
-      setAlertMessage("Registro actualizado con éxito");
-      setShowAlert(true);
-      handleCloseEditModal();
-      fetchProblemasDetectados();
-      setTimeout(() => setShowAlert(false), 3000);
+      let url = "http://localhost:5000/situaciones";
+      switch (estado) {
+        case "Reportada":
+          url += "/reportadas";
+          break;
+        case "En Revisión":
+          url += "/en_revision";
+          break;
+        case "Próximo a Solucionarse":
+          url += "/proximo_a_solucionarse";
+          break;
+        case "Resuelta":
+          url += "/resueltas";
+          break;
+        case "Sin Solución":
+          url += "/sin_solucion";
+          break;
+        default:
+          console.error("Estado desconocido:", estado);
+          return;
+      }
+
+      const response = await axios.get(url);
+      setSituaciones(response.data);
     } catch (error) {
-      console.error("Error updating registro:", error);
-      setAlertMessage("Error al actualizar la registro");
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
+      console.error("Error fetching situaciones:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentBitacoras = filteredBitacoras.slice(indexOfFirstRow, indexOfLastRow);
+  const obtenerIdUsuario = () => {
+    const token = localStorage.getItem("token");
+    const userData = getUserDataFromToken(token);
+    if (userData && userData.idUsuario) {
+      setFormData((prevData) => ({
+        ...prevData,
+        idUsuario: userData.idUsuario,
+      }));
+    } else {
+      console.error("No se pudo obtener el idUsuario del token.");
+    }
+  };
 
-  const totalPages = Math.ceil(filteredBitacoras.length / rowsPerPage);
+  const handleCreate = () => {
+    setFormData((prevData) => ({
+      ...prevData,
+      descripcion: "",
+      idTipoSituacion: tiposSituaciones[0]?.idTipoSituacion || "",
+      estado: "Reportada", // Estado por defecto al crear
+    }));
+    setEditMode(false);
+    setShowModal(true);
+  };
 
-  const renderPagination = () => (
-    <div className="d-flex justify-content-between align-items-center mt-3">
-      <a
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
-        }}
-        style={{
-          color: currentPage === 1 ? "gray" : "#007AC3",
-          cursor: currentPage === 1 ? "default" : "pointer",
-          textDecoration: "none",
-          fontWeight: "bold",
-        }}
-      >
-        Anterior
-      </a>
+  const handleEdit = (situacion) => {
+    setSelectedSituacion(situacion);
+    setFormData({
+      descripcion: situacion.descripcion,
+      idTipoSituacion: situacion.idTipoSituacion,
+      estado: situacion.estado,
+      respuesta: situacion.respuesta || "",
+      observaciones: situacion.observaciones || "",
+      idPersona: situacion.usuario.persona.idPersona, // Agregar idPersona (para notificación)
+    });
+    setEditMode(true);
+    setShowModal(true);
+  };
 
-      <div className="d-flex align-items-center">
-        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
-        <Form.Control
-          as="select"
-          value={rowsPerPage}
-          onChange={(e) => {
-            setRowsPerPage(Number(e.target.value));
-            setCurrentPage(1);
-          }}
-          style={{
-            width: "100px",
-            height: "40px",
-          }}
-        >
-          {[5, 10, 20, 50].map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </Form.Control>
-      </div>
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+        descripcion,
+        idCategoriaBitacora,
+        idUsuario: UserID,
+        fechaHora: new Date(),
+    };
+  
+    try {
+        const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
+    } catch (error) {
+        console.error("Error logging bitacora:", error);
+        throw error; // Lanza el error para manejarlo en handleSave
+    }
+  };
 
-      <a
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-        }}
-        style={{
-          color: currentPage === totalPages ? "gray" : "#007AC3",
-          cursor: currentPage === totalPages ? "default" : "pointer",
-          textDecoration: "none",
-          fontWeight: "bold",
-        }}
-      >
-        Siguiente
-      </a>
-    </div>
-  );
+  const createNotification = async (idBitacora, idTipoNotificacion, idPersona) => {
+    const notificationData = {
+      idBitacora,
+      idTipoNotificacion,
+      idPersona,
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/notificaciones/create", notificationData);
+    } catch (error) {
+      console.error("Error creating notification:", error);
+    }
+  };
+
+  const handleSave = async () => {
+    let response; // Define response outside the try block
+    try {
+      if (editMode) {
+        // Actualizar situación usando la ruta de actualización de respuesta
+        response = await axios.put(
+          `http://localhost:5000/situaciones/update/respuesta/${selectedSituacion.idSituacion}`,
+          {
+            idTipoSituacion: formData.idTipoSituacion,
+            estado: formData.estado,
+            respuesta: formData.respuesta,
+            observaciones: formData.observaciones,
+          }
+        );
+        // Log bitacora for editing and obtain idBitacora
+        const idBitacora = await logBitacora(`Situación actualizada: ${formData.descripcion}`, 6);
+  
+        // Obtener idPersona del usuario que reportó la situación
+        const idPersona = selectedSituacion.usuario.persona.idPersona;
+  
+        // Verifica que todos los campos necesarios estén presentes
+        if (idBitacora && idPersona) {
+          const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
+          await createNotification(idBitacora, idTipoNotificacion, idPersona);
+        } else {
+          console.error("Faltan datos necesarios para crear la notificación");
+        }
+      } else {
+        // Crear una nueva situación con el estado "Reportada" por defecto
+        response = await axios.post("http://localhost:5000/situaciones/create", {
+          ...formData,
+          estado: "Reportada",
+          idUsuario: formData.idUsuario,
+        });
+        // Log bitacora for creating
+        await logBitacora(`Nueva situación creada: ${formData.descripcion}`, 5);
+      }
+  
+      fetchSituacionesByEstado(selectedEstado);
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error saving situación:", error);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
   return (
-    <>
-      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
-        <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de situaciones que se han reportado
-          </h3>
-        </div>
-      </div>
-
-      <div
-        className="container mt-4"
-        style={{
-          backgroundColor: "#f8f9fa",
-          padding: "20px",
-          borderRadius: "8px",
-          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+    <Container className="mt-5">
+      <h2 className="text-center mb-4">Gestión de Situaciones por Estado</h2>
+      <div className="text-center mb-4">
+        <Button
+         onClick={() => {
+          if (checkPermission('Crear situación', 'No tienes permisos para crear situación')) {
+            handleCreate();
+          }
         }}
-      >
-        <InputGroup className="mb-3">
-          <FormControl
-            placeholder="Buscar registro por descripción..."
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </InputGroup>
-
-        <div className="d-flex justify-content-start align-items-center mb-3">
-          <Button
-            style={{
-              backgroundColor: "#007abf",
-              borderColor: "#007AC3",
-              padding: "5px 10px",
-              width: "130px",
-              marginRight: "10px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-            onClick={handleShowCreateModal}
-          >
-            Crear Registro
-          </Button>
-          <Button
-            style={{
-              backgroundColor: "#009B85",
-              borderColor: "#007AC3",
-              padding: "5px 10px",
-              width: "100px",
-              marginRight: "10px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-            onClick={fetchProblemasDetectados}
-          >
-            Detectados
-          </Button>
-          <Button
-            style={{
-              backgroundColor: "#f0ad4e",
-              borderColor: "#007AC3",
-              padding: "5px 10px",
-              width: "100px",
-              marginRight: "10px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-            onClick={fetchProblemasRevision}
-          >
-            En Revisión
-          </Button>
-          <Button
-            style={{
-              backgroundColor: "#5cb85c",
-              borderColor: "#007AC3",
-              padding: "5px 10px",
-              width: "120px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-            onClick={fetchProblemasSolucionados}
-          >
-            Solucionados
-          </Button>
-        </div>
-
-        <Alert
-          variant="success"
-          show={showAlert}
-          onClose={() => setShowAlert(false)}
-          dismissible
-          style={{ marginTop: "20px", fontWeight: "bold" }}
+          variant="primary"
+          style={{
+            backgroundColor: "#007abf",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "190px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
         >
-          {alertMessage}
-        </Alert>
-
-        <Table
-            striped
-            bordered
-            hover
-            responsive
-            className="mt-3"
-            style={{
-                backgroundColor: "#ffffff",
-                borderRadius: "8px",
-                marginTop: "20px",
-            }}
-            >
-            <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
-                <tr>
-                <th>ID</th>
-                <th>Descripción</th>
-                <th>Fecha y Hora</th>
-                <th>Usuario</th>
-                <th>Nombre</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {currentBitacoras.map((bitacora) => (
-                <tr key={bitacora.idBitacora}>
-                    <td>{bitacora.idBitacora}</td>
-                    <td>{bitacora.descripcion}</td>
-                    <td>{new Date(bitacora.fechaHora).toLocaleString()}</td>
-                    <td>{bitacora.usuario?.usuario || "Sin usuario"}</td>
-                    <td>{bitacora.usuario?.persona?.nombre || "Sin nombre"}</td>
-                    <td>{bitacora.estado}</td>
-                    <td>
-                    <FaPencilAlt
-                        style={{
-                        color: "#007AC3",
-                        cursor: "pointer",
-                        marginRight: "10px",
-                        fontSize: "20px",
-                        }}
-                        title="Editar"
-                        onClick={() => handleShowEditModal(bitacora)}
-                    />
-                    <FaTrash
-                        style={{
-                        color: "#e10f0f",
-                        cursor: "pointer",
-                        fontSize: "20px",
-                        }}
-                        title="Eliminar"
-                        onClick={() => console.log("Eliminar")}
-                    />
-                    </td>
-                </tr>
-                ))}
-            </tbody>
-        </Table>
-
-        {renderPagination()}
-
-        {/* Modal para crear */}
-        <Modal show={showCreateModal} onHide={handleCloseCreateModal} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Crear Nuevo Registro</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form onSubmit={handleCreateSubmit}>
-              <Form.Group controlId="descripcion">
-                <Form.Label>Descripción</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  name="descripcion"
-                  value={newBitacora.descripcion}
-                  onChange={handleCreateChange}
-                  required
-                />
-              </Form.Group>
-              <Button
-                type="submit"
-                style={{
-                  backgroundColor: "#007AC3",
-                  borderColor: "#007AC3",
-                  fontWeight: "bold",
-                  width: "100%",
-                }}
-              >
-                Crear
-              </Button>
-            </Form>
-          </Modal.Body>
-        </Modal>
-
-        {/* Modal para editar */}
-        <Modal show={showEditModal} onHide={handleCloseEditModal} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Editar Registro</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form onSubmit={handleEditSubmit}>
-              <Form.Group controlId="descripcion">
-                <Form.Label>Descripción</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  name="descripcion"
-                  value={editingBitacora?.descripcion || ""}
-                  onChange={handleEditChange}
-                  required
-                />
-              </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="estado"
-                  value={editingBitacora?.estado || ""}
-                  onChange={handleEditChange}
-                  required
-                >
-                  <option value="problema detectado">Problema Detectado</option>
-                  <option value="problema en revisión">Problema en Revisión</option>
-                  <option value="problema solucionado">Problema Solucionado</option>
-                </Form.Control>
-              </Form.Group>
-              <Button
-                type="submit"
-                style={{
-                  backgroundColor: "#007AC3",
-                  borderColor: "#007AC3",
-                  fontWeight: "bold",
-                  width: "100%",
-                }}
-              >
-                Guardar Cambios
-              </Button>
-            </Form>
-          </Modal.Body>
-        </Modal>
+          Crear Situación
+        </Button>
       </div>
-    </>
+      <Tabs
+        activeKey={selectedEstado}
+        onSelect={(k) => setSelectedEstado(k)}
+        className="mb-3"
+      >
+        {estados.map((estado) => (
+          <Tab key={estado} eventKey={estado} title={estado}>
+            {isLoading ? (
+              <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+              </div>
+            ) : (
+              <Row>
+                {currentSituaciones.map((situacion) => (
+                  <Col key={situacion.idSituacion} md={6} lg={4} className="mb-4">
+                    <Card className="h-100 shadow-sm">
+                      <Card.Body>
+                        <Card.Title style={{ fontWeight: "bold" }}>
+                          {situacion.descripcion}
+                        </Card.Title>
+                        <Card.Text >
+                          <strong>Reportado por:</strong> {situacion.usuario.persona.nombre}
+                          <br />
+                          <strong>Tipo:</strong> {situacion.tipo_situacione?.tipoSituacion}
+                          <br />
+                          <strong>Fecha:</strong>{" "}
+                          {new Date(situacion.fechaOcurrencia).toLocaleDateString()}
+                          <br />
+                          <strong>Estado:</strong> {situacion.estado}
+                          <br />
+                          <strong style={{ fontSize: "18px" }}>Respuesta:</strong>
+                          <br />
+                          {situacion.respuesta}
+                          <br />
+                          <strong style={{ fontSize: "18px" }}>Observaciones:</strong>
+                          <br />
+                          {situacion.observaciones}
+                        </Card.Text>
+                      </Card.Body>
+                      <Card.Footer className="text-center">
+                        <Button
+                          className="btn-primary"
+                          onClick={() => {
+                            if (checkPermission('Editar situación', 'No tienes permisos para editar situación')) {
+                              handleEdit(situacion);
+                            }
+                          }}
+                          style={{
+                            backgroundColor: "#007abf",
+                            borderColor: "#007AC3",
+                            padding: "5px 10px",
+                            width: "180px",
+                            marginRight: "10px",
+                            fontWeight: "bold",
+                            color: "#fff",
+                          }}
+                        >
+                          Editar
+                        </Button>
+                      </Card.Footer>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            )}
+          </Tab>
+        ))}
+      </Tabs>
+
+       {/* Barra de paginación */}
+            <Pagination className="justify-content-center mt-4">
+              {[...Array(totalPages).keys()].map((number) => (
+                <Pagination.Item
+                  key={number + 1}
+                  active={number + 1 === currentPage}
+                  onClick={() => handlePageChange(number + 1)}
+                >
+                  {number + 1}
+                </Pagination.Item>
+              ))}
+            </Pagination>
+
+      {/* Modal para Crear/Editar Situaciones */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {editMode ? "Editar Situación" : "Crear Nueva Situación"}
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <Form>
+            {/* Descripción */}
+            <Form.Group className="mb-3">
+              <Form.Label>Descripción</Form.Label>
+              <Form.Control
+                type="text"
+                name="descripcion"
+                value={formData.descripcion}
+                onChange={handleInputChange}
+                placeholder="Ingrese la descripción"
+                readOnly={editMode} // Editable solo en modo de creación
+              />
+            </Form.Group>
+
+            {/* Tipo de Situación - Editable en ambos modos */}
+            <Form.Group className="mb-3">
+              <Form.Label>Tipo de Situación</Form.Label>
+              {editMode ? (
+                <Form.Control
+                  type="text"
+                  value={
+                    tiposSituaciones.find(
+                      (tipo) => tipo.idTipoSituacion === formData.idTipoSituacion
+                    )?.tipoSituacion || "No disponible"
+                  }
+                  readOnly
+                />
+              ) : (
+                <Form.Select
+                  name="idTipoSituacion"
+                  value={formData.idTipoSituacion}
+                  onChange={handleInputChange}
+                >
+                  {tiposSituaciones.map((tipo) => (
+                    <option key={tipo.idTipoSituacion} value={tipo.idTipoSituacion}>
+                      {tipo.tipoSituacion}
+                    </option>
+                  ))}
+                </Form.Select>
+              )}
+            </Form.Group>
+
+            {/* Campos adicionales solo en modo de edición */}
+            {editMode && (
+              <>
+                {/* Estado */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Estado</Form.Label>
+                  <Form.Select
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleInputChange}
+                  >
+                    {estados.map((estado) => (
+                      <option key={estado} value={estado}>
+                        {estado}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+
+                {/* Respuesta */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Respuesta</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="respuesta"
+                    value={formData.respuesta}
+                    onChange={handleInputChange}
+                    placeholder="Ingrese la respuesta (opcional)"
+                  />
+                </Form.Group>
+
+                {/* Observaciones */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Observaciones</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="observaciones"
+                    value={formData.observaciones}
+                    onChange={handleInputChange}
+                    placeholder="Ingrese las observaciones (opcional)"
+                  />
+                </Form.Group>
+              </>
+            )}
+          </Form>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancelar
+          </Button>
+          <Button variant="primary" onClick={handleSave}>
+            Guardar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+              <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{permissionMessage}</Modal.Body>
+                <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+    </Container>
   );
 }
 
-export default SoporteTecnico;
+export default SituacionesPorEstado;

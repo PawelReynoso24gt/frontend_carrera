@@ -19,8 +19,25 @@ function Municipio() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [departamentos, setDepartamentos] = useState([]);
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchMunicipios();
     fetchDepartamentos();
   }, []);
@@ -34,6 +51,25 @@ function Municipio() {
     } catch (error) {
       console.error("Error fetching municipios:", error);
     }
+  };
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    const filtered = municipios.filter((municipio) =>
+      municipio.includes(value)
+    );
+    setFilteredMunicipios(filtered);
   };
 
   const fetchDepartamentos = async () => {
@@ -65,16 +101,6 @@ function Municipio() {
     } catch (error) {
       console.error("Error fetching inactive municipios:", error);
     }
-  };
-
-  const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
-
-    const filtered = municipios.filter((municipio) =>
-      municipio.municipio?.toLowerCase().includes(value)
-    );
-    setFilteredMunicipios(filtered);
   };
 
   const handleShowModal = (municipio = null) => {
@@ -243,7 +269,11 @@ function Municipio() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear municipio', 'No tienes permisos para crear municipio')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Municipio
           </Button>
@@ -333,7 +363,11 @@ function Municipio() {
                         fontSize: "20px",
                       }}
                       title="Editar"
-                      onClick={() => handleShowModal(municipio)}
+                      onClick={() => {
+                        if (checkPermission('Editar municipio', 'No tienes permisos para editar municipio')) {
+                          handleShowModal(municipio);
+                        }
+                      }}
                     />
 
                     {/* Botón de Activar/Inactivar */}
@@ -346,7 +380,11 @@ function Municipio() {
                           fontSize: "20px",
                         }}
                         title="Inactivar"
-                        onClick={() => toggleEstado(municipio.idMunicipio, municipio.estado)}
+                        onClick={() => {
+                          if (checkPermission('Desactivar municipio', 'No tienes permisos para desactivar municipio')) {
+                            toggleEstado(municipio.idMunicipio, municipio.estado);
+                          }
+                        }}
                       />
                     ) : (
                       <FaToggleOff
@@ -357,7 +395,11 @@ function Municipio() {
                           fontSize: "20px",
                         }}
                         title="Activar"
-                        onClick={() => toggleEstado(municipio.idMunicipio, municipio.estado)}
+                        onClick={() => {
+                          if (checkPermission('Activar municipio', 'No tienes permisos para activar municipio')) {
+                            toggleEstado(municipio.idMunicipio, municipio.estado);
+                          }
+                        }}
                       />
                     )}
                   </td>
@@ -444,6 +486,17 @@ function Municipio() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                 <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{permissionMessage}</Modal.Body>
+                  <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                 </Modal.Footer>
+              </Modal>
       </div>
     </>
   );

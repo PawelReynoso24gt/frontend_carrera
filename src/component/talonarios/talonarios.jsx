@@ -22,11 +22,37 @@ function Talonarios() {
   const [rifas, setRifas] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchTalonarios();
     fetchRifas();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchTalonarios = async () => {
     try {
@@ -104,9 +130,9 @@ function Talonarios() {
         name
       )
     ) {
-      const regex = /^[0-9]*$/; 
+      const regex = /^[0-9]*$/;
       if (!regex.test(value)) {
-        return; 
+        return;
       }
     }
 
@@ -250,7 +276,11 @@ function Talonarios() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={() => handleShowModal()}
+          onClick={() => {
+            if (checkPermission('Crear talonario', 'No tienes permisos para crear talonario')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Talonario
         </Button>
@@ -341,31 +371,43 @@ function Talonarios() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(talonario)}
+                    onClick={() => {
+                      if (checkPermission('Editar talonario', 'No tienes permisos para editar talonario')) {
+                        handleShowModal(talonario);
+                      }
+                    }}
                   />
                   {talonario.estado ? (
-                  <FaToggleOn
-                    style={{
-                      color: "#30c10c",
-                      cursor: "pointer",
-                      marginLeft: "10px",
-                      fontSize: "20px",
-                  }}
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(talonario.idTalonario, talonario.estado)}
-                   />
-                ) : (
-                 <FaToggleOff
-                   style={{
-                      color: "#e10f0f",
-                      cursor: "pointer",
-                      marginLeft: "10px",
-                      fontSize: "20px",
-                    }}
+                      onClick={() => {
+                        if (checkPermission('Desactivar talonario', 'No tienes permisos para desactivar talonario')) {
+                          toggleEstado(talonario.idTalonario, talonario.estado);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
                       title="Activar"
-                      onClick={() => toggleEstado(talonario.idTalonario, talonario.estado)}
-                  />
-               )}
+                      onClick={() => {
+                        if (checkPermission('Activar talonario', 'No tienes permisos para activar talonario')) {
+                          toggleEstado(talonario.idTalonario, talonario.estado);
+                        }
+                      }}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -468,6 +510,17 @@ function Talonarios() {
               </Button>
             </Form>
           </Modal.Body>
+        </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
         </Modal>
       </div>
     </>

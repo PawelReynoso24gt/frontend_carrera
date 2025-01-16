@@ -10,14 +10,6 @@ function Alarm() {
   useEffect(() => {
     const fetchNotifications = async () => {
       const personId = getUserDataFromToken(localStorage.getItem("token"))?.idPersona; // ! USO DE LA FUNCIÓN getUserDataFromToken
-    
-        if (!personId) {
-          setMensaje(
-            "No se encontró el ID de la sede en el almacenamiento local."
-          );
-          
-          return;
-        }
 
       try {
         const response = await axios.get(

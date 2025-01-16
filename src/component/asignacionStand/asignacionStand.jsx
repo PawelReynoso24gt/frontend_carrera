@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Alert, Spinner, Breadcrumb, Button } from "react-bootstrap";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 function AsignacionStands() {
   const [asignaciones, setAsignaciones] = useState([]);
@@ -15,6 +17,7 @@ function AsignacionStands() {
     try {
       const response = await axios.get("http://localhost:5000/asignacion_stands/voluntarios_por_stand");
       if (Array.isArray(response.data)) {
+        console.log("Asignaciones recibidas:", response.data); 
         setAsignaciones(response.data);
         setLoading(false);
       } else {
@@ -81,7 +84,7 @@ function AsignacionStands() {
       {/* Título y Breadcrumb */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-         .
+          .
         </h3>
         <Breadcrumb>
           <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
@@ -99,59 +102,59 @@ function AsignacionStands() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-          <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
-           <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
+        <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
+          <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
             <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Asignación de Voluntarios a Stands
-          </h3>
+              Asignación de Voluntarios a Stands
+            </h3>
+          </div>
+
+          {/* Botones de filtro */}
+          <div className="d-flex justify-content-center mb-4">
+            <Button
+              style={{
+                backgroundColor: "#007abf",
+                borderColor: "#007AC3",
+                padding: "5px 10px",
+                width: "100px",
+                marginRight: "10px",
+                fontWeight: "bold",
+                color: "#fff",
+              }}
+              onClick={fetchAsignaciones}
+            >
+              Todas
+            </Button>
+            <Button
+              style={{
+                backgroundColor: "#009B85",
+                borderColor: "#007AC3",
+                padding: "5px 10px",
+                width: "100px",
+                marginRight: "10px",
+                fontWeight: "bold",
+                color: "#fff",
+              }}
+              onClick={fetchAsignacionesActivas}
+            >
+              Activas
+            </Button>
+            <Button
+              style={{
+                backgroundColor: "#bf2200",
+                borderColor: "#007AC3",
+                padding: "5px 10px",
+                width: "100px",
+                fontWeight: "bold",
+                color: "#fff",
+              }}
+              onClick={fetchAsignacionesInactivas}
+            >
+              Inactivas
+            </Button>
+          </div>
+
         </div>
-
-         {/* Botones de filtro */}
-      <div className="d-flex justify-content-center mb-4">
-      <Button
-          style={{
-            backgroundColor: "#007abf",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchAsignaciones}
-        >
-          Todas
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchAsignacionesActivas}
-        >
-          Activas
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#bf2200",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchAsignacionesInactivas}
-        >
-          Inactivas
-        </Button>
-      </div>
-
-      </div>
         {asignaciones.length > 0 ? (
           asignaciones.map((stand) => (
             <div key={stand.standId} className="stand-group mb-4">
@@ -174,15 +177,13 @@ function AsignacionStands() {
                       <td>{voluntario.nombreVoluntario}</td>
                       <td>{voluntario.telefonoVoluntario}</td>
                       <td>
-                        {new Date(voluntario.horarioInicio).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        -{" "}
-                        {new Date(voluntario.horarioFinal).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                      {voluntario.horarioInicio
+    ? format(parseISO(`1970-01-01T${voluntario.horarioInicio}`), "hh:mm a")
+    : "Sin hora"}{" "}
+  -{" "}
+  {voluntario.horarioFinal
+    ? format(parseISO(`1970-01-01T${voluntario.horarioFinal}`), "hh:mm a")
+    : "Sin hora"}
                       </td>
                     </tr>
                   ))}

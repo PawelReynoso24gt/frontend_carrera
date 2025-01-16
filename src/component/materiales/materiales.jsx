@@ -16,10 +16,36 @@ function MaterialesComponent() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filter, setFilter] = useState('activos');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchActiveMateriales();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchActiveMateriales = async () => {
     try {
@@ -205,7 +231,11 @@ function MaterialesComponent() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={() => handleShowModal()}
+          onClick={() => {
+            if (checkPermission('Crear material', 'No tienes permisos para crear material')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Material
         </Button>
@@ -291,7 +321,11 @@ function MaterialesComponent() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(material)}
+                    onClick={() => {
+                      if (checkPermission('Editar material', 'No tienes permisos para editar material')) {
+                        handleShowModal(material);
+                      }
+                    }}
                   />
                   {material.estado ? (
                     <FaToggleOn
@@ -302,7 +336,11 @@ function MaterialesComponent() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleMaterialEstado(material.idMaterial, material.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar material', 'No tienes permisos para desactivar material')) {
+                          toggleMaterialEstado(material.idMaterial, material.estado)
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -313,7 +351,11 @@ function MaterialesComponent() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleMaterialEstado(material.idMaterial, material.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar material', 'No tienes permisos para activar material')) {
+                          toggleMaterialEstado(material.idMaterial, material.estado)
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -411,6 +453,17 @@ function MaterialesComponent() {
               </Button>
             </Form>
           </Modal.Body>
+        </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
         </Modal>
       </div>
     </>

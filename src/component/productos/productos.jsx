@@ -28,13 +28,39 @@ function Productos() {
   const [showValidationError, setShowValidationError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+      const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+      const [permissionMessage, setPermissionMessage] = useState('');
+      const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchProductos();
     fetchCategorias();
   }, []);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchProductos = async () => {
     try {
@@ -323,7 +349,11 @@ function Productos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear producto', 'No tienes permisos para crear producto')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Producto
           </Button>
@@ -427,7 +457,11 @@ function Productos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(producto)}
+                    onClick={() => {
+                      if (checkPermission('Editar producto', 'No tienes permisos para editar producto')) {
+                        handleShowModal(producto);
+                      }
+                    }}
                   />
                   {producto.estado ? (
                     <FaToggleOn
@@ -438,7 +472,11 @@ function Productos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(producto.idProducto, producto.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar producto', 'No tienes permisos para desactivar producto')) {
+                          toggleEstado(producto.idProducto, producto.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -449,7 +487,11 @@ function Productos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(producto.idProducto, producto.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar producto', 'No tienes permisos para activar producto')) {
+                          toggleEstado(producto.idProducto, producto.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -606,6 +648,17 @@ function Productos() {
             </Form>
           </Modal.Body>
         </Modal>
+           <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                         <Modal.Header closeButton>
+                          <Modal.Title>Permiso Denegado</Modal.Title>
+                          </Modal.Header>
+                          <Modal.Body>{permissionMessage}</Modal.Body>
+                          <Modal.Footer>
+                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                            Aceptar
+                          </Button>
+                         </Modal.Footer>
+                      </Modal>
       </div>
     </>
   );

@@ -27,14 +27,41 @@ function Rifas() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+
 
   // extraer el dato para idSede
   const sedeId = localStorage.getItem("sedeId");
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchRifas();
     fetchSedes();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   // Obtener el idPersona desde localStorage
       const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
@@ -96,25 +123,25 @@ function Rifas() {
     setNewRifa(
       rifa
         ? {
-            ...rifa,
-            fechaInicio: rifa.fechaInicio
+          ...rifa,
+          fechaInicio: rifa.fechaInicio
             ? format(parseISO(rifa.fechaInicio), "yyyy-MM-dd")
             : "",
-            fechaFin: rifa.fechaFin
+          fechaFin: rifa.fechaFin
             ? format(parseISO(rifa.fechaFin), "yyyy-MM-dd")
             : "",
-          }
+        }
         : {
-            nombreRifa: "",
-            descripcion: "",
-            precioBoleto: "",
-            fechaInicio: "",
-            fechaFin: "",
-            ventaTotal: "",
-            idSede: idSede || "",
-            estado: 1,
-          }
-    );    
+          nombreRifa: "",
+          descripcion: "",
+          precioBoleto: "",
+          fechaInicio: "",
+          fechaFin: "",
+          ventaTotal: "",
+          idSede: idSede || "",
+          estado: 1,
+        }
+    );
     setShowModal(true);
   };
 
@@ -146,7 +173,7 @@ function Rifas() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-     // Validar las fechas
+    // Validar las fechas
     if (newRifa.fechaInicio && newRifa.fechaFin && new Date(newRifa.fechaInicio) > new Date(newRifa.fechaFin)) {
       setAlertMessage("La fecha de inicio no puede ser mayor que la fecha de fin.");
       setShowAlert(true);
@@ -295,7 +322,11 @@ function Rifas() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear rifa', 'No tienes permisos para crear rifa')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Rifa
           </Button>
@@ -391,7 +422,11 @@ function Rifas() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(rifa)}
+                    onClick={() => {
+                      if (checkPermission('Editar rifa', 'No tienes permisos para editar rifa')) {
+                        handleShowModal(rifa);
+                      }
+                    }}
                   />
                   {rifa.estado ? (
                     <FaToggleOn
@@ -402,7 +437,11 @@ function Rifas() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar rifa', 'No tienes permisos para desactivar rifa')) {
+                          toggleEstado(rifa.idRifa, rifa.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -413,7 +452,11 @@ function Rifas() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(rifa.idRifa, rifa.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar rifa', 'No tienes permisos para activar rifa')) {
+                          toggleEstado(rifa.idRifa, rifa.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -529,6 +572,17 @@ function Rifas() {
               </Button>
             </Form>
           </Modal.Body>
+        </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
         </Modal>
       </div>
     </>

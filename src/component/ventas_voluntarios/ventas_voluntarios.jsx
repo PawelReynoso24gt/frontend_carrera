@@ -25,7 +25,7 @@ function Ventas() {
     venta: null,
     detalles: [],
     pagos: []
-  });  
+  });
   // temporal
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [newVenta, setNewVenta] = useState({
@@ -38,8 +38,25 @@ function Ventas() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchVentas();
     fetchTiposPagos();
     fetchTiposPublico();
@@ -77,7 +94,7 @@ function Ventas() {
       console.error("Error fetching voluntarios con productos asignados:", error);
       alert("Error al cargar los voluntarios con productos asignados.");
     }
-  };  
+  };
 
   const fetchTiposPagos = async () => {
     try {
@@ -86,6 +103,15 @@ function Ventas() {
     } catch (error) {
       console.error("Error fetching tipos pagos:", error);
     }
+  };
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
   };
 
   const fetchTiposPublico = async () => {
@@ -128,11 +154,11 @@ function Ventas() {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-  
+
     const filtered = ventas.filter((venta) =>
       venta.fechaVenta.toLowerCase().includes(value)
     );
-  
+
     setFilteredVentas(filtered);
     setCurrentPage(1);
   };  
@@ -160,15 +186,15 @@ function Ventas() {
             `http://localhost:5000/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`
         );
 
-        if (response.data && response.data.length > 0) {
-            setDetalleSeleccionado(response.data); // Guarda todos los detalles de la venta
-            const imagen = response.data[0]?.detalle_pago_ventas_voluntarios[0]?.imagenTransferencia || null;
-            setImagenBase64(imagen); // Establecer la imagen Base64
-        } else {
-            alert("No se encontraron detalles para esta venta.");
-            setDetalleSeleccionado(null);
-            setImagenBase64(null);
-        }
+      if (response.data && response.data.length > 0) {
+        setDetalleSeleccionado(response.data); // Guarda todos los detalles de la venta
+        const imagen = response.data[0]?.detalle_pago_ventas_voluntarios[0]?.imagenTransferencia || null;
+        setImagenBase64(imagen); // Establecer la imagen Base64
+      } else {
+        alert("No se encontraron detalles para esta venta.");
+        setDetalleSeleccionado(null);
+        setImagenBase64(null);
+      }
 
         setShowModal(true);
       } catch (error) {
@@ -188,8 +214,8 @@ function Ventas() {
     } catch (error) {
       console.error("Error fetching active ventas:", error);
     }
-  };  
-  
+  };
+
   const fetchInactiveVentas = async () => {
     try {
       const response = await axios.get("http://localhost:5000/ventas/voluntarios/inactivas");
@@ -198,18 +224,18 @@ function Ventas() {
     } catch (error) {
       console.error("Error fetching inactive ventas:", error);
     }
-  }; 
+  };
 
   const handleAddPago = () => {
     // Filtrar productos con cantidad > 0
-  const productosValidos = detallesVenta.filter((detalle) => detalle.cantidad > 0);
+    const productosValidos = detallesVenta.filter((detalle) => detalle.cantidad > 0);
 
-  if (productosValidos.length === 0) {
-    alert("No hay productos válidos para asociar al pago.");
-    return;
-  };
+    if (productosValidos.length === 0) {
+      alert("No hay productos válidos para asociar al pago.");
+      return;
+    };
 
-  // Crear un nuevo pago
+    // Crear un nuevo pago
     const nuevoPago = {
       idTipoPago: "", // Campo vacío para que el usuario lo seleccione
       monto: 0.0,
@@ -226,7 +252,7 @@ function Ventas() {
     nuevosPagos[index][field] = value;
     setTiposPagos(nuevosPagos);
   };
-  
+
   const handleFileUpload = (e, index) => {
     const file = e.target.files[0];
     if (file) {
@@ -238,12 +264,12 @@ function Ventas() {
       };
       reader.readAsDataURL(file);
     }
-  };  
+  };
 
   const handleCreateVenta = async () => {
     try {
-        // Validar y calcular los subtotales de los productos
-        const detallesVentaValidos = detallesVenta
+      // Validar y calcular los subtotales de los productos
+      const detallesVentaValidos = detallesVenta
         .filter((detalle) => detalle.cantidad > 0 && detalle.estado !== 0)
         .map((detalle) => {
             const subTotal = detalle.cantidad * detalle.precio;
@@ -270,20 +296,20 @@ function Ventas() {
             return;
         }
 
-        // Validar que cada pago tenga el formato correcto
-        const pagosValidados = tiposPagos.map((pago) => {
-            if (!pago.idTipoPago || pago.monto <= 0 || !pago.idProducto) {
-                throw new Error("Cada pago debe tener un tipo, monto válido y producto asociado.");
-            }
+      // Validar que cada pago tenga el formato correcto
+      const pagosValidados = tiposPagos.map((pago) => {
+        if (!pago.idTipoPago || pago.monto <= 0 || !pago.idProducto) {
+          throw new Error("Cada pago debe tener un tipo, monto válido y producto asociado.");
+        }
 
-            // Validar pagos que requieren correlativo e imagen
-            if ([1, 2, 4].includes(pago.idTipoPago)) { // Depósito, Transferencia, Cheque
-                if (!pago.correlativo || !pago.imagenTransferencia) {
-                    throw new Error(
-                        `El tipo de pago ${pago.idTipoPago} requiere correlativo e imagen.`
-                    );
-                }
-            }
+        // Validar pagos que requieren correlativo e imagen
+        if ([1, 2, 4].includes(pago.idTipoPago)) { // Depósito, Transferencia, Cheque
+          if (!pago.correlativo || !pago.imagenTransferencia) {
+            throw new Error(
+              `El tipo de pago ${pago.idTipoPago} requiere correlativo e imagen.`
+            );
+          }
+        }
 
             // Manejo de valores por defecto para tipos de pago
             const correlativo = pago.correlativo || "NA"; // Por defecto "NA"
@@ -471,7 +497,7 @@ function Ventas() {
     setDetallesVenta([]); // Limpia los detalles
     setTiposPagos([]); // Limpia los pagos
     setShowDetailsModal(true);
-  };  
+  };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
@@ -583,20 +609,24 @@ function Ventas() {
           {alertMessage}
         </Alert>
         <div className="d-flex justify-content-start align-items-center mb-3">
-        <Button
-          style={{
-            backgroundColor: "#007abf",
+          <Button
+            style={{
+              backgroundColor: "#007abf",
               borderColor: "#007AC3",
               padding: "5px 10px",
               width: "130px",
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
-          }}
-          onClick={handleCreateVentaClick}
-        >
-          Crear Venta
-        </Button>
+            }}
+            onClick={() => {
+              if (checkPermission('Crear venta voluntarios', 'No tienes permisos para crear venta voluntarios')) {
+                handleCreateVentaClick();
+              }
+            }}
+          >
+            Crear Venta
+          </Button>
           <Button
             style={{
               backgroundColor: "#009B85",
@@ -661,21 +691,31 @@ function Ventas() {
                     }}
                     title="Editar"
                     onClick={() => {
-                      handleLoadVentaForEdit(venta.idVenta); // Cargar la venta completa
-                      setShowDetailsModal(true); // Mostrar el modal
+                      if (checkPermission('Editar venta voluntarios', 'No tienes permisos para editar venta voluntarios')) {
+                        handleLoadVentaForEdit(venta.idVenta); // Cargar la venta completa
+                        setShowDetailsModal(true); // Mostrar el modal
+                      }
                     }}
                   />
                   {venta.estado ? (
                     <FaToggleOn
                       style={{ cursor: "pointer", color: "#30c10c", marginLeft: "10px", fontSize: "20px" }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(venta.idVenta, venta.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar venta voluntarios', 'No tienes permisos para desactivar venta voluntarios')) {
+                          toggleEstado(venta.idVenta, venta.estado)
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
                       style={{ cursor: "pointer", color: "#e10f0f", marginLeft: "10px", fontSize: "20px" }}
                       title="Activar"
-                      onClick={() => toggleEstado(venta.idVenta, venta.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar venta voluntarios', 'No tienes permisos para activar venta voluntarios')) {
+                          toggleEstado(venta.idVenta, venta.estado)
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -683,11 +723,11 @@ function Ventas() {
               );
             })) : (
               <tr>
-              <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
+                <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
                   No hay ventas disponibles.
-              </td>
+                </td>
               </tr>
-          )}
+            )}
           </tbody>
         </Table>
         {renderPagination()}
@@ -696,7 +736,7 @@ function Ventas() {
             <Modal.Title>Detalle de Venta</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-          {detalleSeleccionado ? (
+            {detalleSeleccionado ? (
               detalleSeleccionado.map((detalle, index) => (
                   <div key={index}>
                       <h5>Detalle #{index + 1}</h5>
@@ -706,75 +746,75 @@ function Ventas() {
                       <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
                       <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
 
-                      <h5>Pagos Asociados</h5>
-                      {detalle.detalle_pago_ventas_voluntarios && detalle.detalle_pago_ventas_voluntarios.length > 0 ? (
-                          detalle.detalle_pago_ventas_voluntarios.map((pago, idx) => (
-                              <div key={idx}>
-                                <p><strong>Tipo de Pago:</strong> {pago.tipo_pago?.tipo || "N/A"}</p>
-                                <p><strong>Monto:</strong> Q{pago.pago || "N/A"}</p>
-                                <p><strong>Correlativo:</strong> {pago.correlativo || "N/A"}</p>
-                                <p>
-                                  <strong>Comprobante:</strong>
-                                  {pago.imagenTransferencia === "efectivo" ? (
-                                      "Efectivo"
-                                  ) : (
-                                      <img
-                                          src={`data:image/png;base64,${pago.imagenTransferencia}`}
-                                          alt="Comprobante de Pago"
-                                          style={{ width: "100%", maxWidth: "150px", marginTop: "10px", borderRadius: "8px" }}
-                                      />
-                                    )}
-                                </p>
-                              </div>
-                          ))
-                      ) : (
-                          <p>No hay pagos asociados.</p>
-                      )}
+                  <h5>Pagos Asociados</h5>
+                  {detalle.detalle_pago_ventas_voluntarios && detalle.detalle_pago_ventas_voluntarios.length > 0 ? (
+                    detalle.detalle_pago_ventas_voluntarios.map((pago, idx) => (
+                      <div key={idx}>
+                        <p><strong>Tipo de Pago:</strong> {pago.tipo_pago?.tipo || "N/A"}</p>
+                        <p><strong>Monto:</strong> Q{pago.pago || "N/A"}</p>
+                        <p><strong>Correlativo:</strong> {pago.correlativo || "N/A"}</p>
+                        <p>
+                          <strong>Comprobante:</strong>
+                          {pago.imagenTransferencia === "efectivo" ? (
+                            "Efectivo"
+                          ) : (
+                            <img
+                              src={`data:image/png;base64,${pago.imagenTransferencia}`}
+                              alt="Comprobante de Pago"
+                              style={{ width: "100%", maxWidth: "150px", marginTop: "10px", borderRadius: "8px" }}
+                            />
+                          )}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No hay pagos asociados.</p>
+                  )}
 
-                      <h5>Información del Voluntario</h5>
-                      <p><strong>Nombre:</strong> {detalle.voluntario?.persona?.nombre || "N/A"}</p>
-                      <p><strong>Teléfono:</strong> {detalle.voluntario?.persona?.telefono || "N/A"}</p>
-                      <p><strong>Domicilio:</strong> {detalle.voluntario?.persona?.domicilio || "N/A"}</p>
-                      <p><strong>Código QR:</strong> {detalle.voluntario?.codigoQR || "N/A"}</p>
-                      <hr />
-                  </div>
-                  ))
-              ) : (
-                  <p>No se encontraron detalles.</p>
-              )}
+                  <h5>Información del Voluntario</h5>
+                  <p><strong>Nombre:</strong> {detalle.voluntario?.persona?.nombre || "N/A"}</p>
+                  <p><strong>Teléfono:</strong> {detalle.voluntario?.persona?.telefono || "N/A"}</p>
+                  <p><strong>Domicilio:</strong> {detalle.voluntario?.persona?.domicilio || "N/A"}</p>
+                  <p><strong>Código QR:</strong> {detalle.voluntario?.codigoQR || "N/A"}</p>
+                  <hr />
+                </div>
+              ))
+            ) : (
+              <p>No se encontraron detalles.</p>
+            )}
           </Modal.Body>
         </Modal>
         <Modal show={showPreviewModal} onHide={() => setShowPreviewModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Vista Previa de los Datos</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
-            {JSON.stringify(
-              {
-                venta: { ...newVenta, totalVenta: subtotal + (newVenta.donacion || 0) },
-                detalles: detallesVenta
-                  .filter((detalle) => detalle.cantidad > 0)
-                  .map((detalle) => ({
-                    ...detalle,
-                    subTotal: detalle.cantidad * detalle.precio,
-                    donacion: detalle.donacion || newVenta.donacion,
+          <Modal.Header closeButton>
+            <Modal.Title>Vista Previa de los Datos</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+              {JSON.stringify(
+                {
+                  venta: { ...newVenta, totalVenta: subtotal + (newVenta.donacion || 0) },
+                  detalles: detallesVenta
+                    .filter((detalle) => detalle.cantidad > 0)
+                    .map((detalle) => ({
+                      ...detalle,
+                      subTotal: detalle.cantidad * detalle.precio,
+                      donacion: detalle.donacion || newVenta.donacion,
+                    })),
+                  pagos: tiposPagos.map((pago) => ({
+                    ...pago,
+                    correlativo: pago.correlativo || "NA",
+                    imagenTransferencia: pago.imagenTransferencia || "efectivo",
                   })),
-                pagos: tiposPagos.map((pago) => ({
-                  ...pago,
-                  correlativo: pago.correlativo || "NA",
-                  imagenTransferencia: pago.imagenTransferencia || "efectivo",
-                })),
-              },
-              null,
-              2
-            )}
-          </pre>
-        </Modal.Body>
-        <Modal.Footer>
-    <Button onClick={() => setShowPreviewModal(false)}>Cerrar</Button>
-        </Modal.Footer>
-      </Modal>
+                },
+                null,
+                2
+              )}
+            </pre>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={() => setShowPreviewModal(false)}>Cerrar</Button>
+          </Modal.Footer>
+        </Modal>
         <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)}>
           <Modal.Header closeButton>
           <Modal.Title>

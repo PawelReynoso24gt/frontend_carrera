@@ -10,8 +10,25 @@ function ReportePlayeras() {
   const [reportes, setReportes] = useState([]);
   const [alerta, setAlerta] = useState("");
   const [revisor, setRevisor] = useState("");
+  const [nombreUsuario, setNombreUsuario] = useState("");
+  const [cargo, setCargo] = useState("");
 
   useEffect(() => {
+    const fetchLoggedUser = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/usuarios/me", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Asegúrate de tener el token en localStorage
+          },
+        });
+        setNombreUsuario(response.data.nombre);
+      } catch (error) {
+        console.error("Error al obtener el usuario logueado:", error);
+        setNombreUsuario("Sin nombre");
+      }
+    };
+
+
     const fetchReportes = async () => {
       try {
         const fechaInicioFormato = fechaInicio.split("-").reverse().join("-"); // Convierte de DD-MM-YYYY a YYYY-MM-DD
@@ -27,45 +44,48 @@ function ReportePlayeras() {
       }
     };
 
+    fetchLoggedUser();
     if (fechaInicio && fechaFin) {
       fetchReportes();
     }
   }, [fechaInicio, fechaFin]);
 
-  const subtotalesPorTallaAsignadas = ["10", "12", "14", "16", "S", "M", "L", "XL"].reduce(
-    (totales, talla) => {
-      totales[talla] = reportes.reduce(
-        (sum, stand) => sum + (stand.playerasAsignadas[talla] || 0),
-        0
-      );
-      return totales;
-    },
-    {}
-  );
-  
-  const subtotalesPorTallaVendidas = ["10", "12", "14", "16", "S", "M", "L", "XL"].reduce(
-    (totales, talla) => {
-      totales[talla] = reportes.reduce(
-        (sum, stand) => sum + (stand.playerasVendidas[talla] || 0),
-        0
-      );
-      return totales;
-    },
-    {}
-  );
 
   const totalGeneral = {
     totalAsignadas: reportes.reduce((sum, stand) => {
-      return sum + Object.values(stand.playerasAsignadas || {}).reduce((suma, cantidad) => suma + cantidad, 0);
+      return (
+        sum +
+        Object.values(stand.productosAsignados || {}).reduce(
+          (subtotal, tallas) =>
+            subtotal +
+            Object.values(tallas).reduce((sumTallas, cantidad) => sumTallas + cantidad, 0),
+          0
+        )
+      );
     }, 0),
     totalVendidas: reportes.reduce((sum, stand) => {
-      return sum + Object.values(stand.playerasVendidas || {}).reduce((suma, cantidad) => suma + cantidad, 0);
+      return (
+        sum +
+        Object.values(stand.productosVendidos || {}).reduce(
+          (subtotal, tallas) =>
+            subtotal +
+            Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + detalles.cantidad, 0),
+          0
+        )
+      );
     }, 0),
     totalRecaudado: reportes.reduce((sum, stand) => {
-      return sum + Object.keys(stand.subtotalesVendidos || {}).reduce((total, talla) => total + (stand.subtotalesVendidos[talla] || 0), 0);
+      return (
+        sum +
+        Object.values(stand.productosVendidos || {}).reduce(
+          (subtotal, tallas) =>
+            subtotal +
+            Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + detalles.subTotal, 0),
+          0
+        )
+      );
     }, 0),
   };
-
 
   const generarPDF = () => {
     const doc = new jsPDF();
@@ -81,6 +101,7 @@ function ReportePlayeras() {
     const fechaInicioFormatted = fechaInicio.split("-").reverse().join("/");
     const fechaFinFormatted = fechaFin.split("-").reverse().join("/");
     doc.text(`Desde: ${fechaInicioFormatted}   Hasta: ${fechaFinFormatted}`, 75, 35);
+    doc.text(`Generado por: ${nombreUsuario}`, 75, 40);
 
     // Línea de separación
     doc.setLineWidth(0.5);
@@ -91,23 +112,27 @@ function ReportePlayeras() {
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
-    doc.text("Playeras Asignadas por Stand", 105, 56, { align: "center" });
+    doc.text("Productos Asignados por Stand", 105, 56, { align: "center" });
 
-    // Tabla de playeras asignadas
+    // Tabla de productos asignados
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "bold");
+    doc.text("Productos Asignados por Stand", 105, 56, { align: "center" });
+
     doc.autoTable({
       startY: 60,
-      head: [["Stand", "Talla 10", "Talla 12", "Talla 14", "Talla 16", "Talla S", "Talla M", "Talla L", "Talla XL"]],
-      body: reportes.map((stand) => [
-        stand.nombreStand,
-        stand.playerasAsignadas["10"] || 0,
-        stand.playerasAsignadas["12"] || 0,
-        stand.playerasAsignadas["14"] || 0,
-        stand.playerasAsignadas["16"] || 0,
-        stand.playerasAsignadas.S || 0,
-        stand.playerasAsignadas.M || 0,
-        stand.playerasAsignadas.L || 0,
-        stand.playerasAsignadas.XL || 0,
-      ]),
+      head: [["Stand", "Producto", "Talla", "Cantidad Asignada"]],
+      body: reportes.flatMap((stand) =>
+        Object.entries(stand.productosAsignados || {}).flatMap(([producto, tallas]) =>
+          Object.entries(tallas).map(([talla, cantidad]) => [
+            stand.nombreStand,
+            producto,
+            talla,
+            cantidad,
+          ])
+        )
+      ),
       styles: { fontSize: 10, cellPadding: 2 },
       headStyles: { fillColor: [0, 122, 195], textColor: 255 },
       theme: "grid",
@@ -118,79 +143,93 @@ function ReportePlayeras() {
     doc.setDrawColor("#007AC3");
     doc.line(10, doc.lastAutoTable.finalY + 10, 200, doc.lastAutoTable.finalY + 10);
 
-    // Crear la tabla de playeras vendidas
+    // Tabla de productos vendidos
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
-    doc.text("Playeras Vendidas por Stand", 105, doc.lastAutoTable.finalY + 15, { align: "center" });
+    doc.text("Productos Vendidos por Stand", 105, doc.lastAutoTable.finalY + 15, { align: "center" });
 
-    // Tabla de playeras vendidas
     doc.autoTable({
       startY: doc.lastAutoTable.finalY + 20,
-      head: [["Stand", "Talla 10", "Talla 12", "Talla 14", "Talla 16", "Talla S", "Talla M", "Talla L", "Talla XL", "Total Vendido", "Total Recaudado"]],
-      body: reportes.map((stand) => {
-        const totalVendidas = Object.values(stand.playerasVendidas || {}).reduce((sum, cantidad) => sum + cantidad, 0);
-        const totalRecaudado = Object.keys(stand.subtotalesVendidos || {}).reduce((sum, talla) => sum + (stand.subtotalesVendidos[talla] || 0), 0);
-
-        return [
-          stand.nombreStand,
-          stand.playerasVendidas["10"] || 0,
-          stand.playerasVendidas["12"] || 0,
-          stand.playerasVendidas["14"] || 0,
-          stand.playerasVendidas["16"] || 0,
-          stand.playerasVendidas.S || 0,
-          stand.playerasVendidas.M || 0,
-          stand.playerasVendidas.L || 0,
-          stand.playerasVendidas.XL || 0,
-          totalVendidas,
-         `Q${totalRecaudado.toFixed(2)}`,
-        ];
-      }),
+      head: [["Stand", "Producto", "Talla", "Cantidad Vendida", "Subtotal"]],
+      body: reportes.flatMap((stand) =>
+        Object.entries(stand.productosVendidos || {}).flatMap(([producto, tallas]) =>
+          Object.entries(tallas).map(([talla, detalles]) => [
+            stand.nombreStand,
+            producto,
+            talla,
+            detalles.cantidad,
+            `Q${(detalles.subTotal || 0).toFixed(2)}`,
+          ])
+        )
+      ),
       styles: { fontSize: 10, cellPadding: 2 },
       headStyles: { fillColor: [0, 122, 195], textColor: 255 },
       theme: "grid",
     });
 
-    let startY = doc.lastAutoTable.finalY + 15; // Punto inicial después de la última tabla
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Subtotales y Métricas", 105, startY, { align: "center" });
-    startY += 10;
+    let startY = doc.lastAutoTable.finalY + 10; // Punto inicial después de la tabla
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Total playeras asignadas y vendidas", 105, startY, { align: "center" });
-    startY += 10; // Incremento para dejar espacio después del título
-    
-    // Agregar la tabla de totales generales de playeras asignadas y vendidas
-    doc.setFontSize(12);
-    doc.autoTable({
-      startY: startY,
-      head: [["Talla", "Asignadas", "Vendidas"]],
-      body: ["10", "12", "14", "16", "S", "M", "L", "XL"].map((talla) => [
-        talla,
-        subtotalesPorTallaAsignadas[talla] || 0,
-        subtotalesPorTallaVendidas[talla] || 0,
-      ]),
-      styles: { fontSize: 10, cellPadding: 2 },
-      headStyles: { fillColor: [0, 122, 195], textColor: 255 },
-      theme: "grid",
+    doc.text("RESUMEN", 14, startY);
+
+    let totalRegistros = 0;
+    const totalPorStand = {};
+    let totalRecaudadoGeneral = 0;
+    const totalRecaudadoPorStand = {};
+
+    reportes.forEach((stand) => {
+        const totalVendidasStand = Object.values(stand.productosVendidos || {}).reduce(
+            (sum, tallas) =>
+                sum + Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + detalles.cantidad, 0),
+            0
+        );
+
+        totalPorStand[stand.nombreStand] = totalVendidasStand;
+        totalRegistros += totalVendidasStand;
+    });
+
+    reportes.forEach((stand) => {
+      const totalRecaudadoStand = Object.values(stand.productosVendidos || {}).reduce(
+          (sum, tallas) =>
+              sum + Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + (detalles.subTotal || 0), 0),
+          0
+      );
+
+      totalRecaudadoPorStand[stand.nombreStand] = totalRecaudadoStand;
+      totalRecaudadoGeneral += totalRecaudadoStand;
+  });
+
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`• Total Productos Vendidos: ${totalRegistros}`, 14, startY + 10);
+
+    Object.entries(totalPorStand).forEach(([stand, total], index) => {
+        doc.text(`• ${stand}: ${total} productos vendidos`, 14, startY + 20 + index * 10);
+    });
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`• Total Recaudado General: Q${totalRecaudadoGeneral.toFixed(2)}`, 14, startY + 40);
+
+    Object.entries(totalRecaudadoPorStand).forEach(([stand, total], index) => {
+        doc.text(`• ${stand}: Q${total.toFixed(2)}`, 14, startY + 50 + index * 10);
     });
     
-    startY = doc.lastAutoTable.finalY + 10; // Punto inicial después de la tabla
-    
-    // Totales generales
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Total Playeras Asignadas: ${totalGeneral.totalAsignadas}`, 105, startY, { align: "center" });
-    doc.text(`Total Playeras Vendidas: ${totalGeneral.totalVendidas}`, 105, startY + 6, { align: "center" });
-    doc.text(`Total Recaudado: Q${totalGeneral.totalRecaudado.toFixed(2)}`, 105, startY + 12, { align: "center" });
-    
-    const firmaStartY = doc.lastAutoTable.finalY + 35; // Calcula un espacio fijo después de la última tabla
+    // Espacio para la firma
+    const firmaStartY = doc.lastAutoTable.finalY + 90;
+    if (firmaStartY + 30 > doc.internal.pageSize.height) {
+        doc.addPage();
+        startY = 10;
+    }
+
+   
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.text("_______________________________", 105, firmaStartY, { align: "center" });
     doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
-      
+    doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
     // Guardar el documento
     doc.save(`Reporte_Playeras_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
   };
@@ -207,7 +246,7 @@ function ReportePlayeras() {
     >
       <div className="row mb-3">
         <div className="col text-center">
-          <h3 style={{ fontWeight: "bold", color: "#333" }}>Reporte de Playeras por Stand</h3>
+          <h3 style={{ fontWeight: "bold", color: "#333" }}>Reporte de ventas por Stand</h3>
         </div>
       </div>
 
@@ -237,19 +276,33 @@ function ReportePlayeras() {
           </div>
         </div>
         <div className="text-center mb-4">
-        <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Revisado por:</label>
-        <input
-          type="text"
-          className="form-control mx-auto"
-          value={revisor}
-          onChange={(e) => setRevisor(e.target.value)}
-          placeholder="Nombre del revisor"
-          style={{
-            width: "250px",
-            textAlign: "center",
-          }}
-        />
-       </div>
+          <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Revisado por:</label>
+          <input
+            type="text"
+            className="form-control mx-auto"
+            value={revisor}
+            onChange={(e) => setRevisor(e.target.value)}
+            placeholder="Nombre del revisor"
+            style={{
+              width: "250px",
+              textAlign: "center",
+            }}
+          />
+        </div>
+        <div className="text-center mb-4">
+          <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Cargo:</label>
+          <input
+            type="text"
+            className="form-control mx-auto"
+            value={cargo}
+            onChange={(e) => setCargo(e.target.value)}
+            placeholder="Cargo"
+            style={{
+              width: "250px",
+              textAlign: "center",
+            }}
+          />
+        </div>
       </div>
 
       <div className="text-center mb-4">
@@ -269,7 +322,7 @@ function ReportePlayeras() {
         </button>
       </div>
 
-      <h5>Playeras Asignadas por Stand</h5>
+      <h5>Productos Asignados por Stand</h5>
       <table
         className="table mt-4"
         style={{
@@ -280,34 +333,28 @@ function ReportePlayeras() {
         <thead className="thead-dark">
           <tr>
             <th>Stand</th>
-            <th>Talla 10</th>
-            <th>Talla 12</th>
-            <th>Talla 14</th>
-            <th>Talla 16</th>
-            <th>Talla S</th>
-            <th>Talla M</th>
-            <th>Talla L</th>
-            <th>Talla XL</th>
+            <th>Producto</th>
+            <th>Talla</th>
+            <th>Cantidad Asignada</th>
           </tr>
         </thead>
         <tbody>
-          {reportes.map((stand, index) => (
-            <tr key={index}>
-              <td>{stand.nombreStand}</td>
-              <td>{stand.playerasAsignadas["10"] || 0}</td>
-              <td>{stand.playerasAsignadas["12"] || 0}</td>
-              <td>{stand.playerasAsignadas["14"] || 0}</td>
-              <td>{stand.playerasAsignadas["16"] || 0}</td>
-              <td>{stand.playerasAsignadas.S || 0}</td>
-              <td>{stand.playerasAsignadas.M || 0}</td>
-              <td>{stand.playerasAsignadas.L || 0}</td>
-              <td>{stand.playerasAsignadas.XL || 0}</td>
-            </tr>
-          ))}
+          {reportes.flatMap((stand) =>
+            Object.entries(stand.productosAsignados || {}).flatMap(([producto, tallas]) =>
+              Object.entries(tallas).map(([talla, cantidad]) => (
+                <tr key={`${stand.nombreStand}-${producto}-${talla}`}>
+                  <td>{stand.nombreStand}</td>
+                  <td>{producto}</td>
+                  <td>{talla}</td>
+                  <td>{cantidad}</td>
+                </tr>
+              ))
+            )
+          )}
         </tbody>
       </table>
 
-      <h5>Playeras Vendidas por Stand</h5>
+      <h5>Productos Vendidos por Stand</h5>
       <table
         className="table mt-4"
         style={{
@@ -318,39 +365,26 @@ function ReportePlayeras() {
         <thead className="thead-dark">
           <tr>
             <th>Stand</th>
-            <th>Talla 10</th>
-            <th>Talla 12</th>
-            <th>Talla 14</th>
-            <th>Talla 16</th>
-            <th>Talla S</th>
-            <th>Talla M</th>
-            <th>Talla L</th>
-            <th>Talla XL</th>
-            <th>Total Vendido</th>
-            <th>Total Recaudado</th>
+            <th>Producto</th>
+            <th>Talla</th>
+            <th>Cantidad Vendida</th>
+            <th>Subtotal</th>
           </tr>
         </thead>
         <tbody>
-          {reportes.map((stand, index) => {
-            const totalVendidas = Object.values(stand.playerasVendidas || {}).reduce((sum, cantidad) => sum + cantidad, 0);
-            const totalRecaudado = Object.keys(stand.subtotalesVendidos || {}).reduce((sum, talla) => sum + (stand.subtotalesVendidos[talla] || 0), 0);
-            
-            return (
-              <tr key={index}>
-                <td>{stand.nombreStand}</td>
-                <td>{stand.playerasVendidas["10"] || 0}</td>
-                <td>{stand.playerasVendidas["12"] || 0}</td>
-                <td>{stand.playerasVendidas["14"] || 0}</td>
-                <td>{stand.playerasVendidas["16"] || 0}</td>
-                <td>{stand.playerasVendidas.S || 0}</td>
-                <td>{stand.playerasVendidas.M || 0}</td>
-                <td>{stand.playerasVendidas.L || 0}</td>
-                <td>{stand.playerasVendidas.XL || 0}</td>
-                <td>{totalVendidas}</td>
-                <td>{totalRecaudado}</td>
-              </tr>
-            );
-          })}
+          {reportes.flatMap((stand) =>
+            Object.entries(stand.productosVendidos || {}).flatMap(([producto, tallas]) =>
+              Object.entries(tallas).map(([talla, detalles]) => (
+                <tr key={`${stand.nombreStand}-${producto}-${talla}`}>
+                  <td>{stand.nombreStand}</td>
+                  <td>{producto}</td>
+                  <td>{talla}</td>
+                  <td>{detalles.cantidad}</td>
+                  <td>Q{(detalles.subTotal || 0).toFixed(2)}</td>
+                </tr>
+              ))
+            )
+          )}
         </tbody>
       </table>
     </div>

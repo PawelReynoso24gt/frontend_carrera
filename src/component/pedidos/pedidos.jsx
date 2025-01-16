@@ -10,7 +10,10 @@ import {
   FormControl,
   Pagination,
 } from "react-bootstrap";
-import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
+import { getUserDataFromToken } from "../../utils/jwtUtils";
 
 // Utilidad para formatear fechas
 const formatDate = (date) => {
@@ -37,12 +40,80 @@ function Pedidos() {
   const [usuarios, setUsuarios] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [detallesProductos, setDetallesProductos] = useState([]);
+  const [showDetalleModal, setShowDetalleModal] = useState(false);
+  const [detallePedido, setDetallePedido] = useState(null);
+  const [productos, setProductos] = useState([]);
+
+  const idUsuario = getUserDataFromToken().idUsuario;
+
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchPedidos();
     fetchSedes();
     fetchUsuarios();
+    fetchProductos();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
+
+  const handleAddDetalle = () => {
+    setDetallesProductos([...detallesProductos, { idProducto: "", cantidad: "" }]);
+  };
+
+  const handleDetalleChange = (index, field, value) => {
+    const nuevosDetalles = [...detallesProductos];
+    nuevosDetalles[index][field] = value;
+    setDetallesProductos(nuevosDetalles);
+  };
+
+  const handleRemoveDetalle = (index) => {
+    setDetallesProductos(detallesProductos.filter((_, i) => i !== index));
+  };
+
+  const fetchDetallePedido = async (idPedido) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/detalle_pedido/${idPedido}`);
+      setDetallePedido(response.data.pedido);
+      setShowDetalleModal(true);
+    } catch (error) {
+      console.error("Error fetching pedido details:", error);
+    }
+  };
+
+  const fetchProductos = async () => {
+    try {
+        const response = await axios.get("http://localhost:5000/productos");
+        setProductos(response.data);
+    } catch (error) {
+        console.error("Error fetching productos:", error);
+    }
+};
+
 
   const fetchPedidos = async () => {
     try {
@@ -51,6 +122,26 @@ function Pedidos() {
       setFilteredPedidos(response.data);
     } catch (error) {
       console.error("Error fetching pedidos:", error);
+    }
+  };
+
+  const fetchActivePedidos = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/pedidos/activas");
+      setPedidos(response.data);
+      setFilteredPedidos(response.data);
+    } catch (error) {
+      console.error("Error fetching active pedidos:", error);
+    }
+  };
+
+  const fetchInactivePedidos = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/pedidos/inactivas");
+      setPedidos(response.data);
+      setFilteredPedidos(response.data);
+    } catch (error) {
+      console.error("Error fetching inactive pedidos:", error);
     }
   };
 
@@ -113,29 +204,43 @@ function Pedidos() {
     setNewPedido({ ...newPedido, [name]: value });
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const regexDescripcion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
-    if (!regexDescripcion.test(newPedido.descripcion)) {
-      setAlertMessage(
-        "La descripción solo debe contener letras, números, espacios y los signos permitidos (.,-)."
-      );
-      setShowAlert(true);
-      return;
-    }
+    const pedidoConDetalle = {
+      ...newPedido,
+      detalles: detallesProductos,
+    };
 
     try {
       if (editingPedido) {
         await axios.put(
-          `http://localhost:5000/pedidos/${editingPedido.idPedido}`,
-          newPedido
+          `http://localhost:5000/pedidosCompletos/${editingPedido.idPedido}`,
+          pedidoConDetalle
         );
         setAlertMessage("Pedido actualizado con éxito");
+        logBitacora(`Actualizó el pedido #${editingPedido.idPedido}`, 14);
       } else {
-        await axios.post("http://localhost:5000/pedidos", newPedido);
+        await axios.post("http://localhost:5000/pedidosCompletos", pedidoConDetalle);
         setAlertMessage("Pedido creado con éxito");
+        logBitacora("Creó un nuevo pedido", 10);
       }
+
       fetchPedidos();
       setShowAlert(true);
       handleCloseModal();
@@ -260,7 +365,11 @@ function Pedidos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear pedido', 'No tienes permisos para crear pedido')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Pedido
           </Button>
@@ -274,7 +383,7 @@ function Pedidos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchPedidos}
+            onClick={fetchActivePedidos}
           >
             Activos
           </Button>
@@ -287,7 +396,7 @@ function Pedidos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={fetchPedidos}
+            onClick={fetchInactivePedidos}
           >
             Inactivos
           </Button>
@@ -333,7 +442,7 @@ function Pedidos() {
             {currentPedidos.map((pedido) => (
               <tr key={pedido.idPedido}>
                 <td style={{ textAlign: "center" }}>{pedido.idPedido}</td>
-                <td style={{ textAlign: "center" }}>{formatDate(pedido.fecha)}</td>
+                <td style={{ textAlign: "center" }}>{formatDate(pedido.fecha) ? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</td>
                 <td style={{ textAlign: "center" }}>{pedido.descripcion}</td>
                 <td style={{ textAlign: "center" }}>
                   {sedes.find((sede) => sede.idSede === pedido.idSede)?.nombreSede ||
@@ -347,6 +456,17 @@ function Pedidos() {
                   {pedido.estado === 1 ? "Activo" : "Inactivo"}
                 </td>
                 <td style={{ textAlign: "center" }}>
+                  <FaEye
+                    style={{
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
+                    }}
+                    title="Ver Detalles"
+                    onClick={() => fetchDetallePedido(pedido.idPedido)}
+                  />
+
                   <FaPencilAlt
                     style={{
                       color: "#007AC3",
@@ -355,7 +475,11 @@ function Pedidos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(pedido)}
+                    onClick={() => {
+                      if (checkPermission('Editar pedido', 'No tienes permisos para editar pedido')) {
+                        handleShowModal(pedido);
+                      }
+                    }}
                   />
                   {pedido.estado === 1 ? (
                     <FaToggleOn
@@ -366,7 +490,11 @@ function Pedidos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(pedido.idPedido, pedido.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar pedido', 'No tienes permisos para desactivar pedido')) {
+                          toggleEstado(pedido.idPedido, pedido.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -377,7 +505,11 @@ function Pedidos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(pedido.idPedido, pedido.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar pedido', 'No tienes permisos para activar pedido')) {
+                          toggleEstado(pedido.idPedido, pedido.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -453,6 +585,51 @@ function Pedidos() {
                   ))}
                 </Form.Control>
               </Form.Group>
+              <hr />
+              <h5>Detalles de Productos</h5>
+              {detallesProductos.map((detalle, index) => (
+                <div key={index} className="mb-3">
+                  <Form.Group controlId={`idProducto-${index}`}>
+                    <Form.Label>Producto</Form.Label>
+                    <Form.Control
+                      as="select"
+                      value={detalle.idProducto}
+                      onChange={(e) => handleDetalleChange(index, "idProducto", e.target.value)}
+                      required
+                    >
+                      <option value="">Seleccionar Producto</option>
+                      {productos.map((producto) => (
+                        <option key={producto.idProducto} value={producto.idProducto}>
+                          {producto.nombreProducto}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                  <Form.Group controlId={`cantidad-${index}`}>
+                    <Form.Label>Cantidad</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="1"
+                      value={detalle.cantidad}
+                      onChange={(e) => handleDetalleChange(index, "cantidad", e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleRemoveDetalle(index)}
+                    className="mt-2"
+                  >
+                    Eliminar Detalle
+                  </Button>
+                  <hr />
+                </div>
+              ))}
+
+              <Button variant="secondary" onClick={handleAddDetalle} className="mb-3">
+                Agregar Detalle
+              </Button>
+
               <Button
                 style={{
                   backgroundColor: "#007AC3",
@@ -468,6 +645,49 @@ function Pedidos() {
               </Button>
             </Form>
           </Modal.Body>
+        </Modal>
+
+        <Modal show={showDetalleModal} onHide={() => setShowDetalleModal(false)}>
+    <Modal.Header closeButton>
+        <Modal.Title>Detalle del Pedido</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+        {detallePedido ? (
+            <div>
+                <p><strong>Fecha:</strong> {detallePedido.fecha ? format(parseISO(detallePedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</p>
+                <p><strong>Descripción:</strong> {detallePedido.descripcion}</p>
+                <p><strong>Estado:</strong> {detallePedido.estado === 1 ? "Activo" : "Inactivo"}</p>
+                <p><strong>Detalles:</strong></p>
+                <ul>
+                    {detallePedido.detalle_pedidos.map((detalle) => (
+                        <li key={detalle.idDetallePedido}>
+                            Producto: {detalle.producto.nombreProducto} | Cantidad: {detalle.cantidad}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        ) : (
+            <p>Cargando detalles...</p>
+        )}
+    </Modal.Body>
+    <Modal.Footer>
+        <Button variant="secondary" onClick={() => setShowDetalleModal(false)}>
+            Cerrar
+        </Button>
+    </Modal.Footer>
+</Modal>
+
+        
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
         </Modal>
       </div>
     </>

@@ -3,9 +3,7 @@ import axios from "axios";
 
 function ActivitySection({ className }) {
   const [asistencias, setAsistencias] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
-  const [personas, setPersonas] = useState([]);
-  const [empleadoDestacado, setEmpleadoDestacado] = useState(null);
+  const [voluntarioDestacado, setVoluntarioDestacado] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -13,81 +11,21 @@ function ActivitySection({ className }) {
 
   const fetchData = async () => {
     try {
-      const [asistenciasResponse, empleadosResponse, personasResponse] =
-        await Promise.all([
-          axios.get("http://localhost:5000/asistencia_eventos"),
-          axios.get("http://localhost:5000/empleados"),
-          axios.get("http://localhost:5000/personas"),
-        ]);
+      const [asistenciasResponse, voluntarioDelMesResponse] = await Promise.all([
+        axios.get("http://localhost:5000/asistencia_eventos"),
+        axios.get("http://localhost:5000/voluntarioDelMes"),
+      ]);
 
       const asistenciasData = asistenciasResponse.data || [];
-      const empleadosData = empleadosResponse.data || [];
-      const personasData = personasResponse.data || [];
+      const voluntarioDelMesData = voluntarioDelMesResponse.data || {};
 
       setAsistencias(asistenciasData);
-      setEmpleados(empleadosData);
-      setPersonas(personasData);
-
-      calcularEmpleadoDestacado(asistenciasData, empleadosData, personasData);
+      setVoluntarioDestacado(voluntarioDelMesData);
     } catch (error) {
       console.error("Error fetching data:", error);
       setAsistencias([]);
-      setEmpleados([]);
-      setPersonas([]);
+      setVoluntarioDestacado(null);
     }
-  };
-
-  const calcularEmpleadoDestacado = (asistenciasData, empleadosData, personasData) => {
-    const asistenciaPorEmpleado = {};
-
-    asistenciasData.forEach((asistencia) => {
-      const key = `${asistencia.idEvento}-${asistencia.idEmpleado}`;
-      asistenciaPorEmpleado[key] = (asistenciaPorEmpleado[key] || 0) + 1;
-    });
-
-    let maxAsistencias = 0;
-    let destacado = null;
-
-    Object.keys(asistenciaPorEmpleado).forEach((key) => {
-      const [idEvento, idEmpleado] = key.split("-");
-      const asistencias = asistenciaPorEmpleado[key];
-
-      if (asistencias > maxAsistencias) {
-        maxAsistencias = asistencias;
-        destacado = { idEvento, idEmpleado: parseInt(idEmpleado), asistencias };
-      }
-    });
-
-    if (destacado) {
-      const empleado = empleadosData.find(
-        (emp) => emp.idEmpleado === destacado.idEmpleado
-      );
-
-      if (empleado) {
-        const persona = personasData.find(
-          (pers) => pers.idPersona === empleado.idPersona
-        );
-
-        destacado.nombreEmpleado = persona ? persona.nombre : "Desconocido";
-      } else {
-        destacado.nombreEmpleado = "Desconocido";
-      }
-    }
-
-    setEmpleadoDestacado(destacado);
-  };
-
-  const obtenerNombreEmpleado = (idEmpleado) => {
-    const empleado = empleados.find(
-      (empleado) => empleado.idEmpleado === idEmpleado
-    );
-    if (empleado) {
-      const persona = personas.find(
-        (persona) => persona.idPersona === empleado.idPersona
-      );
-      return persona ? persona.nombre : "Desconocido";
-    }
-    return "Desconocido";
   };
 
   const styles = {
@@ -138,17 +76,21 @@ function ActivitySection({ className }) {
       month: "2-digit",
       year: "numeric",
     });
+
   };
+
 
   return (
     <div style={styles.container}>
-      <h3 style={styles.heading}>ASISTENCIA DE PARTICIPANTES</h3>
+      <h3 style={styles.heading}>ASISTENCIAS Y VOLUNTARIO DEL MES</h3>
 
-      {empleadoDestacado && (
-        <div style={styles.alert}>
-          <strong>Empleado destacado:</strong> El empleado{" "}
-          <strong>{empleadoDestacado.nombreEmpleado}</strong> tiene{" "}
-          <strong>{empleadoDestacado.asistencias}</strong> asistencias, equivalente al mayor número registrado.
+      {voluntarioDestacado && (
+        <div style={styles.alert} >
+           <span style={{ fontSize: '25px' }}>
+          <strong>Voluntario del mes:</strong> El voluntario{" "}
+          <strong>{voluntarioDestacado.nombreVoluntario}</strong> tiene{" "}
+          <strong>{voluntarioDestacado.puntos.punteo}</strong> puntos.
+          </span>
         </div>
       )}
 
@@ -156,10 +98,10 @@ function ActivitySection({ className }) {
         <thead style={styles.tableHead}>
           <tr>
             <th style={styles.tableCell}>ID Asistencia</th>
-            <th style={styles.tableCell}>Estado</th>
-            <th style={styles.tableCell}>ID Inscripción</th>
-            <th style={styles.tableCell}>Empleado</th>
+            <th style={styles.tableCell}>Evento</th>
+            <th style={styles.tableCell}>Voluntario</th>
             <th style={styles.tableCell}>Fecha</th>
+            <th style={styles.tableCell}>Estado</th>
           </tr>
         </thead>
         <tbody>
@@ -167,13 +109,19 @@ function ActivitySection({ className }) {
             <tr key={asistencia.idAsistenciaEvento} style={styles.tableRow}>
               <td style={styles.tableCell}>{asistencia.idAsistenciaEvento}</td>
               <td style={styles.tableCell}>
-                {asistencia.estado === 1 ? "Activo" : "Inactivo"}
+                {asistencia.inscripcionEvento && asistencia.inscripcionEvento.evento 
+                  ? asistencia.inscripcionEvento.evento.nombreEvento 
+                  : "Desconocido"}
               </td>
-              <td style={styles.tableCell}>{asistencia.idInscripcionEvento}</td>
               <td style={styles.tableCell}>
-                {obtenerNombreEmpleado(asistencia.idEmpleado)}
+                {asistencia.inscripcionEvento && asistencia.inscripcionEvento.voluntario 
+                  ? asistencia.inscripcionEvento.voluntario.persona.nombre 
+                  : "Desconocido"}
               </td>
               <td style={styles.tableCell}>{formatDate(asistencia.createdAt)}</td>
+              <td style={styles.tableCell}>
+                {asistencia.estado === 1 ? "Activo" : "Inactivo"}
+              </td>
             </tr>
           ))}
         </tbody>

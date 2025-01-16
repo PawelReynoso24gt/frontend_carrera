@@ -38,8 +38,25 @@ function Publicaciones() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchPublicaciones();
     fetchSedes();
     fetchEventos(); // Cargar eventos
@@ -50,6 +67,15 @@ function Publicaciones() {
   const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
   // usuario
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // ! USO DE LA FUNCIÓN getUserDataFromToken
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchPublicaciones = async () => {
     try {
@@ -76,7 +102,7 @@ function Publicaciones() {
   const handleRemovePhotoWithConfirmation = (photoId) => {
     setPhotoToConfirm(photoId);
     setShowConfirmModal(true);
-  };  
+  };
 
   const confirmRemovePhoto = () => {
     if (photoToConfirm) {
@@ -86,13 +112,13 @@ function Publicaciones() {
       setPhotoToConfirm(null);
       setShowConfirmModal(false);
     }
-  };  
+  };
 
   const cancelRemovePhoto = () => {
     setPhotoToConfirm(null);
     setShowConfirmModal(false);
-  };  
-  
+  };
+
   const fetchDetallesPublicacion = async (id) => {
     try {
       const response = await axios.get(`http://localhost:5000/publicaciones/detalles/${id}`);
@@ -100,7 +126,7 @@ function Publicaciones() {
     } catch (error) {
       console.error("Error al cargar los detalles de la publicación:", error);
     }
-  };  
+  };
 
   const handleRemovePhoto = (photoId) => {
     setRemovedPhotos((prev) => [...prev, photoId]);
@@ -151,10 +177,10 @@ function Publicaciones() {
       console.error("Error al seleccionar la publicación:", error);
     }
   };
-  
+
   const handleCloseDetailsModal = () => {
     setShowDetailsModal(false);
-  };  
+  };
 
   const handleShowModal = (publicacion = null) => {
     const currentDate = new Date(); // Fecha y hora actual
@@ -182,7 +208,7 @@ function Publicaciones() {
         idEvento: publicacion.idEvento || "", // ID del evento (si aplica)
         idRifa: publicacion.idRifa || "", // ID de la rifa (si aplica)
       });
-       // Configurar las fotos existentes
+      // Configurar las fotos existentes
       setExistingPhotos(fotosExistentes);
       setPhotosToKeep(fotosExistentes.map((foto) => foto.id));
       setPhotosToRemove([]);
@@ -203,7 +229,7 @@ function Publicaciones() {
       setPhotosToRemove([]);
     }
     setShowModal(true);
-  };  
+  };
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -227,7 +253,7 @@ function Publicaciones() {
       console.error("Error fetching eventos:", error);
     }
   };
-  
+
   const fetchRifas = async () => {
     try {
       const response = await axios.get("http://localhost:5000/rifas");
@@ -268,12 +294,12 @@ function Publicaciones() {
 
       // Fotos a mover de una tabla a otra
       const photosToMove = existingPhotos
-      .filter((foto) => photosToKeep.includes(foto.id)) // Solo las fotos que se quieren mantener
-      .map((foto) => ({
-        id: foto.id,
-        currentType: foto.type, // Tipo actual (generales, eventos, rifas)
-        newType: newPublicacion.tipo, // Nuevo tipo
-      }));
+        .filter((foto) => photosToKeep.includes(foto.id)) // Solo las fotos que se quieren mantener
+        .map((foto) => ({
+          id: foto.id,
+          currentType: foto.type, // Tipo actual (generales, eventos, rifas)
+          newType: newPublicacion.tipo, // Nuevo tipo
+        }));
 
       // Adjuntar IDs de fotos para eliminar
       formData.append("photosToRemove", JSON.stringify(photosToRemove));
@@ -336,29 +362,29 @@ function Publicaciones() {
   };
 
   const indexOfLastRow = currentPage * rowsPerPage;
-    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-    const currentPublicacion = filteredPublicaciones.slice(indexOfFirstRow, indexOfLastRow);
-  
-    const totalPages = Math.ceil(filteredPublicaciones.length / rowsPerPage);
-  
-    const renderPagination = () => (
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            if (currentPage > 1) setCurrentPage((prev) => prev - 1);
-          }}
-          style={{
-            color: currentPage === 1 ? "gray" : "#007AC3",
-            cursor: currentPage === 1 ? "default" : "pointer",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          Anterior
-        </a>
-  
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentPublicacion = filteredPublicaciones.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(filteredPublicaciones.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
       <div className="d-flex align-items-center">
         <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
         <Form.Control
@@ -398,7 +424,7 @@ function Publicaciones() {
       </a>
     </div>
   );
-  
+
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -437,7 +463,11 @@ function Publicaciones() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear publicación', 'No tienes permisos para crear publicación')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Publicación
           </Button>
@@ -511,7 +541,7 @@ function Publicaciones() {
               <tr key={publicacion.idPublicacion}>
                 <td>{publicacion.idPublicacion}</td>
                 <td>{publicacion.nombrePublicacion}</td>
-                <td>{publicacion.descripcion}</td>     
+                <td>{publicacion.descripcion}</td>
                 <td>{publicacion.fechaPublicacion ? format(parseISO(publicacion.fechaPublicacion), "dd-MM-yyyy hh:mm a") : "Sin fecha"}</td>
                 <td>
                   {publicacion.tipoPublicacion === "rifas" && "Rifas"}
@@ -519,7 +549,7 @@ function Publicaciones() {
                   {publicacion.tipoPublicacion === "generales" && "Generales"}
                 </td>
                 <td>{publicacion.sede?.nombreSede || "No asignada"}</td>
-                <td>{publicacion.estado === 1 ? "Activo" : "Inactivo"}</td>          
+                <td>{publicacion.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                   <FaEye
                     style={{ cursor: "pointer", marginRight: "10px", color: "#007AC3" }}
@@ -534,7 +564,11 @@ function Publicaciones() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(publicacion)}
+                    onClick={() => {
+                      if (checkPermission('Editar publicación', 'No tienes permisos para editar publicación')) {
+                        handleShowModal(publicacion);
+                      }
+                    }}
                   />
                   {publicacion.estado ? (
                     <FaToggleOn
@@ -545,7 +579,11 @@ function Publicaciones() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(publicacion.idPublicacion, publicacion.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar publicación', 'No tienes permisos para desactivar publicación')) {
+                          toggleEstado(publicacion.idPublicacion, publicacion.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -556,7 +594,11 @@ function Publicaciones() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(publicacion.idPublicacion, publicacion.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar publicación', 'No tienes permisos para activar publicación')) {
+                          toggleEstado(publicacion.idPublicacion, publicacion.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -567,96 +609,96 @@ function Publicaciones() {
         {renderPagination()}
         {showDetailsModal && (
           <Modal
-          show={showDetailsModal}
-          onHide={handleCloseDetailsModal}
-          size="lg" // Aumenta el tamaño del modal para que sea horizontal
-          style={{ textAlign: "center" }}
-        >
-          <Modal.Header closeButton style={{ backgroundColor: "#007AC3", color: "#fff" }}>
-            <Modal.Title>Detalles de la Publicación</Modal.Title>
-          </Modal.Header>
-          <Modal.Body style={{ overflowX: "auto" }}>
-            {detallesPublicacion ? (
-              <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
-                <div style={{ flex: 1 }}>
-                  <h5>Información General</h5>
-                  <p><strong>Nombre:</strong> {detallesPublicacion.nombrePublicacion}</p>
-                  <p><strong>Descripción:</strong> {detallesPublicacion.descripcion}</p>
-                  <p><strong>Sede:</strong> {detallesPublicacion.sede?.nombreSede || "No asignada"}</p>
-                  <p><strong>Fecha de Publicación:</strong>{" "}
-                    {detallesPublicacion.fechaPublicacion
-                      ? format(parseISO(detallesPublicacion.fechaPublicacion), "dd-MM-yyyy hh:mm a")
-                      : "Sin fecha"}
-                  </p>
+            show={showDetailsModal}
+            onHide={handleCloseDetailsModal}
+            size="lg" // Aumenta el tamaño del modal para que sea horizontal
+            style={{ textAlign: "center" }}
+          >
+            <Modal.Header closeButton style={{ backgroundColor: "#007AC3", color: "#fff" }}>
+              <Modal.Title>Detalles de la Publicación</Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ overflowX: "auto" }}>
+              {detallesPublicacion ? (
+                <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+                  <div style={{ flex: 1 }}>
+                    <h5>Información General</h5>
+                    <p><strong>Nombre:</strong> {detallesPublicacion.nombrePublicacion}</p>
+                    <p><strong>Descripción:</strong> {detallesPublicacion.descripcion}</p>
+                    <p><strong>Sede:</strong> {detallesPublicacion.sede?.nombreSede || "No asignada"}</p>
+                    <p><strong>Fecha de Publicación:</strong>{" "}
+                      {detallesPublicacion.fechaPublicacion
+                        ? format(parseISO(detallesPublicacion.fechaPublicacion), "dd-MM-yyyy hh:mm a")
+                        : "Sin fecha"}
+                    </p>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h5>Fotos</h5>
+                    <h6>Generales</h6>
+                    {detallesPublicacion.publicacionesGenerales.length > 0 ? (
+                      detallesPublicacion.publicacionesGenerales.map((foto) => (
+                        <img
+                          key={foto.idPublicacionGeneral}
+                          src={`http://localhost:5000/${foto.foto}`}
+                          alt="Foto general"
+                          style={{
+                            width: "200px", // Ajusta el ancho
+                            height: "auto", // Mantiene la proporción
+                            margin: "10px", // Espaciado entre imágenes
+                            borderRadius: "8px", // Opcional: esquinas redondeadas
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <p>No hay fotos generales.</p>
+                    )}
+                    <h6>Eventos</h6>
+                    {detallesPublicacion.publicacionesEventos.length > 0 ? (
+                      detallesPublicacion.publicacionesEventos.map((foto) => (
+                        <img
+                          key={foto.idPublicacionEvento}
+                          src={`http://localhost:5000/${foto.foto}`}
+                          alt="Foto de evento"
+                          style={{
+                            width: "200px", // Ajusta el ancho
+                            height: "auto", // Mantiene la proporción
+                            margin: "10px", // Espaciado entre imágenes
+                            borderRadius: "8px", // Opcional: esquinas redondeadas
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <p>No hay fotos de eventos.</p>
+                    )}
+                    <h6>Rifas</h6>
+                    {detallesPublicacion.publicacionesRifas.length > 0 ? (
+                      detallesPublicacion.publicacionesRifas.map((foto) => (
+                        <img
+                          key={foto.idPublicacionRifa}
+                          src={`http://localhost:5000/${foto.foto}`}
+                          alt="Foto de rifa"
+                          style={{
+                            width: "200px", // Ajusta el ancho
+                            height: "auto", // Mantiene la proporción
+                            margin: "10px", // Espaciado entre imágenes
+                            borderRadius: "8px", // Opcional: esquinas redondeadas
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <p>No hay fotos de rifas.</p>
+                    )}
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <h5>Fotos</h5>
-                  <h6>Generales</h6>
-                  {detallesPublicacion.publicacionesGenerales.length > 0 ? (
-                    detallesPublicacion.publicacionesGenerales.map((foto) => (
-                      <img
-                        key={foto.idPublicacionGeneral}
-                        src={`http://localhost:5000/${foto.foto}`}
-                        alt="Foto general"
-                        style={{
-                          width: "200px", // Ajusta el ancho
-                          height: "auto", // Mantiene la proporción
-                          margin: "10px", // Espaciado entre imágenes
-                          borderRadius: "8px", // Opcional: esquinas redondeadas
-                        }}
-                      />
-                    ))
-                  ) : (
-                    <p>No hay fotos generales.</p>
-                  )}
-                  <h6>Eventos</h6>
-                  {detallesPublicacion.publicacionesEventos.length > 0 ? (
-                    detallesPublicacion.publicacionesEventos.map((foto) => (
-                      <img
-                        key={foto.idPublicacionEvento}
-                        src={`http://localhost:5000/${foto.foto}`}
-                        alt="Foto de evento"
-                        style={{
-                          width: "200px", // Ajusta el ancho
-                          height: "auto", // Mantiene la proporción
-                          margin: "10px", // Espaciado entre imágenes
-                          borderRadius: "8px", // Opcional: esquinas redondeadas
-                        }}
-                      />
-                    ))
-                  ) : (
-                    <p>No hay fotos de eventos.</p>
-                  )}
-                  <h6>Rifas</h6>
-                  {detallesPublicacion.publicacionesRifas.length > 0 ? (
-                    detallesPublicacion.publicacionesRifas.map((foto) => (
-                      <img
-                        key={foto.idPublicacionRifa}
-                        src={`http://localhost:5000/${foto.foto}`}
-                        alt="Foto de rifa"
-                        style={{
-                          width: "200px", // Ajusta el ancho
-                          height: "auto", // Mantiene la proporción
-                          margin: "10px", // Espaciado entre imágenes
-                          borderRadius: "8px", // Opcional: esquinas redondeadas
-                        }}
-                      />
-                    ))
-                  ) : (
-                    <p>No hay fotos de rifas.</p>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <p>Cargando detalles...</p>
-            )}
-          </Modal.Body>
-        </Modal>        
+              ) : (
+                <p>Cargando detalles...</p>
+              )}
+            </Modal.Body>
+          </Modal>
         )}
-        <Modal 
-        show={showModal} 
-        onHide={handleCloseModal} 
-        style={{
+        <Modal
+          show={showModal}
+          onHide={handleCloseModal}
+          style={{
             height: "80vh", // Altura fija en porcentaje de la ventana
             maxHeight: "90vh", // Máxima altura permitida
           }}
@@ -716,69 +758,69 @@ function Publicaciones() {
                   required
                 />
               </Form.Group>
-            {/* TIPOPARA MANDAR A A TABLA CORRECTA */}
-            <Form.Group controlId="tipo">
-              <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                Tipo de Publicación
-              </Form.Label>
-              <Form.Control
-                as="select"
-                name="tipo"
-                value={newPublicacion.tipo || ""}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Seleccionar tipo</option>
-                <option value="generales">Generales</option>
-                <option value="eventos">Eventos</option>
-                <option value="rifas">Rifas</option>
-              </Form.Control>
-            </Form.Group>
-            {/* Campo condicional para idEvento */}
-            {newPublicacion.tipo === "eventos" && (
-              <Form.Group controlId="idEvento">
+              {/* TIPOPARA MANDAR A A TABLA CORRECTA */}
+              <Form.Group controlId="tipo">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID del Evento
+                  Tipo de Publicación
                 </Form.Label>
                 <Form.Control
                   as="select"
-                  name="idEvento"
-                  value={newPublicacion.idEvento || ""}
+                  name="tipo"
+                  value={newPublicacion.tipo || ""}
                   onChange={handleChange}
                   required
-                  >
-                  <option value="">Seleccionar Evento</option>
-                  {eventos.map((evento) => (
-                    <option key={evento.idEvento} value={evento.idEvento}>
-                      {evento.nombreEvento}
-                    </option>
-                  ))}
+                >
+                  <option value="">Seleccionar tipo</option>
+                  <option value="generales">Generales</option>
+                  <option value="eventos">Eventos</option>
+                  <option value="rifas">Rifas</option>
                 </Form.Control>
               </Form.Group>
-            )}
+              {/* Campo condicional para idEvento */}
+              {newPublicacion.tipo === "eventos" && (
+                <Form.Group controlId="idEvento">
+                  <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                    ID del Evento
+                  </Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="idEvento"
+                    value={newPublicacion.idEvento || ""}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccionar Evento</option>
+                    {eventos.map((evento) => (
+                      <option key={evento.idEvento} value={evento.idEvento}>
+                        {evento.nombreEvento}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+              )}
 
-            {/* Campo condicional para idRifa */}
-            {newPublicacion.tipo === "rifas" && (
-              <Form.Group controlId="idRifa">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID de la Rifa
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idRifa"
-                  value={newPublicacion.idRifa || ""}
-                  onChange={handleChange}
-                  required
+              {/* Campo condicional para idRifa */}
+              {newPublicacion.tipo === "rifas" && (
+                <Form.Group controlId="idRifa">
+                  <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                    ID de la Rifa
+                  </Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="idRifa"
+                    value={newPublicacion.idRifa || ""}
+                    onChange={handleChange}
+                    required
                   >
-                  <option value="">Seleccionar Rifa</option>
-                  {rifas.map((rifa) => (
-                    <option key={rifa.idRifa} value={rifa.idRifa}>
-                      {rifa.nombreRifa}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            )}
+                    <option value="">Seleccionar Rifa</option>
+                    {rifas.map((rifa) => (
+                      <option key={rifa.idRifa} value={rifa.idRifa}>
+                        {rifa.nombreRifa}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+              )}
               <Form.Group controlId="idSede">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
                   Sede
@@ -798,11 +840,11 @@ function Publicaciones() {
                   ))}
                 </Form.Control>
               </Form.Group>
-                {/* Mostrar fotos actuales si está editando */}
-                {editingPublicacion && detallesPublicacion && detallesPublicacion.fotos && (
-                  <div>
-                    <h6>Fotos actuales:</h6>
-                    <div style={{ display: "flex", gap: "10px" }}>
+              {/* Mostrar fotos actuales si está editando */}
+              {editingPublicacion && detallesPublicacion && detallesPublicacion.fotos && (
+                <div>
+                  <h6>Fotos actuales:</h6>
+                  <div style={{ display: "flex", gap: "10px" }}>
                     {detallesPublicacion?.fotos?.map((foto) => (
                       <div key={foto.id} style={{ position: "relative", margin: "10px" }}>
                         <img
@@ -819,35 +861,35 @@ function Publicaciones() {
                         />
                       </div>
                     ))}
-                    </div>
                   </div>
-                )}
-                {/* Pa ver fotos */}
-                <Form.Group controlId="fotosExistentes">
-              <Form.Label>Fotos Existentes</Form.Label>
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                {existingPhotos.map((foto) => (
-                  <img
-                    key={foto.id}
-                    src={`http://localhost:5000/${foto.ruta}`}
-                    alt="Foto existente"
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      border: photosToKeep.includes(foto.id) ? "2px solid green" : "2px solid red",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleTogglePhoto(foto.id)}
-                  />
-                ))}
-              </div>
-            </Form.Group>
-            {/* Nuevas fotos */}
-            <Form.Group controlId="fotos">
-              <Form.Label>Nuevas Fotos</Form.Label>
-              <Form.Control type="file" multiple onChange={handleFileChange} />
-            </Form.Group>
+                </div>
+              )}
+              {/* Pa ver fotos */}
+              <Form.Group controlId="fotosExistentes">
+                <Form.Label>Fotos Existentes</Form.Label>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  {existingPhotos.map((foto) => (
+                    <img
+                      key={foto.id}
+                      src={`http://localhost:5000/${foto.ruta}`}
+                      alt="Foto existente"
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        border: photosToKeep.includes(foto.id) ? "2px solid green" : "2px solid red",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleTogglePhoto(foto.id)}
+                    />
+                  ))}
+                </div>
+              </Form.Group>
+              {/* Nuevas fotos */}
+              <Form.Group controlId="fotos">
+                <Form.Label>Nuevas Fotos</Form.Label>
+                <Form.Control type="file" multiple onChange={handleFileChange} />
+              </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
                 <Form.Control
@@ -903,7 +945,7 @@ function Publicaciones() {
                 fontSize: "20px",
               }}
             >
-            Confirmar eliminación
+              Confirmar eliminación
             </Modal.Title>
           </Modal.Header>
           <Modal.Body
@@ -914,7 +956,7 @@ function Publicaciones() {
             }}
           >
             {photoToConfirm ? (
-              <p style={{fontSize: "17px"}}>
+              <p style={{ fontSize: "17px" }}>
                 ¿Estás seguro de deseas eliminar esta foto?
               </p>
             ) : (
@@ -950,6 +992,17 @@ function Publicaciones() {
               }}
             >
               Cancelar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
             </Button>
           </Modal.Footer>
         </Modal>
