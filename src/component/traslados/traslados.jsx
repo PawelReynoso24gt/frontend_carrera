@@ -23,9 +23,7 @@ const formatDateDMY = (date) => {
   const year = fecha.getFullYear();
   return `${day}/${month}/${year}`;
 };
-import { format } from "date-fns";
-import { parseISO } from "date-fns";
-import { getUserDataFromToken } from "../../utils/jwtUtils";
+
 
 function Traslados() {
   const [traslados, setTraslados] = useState([]);
