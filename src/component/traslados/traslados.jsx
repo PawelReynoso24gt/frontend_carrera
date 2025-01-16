@@ -11,6 +11,16 @@ import {
 } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
+
+const formatDateDMY = (date) => {
+  if (!date) return ""; // Manejar fechas vacías
+  const fecha = new Date(date);
+  const day = String(fecha.getDate()).padStart(2, "0");
+  const month = String(fecha.getMonth() + 1).padStart(2, "0"); // Los meses son 0-11
+  const year = fecha.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 function Traslados() {
   const [traslados, setTraslados] = useState([]);
   const [filteredTraslados, setFilteredTraslados] = useState([]);
@@ -265,7 +275,7 @@ function Traslados() {
             {filteredTraslados.map((traslado) => (
               <tr key={traslado.idTraslado}>
                 <td>{traslado.idTraslado}</td>
-                <td>{traslado.fecha}</td>
+                <td>{formatDateDMY(traslado.fecha)}</td>
                 <td>{traslado.descripcion}</td>
                 <td>
                   {tipoTraslados.find(

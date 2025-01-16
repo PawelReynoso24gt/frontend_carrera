@@ -16,6 +16,7 @@ function DetalleHorariosComponent() {
   const [filteredDetalleHorarios, setFilteredDetalleHorarios] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [horarios, setHorarios] = useState([]);
 
   const fetchCategorias = async () => {
     try {
@@ -28,9 +29,21 @@ function DetalleHorariosComponent() {
     }
   };
 
+  // Cargar los horarios
+  const fetchHorarios = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/horarios'); // Cambiar al endpoint real
+      setHorarios(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Error fetching horarios:', error);
+      setHorarios([]);
+    }
+  };
+
   useEffect(() => {
     1,
       fetchCategorias();
+      fetchHorarios(); 
     fetchActiveDetalles();
   }, []);
 
@@ -365,7 +378,14 @@ function DetalleHorariosComponent() {
                   value={newDetalle.idHorario}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Seleccione un horario</option>
+                  {horarios.map((horario) => (
+                    <option key={horario.idHorario} value={horario.idHorario}>
+                      {horario.nombreHorario || `Horario ${horario.idHorario}`}
+                    </option>
+                    ))}
+                 </Form.Control>
               </Form.Group>
               <Form.Group controlId="idCategoriaHorario">
                 <Form.Label>Categoría Horario</Form.Label>
