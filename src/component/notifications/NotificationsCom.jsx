@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import notifyImg from "../../assets/img/anotify2.svg";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
 function NotificationsCom() {
   const [notifications, setNotifications] = useState([]);
 
   // Función para obtener notificaciones del backend
   const fetchNotifications = async () => {
-    const personId = localStorage.getItem("personId");
+    const personId = getUserDataFromToken(localStorage.getItem("token"))?.idPersona;
 
     if (!personId) {
       console.error("personId no encontrado en el localStorage.");
@@ -24,22 +25,24 @@ function NotificationsCom() {
     }
   };
 
-  // Obtener notificaciones al cargar el componente y configurar sondeo periódico
   useEffect(() => {
-    fetchNotifications(); // Llamada inicial para cargar las notificaciones
-
-    const intervalId = setInterval(fetchNotifications, 5000); // Verificar cada 5 segundos
-
-    return () => clearInterval(intervalId); // Limpiar el intervalo al desmontar el componente
-  }, []);
+    const storedNotifications = localStorage.getItem("notifications");
+    if (storedNotifications) {
+      setNotifications(JSON.parse(storedNotifications));
+    } else {
+      fetchNotifications(); // Llamada inicial para cargar las notificaciones
+    }
+    
+  }, []); // Este efecto solo se ejecutará una vez al montar el componente  
 
   // Manejar el cambio de estado (marcar como revisada)
   const handleCheckNotification = async (idNotificacion) => {
     try {
+      // Cambiar el estado de la notificación a 0 (marcar como revisada)
       await axios.put(`http://localhost:5000/notificaciones/${idNotificacion}`, {
         estado: 0, // Cambiar el estado a 0 (marcar como revisada)
       });
-
+  
       // Actualizar localmente la notificación específica
       setNotifications((prevNotifications) =>
         prevNotifications.map((notification) =>
@@ -48,10 +51,17 @@ function NotificationsCom() {
             : notification
         )
       );
+  
+      // Esperar 5 segundos antes de recargar las notificaciones
+      setTimeout(async () => {
+        console.log("Recargando las notificaciones...");
+        await fetchNotifications(); // Recargar las notificaciones
+      }, 5000);
+  
     } catch (error) {
       console.error("Error al actualizar la notificación:", error);
     }
-  };
+  };  
 
   return (
     <div className="row">

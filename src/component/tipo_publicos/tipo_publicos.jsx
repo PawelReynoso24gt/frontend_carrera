@@ -15,10 +15,36 @@ function TipoPublicos() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showValidationError, setShowValidationError] = useState(false); // Nuevo estado para validación
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchTipoPublicos();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchTipoPublicos = async () => {
     try {
@@ -128,6 +154,70 @@ function TipoPublicos() {
     }
   };
 
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentTipoPublicos = filteredTipoPublicos.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(filteredTipoPublicos.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+  
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+  
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
+
   return (
     <>
       <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -166,7 +256,11 @@ function TipoPublicos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear tipo publico', 'No tienes permisos para crear tipo publico')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Tipo de Público
           </Button>
@@ -231,7 +325,7 @@ function TipoPublicos() {
             </tr>
           </thead>
           <tbody style={{ textAlign: "center" }}> 
-            {filteredTipoPublicos.map((tipoPublico) => (
+            {currentTipoPublicos.map((tipoPublico) => (
               <tr key={tipoPublico.idTipoPublico}>
                 <td>{tipoPublico.idTipoPublico}</td>
                 <td>{tipoPublico.nombreTipo}</td>
@@ -245,7 +339,11 @@ function TipoPublicos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(tipoPublico)}
+                    onClick={() => {
+                      if (checkPermission('Editar tipo publico', 'No tienes permisos para editar tipo publico')) {
+                        handleShowModal(tipoPublico);
+                      }
+                    }}
                   />
                   {tipoPublico.estado ? (
                     <FaToggleOn
@@ -256,9 +354,11 @@ function TipoPublicos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() =>
-                        toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)
-                      }
+                      onClick={() => {
+                        if (checkPermission('Desactivar tipo publico', 'No tienes permisos para desactivar tipo publico')) {
+                          toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -269,9 +369,11 @@ function TipoPublicos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() =>
-                        toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado)
-                      }
+                      onClick={() => {
+                        if (checkPermission('Activar tipo publico', 'No tienes permisos para activar tipo publico')) {
+                          toggleEstado(tipoPublico.idTipoPublico, tipoPublico.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -279,6 +381,7 @@ function TipoPublicos() {
             ))}
           </tbody>
         </Table>
+        {renderPagination()}
 
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header
@@ -335,6 +438,17 @@ function TipoPublicos() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                 <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{permissionMessage}</Modal.Body>
+                  <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                 </Modal.Footer>
+              </Modal>
       </div>
     </>
   );

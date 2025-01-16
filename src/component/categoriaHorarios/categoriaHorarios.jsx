@@ -27,10 +27,36 @@ function CategoriasHorarios() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchCategoriasHorarios();
   }, []);
+  
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchCategoriasHorarios = async () => {
     try {
@@ -281,7 +307,11 @@ function CategoriasHorarios() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear categoria horario', 'No tienes permisos para crear categoria horario')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Categoría
           </Button>
@@ -364,7 +394,11 @@ function CategoriasHorarios() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(categoria)}
+                    onClick={() => {
+                      if (checkPermission('Editar categoria horario', 'No tienes permisos para editar categoria horario')) {
+                        handleShowModal(categoria);
+                      }
+                    }}
                   />
                   {categoria.estado === 1 ? (
                     <FaToggleOn
@@ -375,7 +409,11 @@ function CategoriasHorarios() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(categoria.idCategoriaHorario, categoria.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar categoria horario', 'No tienes permisos para desactivar categoria horario')) {
+                          toggleEstado(categoria.idCategoriaHorario, categoria.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -386,7 +424,11 @@ function CategoriasHorarios() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(categoria.idCategoriaHorario, categoria.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar categoria horario', 'No tienes permisos para activar categoria horario')) {
+                          toggleEstado(categoria.idCategoriaHorario, categoria.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -448,6 +490,17 @@ function CategoriasHorarios() {
             </Form>
           </Modal.Body>
         </Modal>
+         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                 <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{permissionMessage}</Modal.Body>
+                  <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                 </Modal.Footer>
+               </Modal>
       </div>
       </div>
     

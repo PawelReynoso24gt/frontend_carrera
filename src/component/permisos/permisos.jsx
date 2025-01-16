@@ -14,9 +14,27 @@ function PermisosRolesComponent() {
   const [currentPage, setCurrentPage] = useState(1); // Página actual
   const [rowsPerPage, setRowsPerPage] = useState(5); // Filas por página
   const [modulos, setModulos] = useState([]); // Lista de módulos
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [searchTerm, setSearchTerm] = useState(""); 
 
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchRoles(); // Obtener lista de roles
     fetchPermisos(); // Obtener todos los permisos
   }, []);
@@ -31,6 +49,14 @@ function PermisosRolesComponent() {
     }
   };
 
+ const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   // Obtener roles desde el backend
   const fetchRoles = async () => {
@@ -145,15 +171,32 @@ function PermisosRolesComponent() {
     }
   };
 
+  // Filtrar permisos por nombre según el término de búsqueda
+const filteredPermisos = assignedPermisos.filter((permiso) =>
+  permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
   // Paginación
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRoles = roles.slice(indexOfFirstRow, indexOfLastRow);
   const totalPages = Math.ceil(roles.length / rowsPerPage);
 
+
+
   // Renderizar permisos agrupados por módulo
 const renderPermisosPorModulo = () => {
-  return modulos.map((modulo) => (
+  return  modulos
+  .filter((modulo) => {
+    // Filtrar los módulos que tengan permisos que coincidan con el término de búsqueda
+    const permisosDelModulo = assignedPermisos.filter(
+      (permiso) =>
+        permiso.idModulo === modulo.idModulo &&
+        permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    return permisosDelModulo.length > 0; // Solo se renderiza el módulo si tiene permisos que coinciden
+  })
+  .map((modulo) => (
     <div
       key={modulo.idModulo}
       style={{
@@ -164,18 +207,21 @@ const renderPermisosPorModulo = () => {
         boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <h5 style={{ fontWeight: "bold", textAlign: "center" }}>{modulo.nombreModulo}</h5>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+    <h5 style={{ fontWeight: "bold", textAlign: "center", fontSize:"25px" }}>{modulo.nombreModulo}</h5>
+
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "20px" }}>
         {assignedPermisos
-          .filter((permiso) => permiso.idModulo === modulo.idModulo)
-          .map((permiso) => (
+          .filter((permiso) => permiso.idModulo === modulo.idModulo) // Filtrar permisos por módulo
+          .filter((permiso) =>
+            permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase()) // Filtrar permisos por nombre
+          ) .map((permiso) => (
             <Form.Check
               key={permiso.idPermiso}
               type="checkbox"
               label={permiso.nombrePermiso}
               checked={permiso.estado === 1}
               onChange={() => handleCheckboxChange(permiso.idPermiso)}
-              style={{ flex: "0 1 calc(33.333% - 10px)", textAlign: "center" }}
+              style={{ flex: "0 1 calc(25% - 10px)", textAlign: "center" }}
             />
           ))}
       </div>
@@ -228,6 +274,7 @@ const renderPermisosPorModulo = () => {
           {alertMessage}
         </Alert>
 
+
         <Table striped bordered hover responsive className="mt-3 "   style={{
             backgroundColor: "#ffffff",
             borderRadius: "20px",
@@ -254,7 +301,11 @@ const renderPermisosPorModulo = () => {
                       fontSize: "20px",
                     }}
                     title="Gestionar Permisos"
-                    onClick={() => handleShowModal(role)}
+                    onClick={() => {
+                      if (checkPermission('Editar asignación de permisos', 'No tienes permisos para editar permisos')) {
+                        handleShowModal(role);
+                      }
+                    }}
                   />
                 </td>
               </tr>
@@ -266,11 +317,20 @@ const renderPermisosPorModulo = () => {
       </div>
 
       {/* Modal para gestionar permisos */}
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={handleCloseModal} size="xl">
         <Modal.Header closeButton>
           <Modal.Title>Permisos para el Rol: {selectedRole?.roles}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>{renderPermisosPorModulo()}</Modal.Body>
+        <Modal.Body>        {/* Buscador dentro del módulo */}
+        <InputGroup className="mb-3">
+        <FormControl
+          placeholder="Buscar permisos por nombre..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)} // Actualiza el término de búsqueda
+        />
+      </InputGroup>
+{renderPermisosPorModulo()}       
+        </Modal.Body>
               <Modal.Footer style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
         <Button
           variant="secondary"
@@ -298,6 +358,17 @@ const renderPermisosPorModulo = () => {
         </Button>
       </Modal.Footer>
       </Modal>
+  <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                 <Modal.Header closeButton>
+                   <Modal.Title>Permiso Denegado</Modal.Title>
+                 </Modal.Header>
+                 <Modal.Body>{permissionMessage}</Modal.Body>
+                 <Modal.Footer>
+                   <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                     Aceptar
+                   </Button>
+                 </Modal.Footer>
+               </Modal>     
     </>
   );
 }

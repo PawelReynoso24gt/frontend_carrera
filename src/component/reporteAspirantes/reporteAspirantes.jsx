@@ -12,6 +12,7 @@ function ReporteAspirantes() {
   const [revisor, setRevisor] = useState("");
   const [alerta, setAlerta] = useState("");
   const [nombreUsuario, setNombreUsuario] = useState("");
+  const [cargo, setCargo] = useState("");
 
   useEffect(() => {
     const fetchLoggedUser = async () => {
@@ -118,6 +119,7 @@ function ReporteAspirantes() {
     const firmaStartY = subtotalesStartY + 40;
     doc.text("_______________________________", 105, firmaStartY, { align: "center" });
     doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
+    doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
 
     doc.save(`Reporte_Aspirantes_${fechaInicio}_${fechaFin}.pdf`);
   };
@@ -169,6 +171,20 @@ function ReporteAspirantes() {
             value={revisor}
             onChange={(e) => setRevisor(e.target.value)}
             placeholder="Nombre del revisor"
+            style={{
+              width: "250px",
+              textAlign: "center",
+            }}
+          />
+        </div>
+        <div className="text-center mb-4">
+          <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Cargo:</label>
+          <input
+            type="text"
+            className="form-control mx-auto"
+            value={cargo}
+            onChange={(e) => setCargo(e.target.value)}
+            placeholder="Cargo"
             style={{
               width: "250px",
               textAlign: "center",

@@ -39,6 +39,9 @@ function Eventos() {
   const [sedes, setSedes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   // extraer el dato para idSede
   const sedeId = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
@@ -46,6 +49,20 @@ function Eventos() {
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchEventos();
     fetchSedes();
   }, []);
@@ -63,6 +80,15 @@ function Eventos() {
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
+  };
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
   };
 
   const fetchEventos = async () => {
@@ -126,7 +152,7 @@ function Eventos() {
         .toISOString()
         .slice(0, 16);
     }
-  
+
     setEditingEvento(evento);
     setNewEvento(
       evento || {
@@ -296,7 +322,11 @@ function Eventos() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear evento', 'No tienes permisos para crear evento')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Evento
           </Button>
@@ -396,7 +426,11 @@ function Eventos() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(evento)}
+                    onClick={() => {
+                      if (checkPermission('Editar evento', 'No tienes permisos para editar evento')) {
+                        handleShowModal(evento);
+                      }
+                    }}
                   />
                   {evento.estado === 1 ? (
                     <FaToggleOn
@@ -407,7 +441,11 @@ function Eventos() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(evento.idEvento, evento.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar evento', 'No tienes permisos para desactivar evento')) {
+                          toggleEstado(evento.idEvento, evento.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -418,7 +456,11 @@ function Eventos() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(evento.idEvento, evento.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar evento', 'No tienes permisos para activar evento')) {
+                          toggleEstado(evento.idEvento, evento.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -521,6 +563,17 @@ function Eventos() {
               </Button>
             </Form>
           </Modal.Body>
+        </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
         </Modal>
       </div>
     </>

@@ -14,13 +14,40 @@ function FotosSedesComponent() {
   const [alertMessage, setAlertMessage] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchActiveFotos();
     fetchSedes();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchActiveFotos = async () => {
     try {
@@ -239,7 +266,11 @@ function FotosSedesComponent() {
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={() => handleShowModal()}
+          onClick={() => {
+            if (checkPermission('Crear foto sede', 'No tienes permisos para crear foto sede')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Foto de Sede
         </Button>
@@ -325,7 +356,11 @@ function FotosSedesComponent() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(foto)}
+                    onClick={() => {
+                      if (checkPermission('Editar foto sede', 'No tienes permisos para editar foto sede')) {
+                        handleShowModal(foto);
+                      }
+                    }}
                   />
                   {foto.estado === 1 ? (
                     <FaToggleOn
@@ -347,7 +382,16 @@ function FotosSedesComponent() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleFotoEstado(foto.idFotoSede, foto.estado)}
+                      onClick={() => {
+                      const actionPermission = foto.estado ? 'Activar foto sede' : 'Desactivar foto sede';
+                      const actionMessage = foto.estado
+                        ? 'No tienes permisos para desactivar fotos sedes'
+                        : 'No tienes permisos para activar foto sedes';
+  
+                      if (checkPermission(actionPermission, actionMessage)) {
+                        toggleFotoEstado(foto.idFotoSede, foto.estado);
+                      }
+                    }}
                     />
                   )}
                 </td>
@@ -427,6 +471,17 @@ function FotosSedesComponent() {
             </Form>
           </Modal.Body>
         </Modal>
+          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{permissionMessage}</Modal.Body>
+                <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                </Modal.Footer>
+              </Modal>
       </div>
     </>
   );

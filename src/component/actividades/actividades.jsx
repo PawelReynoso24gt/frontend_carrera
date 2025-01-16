@@ -21,11 +21,37 @@ function Actividades() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showValidationError, setShowValidationError] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+  
+    fetchPermissions();
     fetchActividades();
     fetchComisiones();
   }, []);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchActividades = async () => {
     try {
@@ -254,7 +280,11 @@ function Actividades() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear actividad', 'No tienes permisos para crear actividad')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Actividad
           </Button>
@@ -340,7 +370,11 @@ function Actividades() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(actividad)}
+                    onClick={() => {
+                      if (checkPermission('Editar actividad', 'No tienes permisos para editar actividad')) {
+                        handleShowModal(actividad);
+                      }
+                    }}
                   />
                   {actividad.estado ? (
                     <FaToggleOn
@@ -351,7 +385,11 @@ function Actividades() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(actividad.idActividad, actividad.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar actividad', 'No tienes permisos para desactivar actividad')) {
+                          toggleEstado(actividad.idActividad, actividad.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -362,7 +400,11 @@ function Actividades() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(actividad.idActividad, actividad.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar actividad', 'No tienes permisos para activar actividad')) {
+                          toggleEstado(actividad.idActividad, actividad.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -454,6 +496,17 @@ function Actividades() {
             </Form>
           </Modal.Body>
         </Modal>
+           <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                         <Modal.Header closeButton>
+                          <Modal.Title>Permiso Denegado</Modal.Title>
+                          </Modal.Header>
+                          <Modal.Body>{permissionMessage}</Modal.Body>
+                          <Modal.Footer>
+                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                            Aceptar
+                          </Button>
+                         </Modal.Footer>
+                      </Modal>
       </div>
     </>
   );
