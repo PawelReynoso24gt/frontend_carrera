@@ -65,7 +65,7 @@ function ReporteRifas() {
     };
 
     const generarPDF = () => {
-        const doc = new jsPDF();
+        const doc = new jsPDF('landscape'); // Cambia la orientación a 'landscape'
 
         // Logo y encabezado
         doc.addImage(logo, "PNG", 10, 10, 60, 30);
@@ -84,12 +84,12 @@ function ReporteRifas() {
         // Línea separadora
         doc.setLineWidth(0.5);
         doc.setDrawColor("#007AC3");
-        doc.line(10, 50, 200, 50);
+        doc.line(10, 50, 280, 50); // Ajusta la longitud de la línea para el formato horizontal
 
         doc.setFontSize(14);
         doc.setTextColor(0);
         doc.setFont("helvetica", "bold");
-        doc.text("Rifas", 105, 56, { align: "center" });
+        doc.text("Rifas", 148.5, 56, { align: "center" }); // Centra el texto en el formato horizontal
 
         // Tabla con los datos del reporte
         doc.autoTable({
@@ -122,9 +122,9 @@ function ReporteRifas() {
         });
 
         const firmaStartY = doc.previousAutoTable.finalY + 40;
-        doc.text("_______________________________", 105, firmaStartY, { align: "center" });
-        doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
-        doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
+        doc.text("_______________________________", 148.5, firmaStartY, { align: "center" });
+        doc.text(revisor || "Sin nombre", 148.5, firmaStartY + 10, { align: "center" });
+        doc.text(cargo || "Sin cargo", 148.5, firmaStartY + 15, { align: "center" });
 
         doc.save(`Reporte_Rifas_${fechaInicio}_${fechaFin}.pdf`);
     };
