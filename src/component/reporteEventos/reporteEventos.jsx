@@ -11,7 +11,7 @@ function ReporteEventos() {
   const [revisor, setRevisor] = useState("");
   const [alerta, setAlerta] = useState("");
   const [nombreUsuario, setNombreUsuario] = useState("");
-    const [cargo, setCargo] = useState("");
+  const [cargo, setCargo] = useState("");
 
   useEffect(() => {
     const fetchEventos = async () => {
@@ -51,121 +51,124 @@ function ReporteEventos() {
   }, [fechaInicio, fechaFin]);
 
 
-   // Calcular subtotales
-   const totalRecaudacion = eventos
-   .reduce((total, evento) => total + evento.recaudacionTotal, 0)
-   .toFixed(2);
- const totalAsistencia = eventos.reduce(
-   (total, evento) => total + evento.cantidadVoluntariosAsistieron,
-   0
- );
- const totalEventos = eventos.length;
- const fechas = eventos.map((evento) => new Date(evento.fechaHoraInicio));
- const fechaMin = fechas.length
-   ? new Date(Math.min(...fechas)).toLocaleDateString("es-ES")
-   : "N/A";
- const fechaMax = fechas.length
-   ? new Date(Math.max(...fechas)).toLocaleDateString("es-ES")
-   : "N/A";
- const eventoMayorRecaudacion = eventos.reduce(
-   (max, evento) =>
-     evento.recaudacionTotal > max.recaudacionTotal ? evento : max,
-   { nombreEvento: "N/A", recaudacionTotal: 0 }
- );
- const eventoMenorRecaudacion = eventos.reduce(
-   (min, evento) =>
-     evento.recaudacionTotal < min.recaudacionTotal ? evento : min,
-   { nombreEvento: "N/A", recaudacionTotal: Infinity }
- );
+  // Calcular subtotales
+  const totalRecaudacion = eventos
+    .reduce((total, evento) => total + evento.recaudacionTotal, 0)
+    .toFixed(2);
+  const totalAsistencia = eventos.reduce(
+    (total, evento) => total + evento.cantidadVoluntariosAsistieron,
+    0
+  );
+  const totalEventos = eventos.length;
+  const fechas = eventos.map((evento) => new Date(evento.fechaHoraInicio));
+  const fechaMin = fechas.length
+    ? new Date(Math.min(...fechas)).toLocaleDateString("es-ES")
+    : "N/A";
+  const fechaMax = fechas.length
+    ? new Date(Math.max(...fechas)).toLocaleDateString("es-ES")
+    : "N/A";
+  const eventoMayorRecaudacion = eventos.reduce(
+    (max, evento) =>
+      evento.recaudacionTotal > max.recaudacionTotal ? evento : max,
+    { nombreEvento: "N/A", recaudacionTotal: 0 }
+  );
+  const eventoMenorRecaudacion = eventos.reduce(
+    (min, evento) =>
+      evento.recaudacionTotal < min.recaudacionTotal ? evento : min,
+    { nombreEvento: "N/A", recaudacionTotal: Infinity }
+  );
 
-    const generarPDF = () => {
-      const doc = new jsPDF();
+  const generarPDF = () => {
+    const doc = new jsPDF();
 
-      // Logo y texto al lado
-      doc.addImage(logo, "PNG", 10, 10, 60, 30);
-      doc.setFontSize(20);
-      doc.setTextColor(40);
-      doc.text("Reporte de Eventos", 75, 20);
-      doc.setFontSize(12);
-      doc.text(new Date().toLocaleDateString("es-ES"), 75, 28); 
-      doc.setFontSize(10);
-      const fechaInicioFormatted = fechaInicio.split("-").reverse().join("/");
-      const fechaFinFormatted = fechaFin.split("-").reverse().join("/");
-      doc.text(`Desde: ${fechaInicioFormatted}   Hasta: ${fechaFinFormatted}`, 75, 35);
-      doc.text(`Generado por: ${nombreUsuario}`, 75, 40);
+    // Logo y texto al lado
+    doc.addImage(logo, "PNG", 10, 10, 60, 30);
+    doc.setFontSize(20);
+    doc.setTextColor(40);
+    doc.text("Reporte de Eventos", 75, 20);
+    doc.setFontSize(12);
+    doc.text("Fecha de generación:", 75, 28);
+    doc.setFontSize(10);
+    doc.text(new Date().toLocaleDateString("es-ES"), 117, 28);
+    doc.text(new Date().toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit', hour12: true }), 135, 28);
+    doc.setFontSize(10);
+    const fechaInicioFormatted = fechaInicio.split("-").reverse().join("/");
+    const fechaFinFormatted = fechaFin.split("-").reverse().join("/");
+    doc.text(`Desde: ${fechaInicioFormatted}   Hasta: ${fechaFinFormatted}`, 75, 35);
+    doc.text(`Generado por: ${nombreUsuario}`, 75, 40);
 
-      doc.setLineWidth(0.5);
-      doc.setDrawColor("#007AC3");
-      doc.line(10, 50, 200, 50);
+    doc.setLineWidth(0.5);
+    doc.setDrawColor("#007AC3");
+    doc.line(10, 50, 200, 50);
 
-      doc.setFontSize(14);
-      doc.setTextColor(0);
-      doc.setFont("helvetica", "bold");
-      doc.text("Eventos", 105, 56, { align: "center" });
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "bold");
+    doc.text("Eventos", 105, 56, { align: "center" });
 
-      doc.autoTable({
-        startY: 60,
-        head: [
-          [
-            "Nombre Evento",
-            "Recaudación Total",
-            "Asistencia de voluntarios",
-            "Número de participantes",
-            "Fecha Inicio",
-            "Fecha Fin",
-          ],
+    doc.autoTable({
+      startY: 60,
+      head: [
+        [
+          "Nombre Evento",
+          "Recaudación Total",
+          "Asistencia de voluntarios",
+          "Número de participantes",
+          "Fecha Inicio",
+          "Fecha Fin",
         ],
-        body: eventos.map((evento) => [
-          evento.nombreEvento,
-          `Q ${evento.recaudacionTotal.toFixed(2)}`,
-          evento.cantidadVoluntariosAsistieron,
-          evento.numeroPersonas,
-          new Date(evento.fechaHoraInicio).toLocaleDateString("es-ES"),
-          new Date(evento.fechaHoraFin).toLocaleDateString("es-ES"),
-        ]),
-        styles: { fontSize: 10, cellPadding: 2 },
-        headStyles: { fillColor: [0, 122, 195], textColor: 255 },
-        theme: "grid",
-      });
+      ],
+      body: eventos.map((evento) => [
+        evento.nombreEvento,
+        `Q ${evento.recaudacionTotal.toFixed(2)}`,
+        evento.cantidadVoluntariosAsistieron,
+        evento.numeroPersonas,
+        new Date(evento.fechaHoraInicio).toLocaleDateString("es-ES"),
+        new Date(evento.fechaHoraFin).toLocaleDateString("es-ES"),
+      ]),
+      styles: { fontSize: 10, cellPadding: 2 },
+      headStyles: { fillColor: [0, 122, 195], textColor: 255 },
+      theme: "grid",
+    });
 
-      // Subtotales al final del PDF
-      const subtotalesStartY = doc.previousAutoTable.finalY + 10;
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor("#333");
-      doc.text("RESUMEN", 14, subtotalesStartY);
+    // Subtotales al final del PDF
+    const subtotalesStartY = doc.previousAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor("#333");
+    doc.text("RESUMEN", 14, subtotalesStartY);
 
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text(`• Total Recaudación: Q ${totalRecaudacion}`, 14, subtotalesStartY + 10);
-      doc.text(`• Total Asistencia de Voluntarios: ${totalAsistencia}`, 14, subtotalesStartY + 20);
-      doc.text(`• Total de Eventos: ${totalEventos}`, 14, subtotalesStartY + 30);
-      doc.text(`• Período Cubierto: Desde ${fechaMin} hasta ${fechaMax}`, 14, subtotalesStartY + 40);
-      doc.text(
-        `• Evento Mayor Recaudación: ${eventoMayorRecaudacion.nombreEvento} (Q ${eventoMayorRecaudacion.recaudacionTotal.toFixed(
-          2
-        )})`,
-        14,
-        subtotalesStartY + 50
-      );
-      doc.text(
-        `• Evento Menor Recaudación: ${eventoMenorRecaudacion.nombreEvento} (Q ${eventoMenorRecaudacion.recaudacionTotal.toFixed(
-          2
-        )})`,
-        14,
-        subtotalesStartY + 60
-      );
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`• Total Recaudación: Q ${totalRecaudacion}`, 14, subtotalesStartY + 10);
+    doc.text(`• Total Asistencia de Voluntarios: ${totalAsistencia}`, 14, subtotalesStartY + 20);
+    doc.text(`• Total de Eventos: ${totalEventos}`, 14, subtotalesStartY + 30);
+    doc.text(`• Período Cubierto: Desde ${fechaMin} hasta ${fechaMax}`, 14, subtotalesStartY + 40);
+    doc.text(
+      `• Evento Mayor Recaudación: ${eventoMayorRecaudacion.nombreEvento} (Q ${eventoMayorRecaudacion.recaudacionTotal.toFixed(
+        2
+      )})`,
+      14,
+      subtotalesStartY + 50
+    );
+    doc.text(
+      `• Evento Menor Recaudación: ${eventoMenorRecaudacion.nombreEvento} (Q ${eventoMenorRecaudacion.recaudacionTotal.toFixed(
+        2
+      )})`,
+      14,
+      subtotalesStartY + 60
+    );
 
-      const firmaStartY = doc.previousAutoTable.finalY + 90;
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text("_______________________________", 105, firmaStartY, { align: "center" });
-      doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
-      doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
-        
+    const firmaStartY = doc.previousAutoTable.finalY + 90;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("_______________________________", 105, firmaStartY, { align: "center" });
+    doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
+    doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
 
-      doc.save(`Reporte_Eventos_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
-    };
+
+    doc.save(`Reporte_Eventos_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
+  };
 
   return (
     <div
@@ -209,20 +212,20 @@ function ReporteEventos() {
           </div>
         </div>
         <div className="text-center mb-4">
-        <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Revisado por:</label>
-        <input
-          type="text"
-          className="form-control mx-auto"
-          value={revisor}
-          onChange={(e) => setRevisor(e.target.value)}
-          placeholder="Nombre del revisor"
-          style={{
-            width: "250px",
-            textAlign: "center",
-          }}
-        />
-      </div>
-      <div className="text-center mb-4">
+          <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Revisado por:</label>
+          <input
+            type="text"
+            className="form-control mx-auto"
+            value={revisor}
+            onChange={(e) => setRevisor(e.target.value)}
+            placeholder="Nombre del revisor"
+            style={{
+              width: "250px",
+              textAlign: "center",
+            }}
+          />
+        </div>
+        <div className="text-center mb-4">
           <label style={{ fontWeight: "bold", marginBottom: "10px" }}>Cargo:</label>
           <input
             type="text"
