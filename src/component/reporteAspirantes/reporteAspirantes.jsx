@@ -32,35 +32,38 @@ function ReporteAspirantes() {
     fetchLoggedUser();
   }, []);
 
-  const fetchReporte = async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/reportesAspirantes",
-        {
-          fechaInicio,
-          fechaFin,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setReporte(response.data.reporte || []);
-      setTotales(response.data.totales || { totalAspirantes: 0 });
-      setAlerta("");
-    } catch (error) {
-      console.error("Error al cargar el reporte:", error);
-      setAlerta("Hubo un error al cargar el reporte.");
+  useEffect(() => {
+    const fetchReporte = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/reportesAspirantes",
+          {
+            fechaInicio,
+            fechaFin,
+          }
+        );
+        setReporte(response.data.reporte || []);
+        setTotales(response.data.totales || { totalAspirantes: 0 });
+        setAlerta("");
+      } catch (error) {
+        console.error("Error al cargar el reporte:", error);
+        setAlerta("Hubo un error al cargar el reporte.");
+      }
+    };
+
+    if (fechaInicio && fechaFin) {
+      fetchReporte();
     }
-  };
+  }, [fechaInicio, fechaFin]);
 
   const handleFechaInicio = (e) => {
-    setFechaInicio(e.target.value.split("-").reverse().join("-"));
+    const fecha = e.target.value.split("-").reverse().join("-");
+    setFechaInicio(fecha);
   };
 
   const handleFechaFin = (e) => {
-    setFechaFin(e.target.value.split("-").reverse().join("-"));
+    const fecha = e.target.value.split("-").reverse().join("-");
+    setFechaFin(fecha);
   };
 
   const generarPDF = () => {
@@ -198,22 +201,6 @@ function ReporteAspirantes() {
 
       <div className="text-center mb-4">
         <button
-          className="btn btn-primary mx-auto"
-          onClick={fetchReporte}
-          style={{
-            width: "20%",
-            fontWeight: "bold",
-            fontSize: "14px",
-            backgroundColor: "#007AC3",
-            borderBlockColor: "#007AC3",
-          }}
-        >
-          Generar Reporte
-        </button>
-      </div>
-
-      <div className="text-center mb-4">
-        <button
           className="btn btn-success mx-auto"
           onClick={generarPDF}
           disabled={reporte.length === 0}
@@ -221,7 +208,8 @@ function ReporteAspirantes() {
             width: "20%",
             fontWeight: "bold",
             fontSize: "14px",
-            backgroundColor: "#28a745",
+            backgroundColor: "#007AC3",
+            borderBlockColor: "#007AC3",
           }}
         >
           Descargar PDF
