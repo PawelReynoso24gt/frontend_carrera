@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
-import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
 import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
+import { format, parseISO } from "date-fns";
 
 function Stand() {
   const [stands, setStands] = useState([]);
@@ -17,14 +18,24 @@ function Stand() {
     estado: 1,
     idSede: "",
     idTipoStands: "",
+    idEvento: "",
+    fechaInicio: "",
+    fechaFinal: "",
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [sedes, setSedes] = useState([]);
   const [tiposStands, setTiposStands] = useState([]);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [eventos, setEventos] = useState([]);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [selectedHorarios, setSelectedHorarios] = useState([]);
+  const [availableHorarios, setAvailableHorarios] = useState([]); // Lista de horarios disponibles
+  const [standHorarios, setStandHorarios] = useState([]); // Para almacenar horarios del stand
+  const [showDetailsModal, setShowDetailsModal] = useState(false); // Controla la visibilidad del modal
+
+
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -39,12 +50,15 @@ function Stand() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchStands();
     fetchSedes();
     fetchTiposStands();
+    fetchEventos();
+    fetchHorarios();
   }, []);
+
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
@@ -56,6 +70,23 @@ function Stand() {
     }
     return true;
   };
+
+  const fetchHorarios = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/detalle_horarios/activos");
+
+      // Filtrar horarios cuya categoría sea "Stands"
+      const horariosFiltrados = response.data.filter(
+        (horario) => horario.categoriaHorario.categoria === "Stands"
+      );
+
+      setAvailableHorarios(horariosFiltrados);
+    } catch (error) {
+      console.error("Error fetching horarios:", error.response?.data || error.message);
+    }
+  };
+
+
 
   const fetchStands = async () => {
     try {
@@ -84,17 +115,50 @@ function Stand() {
     }
   };
 
+  const fetchEventos = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/eventos/activas");
+      setEventos(response.data);
+    } catch (error) {
+      console.error("Error fetching eventos:", error);
+    }
+  };
+
+  const handleShowDetailsModal = async (idStand) => {
+    if (!idStand) return;
+
+    try {
+      const response = await axios.get(`http://localhost:5000/standHorario/${idStand}`);
+      setStandHorarios(response.data); // Guardar los horarios del stand
+      setShowDetailsModal(true); // Mostrar el modal
+    } catch (error) {
+      console.error("Error fetching stand horarios:", error);
+    }
+  };
+
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
   };
-  
+
   const filteredStands = stands.filter((stand) =>
     stand.nombreStand?.toLowerCase().includes(searchTerm)
   );
-  
-  const handleShowModal = (stand = null) => {
+
+  const handleShowModal = async (stand = null) => {
     setEditingStand(stand);
+    setSelectedHorarios([]); // Reiniciar horarios seleccionados por defecto
+
+    if (stand) {
+      try {
+        // Obtener horarios asociados al stand
+        const response = await axios.get(`http://localhost:5000/standHorario/${stand.idStand}`);
+        setSelectedHorarios(response.data.map((h) => h.idDetalleHorario)); // Extraer IDs de horarios asociados
+      } catch (error) {
+        console.error("Error fetching stand horarios:", error);
+      }
+    }
+
     setNewStand(
       stand || {
         nombreStand: "",
@@ -102,10 +166,14 @@ function Stand() {
         estado: 1,
         idSede: "",
         idTipoStands: "",
+        idEvento: "",
+        fechaInicio: "",
+        fechaFinal: "",
       }
     );
     setShowModal(true);
   };
+
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -124,7 +192,7 @@ function Stand() {
       idUsuario,
       fechaHora: new Date()
     };
-  
+
     try {
       await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
@@ -134,21 +202,39 @@ function Stand() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
+      const standData = {
+        nombreStand: newStand.nombreStand,
+        direccion: newStand.direccion,
+        estado: newStand.estado,
+        idSede: newStand.idSede,
+        idTipoStands: newStand.idTipoStands,
+        idEvento: newStand.idEvento,
+        fechaInicio: newStand.fechaInicio,
+        fechaFinal: newStand.fechaFinal,
+      };
+
+      const horarios = selectedHorarios.map((idDetalleHorario) => ({
+        idDetalleHorario,
+      }));
+
       if (editingStand) {
-        await axios.put(
-          `http://localhost:5000/stand/update/${editingStand.idStand}`,
-          newStand
-        );
+        await axios.put(`http://localhost:5000/stand/update/${editingStand.idStand}`, {
+          standData,
+          horarios,
+        });
         setAlertMessage("Stand actualizado con éxito");
-        // Log the update action in the bitacora
         await logBitacora(`Stand ${newStand.nombreStand} actualizado`, 17);
       } else {
-        await axios.post("http://localhost:5000/stand/create", newStand);
+        await axios.post("http://localhost:5000/stand/createHorarios", {
+          standData,
+          horarios,
+        });
         setAlertMessage("Stand creado con éxito");
-         // Log the create action in the bitacora
         await logBitacora(`Stand ${newStand.nombreStand} creado`, 13);
       }
+
       fetchStands();
       setShowAlert(true);
       handleCloseModal();
@@ -156,6 +242,7 @@ function Stand() {
       console.error("Error submitting stand:", error);
     }
   };
+
 
   const toggleEstado = async (id, estadoActual) => {
     try {
@@ -174,26 +261,26 @@ function Stand() {
   };
 
   const fetchActiveStands = async () => {
-  try {
-    const response = await axios.get("http://localhost:5000/stand/activas");
-    const data = Array.isArray(response.data) ? response.data : []; // Validación
-    setStands(data);
-  } catch (error) {
-    console.error("Error fetching active stands:", error);
-    setStands([]); // Respaldo en caso de error
-  }
-};
+    try {
+      const response = await axios.get("http://localhost:5000/stand/activas");
+      const data = Array.isArray(response.data) ? response.data : []; // Validación
+      setStands(data);
+    } catch (error) {
+      console.error("Error fetching active stands:", error);
+      setStands([]); // Respaldo en caso de error
+    }
+  };
 
-const fetchInactiveStands = async () => {
-  try {
-    const response = await axios.get("http://localhost:5000/stand/inactivas");
-    const data = Array.isArray(response.data) ? response.data : []; // Validación
-    setStands(data);
-  } catch (error) {
-    console.error("Error fetching inactive stands:", error);
-    setStands([]); // Respaldo en caso de error
-  }
-};
+  const fetchInactiveStands = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/stand/inactivas");
+      const data = Array.isArray(response.data) ? response.data : []; // Validación
+      setStands(data);
+    } catch (error) {
+      console.error("Error fetching inactive stands:", error);
+      setStands([]); // Respaldo en caso de error
+    }
+  };
 
 
   // Pagination Logic
@@ -260,7 +347,7 @@ const fetchInactiveStands = async () => {
       </a>
     </div>
   );
-  
+
   const currentFilteredStands = filteredStands.slice(indexOfFirstRow, indexOfLastRow);
 
   return (
@@ -291,55 +378,53 @@ const fetchInactiveStands = async () => {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-      <div className="d-flex justify-content-start align-items-center mb-3">
-        <Button
-          style={{
-            backgroundColor: "#007abf",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "130px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={() => {
-            if (checkPermission('Crear stand', 'No tienes permisos para crear stand')) {
-              handleShowModal();
-            }
-          }}
-        >
-          Agregar Stand
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchActiveStands}
-        >
-          Activos
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#bf2200",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
-          }}
-          onClick={fetchInactiveStands}
-        >
-          Inactivos
-        </Button>
-      </div>
-
-
+        <div className="d-flex justify-content-start align-items-center mb-3">
+          <Button
+            style={{
+              backgroundColor: "#007abf",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "130px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={() => {
+              if (checkPermission('Crear stand', 'No tienes permisos para crear stand')) {
+                handleShowModal();
+              }
+            }}
+          >
+            Agregar Stand
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchActiveStands}
+          >
+            Activos
+          </Button>
+          <Button
+            style={{
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
+            }}
+            onClick={fetchInactiveStands}
+          >
+            Inactivos
+          </Button>
+        </div>
         <Alert
           variant="success"
           show={showAlert}
@@ -368,23 +453,36 @@ const fetchInactiveStands = async () => {
               <th>ID</th>
               <th>Nombre Stand</th>
               <th>Dirección</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Final</th>
               <th>Sede</th>
+              <th>Evento</th>
               <th>Tipo Stand</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
-          
+
           <tbody style={{ textAlign: "center" }}>
             {currentFilteredStands.map((stand) => (
               <tr key={stand.idStand}>
                 <td>{stand.idStand}</td>
                 <td>{stand.nombreStand}</td>
                 <td>{stand.direccion}</td>
-                <td>{stand.idSede}</td>
-                <td>{stand.idTipoStands}</td>
+                <td>{stand.fechaInicio ? format(parseISO(stand.fechaInicio), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td>{stand.fechaFinal ? format(parseISO(stand.fechaFinal), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td>  {
+                  sedes.find((sede) => sede.idSede === stand.idSede)?.nombreSede || "Sin sede"
+                }</td>
+                <td>  {
+                  eventos.find((evento) => evento.idEvento === stand.idEvento)?.nombreEvento || "Sin evento"
+                }</td>
+                <td>{
+                  tiposStands.find((tipo_stand) => tipo_stand.idTipoStands === stand.idTipoStands)?.tipo || "Sin tipo"
+                }</td>
                 <td>{stand.estado ? "Activo" : "Inactivo"}</td>
                 <td>
+
                   <FaPencilAlt
                     style={{
                       color: "#007AC3",
@@ -430,6 +528,16 @@ const fetchInactiveStands = async () => {
                       }}
                     />
                   )}
+                  <FaEye
+                    style={{
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginLeft: "10px",
+                      fontSize: "20px",
+                    }}
+                    title="Ver detalles"
+                    onClick={() => handleShowDetailsModal(stand.idStand)}
+                  />
                 </td>
               </tr>
             ))}
@@ -466,6 +574,26 @@ const fetchInactiveStands = async () => {
                 required
               />
             </Form.Group>
+            <Form.Group controlId="fechaInicio">
+              <Form.Label>Fecha de Inicio</Form.Label>
+              <Form.Control
+                type="date"
+                name="fechaInicio"
+                value={newStand.fechaInicio}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="fechaFinal">
+              <Form.Label>Fecha Final</Form.Label>
+              <Form.Control
+                type="date"
+                name="fechaFinal"
+                value={newStand.fechaFinal}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
             <Form.Group controlId="idSede">
               <Form.Label>Sede</Form.Label>
               <Form.Control
@@ -483,6 +611,23 @@ const fetchInactiveStands = async () => {
                 ))}
               </Form.Control>
             </Form.Group>
+            <Form.Group controlId="idEvento">
+              <Form.Label>Evento</Form.Label>
+              <Form.Control
+                as="select"
+                name="idEvento"
+                value={newStand.idEvento}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccionar Evento</option>
+                {eventos.map((evento) => (
+                  <option key={evento.idEvento} value={evento.idEvento}>
+                    {evento.nombreEvento}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
             <Form.Group controlId="idTipoStands">
               <Form.Label>Tipo de Stand</Form.Label>
               <Form.Control
@@ -495,11 +640,38 @@ const fetchInactiveStands = async () => {
                 <option value="">Seleccionar Tipo</option>
                 {tiposStands.map((tipo) => (
                   <option key={tipo.idTipoStands} value={tipo.idTipoStands}>
-                    {tipo.nombreTipo}
+                    {tipo.tipo}
                   </option>
                 ))}
               </Form.Control>
             </Form.Group>
+            <Form.Group controlId="horarios">
+              <Form.Label>Horarios</Form.Label>
+              {availableHorarios.map((horario) => {
+                // Convertir las horas a un formato legible
+                const horarioInicio = format(new Date(`1970-01-01T${horario.horario.horarioInicio}`), "hh:mm a");
+                const horarioFinal = format(new Date(`1970-01-01T${horario.horario.horarioFinal}`), "hh:mm a");
+
+                return (
+                  <Form.Check
+                    key={horario.idDetalleHorario}
+                    type="checkbox"
+                    label={`Horario ${horarioInicio} - ${horarioFinal} | Cupo: ${horario.cantidadPersonas}`}
+                    value={horario.idDetalleHorario}
+                    checked={selectedHorarios.includes(horario.idDetalleHorario)} // Marcar si está seleccionado
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      setSelectedHorarios((prev) =>
+                        e.target.checked
+                          ? [...prev, value] // Añadir a seleccionados
+                          : prev.filter((id) => id !== value) // Eliminar de seleccionados
+                      );
+                    }}
+                  />
+                );
+              })}
+            </Form.Group>
+
             <Button
               type="submit"
               style={{
@@ -514,17 +686,70 @@ const fetchInactiveStands = async () => {
           </Form>
         </Modal.Body>
       </Modal>
-       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-               <Modal.Header closeButton>
-                <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                  Aceptar
-                </Button>
-               </Modal.Footer>
-            </Modal>
+      <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Detalles de Horarios</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {standHorarios.length > 0 ? (
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Horario</th>
+                  <th>Cupo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {standHorarios.map((horario, index) => {
+                  const detalleHorario = horario?.detalle_horario;
+                  const horarioInfo = detalleHorario?.horario;
+
+                  // Validar si los datos necesarios existen
+                  if (!detalleHorario || !horarioInfo) {
+                    return (
+                      <tr key={index}>
+                        <td colSpan="3">Información incompleta</td>
+                      </tr>
+                    );
+                  }
+
+                  // Formatear las horas
+                  const horarioInicio = format(new Date(`1970-01-01T${horarioInfo.horarioInicio}`), "hh:mm a");
+                  const horarioFinal = format(new Date(`1970-01-01T${horarioInfo.horarioFinal}`), "hh:mm a");
+
+                  return (
+                    <tr key={horario.idStandHorario}>
+                      <td>{index + 1}</td>
+                      <td>{`${horarioInicio} - ${horarioFinal}`}</td>
+                      <td>{detalleHorario.cantidadPersonas}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          ) : (
+            <p>No hay horarios asociados a este stand.</p>
+          )}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDetailsModal(false)}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

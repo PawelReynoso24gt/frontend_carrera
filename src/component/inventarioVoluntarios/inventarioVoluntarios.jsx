@@ -41,33 +41,34 @@ function DetalleStandsVoluntarios() {
         });
         setPermissions(response.data.permisos || {});
 
-        const hasPermission = 
-        response.data.permisos['Ver inventario de voluntarios']
+        const hasPermission =
+          response.data.permisos['Ver inventario de voluntarios']
 
         setHasViewPermission(hasPermission);
-        setIsPermissionsLoaded(true); 
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
 
-      
+
     };
-     
+
 
     fetchPermissions();
     fetchProductos();
     fetchStands();
   }, []);
 
-    useEffect(() => {
-      if(isPermissionsLoaded){
-        if (hasViewPermission) {
-          fetchDetalleStands();
-        } else {
-          console.log(hasViewPermission)
-          checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
-        }}
-    }, [isPermissionsLoaded, hasViewPermission]);
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchDetalleStands();
+      } else {
+        console.log(hasViewPermission)
+        checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
 
   const checkPermission = (permission, message) => {
@@ -84,27 +85,27 @@ function DetalleStandsVoluntarios() {
       // Obtén los detalles de stands
       const response = await axios.get("http://localhost:5000/detalle_stands");
       const allDetalleStands = response.data;
-  
+
       // Obtén los stands
       const standsResponse = await axios.get("http://localhost:5000/stand");
       const allStands = standsResponse.data;
-  
+
       // Filtrar los stands que cumplen con la condición
       const filteredStands = allStands.filter(
         (stand) => stand.nombreStand === "Virtual" && stand.idStand === 1
       );
-  
+
       // Filtrar los detalles que correspondan al stand filtrado
       const filteredDetalleStands = allDetalleStands.filter((detalle) =>
         filteredStands.some((stand) => stand.idStand === detalle.idStand)
       );
-  
+
       setDetalleStands(filteredDetalleStands);
       setFilteredDetalleStands(filteredDetalleStands);
     } catch (error) {
       console.error("Error fetching detalle stands:", error);
     }
-  };  
+  };
 
   const fetchProductos = async () => {
     try {
@@ -118,77 +119,77 @@ function DetalleStandsVoluntarios() {
   const fetchStands = async () => {
     try {
       const response = await axios.get("http://localhost:5000/stand");
-  
+
       // Filtramos los stands que cumplen con las condiciones
       const filteredStands = response.data.filter(
         (stand) => stand.nombreStand === "Virtual" && stand.idStand === 1
       );
-  
+
       setStands(filteredStands);
     } catch (error) {
       console.error("Error fetching stands:", error);
     }
-  };  
+  };
 
   const fetchActiveDetalleStands = async () => {
     try {
       let allActiveDetalleStands = [];
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/detalle_stands/activos");
-      allActiveDetalleStands = response.data;
-    } else {
-      checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
-    }
+        const response = await axios.get("http://localhost:5000/detalle_stands/activos");
+        allActiveDetalleStands = response.data;
+      } else {
+        checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
+      }
       // Obtener los stands
       const standsResponse = await axios.get("http://localhost:5000/stand");
       const allStands = standsResponse.data;
-  
+
       // Filtrar los stands que cumplen con la condición
       const filteredStands = allStands.filter(
         (stand) => stand.nombreStand === "Virtual" && stand.idStand === 1
       );
-  
+
       // Filtrar los detalles que corresponden al stand filtrado
       const filteredDetalleStands = allActiveDetalleStands.filter((detalle) =>
         filteredStands.some((stand) => stand.idStand === detalle.idStand)
       );
-  
+
       setDetalleStands(filteredDetalleStands);
       setFilteredDetalleStands(filteredDetalleStands);
     } catch (error) {
       console.error("Error fetching active detalle stands:", error);
     }
-  };  
+  };
 
   const fetchInactiveDetalleStands = async () => {
     try {
       let allInactiveDetalleStands = [];
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
-       allInactiveDetalleStands = response.data;
-    } else {
-      checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
-    }
+        const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
+        allInactiveDetalleStands = response.data;
+      } else {
+        checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
+      }
       // Obtener los stands
       const standsResponse = await axios.get("http://localhost:5000/stand");
       const allStands = standsResponse.data;
-  
+
       // Filtrar los stands que cumplen con la condición
       const filteredStands = allStands.filter(
         (stand) => stand.nombreStand === "Virtual" && stand.idStand === 1
       );
-  
+
       // Filtrar los detalles que corresponden al stand filtrado
       const filteredDetalleStands = allInactiveDetalleStands.filter((detalle) =>
         filteredStands.some((stand) => stand.idStand === detalle.idStand)
       );
-  
+
       setDetalleStands(filteredDetalleStands);
       setFilteredDetalleStands(filteredDetalleStands);
     } catch (error) {
       console.error("Error fetching inactive detalle stands:", error);
     }
-  };  
+  };
 
 
   const handleSearch = (e) => {
@@ -228,7 +229,7 @@ function DetalleStandsVoluntarios() {
 
   const handleShowProductModal = async (idProducto) => {
     if (!idProducto) return;
-  
+
     try {
       const response = await axios.get(`http://localhost:5000/productos/${idProducto}`);
       setSelectedProduct(response.data); // Actualizar con datos completos
@@ -237,25 +238,25 @@ function DetalleStandsVoluntarios() {
       console.error("Error fetching product details:", error);
     }
   };
-  
+
 
   const handleShowModal = (detalleStand = null) => {
     setEditingDetalleStand(detalleStand);
     setNewDetalleStand(
       detalleStand
         ? {
-            ...detalleStand,
-            idStand: "1", // Siempre establece idStand como 1 al editar
-          }
+          ...detalleStand,
+          idStand: "1", // Siempre establece idStand como 1 al editar
+        }
         : {
-            cantidad: "",
-            estado: 1,
-            idProducto: "",
-            idStand: "1", // Siempre establece idStand como 1 al agregar
-          }
+          cantidad: "",
+          estado: 1,
+          idProducto: "",
+          idStand: "1", // Siempre establece idStand como 1 al agregar
+        }
     );
     setShowModal(true);
-  };  
+  };
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -273,16 +274,16 @@ function DetalleStandsVoluntarios() {
       const selectedProduct = productos.find(
         (producto) => producto.idProducto === parseInt(newDetalleStand.idProducto)
       );
-  
+
       if (selectedProduct && newDetalleStand.cantidad > selectedProduct.cantidad) {
         setMessageModalContent(`Stock insuficiente. Solo quedan ${selectedProduct.cantidad} unidades.`);
         setShowMessageModal(true);
         return;
       }
-  
+
       // Siempre asegura que idStand sea 1
       const standData = { ...newDetalleStand, idStand: "1" };
-  
+
       if (editingDetalleStand) {
         await axios.put(
           `http://localhost:5000/detalle_stands/update/${editingDetalleStand.idDetalleStands}`,
@@ -293,13 +294,13 @@ function DetalleStandsVoluntarios() {
         await axios.post("http://localhost:5000/detalle_stands/create", standData);
         setMessageModalContent("Producto creado con éxito");
       }
-  
+
       fetchDetalleStands();
       setShowMessageModal(true);
       handleCloseModal();
     } catch (error) {
       console.error("Error submitting detalle stand:", error);
-  
+
       if (error.response && error.response.data && error.response.data.message) {
         setMessageModalContent(error.response.data.message);
       } else {
@@ -307,7 +308,7 @@ function DetalleStandsVoluntarios() {
       }
       setShowMessageModal(true);
     }
-  };  
+  };
 
   const toggleEstado = async (id, estadoActual) => {
     try {
@@ -404,8 +405,8 @@ function DetalleStandsVoluntarios() {
         </Modal.Footer>
       </Modal>
 
-{/* Modal para ver resultados de la busqueda del producto */}
-<Modal show={showProductModal} onHide={() => setShowProductModal(false)}>
+      {/* Modal para ver resultados de la busqueda del producto */}
+      <Modal show={showProductModal} onHide={() => setShowProductModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Detalles del Producto</Modal.Title>
         </Modal.Header>
@@ -458,14 +459,14 @@ function DetalleStandsVoluntarios() {
         }}
       >
 
-      <div className="d-flex align-items-center mb-3">
-            <InputGroup style={{ flex: 1, marginRight: "10px" }}>
-                <FormControl
-                    placeholder="Buscar por cantidad, producto o stand..."
-                    value={searchTerm}
-                    onChange={handleSearch}
-                />
-            </InputGroup>
+        <div className="d-flex align-items-center mb-3">
+          <InputGroup style={{ flex: 1, marginRight: "10px" }}>
+            <FormControl
+              placeholder="Buscar por cantidad, producto o stand..."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </InputGroup>
 
         </div>
 
@@ -555,62 +556,62 @@ function DetalleStandsVoluntarios() {
                   {detalle.estado === 1 ? "Activo" : "Inactivo"}
                 </td>
                 <td style={{ textAlign: "center" }}>
-  <FaPencilAlt
-    style={{
-      color: "#007AC3",
-      cursor: "pointer",
-      marginRight: "10px",
-      fontSize: "20px",
-    }}
-    title="Editar"
-    onClick={() => {
-      if (checkPermission('Editar inventario voluntarios', 'No tienes permisos para editar inventario voluntarios')) {
-        handleShowModal(detalle);
-      }
-    }}
-  />
-  {detalle.estado ? (
-    <FaToggleOn
-      style={{
-        color: "#30c10c",
-        cursor: "pointer",
-        marginLeft: "10px",
-        fontSize: "20px",
-      }}
-      title="Inactivar"
-      onClick={() => {
-        if (checkPermission('Desactivar inventario voluntarios', 'No tienes permisos para desactivar inventario voluntarios')) {
-          toggleEstado(detalle.idDetalleStands, detalle.estado);
-        }
-      }}
-    />
-  ) : (
-    <FaToggleOff
-      style={{
-        color: "#e10f0f",
-        cursor: "pointer",
-        marginLeft: "10px",
-        fontSize: "20px",
-      }}
-      title="Activar"
-      onClick={() => {
-        if (checkPermission('Activar inventario voluntarios', 'No tienes permisos para activar inventario voluntarios')) {
-          toggleEstado(detalle.idDetalleStands, detalle.estado);
-        }
-      }}
-    />
-  )}
-  <FaEye
-    style={{
-      color: "#007AC3",
-      cursor: "pointer",
-      marginLeft: "10px",
-      fontSize: "20px",
-    }}
-    title="Ver detalles"
-    onClick={() => handleShowProductModal(detalle.idProducto)}
-  />
-</td>
+                  <FaPencilAlt
+                    style={{
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
+                    }}
+                    title="Editar"
+                    onClick={() => {
+                      if (checkPermission('Editar inventario voluntarios', 'No tienes permisos para editar inventario voluntarios')) {
+                        handleShowModal(detalle);
+                      }
+                    }}
+                  />
+                  {detalle.estado ? (
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => {
+                        if (checkPermission('Desactivar inventario voluntarios', 'No tienes permisos para desactivar inventario voluntarios')) {
+                          toggleEstado(detalle.idDetalleStands, detalle.estado);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => {
+                        if (checkPermission('Activar inventario voluntarios', 'No tienes permisos para activar inventario voluntarios')) {
+                          toggleEstado(detalle.idDetalleStands, detalle.estado);
+                        }
+                      }}
+                    />
+                  )}
+                  <FaEye
+                    style={{
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginLeft: "10px",
+                      fontSize: "20px",
+                    }}
+                    title="Ver detalles"
+                    onClick={() => handleShowProductModal(detalle.idProducto)}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -629,75 +630,75 @@ function DetalleStandsVoluntarios() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <Form onSubmit={handleSubmit}>
+          <Form onSubmit={handleSubmit}>
             <Form.Group controlId="cantidad">
-                <Form.Label>Cantidad</Form.Label>
-                <Form.Control
+              <Form.Label>Cantidad</Form.Label>
+              <Form.Control
                 type="number"
                 name="cantidad"
                 value={newDetalleStand.cantidad}
                 onChange={handleChange}
                 required
-                />
-                </Form.Group>
-                <Form.Group controlId="idProducto">
-                    <Form.Label>Producto</Form.Label>
-                    <Form.Control
-                    as="select"
-                    name="idProducto"
-                    value={newDetalleStand.idProducto}
-                    onChange={handleChange}
-                    required
-                    >
-                    <option value="">Seleccionar Producto</option>
-                    {productos.map((producto) => (
-                        <option key={producto.idProducto} value={producto.idProducto}>
-                        {producto.nombreProducto}
-                        </option>
-                    ))}
-                    </Form.Control>
-                </Form.Group>
-                {/* Campo oculto para idStand */}
-                <Form.Control type="hidden" name="idStand" value="1" onChange={handleChange} />
-                <Form.Group controlId="estado">
-                    <Form.Label>Estado</Form.Label>
-                    <Form.Control
-                    as="select"
-                    name="estado"
-                    value={newDetalleStand.estado}
-                    onChange={handleChange}
-                    >
-                    <option value={1}>Activo</option>
-                    <option value={0}>Inactivo</option>
-                    </Form.Control>
-                </Form.Group>
-                <Button
-                    style={{
-                    backgroundColor: "#007AC3",
-                    borderColor: "#007AC3",
-                    padding: "5px 10px",
-                    width: "100%",
-                    fontWeight: "bold",
-                    color: "#fff",
-                    }}
-                    type="submit"
-                >
-                    {editingDetalleStand ? "Actualizar" : "Crear"}
-                </Button>
-            </Form>
+              />
+            </Form.Group>
+            <Form.Group controlId="idProducto">
+              <Form.Label>Producto</Form.Label>
+              <Form.Control
+                as="select"
+                name="idProducto"
+                value={newDetalleStand.idProducto}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccionar Producto</option>
+                {productos.map((producto) => (
+                  <option key={producto.idProducto} value={producto.idProducto}>
+                    {producto.nombreProducto}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+            {/* Campo oculto para idStand */}
+            <Form.Control type="hidden" name="idStand" value="1" onChange={handleChange} />
+            <Form.Group controlId="estado">
+              <Form.Label>Estado</Form.Label>
+              <Form.Control
+                as="select"
+                name="estado"
+                value={newDetalleStand.estado}
+                onChange={handleChange}
+              >
+                <option value={1}>Activo</option>
+                <option value={0}>Inactivo</option>
+              </Form.Control>
+            </Form.Group>
+            <Button
+              style={{
+                backgroundColor: "#007AC3",
+                borderColor: "#007AC3",
+                padding: "5px 10px",
+                width: "100%",
+                fontWeight: "bold",
+                color: "#fff",
+              }}
+              type="submit"
+            >
+              {editingDetalleStand ? "Actualizar" : "Crear"}
+            </Button>
+          </Form>
         </Modal.Body>
       </Modal>
-        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                           <Modal.Header closeButton>
-                            <Modal.Title>Permiso Denegado</Modal.Title>
-                            </Modal.Header>
-                            <Modal.Body>{permissionMessage}</Modal.Body>
-                            <Modal.Footer>
-                            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                              Aceptar
-                            </Button>
-                           </Modal.Footer>
-                        </Modal>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

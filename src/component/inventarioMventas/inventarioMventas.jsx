@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, InputGroup, FormControl } from "react-bootstrap";
-import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
 
 function DetalleStands() {
   const [detalleStands, setDetalleStands] = useState([]);
@@ -25,57 +25,59 @@ function DetalleStands() {
   const [isProductSearched, setIsProductSearched] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-      const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-      const [permissionMessage, setPermissionMessage] = useState('');
-      const [permissions, setPermissions] = useState({});
-      const [hasViewPermission, setHasViewPermission] = useState(false);
-      const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     if (detalleStands.length > 0 && stands.length > 0) {
       const filtered = detalleStands.filter((detalle) => {
         const stand = stands.find((s) => s.idStand === detalle.idStand);
-        return stand && stand.nombreStand === "Stand de venta";
+        // Excluir stand con nombre "Virtual" y idStand igual a 1
+        return stand && !(stand.nombreStand === "Virtual" && stand.idStand === 1);
       });
       setFilteredDetalleStands(filtered);
     }
   }, [detalleStands, stands]);
-  
+
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
         const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`, 
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
         setPermissions(response.data.permisos || {});
 
-        const hasPermission = 
-        response.data.permisos['Ver inventario de stands']
+        const hasPermission =
+          response.data.permisos['Ver inventario de stands']
 
         setHasViewPermission(hasPermission);
-        setIsPermissionsLoaded(true); 
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchProductos();
     fetchStands();
   }, []);
 
   useEffect(() => {
-    if(isPermissionsLoaded){
+    if (isPermissionsLoaded) {
       if (hasViewPermission) {
         fetchDetalleStands();
       } else {
         console.log(hasViewPermission)
         checkPermission('Ver inventario de stands', 'No tienes permisos para ver inventario de stands');
-      }}
+      }
+    }
   }, [isPermissionsLoaded, hasViewPermission]);
-  
+
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
       setPermissionMessage(message);
@@ -116,12 +118,12 @@ function DetalleStands() {
   const fetchActiveDetalleStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/detalle_stands/activos");
-      setDetalleStands(response.data);
-      setFilteredDetalleStands(response.data);
-    } else {
-      checkPermission('Ver inventario de stands', 'No tienes permisos para ver inventario de stands')
-    }
+        const response = await axios.get("http://localhost:5000/detalle_stands/activos");
+        setDetalleStands(response.data);
+        setFilteredDetalleStands(response.data);
+      } else {
+        checkPermission('Ver inventario de stands', 'No tienes permisos para ver inventario de stands')
+      }
     } catch (error) {
       console.error("Error fetching active detalle stands:", error);
     }
@@ -130,12 +132,12 @@ function DetalleStands() {
   const fetchInactiveDetalleStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
-      setDetalleStands(response.data);
-      setFilteredDetalleStands(response.data);
-         } else {
-      checkPermission('Ver inventario de stands', 'No tienes permisos para ver inventario de stands')
-    }
+        const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
+        setDetalleStands(response.data);
+        setFilteredDetalleStands(response.data);
+      } else {
+        checkPermission('Ver inventario de stands', 'No tienes permisos para ver inventario de stands')
+      }
     } catch (error) {
       console.error("Error fetching inactive detalle stands:", error);
     }
@@ -176,11 +178,11 @@ function DetalleStands() {
     }
   };
   // llamada de los datos del producto especifico
-  const handleShowProductModal = async () => {
-    if (!selectedProduct) return;
-  
+  const handleShowProductModal = async (idProducto) => {
+    if (!idProducto) return;
+
     try {
-      const response = await axios.get(`http://localhost:5000/productos/${selectedProduct.idProducto}`);
+      const response = await axios.get(`http://localhost:5000/productos/${idProducto}`);
       setSelectedProduct(response.data); // Actualizar con datos completos
       setShowProductModal(true); // Mostrar el modal
     } catch (error) {
@@ -397,31 +399,16 @@ function DetalleStands() {
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
-       >
+      >
         <div className="d-flex align-items-center mb-3">
-            <InputGroup style={{ flex: 1, marginRight: "10px" }}>
-                <FormControl
-                    placeholder="Buscar por cantidad, producto o stand..."
-                    value={searchTerm}
-                    onChange={handleSearch}
-                />
-            </InputGroup>
+          <InputGroup style={{ flex: 1, marginRight: "10px" }}>
+            <FormControl
+              placeholder="Buscar por cantidad, producto o stand..."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </InputGroup>
 
-            {/* Botón de ver especificaciones de producto */}
-            <Button
-                onClick={handleShowProductModal}
-                disabled={!selectedProduct} // Deshabilitar si no se ha buscado un producto
-                style={{
-                    backgroundColor: selectedProduct ? "#007AC3" : "#cccccc",
-                    color: "#fff",
-                    fontWeight: "bold",
-                    height: "38px", // Ajustar altura
-                    width: "150px", // Ajustar ancho
-                    textAlign: "center",
-                }}
-            >
-                Abrir Modal
-            </Button>
         </div>
 
         <div className="d-flex justify-content-start align-items-center mb-3">
@@ -556,6 +543,16 @@ function DetalleStands() {
                       }}
                     />
                   )}
+                  <FaEye
+                    style={{
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginLeft: "10px",
+                      fontSize: "20px",
+                    }}
+                    title="Ver detalles"
+                    onClick={() => handleShowProductModal(detalle.idProducto)}
+                  />
                 </td>
               </tr>
             ))}
@@ -613,11 +610,13 @@ function DetalleStands() {
                 required
               >
                 <option value="">Seleccionar Stand</option>
-                {stands.map((stand) => (
-                  <option key={stand.idStand} value={stand.idStand}>
-                    {stand.nombreStand}
-                  </option>
-                ))}
+                {stands
+                  .filter((stand) => !(stand.idStand === 1 || stand.nombreStand === "Virtual")) // Excluir id 1 y el nombre "Virtual"
+                  .map((stand) => (
+                    <option key={stand.idStand} value={stand.idStand}>
+                      {stand.nombreStand}
+                    </option>
+                  ))}
               </Form.Control>
             </Form.Group>
             <Form.Group controlId="estado">
@@ -648,17 +647,17 @@ function DetalleStands() {
           </Form>
         </Modal.Body>
       </Modal>
-       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                     <Modal.Header closeButton>
-                      <Modal.Title>Permiso Denegado</Modal.Title>
-                      </Modal.Header>
-                      <Modal.Body>{permissionMessage}</Modal.Body>
-                      <Modal.Footer>
-                      <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                        Aceptar
-                      </Button>
-                     </Modal.Footer>
-                  </Modal>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }
