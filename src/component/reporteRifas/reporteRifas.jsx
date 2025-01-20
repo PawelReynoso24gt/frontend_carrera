@@ -31,38 +31,41 @@ function ReporteRifas() {
         fetchLoggedUser();
     }, []);
 
-    const fetchReporte = async () => {
-        try {
-            const response = await axios.post(
-                "http://localhost:5000/reportesRifas",
-                {
-                    fechaInicio,
-                    fechaFin,
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-            setReporte(response.data.reporte || []);
-            setAlerta("");
-        } catch (error) {
-            console.error("Error al cargar el reporte:", error);
-            setAlerta("Hubo un error al cargar el reporte.");
+    useEffect(() => {
+        const fetchReporte = async () => {
+            try {
+                const response = await axios.post(
+                    "http://localhost:5000/reportesRifas",
+                    {
+                        fechaInicio,
+                        fechaFin,
+                    }
+                );
+                setReporte(response.data.reporte || []);
+                setAlerta("");
+            } catch (error) {
+                console.error("Error al cargar el reporte:", error);
+                setAlerta("Hubo un error al cargar el reporte.");
+            }
+        };
+
+        if (fechaInicio && fechaFin) {
+            fetchReporte();
         }
-    };
+    }, [fechaInicio, fechaFin]);
 
     const handleFechaInicio = (e) => {
-        setFechaInicio(e.target.value.split("-").reverse().join("-"));
+        const fecha = e.target.value.split("-").reverse().join("-");
+        setFechaInicio(fecha);
     };
 
     const handleFechaFin = (e) => {
-        setFechaFin(e.target.value.split("-").reverse().join("-"));
+        const fecha = e.target.value.split("-").reverse().join("-");
+        setFechaFin(fecha);
     };
 
     const generarPDF = () => {
-        const doc = new jsPDF();
+        const doc = new jsPDF('landscape'); // Cambia la orientación a 'landscape'
 
         // Logo y encabezado
         doc.addImage(logo, "PNG", 10, 10, 60, 30);
@@ -70,7 +73,10 @@ function ReporteRifas() {
         doc.setTextColor(40);
         doc.text("Reporte de Rifas", 75, 20);
         doc.setFontSize(12);
-        doc.text(new Date().toLocaleDateString("es-ES"), 75, 28);
+        doc.text("Fecha de generación:", 75, 28);
+        doc.setFontSize(10);
+        doc.text(new Date().toLocaleDateString("es-ES"), 117, 28);
+        doc.text(new Date().toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit', hour12: true }), 135, 28);
         doc.setFontSize(10);
         doc.text(`Desde: ${fechaInicio}   Hasta: ${fechaFin}`, 75, 35);
         doc.text(`Generado por: ${nombreUsuario}`, 75, 40);
@@ -78,12 +84,12 @@ function ReporteRifas() {
         // Línea separadora
         doc.setLineWidth(0.5);
         doc.setDrawColor("#007AC3");
-        doc.line(10, 50, 200, 50);
+        doc.line(10, 50, 280, 50); // Ajusta la longitud de la línea para el formato horizontal
 
         doc.setFontSize(14);
         doc.setTextColor(0);
         doc.setFont("helvetica", "bold");
-        doc.text("Rifas", 105, 56, { align: "center" });
+        doc.text("Rifas", 148.5, 56, { align: "center" }); // Centra el texto en el formato horizontal
 
         // Tabla con los datos del reporte
         doc.autoTable({
@@ -116,9 +122,9 @@ function ReporteRifas() {
         });
 
         const firmaStartY = doc.previousAutoTable.finalY + 40;
-        doc.text("_______________________________", 105, firmaStartY, { align: "center" });
-        doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
-        doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
+        doc.text("_______________________________", 148.5, firmaStartY, { align: "center" });
+        doc.text(revisor || "Sin nombre", 148.5, firmaStartY + 10, { align: "center" });
+        doc.text(cargo || "Sin cargo", 148.5, firmaStartY + 15, { align: "center" });
 
         doc.save(`Reporte_Rifas_${fechaInicio}_${fechaFin}.pdf`);
     };
@@ -194,22 +200,6 @@ function ReporteRifas() {
 
             <div className="text-center mb-4">
                 <button
-                    className="btn btn-primary mx-auto"
-                    onClick={fetchReporte}
-                    style={{
-                        width: "20%",
-                        fontWeight: "bold",
-                        fontSize: "14px",
-                        backgroundColor: "#007AC3",
-                        borderBlockColor: "#007AC3",
-                    }}
-                >
-                    Generar Reporte
-                </button>
-            </div>
-
-            <div className="text-center mb-4">
-                <button
                     className="btn btn-success mx-auto"
                     onClick={generarPDF}
                     disabled={reporte.length === 0}
@@ -217,7 +207,8 @@ function ReporteRifas() {
                         width: "20%",
                         fontWeight: "bold",
                         fontSize: "14px",
-                        backgroundColor: "#28a745",
+                        backgroundColor: "#007AC3",
+                        borderBlockColor: "#007AC3",
                     }}
                 >
                     Descargar PDF

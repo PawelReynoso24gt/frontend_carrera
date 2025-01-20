@@ -13,11 +13,16 @@ import {
 import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
 import { format } from "date-fns";
 import { parseISO } from "date-fns";
+import { getUserDataFromToken } from "../../utils/jwtUtils";
 
 // Utilidad para formatear fechas
-const formatDate = (date) => {
-  const options = { day: "2-digit", month: "2-digit", year: "numeric" };
-  return new Date(date).toLocaleDateString("es-ES", options);
+const formatDateDMY = (date) => {
+  if (!date) return ""; // Manejar fechas vacías
+  const fecha = new Date(date);
+  const day = String(fecha.getDate()).padStart(2, "0");
+  const month = String(fecha.getMonth() + 1).padStart(2, "0"); // Los meses son 0-11
+  const year = fecha.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 function Pedidos() {
@@ -46,6 +51,8 @@ function Pedidos() {
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [detallePedido, setDetallePedido] = useState(null);
   const [productos, setProductos] = useState([]);
+
+  const idUsuario = getUserDataFromToken().idUsuario;
 
 
   useEffect(() => {
@@ -201,6 +208,21 @@ function Pedidos() {
     setNewPedido({ ...newPedido, [name]: value });
   };
 
+  const logBitacora = async (descripcion, idCategoriaBitacora) => {
+    const bitacoraData = {
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date()
+    };
+  
+    try {
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+    } catch (error) {
+      console.error("Error logging bitacora:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -216,9 +238,11 @@ function Pedidos() {
           pedidoConDetalle
         );
         setAlertMessage("Pedido actualizado con éxito");
+        logBitacora(`Actualizó el pedido #${editingPedido.idPedido}`, 14);
       } else {
         await axios.post("http://localhost:5000/pedidosCompletos", pedidoConDetalle);
         setAlertMessage("Pedido creado con éxito");
+        logBitacora("Creó un nuevo pedido", 10);
       }
 
       fetchPedidos();
@@ -422,7 +446,7 @@ function Pedidos() {
             {currentPedidos.map((pedido) => (
               <tr key={pedido.idPedido}>
                 <td style={{ textAlign: "center" }}>{pedido.idPedido}</td>
-                <td style={{ textAlign: "center" }}>{formatDate(pedido.fecha) ? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td style={{ textAlign: "center" }}>{formatDateDMY(pedido.fecha)}</td>
                 <td style={{ textAlign: "center" }}>{pedido.descripcion}</td>
                 <td style={{ textAlign: "center" }}>
                   {sedes.find((sede) => sede.idSede === pedido.idSede)?.nombreSede ||

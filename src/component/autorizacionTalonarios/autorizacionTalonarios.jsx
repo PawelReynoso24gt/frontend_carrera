@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Modal, Card, Row, Col } from "react-bootstrap";
+import { Button, Modal, Card, Row, Col, Form } from "react-bootstrap";
 import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
 function AutorizacionTalonarios() {
@@ -8,6 +8,8 @@ function AutorizacionTalonarios() {
   const [modalContent, setModalContent] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [cardsPerPage, setCardsPerPage] = useState(9);
       const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
       const [permissionMessage, setPermissionMessage] = useState('');
       const [permissions, setPermissions] = useState({});
@@ -64,33 +66,157 @@ function AutorizacionTalonarios() {
 
   const logBitacora = async (descripcion, idCategoriaBitacora) => {
     const bitacoraData = {
-      descripcion,
-      idCategoriaBitacora,
-      idUsuario,
-      fechaHora: new Date()
+        descripcion,
+        idCategoriaBitacora,
+        idUsuario,
+        fechaHora: new Date(),
     };
   
     try {
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
-      console.error("Error logging bitacora:", error);
+        console.error("Error logging bitacora:", error);
+        throw error; // Lanza el error para manejarlo en handleSave
+    }
+  };
+
+  const createNotification = async (idBitacora, idTipoNotificacion, idPersona) => {
+    const notificationData = {
+      idBitacora,
+      idTipoNotificacion,
+      idPersona,
+    };
+  
+    //console.log("Datos enviados para crear la notificación:", notificationData);
+  
+    try {
+      await axios.post("http://localhost:5000/notificaciones/create", notificationData);
+    } catch (error) {
+      console.error("Error creating notification:", error);
+    }
+  };
+
+  const getVoluntario = async (idVoluntario) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/voluntarios/${idVoluntario}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error al obtener el voluntario ${idVoluntario}:`, error);
+      throw error;
     }
   };
 
   const updateSolicitud = async (idSolicitud, estado) => {
     try {
-      await axios.put(`http://localhost:5000/solicitudes/${idSolicitud}`, {
-        estado, // Solo enviamos el estado
-      });
-      fetchSolicitudes(); // Actualizamos la lista de solicitudes después de cambiar el estado
+      // Actualizar estado de la solicitud
+      await axios.put(`http://localhost:5000/solicitudes/${idSolicitud}`, { estado });
+  
+      // Obtener nuevamente la solicitud completa
+      const responseSolicitud = await axios.get(`http://localhost:5000/solicitudes/${idSolicitud}`);
+      //console.log("API Response Solicitud:", responseSolicitud);
+  
+      const solicitud = responseSolicitud.data;
+  
+      // Verificar la estructura de la respuesta antes de acceder a voluntario
+      if (solicitud && solicitud.idVoluntario) {
+        // Obtener la información del voluntario
+        const voluntario = await getVoluntario(solicitud.idVoluntario);
+        //console.log("API Response Voluntario:", voluntario);
+  
+        // Verificar que voluntario y persona existan
+        if (voluntario && voluntario.persona && voluntario.persona.idPersona) {
+          const idPersona = voluntario.persona.idPersona;
+  
+          // Log de bitácora y obtener idBitacora
+          const idBitacora = await logBitacora(`Solicitud de talonario ${idSolicitud} actualizada`, 21);
+  
+          // Verifica que todos los campos necesarios estén presentes
+          if (idBitacora && idPersona) {
+            const idTipoNotificacion = 4; 
+            await createNotification(idBitacora, idTipoNotificacion, idPersona);
+          } else {
+            console.error("Faltan datos necesarios para crear la notificación");
+          }
+        } else {
+          console.error("La estructura de la respuesta del voluntario no contiene los datos esperados");
+        }
+      } else {
+        console.error("La estructura de la respuesta de la solicitud no contiene los datos esperados");
+      }
+  
+      // Actualizamos la lista de solicitudes después de cambiar el estado
+      fetchSolicitudes();
       setShowConfirmationModal(false);
-
-      // Log de bitácora
-      await logBitacora(`Solicitud de talonario ${idSolicitud} actualizada`, 21); 
     } catch (error) {
       console.error(`Error al actualizar la solicitud ${idSolicitud}:`, error);
     }
   };
+
+  // Pagination Logic
+  const indexOfLastCard = currentPage * cardsPerPage;
+  const indexOfFirstCard = indexOfLastCard - cardsPerPage;
+  const currentSolicitudes = solicitudes.slice(indexOfFirstCard, indexOfLastCard);
+
+  const totalPages = Math.ceil(solicitudes.length / cardsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Tarjetas por página</span>
+        <Form.Control
+          as="select"
+          value={cardsPerPage}
+          onChange={(e) => {
+            setCardsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[9, 18, 27].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
 
   return (
     <div className="container mt-4">
@@ -98,7 +224,7 @@ function AutorizacionTalonarios() {
         AUTORIZACIÓN DE SOLICITUDES DE TALONARIOS
       </h3>
       <Row>
-        {solicitudes.map((solicitud) => (
+        {currentSolicitudes.map((solicitud) => (
           <Col key={solicitud.idSolicitudTalonario} sm={12} md={6} lg={4}>
             <Card
               className="mb-3"
@@ -110,7 +236,6 @@ function AutorizacionTalonarios() {
                 <Card.Text>Fecha de Solicitud: {new Date(solicitud.fechaSolicitud).toLocaleDateString("es-ES")}</Card.Text>
                 <Card.Text>Voluntario: {solicitud.voluntario.persona.nombre}</Card.Text>
                 <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-                  {/* Mostrar botones dinámicamente según el estado */}
                   {solicitud.estado === 1 && (
                     <>
                       <Button
@@ -174,7 +299,8 @@ function AutorizacionTalonarios() {
         ))}
       </Row>
 
-      {/* Modal de confirmación */}
+      {renderPagination()}
+
       <Modal show={showConfirmationModal} onHide={() => setShowConfirmationModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Confirmación</Modal.Title>

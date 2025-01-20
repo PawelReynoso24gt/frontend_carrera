@@ -59,7 +59,10 @@ function ReporteTraslados() {
     doc.setTextColor(40);
     doc.text("Reporte de Traslados", 75, 20);
     doc.setFontSize(12);
-    doc.text(new Date().toLocaleDateString("es-ES"), 75, 28);
+    doc.text("Fecha de generación:", 75, 28);
+    doc.setFontSize(10);
+    doc.text(new Date().toLocaleDateString("es-ES"), 117, 28);
+    doc.text(new Date().toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit', hour12: true }), 135, 28);
     doc.setFontSize(10);
     const fechaInicioFormatted = fechaInicio.split("-").reverse().join("/");
     const fechaFinFormatted = fechaFin.split("-").reverse().join("/");
