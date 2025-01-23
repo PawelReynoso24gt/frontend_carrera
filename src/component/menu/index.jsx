@@ -222,7 +222,7 @@ function Menu({ toggleMenu, menu }) {
                 { link: "reporteRifas", title: "Reporte de rifas" },
                 { link: "reporteTraslados", title: "Reporte de traslados" },
                 { link: "reportePedidos", title: "Reporte de pedidos" },
-                { link: "reporteContabilidad", title: "Reporte de contabilidad" },
+                { link: "reporteContabilidad", title: "Reporte de contabilidad" }, //solo para probar
                 // aqui colocar reportes
               ]}
               img={
