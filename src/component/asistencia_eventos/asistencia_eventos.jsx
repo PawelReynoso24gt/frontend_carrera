@@ -101,14 +101,15 @@ function EventosActivos() {
   };
 
   return (
-    <Container className="mt-5" style={{ backgroundColor: "#CEECF2" }}>
+    <Container className="mt-5" style={{ backgroundColor: "#CEECF2",  maxWidth: "100%",
+      margin: "0 auto" }}>
       <h2 className="text-center mb-4" style={{ fontWeight: "bold"}}>
         Eventos Activos
       </h2>
-      <Row>
+      <Row >
         {eventos.length > 0 ? (
           eventos.map((evento) => (
-            <Col key={evento.idEvento} md={6} lg={4} className="mb-4">
+            <div class="col-sm-4 mb-4" key={evento.idEvento} style={{ marginBottom: "20px" }} >
               <Card className="h-100 shadow-sm">
                 <Card.Body>
                   <Card.Title>{evento.nombreEvento}</Card.Title>
@@ -141,7 +142,7 @@ function EventosActivos() {
                   </Button>
                 </Card.Footer>
               </Card>
-            </Col>
+            </div>
           ))
         ) : (
           <p className="text-center">No hay eventos activos disponibles.</p>

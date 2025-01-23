@@ -106,7 +106,7 @@ function mercanciaVoluntariosComponent() {
 
   return (
 
-    <div className="container mt-4">
+    <div className="container mt-4" style={{maxWidth: "100%", margin: "0 auto",}}>
       {/* Título y Breadcrumb */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>

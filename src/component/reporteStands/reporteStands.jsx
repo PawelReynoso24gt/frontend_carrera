@@ -241,17 +241,22 @@ function ReportePlayeras() {
     <div
       className="container mt-4"
       style={{
+        maxWidth: "100%",
+        margin: "0 auto",
         backgroundColor: "#f8f9fa",
         padding: "20px",
         borderRadius: "8px",
         boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <div className="row mb-3">
-        <div className="col text-center">
-          <h3 style={{ fontWeight: "bold", color: "#333" }}>Reporte de ventas por Stand</h3>
+      <div className="row justify-content-center" style={{marginBottom: "20px" }}>
+        <div className="col-12 text-center">
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
+            Reporte de ventas por stand
+          </h3>
         </div>
       </div>
+
 
       {alerta && <div className="alert alert-warning">{alerta}</div>}
 

@@ -16,9 +16,9 @@ function SolicitudesVoluntariado() {
   const [modalContent, setModalContent] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   // Estados para la paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,7 +37,7 @@ function SolicitudesVoluntariado() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchAspirantes();
     fetchPersonas();
@@ -52,7 +52,7 @@ function SolicitudesVoluntariado() {
       idUsuario,
       fechaHora: new Date(),
     };
-  
+
     try {
       const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
       return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
@@ -68,9 +68,9 @@ function SolicitudesVoluntariado() {
       idTipoNotificacion,
       idPersona,
     };
-  
+
     //console.log("Datos enviados para crear la notificación:", notificationData);
-  
+
     try {
       await axios.post("http://localhost:5000/notificaciones/create", notificationData);
     } catch (error) {
@@ -144,17 +144,17 @@ function SolicitudesVoluntariado() {
       await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
       fetchAspirantes();
       setShowConfirmationModal(false);
-  
+
       // Obtener la información del aspirante
       const aspirante = await getAspirante(idAspirante);
-  
+
       // Verificar que aspirante y persona existan
       if (aspirante && aspirante.idPersona) {
         const idPersona = aspirante.idPersona;
-  
+
         // Log de bitácora y obtener idBitacora
         const idBitacora = await logBitacora(`Solicitud de aspirante ${idAspirante} aceptada`, 20);
-  
+
         // Crear la notificación
         if (idBitacora && idPersona) {
           const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
@@ -169,27 +169,27 @@ function SolicitudesVoluntariado() {
       console.error("Error accepting solicitud:", error);
     }
   };
-  
+
   const denySolicitud = async (idAspirante) => {
     try {
       // Actualizar estado del aspirante
       await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
       fetchAspirantes();
       setShowConfirmationModal(false);
-  
+
       // Obtener la información del aspirante
       const aspirante = await getAspirante(idAspirante);
-  
+
       // Verificar que aspirante y persona existan
       if (aspirante && aspirante.idPersona) {
         const idPersona = aspirante.idPersona;
-  
+
         // Log de bitácora y obtener idBitacora
         const idBitacora = await logBitacora(`Solicitud de aspirante ${idAspirante} denegada`, 26);
-  
+
         // Crear la notificación
         if (idBitacora && idPersona) {
-          const idTipoNotificacion = 4; 
+          const idTipoNotificacion = 4;
           await createNotification(idBitacora, idTipoNotificacion, idPersona);
         } else {
           console.error("Faltan datos necesarios para crear la notificación");
@@ -211,13 +211,19 @@ function SolicitudesVoluntariado() {
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="container mt-4">
-      <h3 className="text-center mb-4" style={{ fontWeight: "bold", color: "#007abf" }}>
-        SOLICITUDES ENTRANTES PARA VOLUNTARIADO
-      </h3>
+    <div className="container mt-4" style={{ maxWidth: "100%", margin: "0 auto" }}>
+
+      <div className="row justify-content-center" style={{ marginBottom: "20px" }}>
+        <div className="col-12 text-center">
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
+            SOLICITUDES ENTRANTES PARA VOLUNTARIO
+          </h3>
+        </div>
+      </div>
+
       <Row>
         {currentAspirantes.map((aspirante) => (
-          <Col key={aspirante.idAspirante} sm={12} md={6} lg={4}>
+          <div class="col-sm-4 mb-4" key={aspirante.idAspirante} sm={12} md={6} lg={4} style={{ marginBottom: "20px" }}>
             <Card
               className="mb-3"
               style={{ boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", position: "relative" }}
@@ -235,7 +241,7 @@ function SolicitudesVoluntariado() {
                         handleAccept(aspirante.idAspirante);
                       }
                     }}
-                    style={{ minWidth: "70px" , width: "100px"}}
+                    style={{ minWidth: "70px", width: "100px" }}
                   >
                     Aceptar
                   </Button>
@@ -247,7 +253,7 @@ function SolicitudesVoluntariado() {
                         handleDeny(aspirante.idAspirante);
                       }
                     }}
-                    style={{ minWidth: "70px",  width: "100px" }}
+                    style={{ minWidth: "70px", width: "100px" }}
                   >
                     Denegar
                   </Button>
@@ -268,7 +274,7 @@ function SolicitudesVoluntariado() {
                 </a>
               </Card.Body>
             </Card>
-          </Col>
+          </div>
         ))}
       </Row>
 
@@ -354,17 +360,17 @@ function SolicitudesVoluntariado() {
           </Button>
         </Modal.Footer>
       </Modal>
-          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-               <Modal.Header closeButton>
-                <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                  Aceptar
-                </Button>
-               </Modal.Footer>
-             </Modal>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

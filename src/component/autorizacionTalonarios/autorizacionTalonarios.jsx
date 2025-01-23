@@ -219,13 +219,18 @@ function AutorizacionTalonarios() {
   );
 
   return (
-    <div className="container mt-4">
-      <h3 className="text-center mb-4" style={{ fontWeight: "bold", color: "#007abf" }}>
-        AUTORIZACIÓN DE SOLICITUDES DE TALONARIOS
-      </h3>
+    <div className="container mt-4" style={{maxWidth: "100%", margin: "0 auto"}}>
+ <div className="row justify-content-center" style={{marginBottom: "20px" }}>
+        <div className="col-12 text-center">
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
+            AUTORIZACION DE SOLICITUDES DE TALONARIOS
+          </h3>
+        </div>
+      </div>
+
       <Row>
         {currentSolicitudes.map((solicitud) => (
-          <Col key={solicitud.idSolicitudTalonario} sm={12} md={6} lg={4}>
+          <div class="col-sm-4 mb-4" key={solicitud.idSolicitudTalonario} sm={12} md={6} lg={4} style={{ marginBottom: "20px" }} >
             <Card
               className="mb-3"
               style={{ boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", position: "relative" }}
@@ -295,7 +300,7 @@ function AutorizacionTalonarios() {
                 </div>
               </Card.Body>
             </Card>
-          </Col>
+          </div>
         ))}
       </Row>
 

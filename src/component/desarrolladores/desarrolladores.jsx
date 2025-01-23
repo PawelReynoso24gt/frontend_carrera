@@ -38,7 +38,7 @@ const Desarrolladores = () => {
   ];
 
   return (
-    <Container
+    <Container-fluid
       style={{
         marginTop: "20px",
         backgroundColor: "#f8f9fa",
@@ -100,7 +100,7 @@ const Desarrolladores = () => {
 
       <Row>
         {developers.map((developer, index) => (
-          <Col key={index} md={6} lg={4} className="mb-4">
+          <div class="col-sm-4 mb-4" key={index} md={6} lg={4} style={{ marginBottom: "20px" }}>
             <Card
               style={{
                 border: "none",
@@ -133,10 +133,10 @@ const Desarrolladores = () => {
                 </Card.Text>
               </Card.Body>
             </Card>
-          </Col>
+          </div>
         ))}
       </Row>
-    </Container>
+    </Container-fluid>
   );
 };
 

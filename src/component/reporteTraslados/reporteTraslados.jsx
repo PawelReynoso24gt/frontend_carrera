@@ -151,8 +151,15 @@ function ReporteTraslados() {
   };
 
   return (
-    <div className="container mt-4">
-      <h3 className="text-center mb-4">Reporte de Traslados</h3>
+    <div className="container mt-4" style={{maxWidth: "100%", margin: "0 auto",}}>
+       <div className="row justify-content-center" style={{marginBottom: "20px" }}>
+        <div className="col-12 text-center">
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
+           Reporte de traslados
+          </h3>
+        </div>
+      </div>
+
 
       {alerta && <div className="alert alert-warning">{alerta}</div>}
 

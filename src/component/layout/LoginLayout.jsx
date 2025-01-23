@@ -59,7 +59,7 @@ const LoginLayout = () => {
           backgroundPosition: "center",
         }}
       >
-        <div className="container" style={{ maxWidth: "450px", padding: "80px", backgroundColor: "#D5F8FB", borderRadius: "30px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
+        <div className="container-fluid" style={{ maxWidth: "450px", padding: "80px", backgroundColor: "#D5F8FB", borderRadius: "30px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
           <div className="text-center mb-4">
             <h4 style={{ color: "#333", fontWeight: "bold" }}>Iniciar Sesión</h4>
           </div>

@@ -220,17 +220,20 @@ function TipoPublicos() {
 
   return (
     <>
-      <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
-        <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-            Gestión de Tipos de Públicos para Venta de Mercancía
+      <div className="row justify-content-center" style={{marginBottom: "20px" }}>
+        <div className="col-12 text-center">
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
+            Gestión de Tipos de Público para Venta de Mercancía
           </h3>
         </div>
       </div>
 
+
       <div
         className="container mt-4"
         style={{
+          maxWidth: "100%",
+          margin: "0 auto",
           backgroundColor: "#f8f9fa",
           padding: "20px",
           borderRadius: "8px",

@@ -104,7 +104,7 @@ function EventosActivos() {
   };
   
   return (
-    <Container className="mt-5">
+    <Container className="mt-5" style={{maxWidth: "100%", margin: "0 auto" }}>
       <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         Inscripciones a comisiones activas
       </h2>
@@ -122,7 +122,7 @@ function EventosActivos() {
         <Tab eventKey="eventos" title="Eventos Disponibles">
           <Row>
             {eventos.map((evento) => (
-              <Col key={evento.idEvento} md={6} lg={4} className="mb-4">
+              <div class="col-sm-4 mb-4" key={evento.idEvento} md={6} lg={4} style={{ marginBottom: "20px" }}>
                 <Card className="h-100 shadow-sm">
                   <Card.Body>
                     <Card.Title>{evento.nombreEvento}</Card.Title>
@@ -134,7 +134,7 @@ function EventosActivos() {
                     </Card.Text>
                   </Card.Body>
                 </Card>
-              </Col>
+              </div>
             ))}
           </Row>
         </Tab>
@@ -149,7 +149,7 @@ function EventosActivos() {
                 const isFull = totalVoluntarios >= maxPersonas; // Verifica si la comisión está llena
 
                 return (
-                  <Col key={comision.idComision} md={6} lg={4} className="mb-4">
+                  <div class="col-sm-4 mb-4" key={comision.idComision} md={6} lg={4} style={{ marginBottom: "20px" }}>
                     <Card className="h-100 shadow-sm">
                       <Card.Body>
                         <Card.Title>{comision.comision}</Card.Title>
@@ -183,7 +183,7 @@ function EventosActivos() {
                         </Button>
                       </Card.Footer>
                     </Card>
-                  </Col>
+                  </div>
                 );
               })}
             </Row>

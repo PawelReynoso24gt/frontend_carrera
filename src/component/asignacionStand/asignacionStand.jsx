@@ -79,8 +79,10 @@ function AsignacionStands() {
     );
   }
 
+  
+
   return (
-    <div className="container mt-4">
+    <div className="container mt-4" style={{ maxWidth: "100%", margin: "0 auto" }}>
       {/* Título y Breadcrumb */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
@@ -96,6 +98,8 @@ function AsignacionStands() {
       <div
         className="container mt-4"
         style={{
+          maxWidth: "100%",
+          margin: "0 auto",
           backgroundColor: "#f8f9fa",
           padding: "20px",
           borderRadius: "8px",
@@ -103,11 +107,14 @@ function AsignacionStands() {
         }}
       >
         <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-            <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-              Asignación de Voluntarios a Stands
-            </h3>
-          </div>
+        <div className="row justify-content-center" style={{marginBottom: "20px" }}>
+        <div className="col-12 text-center">
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
+            Asignacion de Voluntarios a Stands 
+          </h3>
+        </div>
+      </div>
+
 
           {/* Botones de filtro */}
           <div className="d-flex justify-content-center mb-4">

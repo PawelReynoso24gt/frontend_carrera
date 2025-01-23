@@ -224,9 +224,16 @@ function RecaudacionDashboard() {
     },
   };
   return (
-    <div className="container mt-4">
-      <h3 style={styles.header}>RECAUDACIONES, VENTAS Y RIFAS</h3>
-      <Container>
+    <div className="container mt-4" style={{maxWidth: "100%", margin: "0 auto"}}>
+      <div className="row justify-content-center" style={{marginBottom: "20px" }}>
+        <div className="col-12 text-center">
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
+            RECAUDACIONES, VENTAS Y RIFAS
+          </h3>
+        </div>
+      </div>
+
+      <Container-fluid>
         <Row>
           {/* Ventas Totales */}
           <Col md={6}>
@@ -278,7 +285,7 @@ function RecaudacionDashboard() {
             </div>
           </Col>
         </Row>
-      </Container>
+      </Container-fluid>
     </div>
   );  
 }

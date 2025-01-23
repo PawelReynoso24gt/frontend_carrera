@@ -252,7 +252,8 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
   };
 
   return (
-    <Container className="mt-5">
+    <Container className="mt-5" style={{maxWidth: "100%",
+      margin: "0 auto" }}>
       <h2 className="text-center mb-4">Gestión de Situaciones por Estado</h2>
       <div className="text-center mb-4">
         <Button
@@ -289,7 +290,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
             ) : (
               <Row>
                 {currentSituaciones.map((situacion) => (
-                  <Col key={situacion.idSituacion} md={6} lg={4} className="mb-4">
+                  <div class="col-sm-4 mb-4" key={situacion.idSituacion} md={6} lg={4} style={{ marginBottom: "20px" }}>
                     <Card className="h-100 shadow-sm">
                       <Card.Body>
                         <Card.Title style={{ fontWeight: "bold" }}>
@@ -336,7 +337,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
                         </Button>
                       </Card.Footer>
                     </Card>
-                  </Col>
+                  </div>
                 ))}
               </Row>
             )}
