@@ -96,7 +96,7 @@ function SidebarProfile() {
   return (
     <div className="col-lg-4 col-12 crancy-upinner__column1">
       <div className="crancy-upcard mg-top-30">
-        <div className="crancy-upcard__thumb">
+        <div className="crancy-upcard__thumb col-sm-2 mb-4">
           <img src={preview} alt="Profile" />
           <input
             type="file"
@@ -129,16 +129,16 @@ function SidebarProfile() {
           </div>
         </div>
         <ul className="crancy-upcard__list">
-          <li>
-            <b>Usuario:</b> <span className="crancy-pcolor">{userData.usuario}</span>
+          <li style={{ marginBottom: "20px" }}>
+            <b>Usuario:</b> <span className="crancy-pcolor" >{userData.usuario}</span>
           </li>
-          <li>
-            <b>Teléfono:</b> <span className="crancy-pcolor">{userData.persona.telefono}</span>
+          <li style={{ marginBottom: "20px" }}>
+            <b>Teléfono:</b> <span className="crancy-pcolor" >{userData.persona.telefono}</span>
           </li>
-          <li>
-            <b>Email:</b> <span className="crancy-pcolor">{userData.persona.correo}</span>
+          <li style={{ marginBottom: "20px" }}>
+            <b>Email:</b> <span className="crancy-pcolor" >{userData.persona.correo}</span>
           </li>
-          <li>
+          <li style={{ marginBottom: "20px" }}>
             <b>Fecha de registro:</b>{" "}
             <span className="crancy-pcolor crancy-upcard__list--label">
               {format(new Date(userData.persona.createdAt), 'dd/MM/yyyy')}

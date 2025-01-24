@@ -127,11 +127,15 @@ function ChangePassword() {
   };
 
   return (
-    <div className="tab-pane fade show active">
+    <div className="container-fluid" style={{ maxWidth: "100%", height: "auto" }} >
+    <div
+    className="d-flex justify-content-between align-items-start bg-white shadow-sm p-4 rounded"
+    style={{ maxWidth: "100%", height: "auto" }} 
+>
       <div className="crancy-paymentm crancy__item-group">
         <h4 className="crancy__item-group__title">Cambiar contraseña</h4>
         <div className="row align-items-center">
-          <div className="col-lg-6 col-md-6 col-12">
+        <div style={{ flex: "1 1 60%", maxWidth: "600px", margin: "0 auto"}}>
             {/* Formulario */}
             <form
               className="crancy-wc__form-main crancy-wc__form-main p-0"
@@ -246,14 +250,15 @@ function ChangePassword() {
             </form>
             {/* Fin del Formulario */}
           </div>
-          <div className="col-lg-6 col-md-6 col-12">
+          <div style={{ flex: "1 1 30%" }}>
             <div className="crancy-password__img">
-              <img src={img} alt="Cambiar contraseña" />
+              <img src={img} alt="Cambiar contraseña" style={{ maxWidth: "100%", height: "auto" }} />
             </div>
           </div>
         </div>
       </div>
       {mensaje && <p style={{ marginTop: "20px", color: "green" }}>{mensaje}</p>}
+    </div>
     </div>
   );
 }

@@ -17,11 +17,10 @@ function Sidebar() {
           className="list-group crancy-psidebar__list"
           id="list-tab"
           role="tablist"
-        >
+          ccc  >
           <Link
-            className={`list-group-item ${
-              lastPath === "settings" ? "active" : ""
-            }`}
+            className={`list-group-item ${lastPath === "settings" ? "active" : ""
+              }`}
             to=""
           >
             <span className="crancy-psidebar__icon">
@@ -78,7 +77,7 @@ function Sidebar() {
             </span>
             <span className="crancy-psidebar__title">Payment Method</span>
           </Link>*/}
-        {/*  <Link
+          {/*  <Link
             className={`list-group-item ${
               lastPath === "notification-setting" ? "active" : ""
             }`}
@@ -139,9 +138,8 @@ function Sidebar() {
             <span className="crancy-psidebar__title">Login Activity</span>
           </Link>*/}
           <Link
-            className={`list-group-item ${
-              lastPath === "change-password" ? "active" : ""
-            }`}
+            className={`list-group-item ${lastPath === "change-password" ? "active" : ""
+              }`}
             to="change-password"
           >
             <span className="crancy-psidebar__icon">
@@ -193,9 +191,8 @@ function Sidebar() {
             <span className="crancy-psidebar__title">FAQ </span>
           </Link>*/}
           <Link
-            className={`list-group-item ${
-              lastPath === "terms-and-conditions" ? "active" : ""
-            }`}
+            className={`list-group-item ${lastPath === "terms-and-conditions" ? "active" : ""
+              }`}
             to="terms-and-conditions"
           >
             <span className="crancy-psidebar__icon">
