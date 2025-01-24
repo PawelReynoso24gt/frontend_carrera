@@ -52,7 +52,7 @@ function Pedidos() {
   const [detallePedido, setDetallePedido] = useState(null);
   const [productos, setProductos] = useState([]);
 
-  const idUsuario = getUserDataFromToken().idUsuario;
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
 
 
   useEffect(() => {
@@ -446,7 +446,7 @@ function Pedidos() {
             {currentPedidos.map((pedido) => (
               <tr key={pedido.idPedido}>
                 <td style={{ textAlign: "center" }}>{pedido.idPedido}</td>
-                <td style={{ textAlign: "center" }}>{formatDateDMY(pedido.fecha)}</td>
+                <td style={{ textAlign: "center" }}>{pedido.fecha ? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</td>
                 <td style={{ textAlign: "center" }}>{pedido.descripcion}</td>
                 <td style={{ textAlign: "center" }}>
                   {sedes.find((sede) => sede.idSede === pedido.idSede)?.nombreSede ||

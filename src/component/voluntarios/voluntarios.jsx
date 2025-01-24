@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 const formatDate = (date) => {
   const options = { day: "2-digit", month: "2-digit", year: "numeric" };
@@ -31,6 +33,8 @@ function Voluntarios() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -41,15 +45,31 @@ function Voluntarios() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver voluntarios']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
   
     fetchPermissions();
-    fetchVoluntarios();
     fetchPersonas();
   }, []);
+
+  useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchVoluntarios();
+        } else {
+          console.log(hasViewPermission)
+          checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -81,9 +101,13 @@ function Voluntarios() {
 
   const fetchActiveVoluntarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/voluntarios/activos");
       setVoluntarios(response.data);
       setFilteredVoluntarios(response.data);
+    } else {
+      checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios')
+    }
     } catch (error) {
       console.error("Error fetching active voluntarios:", error);
     }
@@ -91,9 +115,13 @@ function Voluntarios() {
 
   const fetchInactiveVoluntarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/voluntarios/inactivos");
       setVoluntarios(response.data);
       setFilteredVoluntarios(response.data);
+    } else {
+      checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios')
+    }
     } catch (error) {
       console.error("Error fetching inactive voluntarios:", error);
     }
@@ -377,8 +405,8 @@ function Voluntarios() {
                     {voluntario.codigoQR}
                   </span>
                 </td>
-                <td style={{ textAlign: "center" }}>{formatDate(voluntario.fechaRegistro)}</td>
-                <td style={{ textAlign: "center" }}>{formatDate(voluntario.fechaSalida)}</td>
+                <td style={{ textAlign: "center" }}>{voluntario.fechaRegistro ? format(parseISO(voluntario.fechaRegistro), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td style={{ textAlign: "center" }}>{voluntario.fechaSalida ? format(parseISO(voluntario.fechaSalida), "dd-MM-yyyy") : "Sin fecha"}</td>
                 <td style={{ textAlign: "center" }}>
                   {personas.find((persona) => persona.idPersona === voluntario.idPersona)?.nombre ||
                     "Desconocido"}
