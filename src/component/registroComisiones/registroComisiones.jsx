@@ -38,7 +38,7 @@ function EventosActivos() {
     setIsVoluntariosLoaded(false);
     try {
       const responseComisiones = await axios.get(
-        `http://localhost:5000/comisiones/porevento?eventoId=${idEvento}`
+        `http://localhost:5000/comisiones/poreventoFr?eventoId=${idEvento}`
       );
 
       const responseInscripciones = await axios.get(
