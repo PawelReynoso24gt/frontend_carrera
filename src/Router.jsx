@@ -94,6 +94,7 @@ import DetalleProductos from "./pages/detalleProductos/detalleProductos";
 import ReporteTraslados from "./pages/reporteTraslados/reporteTraslados";
 import ReportePedidos from "./pages/reportePedidos/reportePedidos";
 import Bitacoras from "./pages/bitacoras/bitacoras";
+import ReporteContabilidad from "./pages/reporteContabilidad/reporteContabilidad";
 
 
 const router = createBrowserRouter([
@@ -359,6 +360,10 @@ const router = createBrowserRouter([
       {
         path: "/reporteStands",
         element: <ReporteStands/>,
+      },
+      {
+        path: "/reporteContabilidad",
+        element: <ReporteContabilidad/>,
       },
       {
         path: "/reporteMercanciaVoluntarios",

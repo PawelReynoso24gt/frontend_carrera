@@ -25,6 +25,13 @@ const LoginLayout = () => {
       // Si la autenticación es exitosa, guarda el token y redirige
       const token = response.data.token;
       localStorage.setItem("token", token); // Almacenar el token en localStorage
+      // Registrar en la bitácora
+      await axios.post("http://localhost:5000/bitacora/create", {
+        descripcion: `Usuario ${usuario} se ha logueado`,
+        idCategoriaBitacora: 41,
+        idUsuario: null,
+        fechaHora: new Date()
+      });
       
       navigate("/paginaPrincipal"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)
     } catch (err) {
