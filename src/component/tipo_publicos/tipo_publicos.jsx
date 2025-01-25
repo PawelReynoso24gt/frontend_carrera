@@ -15,9 +15,12 @@ function TipoPublicos() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showValidationError, setShowValidationError] = useState(false); // Nuevo estado para validación
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -28,14 +31,29 @@ function TipoPublicos() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver tipo publicos']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchTipoPublicos();
   }, []);
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchTipoPublicos();
+        } else {
+          checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -58,8 +76,12 @@ function TipoPublicos() {
 
   const fetchActiveTipoPublicos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/tipo_publicos/activos");
       setFilteredTipoPublicos(response.data);
+    } else {
+      checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos')
+    }
     } catch (error) {
       console.error("Error fetching active tipo_publicos:", error);
     }
@@ -67,8 +89,12 @@ function TipoPublicos() {
 
   const fetchInactiveTipoPublicos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/tipo_publicos/inactivos");
       setFilteredTipoPublicos(response.data);
+    } else {
+      checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos')
+    }
     } catch (error) {
       console.error("Error fetching inactive tipo_publicos:", error);
     }
@@ -177,7 +203,7 @@ function TipoPublicos() {
       >
         Anterior
       </a>
-  
+
       <div className="d-flex align-items-center">
         <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
         <Form.Control
@@ -199,7 +225,7 @@ function TipoPublicos() {
           ))}
         </Form.Control>
       </div>
-  
+
       <a
         href="#"
         onClick={(e) => {
@@ -324,7 +350,7 @@ function TipoPublicos() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody style={{ textAlign: "center" }}> 
+          <tbody style={{ textAlign: "center" }}>
             {currentTipoPublicos.map((tipoPublico) => (
               <tr key={tipoPublico.idTipoPublico}>
                 <td>{tipoPublico.idTipoPublico}</td>
@@ -438,17 +464,17 @@ function TipoPublicos() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

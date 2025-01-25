@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Alert, Spinner, Breadcrumb, Button } from "react-bootstrap";
+import { Table, Alert, Spinner, Breadcrumb, Button, Modal } from "react-bootstrap";
 import { format } from "date-fns";
 import { parseISO } from "date-fns";
 
@@ -8,10 +8,53 @@ function AsignacionStands() {
   const [asignaciones, setAsignaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
-    fetchAsignaciones();
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+          response.data.permisos['Ver asignación de stands']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
   }, []);
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchAsignaciones();
+        } else {
+          checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
+
+    const checkPermission = (permission, message) => {
+      if (!permissions[permission]) {
+        setPermissionMessage(message);
+        setShowPermissionModal(true);
+        return false;
+      }
+      return true;
+    };
 
   const fetchAsignaciones = async () => {
     try {
@@ -32,6 +75,7 @@ function AsignacionStands() {
 
   const fetchAsignacionesActivas = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get(
         "http://localhost:5000/asignacion_stands/voluntarios_por_stand/activos"
       );
@@ -40,6 +84,9 @@ function AsignacionStands() {
       } else {
         throw new Error("La respuesta de la API no es un arreglo");
       }
+    } else {
+      checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands')
+    }
     } catch (err) {
       console.error("Error al obtener asignaciones activas:", err);
       setError("Error al obtener las asignaciones activas.");
@@ -48,6 +95,7 @@ function AsignacionStands() {
 
   const fetchAsignacionesInactivas = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get(
         "http://localhost:5000/asignacion_stands/voluntarios_por_stand/inactivos"
       );
@@ -56,20 +104,16 @@ function AsignacionStands() {
       } else {
         throw new Error("La respuesta de la API no es un arreglo");
       }
+    } else {
+      checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands')
+    }
     } catch (err) {
       console.error("Error al obtener asignaciones inactivas:", err);
       setError("Error al obtener las asignaciones inactivas.");
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "50px" }}>
-        <Spinner animation="border" variant="primary" />
-        <p>Cargando asignaciones...</p>
-      </div>
-    );
-  }
+
 
   if (error) {
     return (
@@ -121,7 +165,11 @@ function AsignacionStands() {
                 fontWeight: "bold",
                 color: "#fff",
               }}
-              onClick={fetchAsignaciones}
+              onClick={() => {
+                if (checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands')) {
+                  fetchAsignaciones();
+                }
+              }}
             >
               Todas
             </Button>
@@ -195,6 +243,17 @@ function AsignacionStands() {
           <p className="text-center">No hay asignaciones disponibles.</p>
         )}
       </div>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
     </div>
   );
 }

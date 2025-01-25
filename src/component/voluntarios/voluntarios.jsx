@@ -41,34 +41,34 @@ function Voluntarios() {
       try {
         const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`, 
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver voluntarios']
+          response.data.permisos['Ver voluntarios']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchPersonas();
   }, []);
 
   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchVoluntarios();
-        } else {
-          checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios');
-        }
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchVoluntarios();
+      } else {
+        checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -101,12 +101,12 @@ function Voluntarios() {
   const fetchActiveVoluntarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/voluntarios/activos");
-      setVoluntarios(response.data);
-      setFilteredVoluntarios(response.data);
-    } else {
-      checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios')
-    }
+        const response = await axios.get("http://localhost:5000/voluntarios/activos");
+        setVoluntarios(response.data);
+        setFilteredVoluntarios(response.data);
+      } else {
+        checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios')
+      }
     } catch (error) {
       console.error("Error fetching active voluntarios:", error);
     }
@@ -115,12 +115,12 @@ function Voluntarios() {
   const fetchInactiveVoluntarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/voluntarios/inactivos");
-      setVoluntarios(response.data);
-      setFilteredVoluntarios(response.data);
-    } else {
-      checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios')
-    }
+        const response = await axios.get("http://localhost:5000/voluntarios/inactivos");
+        setVoluntarios(response.data);
+        setFilteredVoluntarios(response.data);
+      } else {
+        checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios')
+      }
     } catch (error) {
       console.error("Error fetching inactive voluntarios:", error);
     }
@@ -559,17 +559,17 @@ function Voluntarios() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

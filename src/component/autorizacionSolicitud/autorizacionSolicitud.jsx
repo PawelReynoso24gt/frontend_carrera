@@ -19,6 +19,8 @@ function SolicitudesVoluntariado() {
     const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
     const [permissionMessage, setPermissionMessage] = useState('');
     const [permissions, setPermissions] = useState({});
+      const [hasViewPermission, setHasViewPermission] = useState(false);
+      const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   // Estados para la paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,15 +35,31 @@ function SolicitudesVoluntariado() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        
+        const hasPermission =
+          response.data.permisos['Ver aspirantes']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
   
     fetchPermissions();
-    fetchAspirantes();
     fetchPersonas();
   }, []);
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchAspirantes();
+        } else {
+          checkPermission('Ver aspirantes', 'No tienes permisos para ver aspirantes');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
