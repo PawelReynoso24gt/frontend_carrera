@@ -42,6 +42,8 @@ function Eventos() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+    const [hasViewPermission, setHasViewPermission] = useState(false);
+    const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   // extraer el dato para idSede
   const sedeId = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
@@ -57,15 +59,30 @@ function Eventos() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver eventos']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchEventos();
     fetchSedes();
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchEventos();
+          } else {
+            checkPermission('Ver eventos', 'No tienes permisos para ver eventos');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
 
   const logBitacora = async (descripcion, idCategoriaBitacora) => {
     const bitacoraData = {
@@ -103,9 +120,13 @@ function Eventos() {
 
   const fetchActiveEventos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/eventos/activas");
       setEventos(response.data);
       setFilteredEventos(response.data);
+    } else {
+      checkPermission('Ver eventos', 'No tienes permisos para ver eventos')
+    }
     } catch (error) {
       console.error("Error fetching active eventos:", error);
     }
@@ -113,9 +134,13 @@ function Eventos() {
 
   const fetchInactiveEventos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/eventos/inactivas");
       setEventos(response.data);
       setFilteredEventos(response.data);
+    } else {
+      checkPermission('Ver eventos', 'No tienes permisos para ver eventos')
+    }
     } catch (error) {
       console.error("Error fetching inactive eventos:", error);
     }

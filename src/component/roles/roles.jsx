@@ -15,9 +15,11 @@ function Roles() {
   });
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -28,14 +30,31 @@ function Roles() {
           },
         });
         setPermissions(response.data.permisos || {});
+        const hasPermission =
+        response.data.permisos['Ver roles']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
   
     fetchPermissions();
-    fetchRoles();
+  
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchRoles();
+          } else {
+            console.log(hasViewPermission)
+            checkPermission('Ver roles', 'No tienes permisos para ver roles');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+  
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -58,9 +77,13 @@ function Roles() {
 
   const fetchActiveRoles = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/roles/activos");
       setRoles(response.data);
       setFilteredRoles(response.data);
+    } else {
+      checkPermission('Ver roles', 'No tienes permisos para ver roles')
+    }
     } catch (error) {
       console.error("Error fetching active roles:", error);
     }
@@ -68,9 +91,13 @@ function Roles() {
 
   const fetchInactiveRoles = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/roles/inactivos");
       setRoles(response.data);
       setFilteredRoles(response.data);
+    } else {
+      checkPermission('Ver roles', 'No tienes permisos para ver roles')
+    }
     } catch (error) {
       console.error("Error fetching inactive roles:", error);
     }

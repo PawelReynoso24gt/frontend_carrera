@@ -28,9 +28,11 @@ function Sedes() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -41,16 +43,31 @@ function Sedes() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver sedes']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchSedes();
   }, []);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
+
+  useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchSedes();
+          } else {
+            checkPermission('Ver sedes', 'No tienes permisos para ver sede');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -73,8 +90,12 @@ function Sedes() {
 
   const fetchActiveSedes = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/sedes/activas");
       setFilteredSedes(response.data);
+    } else {
+      checkPermission('Ver sedes', 'No tienes permisos para ver sedes')
+    }
     } catch (error) {
       console.error("Error fetching active sedes:", error);
     }
@@ -82,8 +103,12 @@ function Sedes() {
 
   const fetchInactiveSedes = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/sedes/inactivas");
       setFilteredSedes(response.data);
+    } else {
+      checkPermission('Ver sedes', 'No tienes permisos para ver sedes')
+    }
     } catch (error) {
       console.error("Error fetching inactive sedes:", error);
     }
@@ -124,7 +149,7 @@ function Sedes() {
       idUsuario,
       fechaHora: new Date()
     };
-  
+
     try {
       await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
@@ -147,13 +172,13 @@ function Sedes() {
         await axios.put(`http://localhost:5000/sedes/${editingSede.idSede}`, newSede);
         setAlertMessage("Sede actualizada con éxito");
         // Log the update action in the bitacora
-      await logBitacora(`Sede ${newSede.nombreSede} actualizada`, 35);
+        await logBitacora(`Sede ${newSede.nombreSede} actualizada`, 35);
       } else {
         await axios.post("http://localhost:5000/sedes", newSede);
         setAlertMessage("Sede creada con éxito");
 
         // Log the create action in the bitacora
-        await logBitacora(`Sede ${newSede.nombreSede} creada`, 34); 
+        await logBitacora(`Sede ${newSede.nombreSede} creada`, 34);
       }
       fetchSedes();
       setShowAlert(true);
@@ -472,17 +497,17 @@ function Sedes() {
             </Form>
           </Modal.Body>
         </Modal>
-           <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

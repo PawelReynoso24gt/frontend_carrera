@@ -19,6 +19,8 @@ function MaterialesComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -29,14 +31,31 @@ function MaterialesComponent() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        
+        const hasPermission =
+        response.data.permisos['Ver materiales']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchActiveMateriales();
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchActiveMateriales();
+          } else {
+            checkPermission('Ver materiales', 'No tienes permisos para ver materiales');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+  
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -49,11 +68,15 @@ function MaterialesComponent() {
 
   const fetchActiveMateriales = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/materiales/all');
       const activeMateriales = response.data.filter(material => material.estado === 1);
       setMateriales(activeMateriales);
       setFilteredMateriales(activeMateriales);
       setFilter('activos');
+    } else {
+      checkPermission('Ver materiales', 'No tienes permisos para ver materiales')
+    }
     } catch (error) {
       console.error('Error fetching active materiales:', error);
     }
@@ -61,11 +84,15 @@ function MaterialesComponent() {
 
   const fetchInactiveMateriales = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/materiales/all');
       const inactiveMateriales = response.data.filter(material => material.estado === 0);
       setMateriales(inactiveMateriales);
       setFilteredMateriales(inactiveMateriales);
       setFilter('inactivos');
+    } else {
+      checkPermission('Ver materiales', 'No tienes permisos para ver materiales')
+    }
     } catch (error) {
       console.error('Error fetching inactive materiales:', error);
     }

@@ -65,7 +65,6 @@ function Voluntarios() {
         if (hasViewPermission) {
           fetchVoluntarios();
         } else {
-          console.log(hasViewPermission)
           checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios');
         }
       }
