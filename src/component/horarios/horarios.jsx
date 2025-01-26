@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO, parse } from "date-fns";
 
 function HorariosComponent() {
   const [horarios, setHorarios] = useState([]);
@@ -18,9 +20,9 @@ function HorariosComponent() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [filter, setFilter] = useState("activos");
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -35,7 +37,7 @@ function HorariosComponent() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchActiveHorarios();
   }, []);
@@ -62,6 +64,7 @@ function HorariosComponent() {
   const fetchInactiveHorarios = async () => {
     try {
       const response = await axios.get("http://localhost:5000/horarios");
+      console.log(response.data);
       // Filtrar horarios con estado 0
       const inactiveHorarios = response.data.filter((horario) => horario.estado === 0);
       setHorarios(formatDates(inactiveHorarios));
@@ -69,7 +72,7 @@ function HorariosComponent() {
     } catch (error) {
       console.error("Error fetching inactive horarios:", error);
     }
-  };  
+  };
 
   const formatDates = (data) => {
     return data.map((item) => ({
@@ -104,13 +107,19 @@ function HorariosComponent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Convertimos los valores de horarioInicio y horarioFinal al formato requerido
+      const [startHour, startMinute] = newHorario.horarioInicio.split(":");
+      const [finalHour, finalMinute] = newHorario.horarioFinal.split(":");
+  
+      // Construir el formato "HH:mm:ss"
+      const formattedInicio = `${startHour}:${startMinute}:00`;
+      const formattedFinal = `${finalHour}:${finalMinute}:00`;
+  
       const formattedHorario = {
         ...newHorario,
-        horarioInicio: new Date(newHorario.horarioInicio).toISOString().replace("T", " ").split(".")[0],
-        horarioFinal: new Date(newHorario.horarioFinal).toISOString().replace("T", " ").split(".")[0],
+        horarioInicio: formattedInicio,
+        horarioFinal: formattedFinal,
       };
-
+  
       if (editingHorario) {
         await axios.put(`http://localhost:5000/horarios/${editingHorario.idHorario}`, formattedHorario);
         setAlertMessage("Horario actualizado con éxito");
@@ -118,6 +127,7 @@ function HorariosComponent() {
         await axios.post("http://localhost:5000/horarios", formattedHorario);
         setAlertMessage("Horario creado con éxito");
       }
+  
       filter === "activos" ? fetchActiveHorarios() : fetchInactiveHorarios();
       setShowAlert(true);
       handleCloseModal();
@@ -141,66 +151,66 @@ function HorariosComponent() {
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentHorarios = filteredHorarios.slice(indexOfFirstRow, indexOfLastRow);
-  
+
   const totalPages = Math.ceil(filteredHorarios.length / rowsPerPage);
-  
-    const renderPagination = () => (
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
           }}
           style={{
-            color: currentPage === 1 ? "gray" : "#007AC3",
-            cursor: currentPage === 1 ? "default" : "pointer",
-            textDecoration: "none",
-            fontWeight: "bold",
+            width: "100px",
+            height: "40px",
           }}
         >
-          Anterior
-        </a>
-  
-        <div className="d-flex align-items-center">
-          <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
-          <Form.Control
-            as="select"
-            value={rowsPerPage}
-            onChange={(e) => {
-              setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            style={{
-              width: "100px",
-              height: "40px",
-            }}
-          >
-            {[5, 10, 20, 50].map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Form.Control>
-        </div>
-  
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-          }}
-          style={{
-            color: currentPage === totalPages ? "gray" : "#007AC3",
-            cursor: currentPage === totalPages ? "default" : "pointer",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          Siguiente
-        </a>
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
       </div>
-    );
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
 
 
   return (
@@ -281,14 +291,14 @@ function HorariosComponent() {
         </Alert>
 
         <Table striped bordered hover responsive
-         style={{
-          backgroundColor: "#ffffff",
-          borderRadius: "20px",
-          overflow: "hidden",
-          marginTop: "20px",
-        }}>
-          <thead 
-          style={{ backgroundColor: "#007AC3", color: "#fff"  }}>
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "20px",
+            overflow: "hidden",
+            marginTop: "20px",
+          }}>
+          <thead
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th style={{ textAlign: "center" }}>ID</th>
               <th style={{ textAlign: "center" }}>Horario Inicio</th>
@@ -301,8 +311,16 @@ function HorariosComponent() {
             {horarios.map((horario) => (
               <tr key={horario.idHorario}>
                 <td style={{ textAlign: "center" }}>{horario.idHorario}</td>
-                <td style={{ textAlign: "center" }}>{horario.horarioInicio}</td>
-                <td style={{ textAlign: "center" }}>{horario.horarioFinal}</td>
+                <td style={{ textAlign: "center" }}>
+                  {horario.horarioInicio
+                    ? format(parse(horario.horarioInicio, "HH:mm:ss", new Date()), "hh:mm a")
+                    : "Sin fecha"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {horario.horarioFinal
+                    ? format(parse(horario.horarioFinal, "HH:mm:ss", new Date()), "hh:mm a")
+                    : "Sin fecha"}
+                </td>
                 <td style={{ textAlign: "center" }}>{horario.estado ? "Activo" : "Inactivo"}</td>
                 <td style={{ textAlign: "center" }}>
                   <FaPencilAlt
@@ -370,7 +388,7 @@ function HorariosComponent() {
               <Form.Group controlId="horarioInicio">
                 <Form.Label>Horario Inicio</Form.Label>
                 <Form.Control
-                  type="datetime-local"
+                  type="time"
                   name="horarioInicio"
                   value={newHorario.horarioInicio}
                   onChange={handleChange}
@@ -380,7 +398,7 @@ function HorariosComponent() {
               <Form.Group controlId="horarioFinal">
                 <Form.Label>Horario Final</Form.Label>
                 <Form.Control
-                  type="datetime-local"
+                  type="time"
                   name="horarioFinal"
                   value={newHorario.horarioFinal}
                   onChange={handleChange}
@@ -413,17 +431,17 @@ function HorariosComponent() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-               </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );
