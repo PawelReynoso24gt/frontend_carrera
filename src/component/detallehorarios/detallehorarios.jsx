@@ -20,6 +20,8 @@ function DetalleHorariosComponent() {
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
   const [horarios, setHorarios] = useState([]);
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
 
   const fetchCategorias = async () => {
@@ -53,6 +55,12 @@ function DetalleHorariosComponent() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver detalle horario']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -61,10 +69,18 @@ function DetalleHorariosComponent() {
     1,
       fetchCategorias();
       fetchHorarios(); 
-    fetchActiveDetalles();
     fetchPermissions();
   }, []);
 
+    useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchActiveDetalles();
+        } else {
+          checkPermission('Ver detalle horario', 'No tienes permisos para ver detalle horario');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -87,9 +103,13 @@ function DetalleHorariosComponent() {
 
   const fetchActiveDetalles = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/detalle_horarios/activos');
       setDetalles(response.data);
       setFilteredDetalleHorarios(response.data);
+    } else {
+      checkPermission('Ver detalle horario', 'No tienes permisos para ver detalle horario');
+    }
     } catch (error) {
       console.error('Error fetching active detalles:', error);
     }
@@ -97,11 +117,15 @@ function DetalleHorariosComponent() {
 
   const fetchInactiveDetalles = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/detalle_horarios/inactivos', {
         params: { estado: 0 }
       });
       setDetalles(response.data.filter(detalle => detalle.estado === 0));
       setFilteredDetalleHorarios(response.data);
+    } else {
+      checkPermission('Ver detalle horario', 'No tienes permisos para ver detalle horario');
+    }
     } catch (error) {
       console.error('Error fetching active detalles:', error);
     }

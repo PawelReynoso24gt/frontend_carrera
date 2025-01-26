@@ -41,6 +41,8 @@ function Ventas() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -51,28 +53,44 @@ function Ventas() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver ventas voluntarios']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchVentas();
     fetchTiposPagos();
     fetchTiposPublico();
     fetchVoluntarios();
     // Recalcula el subtotal y total a pagar
     const nuevoSubtotal = detallesVenta.reduce(
-      (sum, detalle) => sum + parseFloat(detalle.subTotal || 0), 
+      (sum, detalle) => sum + parseFloat(detalle.subTotal || 0),
       0
     );
-  
+
     const nuevaDonacion = parseFloat(newVenta.donacion || 0); // Convierte la donación
     const nuevoTotalAPagar = nuevoSubtotal + nuevaDonacion;
-  
+
     setSubtotal(nuevoSubtotal.toFixed(2)); // Opcionalmente, formatea a 2 decimales
     setTotalAPagar(nuevoTotalAPagar.toFixed(2));
   }, [detallesVenta, newVenta.donacion]);
+
+
+  useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchVentas();
+        } else {
+          checkPermission('Ver ventas voluntarios', 'No tienes permisos para ver ventas voluntarios');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
@@ -145,7 +163,7 @@ function Ventas() {
     setShowModal(false);
     resetForm(); // Restablecer el formulario al cerrar el modal
   };
-  
+
   const handleCloseDetailsModal = () => {
     setShowDetailsModal(false);
     resetForm(); // Restablecer el formulario al cerrar el modal
@@ -161,30 +179,30 @@ function Ventas() {
 
     setFilteredVentas(filtered);
     setCurrentPage(1);
-  };  
+  };
 
   const calculateTotalVenta = () => {
     const subtotal = detallesVenta.reduce(
       (sum, detalle) => sum + detalle.cantidad * detalle.precio,
       0
     );
-  
+
     const totalDonacion = detallesVenta.reduce(
       (sum, detalle) => sum + (parseFloat(detalle.donacion) || 0),
       0
     );
-  
+
     const total = subtotal + totalDonacion;
     setSubtotal(subtotal);
     setTotalAPagar(total);
     return total;
-  };  
+  };
 
   const handleViewDetails = async (idVenta) => {
     try {
-        const response = await axios.get(
-            `http://localhost:5000/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`
-        );
+      const response = await axios.get(
+        `http://localhost:5000/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`
+      );
 
       if (response.data && response.data.length > 0) {
         setDetalleSeleccionado(response.data); // Guarda todos los detalles de la venta
@@ -196,21 +214,25 @@ function Ventas() {
         setImagenBase64(null);
       }
 
-        setShowModal(true);
-      } catch (error) {
-          console.error("Error fetching detalles de venta:", error);
-          alert("Error al cargar los detalles de la venta.");
-          setDetalleSeleccionado(null);
-          setImagenBase64(null);
-          setShowModal(false); // Oculta el modal si no se obtienen datos
-      }
+      setShowModal(true);
+    } catch (error) {
+      console.error("Error fetching detalles de venta:", error);
+      alert("Error al cargar los detalles de la venta.");
+      setDetalleSeleccionado(null);
+      setImagenBase64(null);
+      setShowModal(false); // Oculta el modal si no se obtienen datos
+    }
   };
 
   const fetchActiveVentas = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/ventas/voluntarios/activas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
+    } else {
+      checkPermission('Ver ventas voluntarios', 'No tienes permisos para ver ventas voluntarios');
+    }
     } catch (error) {
       console.error("Error fetching active ventas:", error);
     }
@@ -218,9 +240,13 @@ function Ventas() {
 
   const fetchInactiveVentas = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/ventas/voluntarios/inactivas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
+    } else {
+      checkPermission('Ver ventas voluntarios', 'No tienes permisos para ver ventas voluntarios');
+    }
     } catch (error) {
       console.error("Error fetching inactive ventas:", error);
     }
@@ -245,8 +271,8 @@ function Ventas() {
       idProducto: productosValidos[0]?.idProducto || null, // Asociar al primer producto válido
     };
     setTiposPagos((prevPagos) => [...prevPagos, nuevoPago]);
-  };  
-  
+  };
+
   const handlePagoChange = (index, field, value) => {
     const nuevosPagos = [...tiposPagos];
     nuevosPagos[index][field] = value;
@@ -272,21 +298,21 @@ function Ventas() {
       const detallesVentaValidos = detallesVenta
         .filter((detalle) => detalle.cantidad > 0 && detalle.estado !== 0)
         .map((detalle) => {
-            const subTotal = detalle.cantidad * detalle.precio;
-            return {
-                ...detalle,
-                subTotal, // Asegura que el subtotal se incluya correctamente
-                donacion: detalle.donacion || newVenta.donacion, // Asignar la donación a cada detalle
-            };
+          const subTotal = detalle.cantidad * detalle.precio;
+          return {
+            ...detalle,
+            subTotal, // Asegura que el subtotal se incluya correctamente
+            donacion: detalle.donacion || newVenta.donacion, // Asignar la donación a cada detalle
+          };
         });
 
 
-        // Calcular el subtotal de los productos y el total de la venta
-        const subtotalVenta = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0);
-        const totalVenta = subtotalVenta + (newVenta.donacion || 0);
+      // Calcular el subtotal de los productos y el total de la venta
+      const subtotalVenta = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0);
+      const totalVenta = subtotalVenta + (newVenta.donacion || 0);
 
-        // Validar que la suma de los montos de los pagos coincida con el total calculado
-        const totalPagado = tiposPagos.reduce((sum, pago) => sum + (parseFloat(pago.monto) || 0), 0);
+      // Validar que la suma de los montos de los pagos coincida con el total calculado
+      const totalPagado = tiposPagos.reduce((sum, pago) => sum + (parseFloat(pago.monto) || 0), 0);
 
         // Asegúrate de que totalAPagar es un número
         const totalAPagarNumber = parseFloat(totalAPagar);
@@ -314,43 +340,43 @@ function Ventas() {
           }
         }
 
-            // Manejo de valores por defecto para tipos de pago
-            const correlativo = pago.correlativo || "NA"; // Por defecto "NA"
-            const imagenTransferencia = pago.imagenTransferencia || "efectivo"; // Por defecto "efectivo"
-            
-            return {
-                ...pago,
-                correlativo,
-                imagenTransferencia,
-            };
-        });
+        // Manejo de valores por defecto para tipos de pago
+        const correlativo = pago.correlativo || "NA"; // Por defecto "NA"
+        const imagenTransferencia = pago.imagenTransferencia || "efectivo"; // Por defecto "efectivo"
 
-        // Construir los datos de la venta para enviar al backend
-        const ventaData = {
-            venta: { ...newVenta, totalVenta }, // Incluye la donación y el total
-            detalles: detallesVentaValidos, // Incluye los subtotales y donaciones
-            pagos: pagosValidados, // Pagos validados con sus requisitos
+        return {
+          ...pago,
+          correlativo,
+          imagenTransferencia,
         };
+      });
 
-        // Enviar los datos al backend
-        const response = await axios.post("http://localhost:5000/ventas/create/completa", ventaData);
-        if (response.status === 201) {
+      // Construir los datos de la venta para enviar al backend
+      const ventaData = {
+        venta: { ...newVenta, totalVenta }, // Incluye la donación y el total
+        detalles: detallesVentaValidos, // Incluye los subtotales y donaciones
+        pagos: pagosValidados, // Pagos validados con sus requisitos
+      };
 
-          const bitacoraData = {
-            descripcion: "Nueva venta de voluntario creada",
-            idCategoriaBitacora: 19, // ID de categoría para creación
-            idUsuario: idUsuario,
-            fechaHora: new Date()
+      // Enviar los datos al backend
+      const response = await axios.post("http://localhost:5000/ventas/create/completa", ventaData);
+      if (response.status === 201) {
+
+        const bitacoraData = {
+          descripcion: "Nueva venta de voluntario creada",
+          idCategoriaBitacora: 19, // ID de categoría para creación
+          idUsuario: idUsuario,
+          fechaHora: new Date()
         };
         await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
-            alert("Venta creada con éxito");
-            setShowDetailsModal(false); // Cerrar el modal
-            fetchVentas(); // Actualizar la lista de ventas
-        }
-      } catch (error) {
-          console.error("Error creando venta:", error.message || error);
-          alert("Error al crear la venta: " + (error.message || "Revisa los datos ingresados."));
+        alert("Venta creada con éxito");
+        setShowDetailsModal(false); // Cerrar el modal
+        fetchVentas(); // Actualizar la lista de ventas
       }
+    } catch (error) {
+      console.error("Error creando venta:", error.message || error);
+      alert("Error al crear la venta: " + (error.message || "Revisa los datos ingresados."));
+    }
   };
 
   const handleUpdateVenta = async () => {
@@ -392,12 +418,12 @@ function Ventas() {
           idProducto: pago.idProducto,
         })),
       };
-  
+
       const response = await axios.put(
         `http://localhost:5000/ventas/update/completa/${ventaEditada.venta.idVenta}`,
         ventaData
       );
-  
+
       if (response.status === 200) {
 
         // Crear entrada en la bitácora
@@ -406,9 +432,9 @@ function Ventas() {
           idCategoriaBitacora: 18,
           idUsuario: idUsuario, // Asegúrate de que idUsuario sea el valor correcto extraído del token
           fechaHora: new Date()
-      };
+        };
 
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
 
         alert("Venta actualizada con éxito");
         fetchVentas(); // Actualizar la lista de ventas
@@ -417,7 +443,7 @@ function Ventas() {
     } catch (error) {
       alert("Error al actualizar la venta.");
     }
-  };  
+  };
 
   const handleLoadVentaForEdit = async (idVenta) => {
     try {
@@ -435,7 +461,7 @@ function Ventas() {
           idVoluntario: detalle.idVoluntario,
           estado: detalle.estado,
         }));
-  
+
         const pagos = response.data
           .flatMap((detalle) => detalle.detalle_pago_ventas_voluntarios)
           .map((pago) => ({
@@ -447,7 +473,7 @@ function Ventas() {
             estado: pago.estado,
             idProducto: pago.idProducto, // Asociar el pago con el producto
           }));
-  
+
         const venta = {
           idVenta: idVenta,
           totalVenta: parseFloat(response.data[0]?.venta?.totalVenta || 0),
@@ -482,7 +508,7 @@ function Ventas() {
         setSubtotal(subtotal);
         setTotalAPagar(totalVenta);
 
-         // Actualizar donación en newVenta
+        // Actualizar donación en newVenta
         setNewVenta((prevVenta) => ({
           ...prevVenta,
           donacion: totalDonacion,
@@ -492,7 +518,7 @@ function Ventas() {
       console.error("Error cargando venta para edición:", error);
       alert("Error al cargar los datos de la venta para edición.");
     }
-  };  
+  };
 
   const handleCreateVentaClick = () => {
     setNewVenta({
@@ -661,8 +687,10 @@ function Ventas() {
             Inactivos
           </Button>
         </div>
-        <Table striped bordered hover responsive className="mt-3" style ={{ textAlign: "center", borderRadius: "20px",
-            overflow: "hidden", }}>
+        <Table striped bordered hover responsive className="mt-3" style={{
+          textAlign: "center", borderRadius: "20px",
+          overflow: "hidden",
+        }}>
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
               <th>ID</th>
@@ -675,59 +703,60 @@ function Ventas() {
           </thead>
           <tbody>
             {currentVentas.length > 0 ? (
-            currentVentas.map((venta) => {
-              return (
-              <tr key={venta.idVenta}>
-                <td>{venta.idVenta}</td>
-                <td>{venta.fechaVenta ? format(parseISO(venta.fechaVenta), "dd-MM-yyyy") : "Sin fecha"}</td>
-                <td>Q. {venta.totalVenta}</td>
-                <td>{tiposPublico.find((tp) => tp.idTipoPublico === venta.idTipoPublico)?.nombreTipo || "N/A"}</td>
-                <td>{venta.estado === 1 ? "Activo" : "Inactivo"}</td>
-                <td>
-                <FaEye
-                    style={{ cursor: "pointer", marginRight: "10px", color: "#007AC3", fontSize: "20px" }}
-                    title="Ver Detalle"
-                    onClick={() => handleViewDetails(venta.idVenta)}
-                  />
-                  <FaPencilAlt
-                    style={{
-                      cursor: "pointer",
-                      marginRight: "10px",
-                      fontSize: "20px",
-                    }}
-                    title="Editar"
-                    onClick={() => {
-                      if (checkPermission('Editar venta voluntarios', 'No tienes permisos para editar venta voluntarios')) {
-                        handleLoadVentaForEdit(venta.idVenta); // Cargar la venta completa
-                        setShowDetailsModal(true); // Mostrar el modal
-                      }
-                    }}
-                  />
-                  {venta.estado ? (
-                    <FaToggleOn
-                      style={{ cursor: "pointer", color: "#30c10c", marginLeft: "10px", fontSize: "20px" }}
-                      title="Inactivar"
-                      onClick={() => {
-                        if (checkPermission('Desactivar venta voluntarios', 'No tienes permisos para desactivar venta voluntarios')) {
-                          toggleEstado(venta.idVenta, venta.estado)
-                        }
-                      }}
-                    />
-                  ) : (
-                    <FaToggleOff
-                      style={{ cursor: "pointer", color: "#e10f0f", marginLeft: "10px", fontSize: "20px" }}
-                      title="Activar"
-                      onClick={() => {
-                        if (checkPermission('Activar venta voluntarios', 'No tienes permisos para activar venta voluntarios')) {
-                          toggleEstado(venta.idVenta, venta.estado)
-                        }
-                      }}
-                    />
-                  )}
-                </td>
-              </tr>
-              );
-            })) : (
+              currentVentas.map((venta) => {
+                return (
+                  <tr key={venta.idVenta}>
+                    <td>{venta.idVenta}</td>
+                    <td>{venta.fechaVenta ? format(parseISO(venta.fechaVenta), "dd-MM-yyyy") : "Sin fecha"}</td>
+                    <td>Q. {venta.totalVenta}</td>
+                    <td>{tiposPublico.find((tp) => tp.idTipoPublico === venta.idTipoPublico)?.nombreTipo || "N/A"}</td>
+                    <td>{venta.estado === 1 ? "Activo" : "Inactivo"}</td>
+                    <td>
+                      <FaEye
+                        style={{ cursor: "pointer", marginRight: "10px", color: "#007AC3", fontSize: "20px" }}
+                        title="Ver Detalle"
+                        onClick={() => handleViewDetails(venta.idVenta)}
+                      />
+                      <FaPencilAlt
+                        style={{
+                          color: "#007AC3",
+                          cursor: "pointer",
+                          marginRight: "10px",
+                          fontSize: "20px",
+                        }}
+                        title="Editar"
+                        onClick={() => {
+                          if (checkPermission('Editar venta voluntarios', 'No tienes permisos para editar venta voluntarios')) {
+                            handleLoadVentaForEdit(venta.idVenta); // Cargar la venta completa
+                            setShowDetailsModal(true); // Mostrar el modal
+                          }
+                        }}
+                      />
+                      {venta.estado ? (
+                        <FaToggleOn
+                          style={{ cursor: "pointer", color: "#30c10c", marginLeft: "10px", fontSize: "20px" }}
+                          title="Inactivar"
+                          onClick={() => {
+                            if (checkPermission('Desactivar venta voluntarios', 'No tienes permisos para desactivar venta voluntarios')) {
+                              toggleEstado(venta.idVenta, venta.estado)
+                            }
+                          }}
+                        />
+                      ) : (
+                        <FaToggleOff
+                          style={{ cursor: "pointer", color: "#e10f0f", marginLeft: "10px", fontSize: "20px" }}
+                          title="Activar"
+                          onClick={() => {
+                            if (checkPermission('Activar venta voluntarios', 'No tienes permisos para activar venta voluntarios')) {
+                              toggleEstado(venta.idVenta, venta.estado)
+                            }
+                          }}
+                        />
+                      )}
+                    </td>
+                  </tr>
+                );
+              })) : (
               <tr>
                 <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
                   No hay ventas disponibles.
@@ -744,13 +773,13 @@ function Ventas() {
           <Modal.Body>
             {detalleSeleccionado ? (
               detalleSeleccionado.map((detalle, index) => (
-                  <div key={index}>
-                      <h5>Detalle #{index + 1}</h5>
-                      <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
-                      <p><strong>Nombre Producto:</strong> {detalle.producto?.nombreProducto || "N/A"}</p>
-                      <p><strong>Cantidad:</strong> {detalle.cantidad || "N/A"}</p>
-                      <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
-                      <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
+                <div key={index}>
+                  <h5>Detalle #{index + 1}</h5>
+                  <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
+                  <p><strong>Nombre Producto:</strong> {detalle.producto?.nombreProducto || "N/A"}</p>
+                  <p><strong>Cantidad:</strong> {detalle.cantidad || "N/A"}</p>
+                  <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
+                  <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
 
                   <h5>Pagos Asociados</h5>
                   {detalle.detalle_pago_ventas_voluntarios && detalle.detalle_pago_ventas_voluntarios.length > 0 ? (
@@ -823,133 +852,133 @@ function Ventas() {
         </Modal>
         <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)}>
           <Modal.Header closeButton>
-          <Modal.Title>
-            {ventaEditada.venta ? "Editar Venta de Voluntario" : "Crear Venta de Voluntario"}
-          </Modal.Title>
+            <Modal.Title>
+              {ventaEditada.venta ? "Editar Venta de Voluntario" : "Crear Venta de Voluntario"}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-          <Form.Group>
-            <Form.Label>Seleccionar Voluntario</Form.Label>
-            <Form.Control
-              as="select"
-              onChange={(e) => {
-                const voluntarioSeleccionado = voluntarios.find(
-                  (vol) => vol.idVoluntario === parseInt(e.target.value)
-                );
-                if (voluntarioSeleccionado) {
-                  const productos = voluntarioSeleccionado.detalle_productos_voluntarios.map((detalle) => ({
-                    idProducto: detalle.idProducto,
-                    nombreProducto: detalle.producto.nombreProducto,
-                    precio: parseFloat(detalle.producto.precio),
-                    cantidad: detalle.cantidad,
-                    subTotal: detalle.cantidad * parseFloat(detalle.producto.precio),
-                    idVoluntario: voluntarioSeleccionado.idVoluntario,
-                    donacion: detalle.donacion || 0, // Incluye el campo donación
-                    estado: 1,
-                  }));
-                  setDetallesVenta(productos); // Carga los productos asignados
-                } else {
-                  setDetallesVenta([]); // Limpia los productos si no hay selección
-                }
-              }}
-            >
-              <option value="">Seleccione un voluntario</option>
-              {voluntarios.map((vol) => (
-                <option key={vol.idVoluntario} value={vol.idVoluntario}>
-                  {vol.persona?.nombre || "Voluntario sin nombre"}
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
-          <h5>Productos Asignados</h5>
-          <Table>
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {detallesVenta.map((producto, idx) => (
-                <tr key={producto.idProducto}>
-                  <td>{producto.nombreProducto}</td>
-                  <td>{producto.precio}</td>
-                  <td>
-                    <Form.Control
-                      type="number"
-                      min="1"
-                      value={producto.cantidad}
-                      onChange={(e) => {
-                        const nuevosDetalles = [...detallesVenta];
-                        nuevosDetalles[idx].cantidad = Number(e.target.value);
-                        nuevosDetalles[idx].subTotal = nuevosDetalles[idx].cantidad * nuevosDetalles[idx].precio;
-                        // Recalcular el subtotal y donación
-                        const nuevoSubtotal = nuevosDetalles.reduce((sum, detalle) => sum + detalle.subTotal, 0);
-                        const nuevaDonacion = nuevosDetalles.reduce((sum, detalle) => sum + parseFloat(detalle.donacion || 0), 0);
-                        const nuevoTotal = nuevoSubtotal + nuevaDonacion;
-
-                        setDetallesVenta(nuevosDetalles);
-                        setSubtotal(nuevoSubtotal);
-                        setTotalAPagar(nuevoTotal);
-                        setNewVenta((prevVenta) => ({ ...prevVenta, donacion: nuevaDonacion }));
-                      }}
-                    />
-                  </td>
-                  <td>{producto.cantidad * producto.precio}</td>
+            <Form.Group>
+              <Form.Label>Seleccionar Voluntario</Form.Label>
+              <Form.Control
+                as="select"
+                onChange={(e) => {
+                  const voluntarioSeleccionado = voluntarios.find(
+                    (vol) => vol.idVoluntario === parseInt(e.target.value)
+                  );
+                  if (voluntarioSeleccionado) {
+                    const productos = voluntarioSeleccionado.detalle_productos_voluntarios.map((detalle) => ({
+                      idProducto: detalle.idProducto,
+                      nombreProducto: detalle.producto.nombreProducto,
+                      precio: parseFloat(detalle.producto.precio),
+                      cantidad: detalle.cantidad,
+                      subTotal: detalle.cantidad * parseFloat(detalle.producto.precio),
+                      idVoluntario: voluntarioSeleccionado.idVoluntario,
+                      donacion: detalle.donacion || 0, // Incluye el campo donación
+                      estado: 1,
+                    }));
+                    setDetallesVenta(productos); // Carga los productos asignados
+                  } else {
+                    setDetallesVenta([]); // Limpia los productos si no hay selección
+                  }
+                }}
+              >
+                <option value="">Seleccione un voluntario</option>
+                {voluntarios.map((vol) => (
+                  <option key={vol.idVoluntario} value={vol.idVoluntario}>
+                    {vol.persona?.nombre || "Voluntario sin nombre"}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+            <h5>Productos Asignados</h5>
+            <Table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Precio</th>
+                  <th>Cantidad</th>
+                  <th>Subtotal</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-          <Form.Group>
-            <Form.Label>Donación</Form.Label>
-            <Form.Control
-              type="number"
-              min="0"
-              value={newVenta.donacion || 0}
-              onChange={(e) => {
-                const nuevaDonacion = parseFloat(e.target.value) || 0;
+              </thead>
+              <tbody>
+                {detallesVenta.map((producto, idx) => (
+                  <tr key={producto.idProducto}>
+                    <td>{producto.nombreProducto}</td>
+                    <td>{producto.precio}</td>
+                    <td>
+                      <Form.Control
+                        type="number"
+                        min="1"
+                        value={producto.cantidad}
+                        onChange={(e) => {
+                          const nuevosDetalles = [...detallesVenta];
+                          nuevosDetalles[idx].cantidad = Number(e.target.value);
+                          nuevosDetalles[idx].subTotal = nuevosDetalles[idx].cantidad * nuevosDetalles[idx].precio;
+                          // Recalcular el subtotal y donación
+                          const nuevoSubtotal = nuevosDetalles.reduce((sum, detalle) => sum + detalle.subTotal, 0);
+                          const nuevaDonacion = nuevosDetalles.reduce((sum, detalle) => sum + parseFloat(detalle.donacion || 0), 0);
+                          const nuevoTotal = nuevoSubtotal + nuevaDonacion;
 
-                // Actualiza la donación en cada detalle
-                const nuevosDetalles = detallesVenta.map((detalle) => ({
-                  ...detalle,
-                  donacion: nuevaDonacion, // Aplica la nueva donación a cada producto
-                }));
+                          setDetallesVenta(nuevosDetalles);
+                          setSubtotal(nuevoSubtotal);
+                          setTotalAPagar(nuevoTotal);
+                          setNewVenta((prevVenta) => ({ ...prevVenta, donacion: nuevaDonacion }));
+                        }}
+                      />
+                    </td>
+                    <td>{producto.cantidad * producto.precio}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <Form.Group>
+              <Form.Label>Donación</Form.Label>
+              <Form.Control
+                type="number"
+                min="0"
+                value={newVenta.donacion || 0}
+                onChange={(e) => {
+                  const nuevaDonacion = parseFloat(e.target.value) || 0;
 
-                // Recalcula el subtotal y total a pagar
-                const nuevoSubtotal = nuevosDetalles.reduce((sum, detalle) => sum + detalle.subTotal, 0);
-                const nuevoTotalAPagar = nuevoSubtotal + nuevaDonacion;
+                  // Actualiza la donación en cada detalle
+                  const nuevosDetalles = detallesVenta.map((detalle) => ({
+                    ...detalle,
+                    donacion: nuevaDonacion, // Aplica la nueva donación a cada producto
+                  }));
 
-                // Actualiza los estados
-                setDetallesVenta(nuevosDetalles);
-                setNewVenta((prevVenta) => ({
-                  ...prevVenta,
-                  donacion: nuevaDonacion,
-                }));
-                setSubtotal(nuevoSubtotal);
-                setTotalAPagar(nuevoTotalAPagar);
-              }}
-            />
-          </Form.Group>
-          <h5>Resumen de Pago</h5>
-          <Table>
-            <tbody>
-              <tr>
-                <td><strong>Subtotal:</strong></td>
-                <td>Q{Number(subtotal).toFixed(2)}</td>
-              </tr>
-              <tr>
-                <td><strong>Total Donación:</strong></td>
-                <td>Q{Number(newVenta.donacion || 0).toFixed(2)}</td>
-              </tr>
-              <tr>
-                <td><strong>Total a Pagar:</strong></td>
-                <td>Q{Number(totalAPagar).toFixed(2)}</td>
-              </tr>
-            </tbody>
-          </Table>
-          <h5>Pagos</h5>
+                  // Recalcula el subtotal y total a pagar
+                  const nuevoSubtotal = nuevosDetalles.reduce((sum, detalle) => sum + detalle.subTotal, 0);
+                  const nuevoTotalAPagar = nuevoSubtotal + nuevaDonacion;
+
+                  // Actualiza los estados
+                  setDetallesVenta(nuevosDetalles);
+                  setNewVenta((prevVenta) => ({
+                    ...prevVenta,
+                    donacion: nuevaDonacion,
+                  }));
+                  setSubtotal(nuevoSubtotal);
+                  setTotalAPagar(nuevoTotalAPagar);
+                }}
+              />
+            </Form.Group>
+            <h5>Resumen de Pago</h5>
+            <Table>
+              <tbody>
+                <tr>
+                  <td><strong>Subtotal:</strong></td>
+                  <td>Q{Number(subtotal).toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td><strong>Total Donación:</strong></td>
+                  <td>Q{Number(newVenta.donacion || 0).toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td><strong>Total a Pagar:</strong></td>
+                  <td>Q{Number(totalAPagar).toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </Table>
+            <h5>Pagos</h5>
             {/* Botones para agregar pagos rápidamente */}
             <Button onClick={handleAddPago} style={{ marginRight: "10px" }}>
               Agregar Pago
@@ -1020,11 +1049,22 @@ function Ventas() {
             ))}
           </Modal.Body>
           <Modal.Footer>
-          <Button onClick={ventaEditada.venta ? handleUpdateVenta : handleCreateVenta}>
-            {ventaEditada.venta ? "Actualizar Venta" : "Crear Venta"}
-          </Button>
+            <Button onClick={ventaEditada.venta ? handleUpdateVenta : handleCreateVenta}>
+              {ventaEditada.venta ? "Actualizar Venta" : "Crear Venta"}
+            </Button>
           </Modal.Footer>
         </Modal>
+          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Permiso Denegado</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>{permissionMessage}</Modal.Body>
+                  <Modal.Footer>
+                    <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                      Aceptar
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
       </div>
     </>
   );

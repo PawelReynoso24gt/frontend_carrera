@@ -41,6 +41,8 @@ function Publicaciones() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -51,17 +53,33 @@ function Publicaciones() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver publicaciones']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchPublicaciones();
     fetchSedes();
     fetchEventos(); // Cargar eventos
     fetchRifas(); // Cargar rifas
   }, [photoToConfirm]);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchPublicaciones();
+          } else {
+            checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+  
 
   // Obtener el idPersona desde localStorage
   const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
@@ -144,8 +162,12 @@ function Publicaciones() {
 
   const fetchActivePublicaciones = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/publicaciones/activos");
       setFilteredPublicaciones(response.data);
+    } else {
+      checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
+    }
     } catch (error) {
       console.error("Error fetching active publicaciones:", error);
     }
@@ -153,8 +175,12 @@ function Publicaciones() {
 
   const fetchInactivePublicaciones = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/publicaciones/inactivos");
       setFilteredPublicaciones(response.data);
+    } else {
+      checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
+    }
     } catch (error) {
       console.error("Error fetching inactive publicaciones:", error);
     }

@@ -37,6 +37,8 @@ function RecaudacionesEventos() {
     const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
     const [permissionMessage, setPermissionMessage] = useState('');
     const [permissions, setPermissions] = useState({});
+    const [hasViewPermission, setHasViewPermission] = useState(false);
+    const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
 
     useEffect(() => {
@@ -48,21 +50,36 @@ function RecaudacionesEventos() {
                     },
                 });
                 setPermissions(response.data.permisos || {});
+
+                const hasPermission =
+        response.data.permisos['Ver recaudación de eventos']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
             } catch (error) {
                 console.error('Error fetching permissions:', error);
             }
         };
 
         fetchPermissions();
-        fetchRecaudaciones();
         fetchEventos();
         fetchEmpleados();
     }, []);
 
-      // Obtener el idPersona desde localStorage
-          const idEmpleado = getUserDataFromToken(localStorage.getItem("token"))?.idEmpleado; // ! USO DE LA FUNCIÓN getUserDataFromToken
+    // Obtener el idPersona desde localStorage
+    const idEmpleado = getUserDataFromToken(localStorage.getItem("token"))?.idEmpleado; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
-          const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
+    const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
+
+     useEffect(() => {
+          if (isPermissionsLoaded) {
+            if (hasViewPermission) {
+                fetchRecaudaciones();
+            } else {
+              checkPermission('Ver recaudación de eventos', 'No tienes permisos para ver recaudación de eventos');
+            }
+          }
+        }, [isPermissionsLoaded, hasViewPermission]);
 
     const fetchRecaudaciones = async () => {
         try {
@@ -85,10 +102,14 @@ function RecaudacionesEventos() {
 
     const fetchActiveRecaudaciones = async () => {
         try {
+            if (hasViewPermission) {
             const response = await axios.get("http://localhost:5000/recaudacion_evento/activas");
             setFilteredRecaudaciones(response.data); // Actualiza la lista de recaudaciones filtradas
             //setAlertMessage("Se han cargado las recaudaciones activas.");
             //setShowAlert(true);
+        } else {
+            checkPermission('Ver recaudación de eventos', 'No tienes permisos para ver recaudación de eventos')
+          }
         } catch (error) {
             console.error("Error fetching active recaudaciones:", error);
             setAlertMessage("Error al cargar las recaudaciones activas.");
@@ -98,10 +119,14 @@ function RecaudacionesEventos() {
 
     const fetchInactiveRecaudaciones = async () => {
         try {
+            if (hasViewPermission) {
             const response = await axios.get("http://localhost:5000/recaudacion_evento/inactivas");
             setFilteredRecaudaciones(response.data); // Actualiza la lista de recaudaciones filtradas
             //setAlertMessage("Se han cargado las recaudaciones inactivas.");
             //setShowAlert(true);
+        } else {
+            checkPermission('Ver recaudación de eventos', 'No tienes permisos para ver recaudación de eventos')
+          }
         } catch (error) {
             console.error("Error fetching inactive recaudaciones:", error);
             setAlertMessage("Error al cargar las recaudaciones inactivas.");
@@ -415,10 +440,10 @@ function RecaudacionesEventos() {
                 responsive
                 className="mt-3"
                 style={{
-                backgroundColor: "#ffffff",
-                borderRadius: "20px",
-                overflow: "hidden",
-                textAlign: "center",
+                    backgroundColor: "#ffffff",
+                    borderRadius: "20px",
+                    overflow: "hidden",
+                    textAlign: "center",
                 }}
             >
                 <thead style={{ backgroundColor: "#007AC3", color: "#fff" }}>

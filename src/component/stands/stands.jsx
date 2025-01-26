@@ -34,7 +34,8 @@ function Stand() {
   const [availableHorarios, setAvailableHorarios] = useState([]); // Lista de horarios disponibles
   const [standHorarios, setStandHorarios] = useState([]); // Para almacenar horarios del stand
   const [showDetailsModal, setShowDetailsModal] = useState(false); // Controla la visibilidad del modal
-
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
 
   useEffect(() => {
@@ -46,19 +47,33 @@ function Stand() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver stands']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchStands();
     fetchSedes();
     fetchTiposStands();
     fetchEventos();
     fetchHorarios();
   }, []);
 
+  useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchStands();
+        } else {
+          checkPermission('Ver stands', 'No tienes permisos para ver stands');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
@@ -85,8 +100,6 @@ function Stand() {
       console.error("Error fetching horarios:", error.response?.data || error.message);
     }
   };
-
-
 
   const fetchStands = async () => {
     try {
@@ -262,9 +275,13 @@ function Stand() {
 
   const fetchActiveStands = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/stand/activas");
       const data = Array.isArray(response.data) ? response.data : []; // Validación
       setStands(data);
+    } else {
+      checkPermission('Ver stands', 'No tienes permisos para ver stands')
+    }
     } catch (error) {
       console.error("Error fetching active stands:", error);
       setStands([]); // Respaldo en caso de error
@@ -273,9 +290,13 @@ function Stand() {
 
   const fetchInactiveStands = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/stand/inactivas");
       const data = Array.isArray(response.data) ? response.data : []; // Validación
       setStands(data);
+    } else {
+      checkPermission('Ver stands', 'No tienes permisos para ver stands')
+    }
     } catch (error) {
       console.error("Error fetching inactive stands:", error);
       setStands([]); // Respaldo en caso de error

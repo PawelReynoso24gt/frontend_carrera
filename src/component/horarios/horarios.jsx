@@ -18,9 +18,11 @@ function HorariosComponent() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [filter, setFilter] = useState("activos");
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -28,17 +30,33 @@ function HorariosComponent() {
         const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver horarios']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchActiveHorarios();
   }, []);
+
+    useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchActiveHorarios();
+        } else {
+          checkPermission('Ver horarios', 'No tienes permisos para ver horarios');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -51,9 +69,13 @@ function HorariosComponent() {
 
   const fetchActiveHorarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/horarios/activos");
       setHorarios(formatDates(response.data));
       setFilter("activos");
+    } else {
+      checkPermission('Ver horarios', 'No tienes permisos para ver horarios')
+    }
     } catch (error) {
       console.error("Error fetching active horarios:", error);
     }
@@ -61,15 +83,19 @@ function HorariosComponent() {
 
   const fetchInactiveHorarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/horarios");
       // Filtrar horarios con estado 0
       const inactiveHorarios = response.data.filter((horario) => horario.estado === 0);
       setHorarios(formatDates(inactiveHorarios));
       setFilter("inactivos");
+    } else {
+      checkPermission('Ver horarios', 'No tienes permisos para ver horarios')
+    }
     } catch (error) {
       console.error("Error fetching inactive horarios:", error);
     }
-  };  
+  };
 
   const formatDates = (data) => {
     return data.map((item) => ({
@@ -141,66 +167,66 @@ function HorariosComponent() {
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentHorarios = filteredHorarios.slice(indexOfFirstRow, indexOfLastRow);
-  
+
   const totalPages = Math.ceil(filteredHorarios.length / rowsPerPage);
-  
-    const renderPagination = () => (
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
           }}
           style={{
-            color: currentPage === 1 ? "gray" : "#007AC3",
-            cursor: currentPage === 1 ? "default" : "pointer",
-            textDecoration: "none",
-            fontWeight: "bold",
+            width: "100px",
+            height: "40px",
           }}
         >
-          Anterior
-        </a>
-  
-        <div className="d-flex align-items-center">
-          <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
-          <Form.Control
-            as="select"
-            value={rowsPerPage}
-            onChange={(e) => {
-              setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            style={{
-              width: "100px",
-              height: "40px",
-            }}
-          >
-            {[5, 10, 20, 50].map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </Form.Control>
-        </div>
-  
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-          }}
-          style={{
-            color: currentPage === totalPages ? "gray" : "#007AC3",
-            cursor: currentPage === totalPages ? "default" : "pointer",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          Siguiente
-        </a>
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
       </div>
-    );
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
 
 
   return (
@@ -281,14 +307,14 @@ function HorariosComponent() {
         </Alert>
 
         <Table striped bordered hover responsive
-         style={{
-          backgroundColor: "#ffffff",
-          borderRadius: "20px",
-          overflow: "hidden",
-          marginTop: "20px",
-        }}>
-          <thead 
-          style={{ backgroundColor: "#007AC3", color: "#fff"  }}>
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "20px",
+            overflow: "hidden",
+            marginTop: "20px",
+          }}>
+          <thead
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}>
             <tr>
               <th style={{ textAlign: "center" }}>ID</th>
               <th style={{ textAlign: "center" }}>Horario Inicio</th>
@@ -413,17 +439,17 @@ function HorariosComponent() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-               </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

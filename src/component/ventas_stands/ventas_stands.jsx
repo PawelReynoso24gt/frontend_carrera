@@ -54,6 +54,9 @@ function Ventas() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -64,13 +67,18 @@ function Ventas() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver ventas stands']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchVentas();
     fetchTiposPagos();
     fetchTiposPublico();
     fetchStands();
@@ -100,6 +108,25 @@ function Ventas() {
   }, [detallesVenta, newVenta.donacion, voluntarios, ventaEditada.venta?.donacion, tiposPagos]);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchVentas();
+        } else {
+          checkPermission('Ver ventas stands', 'No tienes permisos para ver ventas stands');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
+
+    const checkPermission = (permission, message) => {
+      if (!permissions[permission]) {
+        setPermissionMessage(message);
+        setShowPermissionModal(true);
+        return false;
+      }
+      return true;
+    };
 
   const resetForm = () => {
     setVentaEditada({
@@ -507,9 +534,13 @@ function Ventas() {
 
   const fetchActiveVentas = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/ventas/stands/activas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
+    } else {
+      checkPermission('Ver ventas stands', 'No tienes permisos para ver ventas stands')
+    }
     } catch (error) {
       console.error("Error fetching active ventas:", error);
     }
@@ -517,9 +548,13 @@ function Ventas() {
 
   const fetchInactiveVentas = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/ventas/stands/inactivas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
+    } else {
+      checkPermission('Ver ventas stands', 'No tienes permisos para ver ventas stands')
+    }
     } catch (error) {
       console.error("Error fetching inactive ventas:", error);
     }
@@ -847,7 +882,11 @@ function Ventas() {
               fontWeight: "bold",
               color: "#fff",
           }}
-          onClick={handleCreateVentaClick}
+          onClick={() => {
+            if (checkPermission('Crear venta stand', 'No tienes permisos para crear venta stand')) {
+              handleCreateVentaClick();
+            }
+          }}
         >
           Crear Venta
         </Button>
@@ -914,12 +953,17 @@ function Ventas() {
                     />
                     <FaPencilAlt
                       style={{
+                        color: "#007AC3",
                         cursor: "pointer",
                         marginRight: "10px",
                         fontSize: "20px",
                       }}
                       title="Editar Venta"
-                      onClick={() => handleEditVenta(venta.idVenta)}
+                      onClick={() => {
+                        if (checkPermission('Editar venta stand', 'No tienes permisos para editar venta stand')) {
+                          handleEditVenta(venta.idVenta);
+                        }
+                      }}
                     />
                     {venta.estado ? (
                         <FaToggleOn
@@ -1407,6 +1451,17 @@ function Ventas() {
           <Button onClick={handleCloseVoluntarios}>Cerrar</Button>
         </Modal.Footer>
       </Modal>
+       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Permiso Denegado</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{permissionMessage}</Modal.Body>
+                <Modal.Footer>
+                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                    Aceptar
+                  </Button>
+                </Modal.Footer>
+              </Modal>
       </div>
     </>
   );
