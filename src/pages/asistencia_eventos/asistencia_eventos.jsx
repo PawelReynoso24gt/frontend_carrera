@@ -11,7 +11,7 @@ import useMenu from "../../hooks/useMenu";
 function AsistenciasPage () {
   useMenu();
   // Estado para controlar el componente seleccionado
-    const [selectedComponent, setSelectedComponent] = useState("mventas");
+    const [selectedComponent, setSelectedComponent] = useState("inscripcion");
   
     // Función para manejar el cambio en el combobox
     const handleSelectionChange = (event) => {
