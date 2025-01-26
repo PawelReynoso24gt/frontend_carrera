@@ -121,24 +121,31 @@ const ReporteContabilidad = () => {
   
     const detallesPedidos = pedidos.map(pedido => pedido.detalle_pedidos.map(detalle => `Producto ID: ${detalle.idProducto}, Cantidad: ${detalle.cantidad}`).join(", ")).join("\n");
   
-    const totalVentasVoluntarios = ventasVoluntarios.reduce((acc, venta) => acc + parseFloat(venta.totalVenta), 0).toFixed(2);
-    const totalVentasStands = ventasStands.reduce((acc, venta) => acc + parseFloat(venta.totalVenta), 0).toFixed(2);
+    const totalVentasVoluntarios = ventasVoluntarios.reduce((acc, venta) => acc + parseFloat(venta.totalVenta || 0), 0).toFixed(2);
+    const totalVentasStands = ventasStands.reduce((acc, venta) => acc + parseFloat(venta.totalVenta || 0), 0).toFixed(2);
   
     const totalRecaudacionesRifas = recaudacionesRifas.reduce((acc, recaudacion) => {
       const rifa = recaudacion.solicitudTalonario.talonario.rifa.nombreRifa;
       if (!acc[rifa]) {
         acc[rifa] = 0;
       }
-      acc[rifa] += parseFloat(recaudacion.subTotal);
+      acc[rifa] += parseFloat(recaudacion.subTotal || 0);
       return acc;
     }, {});
   
     const rifaMayorRecaudacion = Object.keys(totalRecaudacionesRifas).reduce((max, rifa) => totalRecaudacionesRifas[rifa] > totalRecaudacionesRifas[max] ? rifa : max, Object.keys(totalRecaudacionesRifas)[0]);
     const rifaMenorRecaudacion = Object.keys(totalRecaudacionesRifas).reduce((min, rifa) => totalRecaudacionesRifas[rifa] < totalRecaudacionesRifas[min] ? rifa : min, Object.keys(totalRecaudacionesRifas)[0]);
   
-    const eventoMayorRecaudacion = recaudacionesEventos.reduce((max, evento) => parseFloat(evento.recaudacion) > parseFloat(max.recaudacion) ? evento : max, recaudacionesEventos[0]);
-    const eventoMenorRecaudacion = recaudacionesEventos.reduce((min, evento) => parseFloat(evento.recaudacion) < parseFloat(min.recaudacion) ? evento : min, recaudacionesEventos[0]);
+    const eventoMayorRecaudacion = recaudacionesEventos.length > 0 
+    ? recaudacionesEventos.reduce((max, evento) => parseFloat(evento.recaudacion || 0) > parseFloat(max.recaudacion || 0) ? evento : max, recaudacionesEventos[0]) 
+    : null;
 
+    const eventoMenorRecaudacion = recaudacionesEventos.length > 0 
+    ? recaudacionesEventos.reduce((min, evento) => parseFloat(evento.recaudacion || 0) < parseFloat(min.recaudacion || 0) ? evento : min, recaudacionesEventos[0]) 
+    : null;
+
+    const fechaInicioFormatted = fechaInicio ? fechaInicio.split("-").reverse().join("/") : "N/A";
+    const fechaFinFormatted = fechaFin ? fechaFin.split("-").reverse().join("/") : "N/A";
     // Logo y encabezado
     doc.addImage(logo, "PNG", 10, 10, 60, 30);
     doc.setFontSize(20);
@@ -150,8 +157,6 @@ const ReporteContabilidad = () => {
     doc.text(new Date().toLocaleDateString("es-ES"), 167, 28);
     doc.text(new Date().toLocaleTimeString("es-ES", { hour: '2-digit', minute: '2-digit', hour12: true }), 185, 28);
     doc.setFontSize(10);
-    const fechaInicioFormatted = fechaInicio.split("-").reverse().join("/");
-    const fechaFinFormatted = fechaFin.split("-").reverse().join("/");
     doc.text(`Desde: ${fechaInicioFormatted}   Hasta: ${fechaFinFormatted}`, 110, 35);
     doc.text(`Generado por: ${nombreUsuario}`, 110, 40);
   
@@ -431,22 +436,33 @@ doc.setFont("helvetica", "bold");
 doc.text("Recaudaciones de Rifas:", 14, currentY);
 
 Object.keys(totalRecaudacionesRifas).forEach(rifa => {
+    currentY = verificarEspacio(currentY, 10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`- ${rifa}: Q ${(totalRecaudacionesRifas[rifa] || 0).toFixed(2)}`, 14, currentY);
+  });
   currentY = verificarEspacio(currentY, 10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`- ${rifa}: Q ${totalRecaudacionesRifas[rifa].toFixed(2)}`, 14, currentY);
-});
-currentY = verificarEspacio(currentY, 10);
-doc.setFont("helvetica", "bold");
-doc.text(`Rifa Mayor Recaudación: ${rifaMayorRecaudacion} (Q ${totalRecaudacionesRifas[rifaMayorRecaudacion].toFixed(2)})`, 14, currentY);
-currentY = verificarEspacio(currentY, 10);
-doc.text(`Rifa Menor Recaudación: ${rifaMenorRecaudacion} (Q ${totalRecaudacionesRifas[rifaMenorRecaudacion].toFixed(2)})`, 14, currentY);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Rifa Mayor Recaudación: ${rifaMayorRecaudacion} (Q ${(totalRecaudacionesRifas[rifaMayorRecaudacion] || 0).toFixed(2)})`, 14, currentY);
+  currentY = verificarEspacio(currentY, 10);
+  doc.text(`Rifa Menor Recaudación: ${rifaMenorRecaudacion} (Q ${(totalRecaudacionesRifas[rifaMenorRecaudacion] || 0).toFixed(2)})`, 14, currentY);
 
 // Recaudaciones de Eventos
 currentY = verificarEspacio(currentY, 20);
 doc.setFont("helvetica", "bold");
-doc.text(`Evento Mayor Recaudación: ${eventoMayorRecaudacion.evento.nombreEvento} (Q ${parseFloat(eventoMayorRecaudacion.recaudacion).toFixed(2)})`, 14, currentY);
-currentY = verificarEspacio(currentY, 10);
-doc.text(`Evento Menor Recaudación: ${eventoMenorRecaudacion.evento.nombreEvento} (Q ${parseFloat(eventoMenorRecaudacion.recaudacion).toFixed(2)})`, 14, currentY);
+
+if (eventoMayorRecaudacion) {
+    doc.text(`Evento Mayor Recaudación: ${eventoMayorRecaudacion.evento.nombreEvento} (Q ${(parseFloat(eventoMayorRecaudacion.recaudacion || 0)).toFixed(2)})`, 14, currentY);
+    currentY = verificarEspacio(currentY, 10);
+} else {
+    doc.text(`Evento Mayor Recaudación: N/A`, 14, currentY);
+    currentY = verificarEspacio(currentY, 10);
+}
+
+if (eventoMenorRecaudacion) {
+    doc.text(`Evento Menor Recaudación: ${eventoMenorRecaudacion.evento.nombreEvento} (Q ${(parseFloat(eventoMenorRecaudacion.recaudacion || 0)).toFixed(2)})`, 14, currentY);
+} else {
+    doc.text(`Evento Menor Recaudación: N/A`, 14, currentY);
+}
 
 // Firma
 currentY = verificarEspacio(currentY, 30);
@@ -527,7 +543,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
         <button
           className="btn btn-success mx-auto"
           onClick={generarPDF}
-          disabled={recaudacionesEventos.length === 0}
+          disabled={!fechaFin}
           style={{
             width: "20%",
             fontWeight: "bold",
