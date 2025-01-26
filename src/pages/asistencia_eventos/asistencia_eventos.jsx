@@ -4,6 +4,8 @@ import BreadCrumb from "../../component/home-two/BreadCrumb";
 import Wrapper from "../../component/pricing/Wrapper";
 import AsistenciaEventosComponent  from "../../component/asistencia_eventos/asistencia_eventos";
 import RegistroComisiones  from "../../component/registroComisiones/registroComisiones";
+import RegistroMateriales from "../../component/registroMateriales/registroMateriales";
+import RegistroActividades  from "../../component/registroActividades/registroActividades";
 import useMenu from "../../hooks/useMenu";
 
 function AsistenciasPage () {
@@ -34,6 +36,8 @@ function AsistenciasPage () {
           >
             <option value="inscripcion">Inscripciones a eventos</option>
             <option value="registroComision">Registros a comisiones</option>
+            <option value="registroMateriales">Registros a Materiales</option>
+            <option value="registroActividades">Registros a Actividades</option>
           </select>
         </div>
 
