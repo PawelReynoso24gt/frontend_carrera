@@ -118,7 +118,9 @@ function SolicitudesVoluntariado() {
   const fetchAspirantes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/aspirantes");
-      setAspirantes(response.data);
+      
+      const activos = response.data.filter((aspirante) => aspirante.estado === 1);
+      setAspirantes(activos);
     } catch (error) {
       console.error("Error fetching aspirantes:", error);
     }
