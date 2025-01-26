@@ -21,7 +21,7 @@ function Voluntarios() {
   const [newVoluntario, setNewVoluntario] = useState({
     codigoQR: "",
     fechaRegistro: "",
-    fechaSalida: "",
+    fechaSalida: null,
     estado: 1,
     idPersona: "",
   });
@@ -164,7 +164,7 @@ function Voluntarios() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewVoluntario({ ...newVoluntario, [name]: value });
+    setNewVoluntario({ ...newVoluntario, [name]: value === "" ? null : value });
   };
 
   const handleShowQRModal = (codigoQR) => {
@@ -184,7 +184,7 @@ function Voluntarios() {
       const voluntarioToSubmit = {
         ...newVoluntario,
         fechaRegistro: new Date(newVoluntario.fechaRegistro).toISOString().split('T')[0],
-        fechaSalida: new Date(newVoluntario.fechaSalida).toISOString().split('T')[0],
+        fechaSalida: newVoluntario.fechaSalida ? new Date(newVoluntario.fechaSalida).toISOString().split('T')[0] : null,
       };
 
       if (editingVoluntario) {
@@ -405,7 +405,9 @@ function Voluntarios() {
                   </span>
                 </td>
                 <td style={{ textAlign: "center" }}>{voluntario.fechaRegistro ? format(parseISO(voluntario.fechaRegistro), "dd-MM-yyyy") : "Sin fecha"}</td>
-                <td style={{ textAlign: "center" }}>{voluntario.fechaSalida ? format(parseISO(voluntario.fechaSalida), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td style={{ textAlign: "center" }}>
+                  {voluntario.fechaSalida ? format(parseISO(voluntario.fechaSalida), "dd-MM-yyyy") : "Sin fecha"}
+                </td>
                 <td style={{ textAlign: "center" }}>
                   {personas.find((persona) => persona.idPersona === voluntario.idPersona)?.nombre ||
                     "Desconocido"}
@@ -509,9 +511,8 @@ function Voluntarios() {
                 <Form.Control
                   type="date"
                   name="fechaSalida"
-                  value={newVoluntario.fechaSalida}
+                  value={newVoluntario.fechaSalida || ""}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
               <Form.Group controlId="idPersona">
