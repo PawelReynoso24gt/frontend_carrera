@@ -338,63 +338,71 @@ function DetalleHorariosComponent() {
             </tr>
           </thead>
           <tbody style={{ textAlign: "center" }}>
-            {currentDetalleHorarios.map((detalle) => (
-              <tr key={detalle.idDetalleHorario}>
-                <td>{detalle.idDetalleHorario}</td>
-                <td>{detalle.cantidadPersonas}</td>
-                <td>{detalle.idHorario}</td>
-                <td>{detalle.categoriaHorario?.categoria || 'Sin categoría'}</td> {/* Mostrar nombre */}
-                <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
-                <td>
-                  <FaPencilAlt
-                    style={{
-                      color: "#007AC3",
-                      cursor: "pointer",
-                      marginRight: "10px",
-                      fontSize: "20px",
-                    }}
-                    title="Editar"
-                    onClick={() => {
-                      if (checkPermission('Editar detalle horario', 'No tienes permisos para editar detalle horario')) {
-                        handleShowModal(detalle);
-                      }
-                    }}
-                  />
-                  {detalle.estado ? (
-                    <FaToggleOn
+            {currentDetalleHorarios.map((detalle) => {
+              const horarioEncontrado = horarios.find((h) => h.idHorario === detalle.idHorario);
+              return (
+                <tr key={detalle.idDetalleHorario}>
+                  <td>{detalle.idDetalleHorario}</td>
+                  <td>{detalle.cantidadPersonas}</td>
+                  <td>
+                    {horarioEncontrado
+                      ? `Inicio: ${horarioEncontrado.horarioInicio} - Fin: ${horarioEncontrado.horarioFinal}`
+                      : detalle.idHorario
+                    }
+                  </td>
+                  <td>{detalle.categoriaHorario?.categoria || 'Sin categoría'}</td>
+                  <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
+                  <td>
+                    <FaPencilAlt
                       style={{
-                        color: "#30c10c",
+                        color: "#007AC3",
                         cursor: "pointer",
-                        marginLeft: "10px",
+                        marginRight: "10px",
                         fontSize: "20px",
                       }}
-                      title="Inactivar"
-                      onClick={() => toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado)}
-                    />
-                  ) : (
-                    <FaToggleOff
-                      style={{
-                        color: "#e10f0f",
-                        cursor: "pointer",
-                        marginLeft: "10px",
-                        fontSize: "20px",
-                      }}
-                      title="Activar"
+                      title="Editar"
                       onClick={() => {
-                        const actionPermission = detalle.estado ? 'Desactivar detalle horario' : 'Activar detalle horario';
-                        const actionMessage = detalle.estado
-                          ? 'No tienes permisos para desactivar detalle horario'
-                          : 'No tienes permisos para activar detalle horario';
-
-                        if (checkPermission(actionPermission, actionMessage)) {
-                          toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado);
+                        if (checkPermission('Editar detalle horario', 'No tienes permisos para editar detalle horario')) {
+                          handleShowModal(detalle);
                         }
                       }}
                     />
-                  )}
-                </td>
-              </tr>
-            ))}
+                    {detalle.estado ? (
+                      <FaToggleOn
+                        style={{
+                          color: "#30c10c",
+                          cursor: "pointer",
+                          marginLeft: "10px",
+                          fontSize: "20px",
+                        }}
+                        title="Inactivar"
+                        onClick={() => toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado)}
+                      />
+                    ) : (
+                      <FaToggleOff
+                        style={{
+                          color: "#e10f0f",
+                          cursor: "pointer",
+                          marginLeft: "10px",
+                          fontSize: "20px",
+                        }}
+                        title="Activar"
+                        onClick={() => {
+                          const actionPermission = detalle.estado ? 'Desactivar detalle horario' : 'Activar detalle horario';
+                          const actionMessage = detalle.estado
+                            ? 'No tienes permisos para desactivar detalle horario'
+                            : 'No tienes permisos para activar detalle horario';
+
+                          if (checkPermission(actionPermission, actionMessage)) {
+                            toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado);
+                          }
+                        }}
+                      />
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </Table>
 
