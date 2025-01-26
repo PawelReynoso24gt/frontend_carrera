@@ -501,6 +501,7 @@ function Comisiones() {
                 </Form.Control>
               </Form.Group>
               <Form.Group controlId="idDetalleHorario">
+<<<<<<< HEAD
                 <Form.Label>Detalle Horario</Form.Label>
                 <Form.Control
                   as="select"
@@ -517,6 +518,24 @@ function Comisiones() {
                   ))}
                 </Form.Control>
               </Form.Group>
+=======
+                  <Form.Label>Detalle Horario</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="idDetalleHorario"
+                    value={newComision.idDetalleHorario}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccionar Detalle Horario</option>
+                    {detallesHorarios.map((detalle) => (
+                      <option key={detalle.idDetalleHorario} value={detalle.idDetalleHorario}>
+                        {`${detalle.cantidadPersonas} personas - ${new Date(`1970-01-01T${detalle.horario.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${detalle.horario.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+>>>>>>> a06e192d859193ad3bd8919db38f6018cbdb4ca1
 
               {/* Campo: Estado */}
               <Form.Group controlId="estado">

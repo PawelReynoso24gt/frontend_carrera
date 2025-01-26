@@ -459,20 +459,6 @@ function Municipio() {
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newMunicipio.estado}
-                  onChange={handleChange}
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
               <Form.Group controlId="idDepartamento">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
                   Departamento
@@ -493,6 +479,20 @@ function Municipio() {
                       {departamento.departamento}
                     </option>
                   ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="estado">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="estado"
+                  value={newMunicipio.estado}
+                  onChange={handleChange}
+                >
+                  <option value={1}>Activo</option>
+                  <option value={0}>Inactivo</option>
                 </Form.Control>
               </Form.Group>
               <Button

@@ -211,7 +211,7 @@ function EventosActivos() {
                 <tr>
                   <th>ID Inscripción</th>
                   <th>Fecha y Hora de Inscripción</th>
-                  <th>Voluntario ID</th>
+                  <th>Voluntario</th>
                   <th>Código QR Voluntario</th>
                   <th>Acciones</th>
                 </tr>
@@ -221,7 +221,7 @@ function EventosActivos() {
                   <tr key={inscripcion.idInscripcionEvento}>
                     <td>{inscripcion.idInscripcionEvento}</td>
                     <td>{new Date(inscripcion.fechaHoraInscripcion).toLocaleString()}</td>
-                    <td>{inscripcion.voluntario.idVoluntario}</td>
+                    <td>{inscripcion.voluntario.persona.nombre}</td>
                     <td>{inscripcion.voluntario.codigoQR}</td>
                     <td>
                       <Button
