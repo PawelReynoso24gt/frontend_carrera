@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Card, Button, Container, Row, Col, Table, Modal } from "react-bootstrap";
 import jsQR from "jsqr";
+import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
 function EventosActivos() {
   const [eventos, setEventos] = useState([]);
@@ -19,6 +20,8 @@ function EventosActivos() {
   const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+
+  const idEmpleado = getUserDataFromToken(localStorage.getItem("token"))?.idEmpleado; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -152,7 +155,7 @@ function EventosActivos() {
             idInscripcionEvento: selectedInscripcion.idInscripcionEvento,
             fechaHoraAsistencia: new Date(),
             estado: 1,
-            idEmpleado: 2,
+            idEmpleado: idEmpleado,
           });
 
           handleCloseQRScannerModal();
