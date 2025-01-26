@@ -23,6 +23,7 @@ function UsuariosAdminComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [roles, setRoles] = useState([]);
 
 
   useEffect(() => {
@@ -120,7 +121,7 @@ function UsuariosAdminComponent() {
 
   const handleShowModal = (usuario = null) => {
     setEditingUsuario(usuario);
-    setNewUsuario(usuario || { usuario: '', estado: 1, idRol: 1, idSede: '', idPersona: '', contrasenia: '' });
+    setNewUsuario(usuario || { usuario: '', estado: 1, idRol: '', idSede: '', idPersona: '', contrasenia: '' });
     setShowModal(true);
   };
 
@@ -485,7 +486,25 @@ function UsuariosAdminComponent() {
                   />
                 </Form.Group>
               )}
-
+              <Form.Group controlId="idRol">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Rol
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idRol"
+                  value={newUsuario.idRol}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccione Rol</option>
+                  {roles.map((rol) => (
+                    <option key={rol.idRol} value={rol.idRol}>
+                      {rol.roles}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
               <Form.Group controlId="idSede">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
                   Sede
