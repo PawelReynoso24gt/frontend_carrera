@@ -10,6 +10,7 @@ import {
   Tab,
   Table,
   Spinner,
+  Modal
 } from "react-bootstrap";
 
 function EventosActivos() {
@@ -18,10 +19,53 @@ function EventosActivos() {
   const [selectedVoluntarios, setSelectedVoluntarios] = useState([]);
   const [isLoadingVoluntarios, setIsLoadingVoluntarios] = useState(false);
   const [isVoluntariosLoaded, setIsVoluntariosLoaded] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
-    fetchEventosActivos();
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+          response.data.permisos['Ver inscripciones a comisiones']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
   }, []);
+
+    useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchEventosActivos();
+        } else {
+          checkPermission('Ver inscripciones a comisiones', 'No tienes permisos para ver inscripciones a comisiones');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
+  
+    const checkPermission = (permission, message) => {
+      if (!permissions[permission]) {
+        setPermissionMessage(message);
+        setShowPermissionModal(true);
+        return false;
+      }
+      return true;
+    };
 
   const fetchEventosActivos = async () => {
     try {
@@ -33,7 +77,7 @@ function EventosActivos() {
   };
 
   const fetchComisionesByEvento = async (idEvento) => {
-    
+
     setComisiones({});
     setIsVoluntariosLoaded(false);
     try {
@@ -68,17 +112,17 @@ function EventosActivos() {
   const fetchVoluntariosByComision = async (idComision, idEvento) => {
     setIsLoadingVoluntarios(true);
     setIsVoluntariosLoaded(false);
-  
+
     try {
       console.log("ID del evento:", idEvento);
       console.log("ID de la comisión:", idComision);
-  
+
       const response = await axios.get(
         `http://localhost:5000/inscripcion_comisiones/activos?eventoId=${idEvento}`
       );
-  
+
       console.log("Respuesta completa de la API:", response.data);
-  
+
       // Filtrar inscripciones por idComision y mapear datos del voluntario
       const voluntarios = response.data
         .filter((inscripcion) => {
@@ -90,9 +134,9 @@ function EventosActivos() {
           idVoluntario: inscripcion.voluntario?.idVoluntario || "N/A",
           nombre: inscripcion.voluntario?.persona?.nombre || "Nombre no disponible", // Extraer nombre desde persona
         }));
-  
+
       console.log("Voluntarios filtrados:", voluntarios);
-  
+
       setSelectedVoluntarios(voluntarios);
       setIsVoluntariosLoaded(true);
     } catch (error) {
@@ -102,7 +146,7 @@ function EventosActivos() {
       setIsLoadingVoluntarios(false);
     }
   };
-  
+
   return (
     <Container className="mt-5">
       <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>
@@ -162,7 +206,7 @@ function EventosActivos() {
                           <p className="text-danger mt-3">
                             Ya no se pueden inscribir más personas a esta comisión.
                           </p>
-                          
+
                         )}
                       </Card.Body>
                       <Card.Footer className="text-center">
@@ -177,7 +221,7 @@ function EventosActivos() {
                             marginRight: "10px",
                             fontWeight: "bold",
                             color: "#fff",
-                          }}  
+                          }}
                         >
                           Ver Voluntarios
                         </Button>
@@ -227,6 +271,17 @@ function EventosActivos() {
           </Tab>
         ))}
       </Tabs>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
     </Container>
   );
 }
