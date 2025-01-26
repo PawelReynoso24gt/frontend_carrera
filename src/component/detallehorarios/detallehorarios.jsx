@@ -57,10 +57,10 @@ function DetalleHorariosComponent() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     1,
       fetchCategorias();
-      fetchHorarios(); 
+    fetchHorarios();
     fetchActiveDetalles();
     fetchPermissions();
   }, []);
@@ -74,8 +74,8 @@ function DetalleHorariosComponent() {
     }
     return true;
   };
-  
- const fetchDetalleHorarios = async () => {
+
+  const fetchDetalleHorarios = async () => {
     try {
       const response = await axios.get("http://localhost:5000/detalle_horarios");
       setDetalles(response.data);
@@ -381,15 +381,15 @@ function DetalleHorariosComponent() {
                       }}
                       title="Activar"
                       onClick={() => {
-                      const actionPermission = detalle.estado ? 'Desactivar detalle horario' : 'Activar detalle horario';
-                      const actionMessage = detalle.estado
-                        ? 'No tienes permisos para desactivar detalle horario'
-                        : 'No tienes permisos para activar detalle horario';
-  
-                      if (checkPermission(actionPermission, actionMessage)) {
-                        toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado);
-                      }
-                    }}
+                        const actionPermission = detalle.estado ? 'Desactivar detalle horario' : 'Activar detalle horario';
+                        const actionMessage = detalle.estado
+                          ? 'No tienes permisos para desactivar detalle horario'
+                          : 'No tienes permisos para activar detalle horario';
+
+                        if (checkPermission(actionPermission, actionMessage)) {
+                          toggleDetalleEstado(detalle.idDetalleHorario, detalle.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -439,8 +439,8 @@ function DetalleHorariosComponent() {
                     <option key={horario.idHorario} value={horario.idHorario}>
                       {horario.nombreHorario || `Horario ${horario.idHorario}`}
                     </option>
-                    ))}
-                 </Form.Control>
+                  ))}
+                </Form.Control>
               </Form.Group>
               <Form.Group controlId="idCategoriaHorario">
                 <Form.Label>Categoría Horario</Form.Label>
@@ -490,17 +490,17 @@ function DetalleHorariosComponent() {
             </Form>
           </Modal.Body>
         </Modal>
-            <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-               </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );
