@@ -23,7 +23,7 @@ function UsuariosAdminComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
-  
+
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -38,11 +38,12 @@ function UsuariosAdminComponent() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchActiveUsuarios();
     fetchPersonas(); // Obtener la lista de personas al cargar el componente
     fetchSedes(); // Obtener la lista de sedes al cargar el componente
+    fetchRoles(); // Obtener la lista de roles al cargar el componente
   }, []);
 
   const checkPermission = (permission, message) => {
@@ -53,7 +54,7 @@ function UsuariosAdminComponent() {
     }
     return true;
   };
-  
+
 
   const fetchActiveUsuarios = async () => {
     try {
@@ -96,6 +97,15 @@ function UsuariosAdminComponent() {
       setSedes(response.data);
     } catch (error) {
       console.error('Error fetching sedes:', error);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/roles');
+      setRoles(response.data);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
     }
   };
 
@@ -158,7 +168,7 @@ function UsuariosAdminComponent() {
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-        console.error('Error submitting usuario:', error);
+      console.error('Error submitting usuario:', error);
     }
   };
 
@@ -274,7 +284,7 @@ function UsuariosAdminComponent() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-      <Button
+        <Button
           style={{
             backgroundColor: "#007abf",
             borderColor: "#007AC3",
@@ -284,14 +294,14 @@ function UsuariosAdminComponent() {
             fontWeight: "bold",
             color: "#fff",
           }}
-           onClick={() => {
-      if (checkPermission('Crear usuario', 'No tienes permisos para crear usuarios')) {
-        handleShowModal();
-      }
-    }}
+          onClick={() => {
+            if (checkPermission('Crear usuario', 'No tienes permisos para crear usuarios')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Usuario
-        </Button> 
+        </Button>
         <Button
           style={{
             backgroundColor: "#009B85",
@@ -543,7 +553,7 @@ function UsuariosAdminComponent() {
               </Button>
             </Form>
           </Modal.Body>
-         </Modal>
+        </Modal>
 
         {/* Modal para cambiar la contraseña */}
         <Modal show={showPasswordModal} onHide={handleClosePasswordModal}>
@@ -583,8 +593,8 @@ function UsuariosAdminComponent() {
             </Form>
           </Modal.Body>
         </Modal>
-           {/* Modal de notificación */}
-           <Modal show={showPermissionModal} onHide={handlePermissionModalClose}>
+        {/* Modal de notificación */}
+        <Modal show={showPermissionModal} onHide={handlePermissionModalClose}>
           <Modal.Header closeButton>
             <Modal.Title>Notificación</Modal.Title>
           </Modal.Header>
@@ -596,16 +606,16 @@ function UsuariosAdminComponent() {
           </Modal.Footer>
         </Modal>
         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-         <Modal.Header closeButton>
-          <Modal.Title>Permiso Denegado</Modal.Title>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
           </Modal.Header>
           <Modal.Body>{permissionMessage}</Modal.Body>
           <Modal.Footer>
-          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-            Aceptar
-          </Button>
-         </Modal.Footer>
-       </Modal>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );
