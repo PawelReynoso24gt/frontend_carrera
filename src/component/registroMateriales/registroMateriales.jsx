@@ -67,6 +67,7 @@ function InscripcionesMateriales() {
       const inscripcionesData = response.data.map((inscripcion) => ({
         idDetalleInscripcionMaterial: inscripcion.idDetalleInscripcionMaterial,
         estado: inscripcion.estado === 1 ? "Activo" : "Inactivo",
+        nombreVoluntario: inscripcion.inscripcionEvento?.voluntario?.persona?.nombre || "No disponible",
         cantidadMaterial: inscripcion.cantidadMaterial || "No disponible",
         nombreEvento: inscripcion.inscripcionEvento?.evento?.nombreEvento || "No disponible",
         nombreComision: inscripcion.inscripcion_comisione?.comisione?.comision || "No disponible",
@@ -101,6 +102,7 @@ function InscripcionesMateriales() {
                     Inscripción #{inscripcion.idDetalleInscripcionMaterial}
                   </Card.Title>
                   <Card.Text>
+                   <strong>Voluntario:</strong> {inscripcion.nombreVoluntario}<br />  
                     <strong>Evento:</strong> {inscripcion.nombreEvento}<br />
                     <strong>Comisión:</strong> {inscripcion.nombreComision}<br />
                     <strong>Material:</strong> {inscripcion.nombreMaterial}<br />

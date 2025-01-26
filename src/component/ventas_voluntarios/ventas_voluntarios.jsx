@@ -314,15 +314,6 @@ function Ventas() {
       // Validar que la suma de los montos de los pagos coincida con el total calculado
       const totalPagado = tiposPagos.reduce((sum, pago) => sum + (parseFloat(pago.monto) || 0), 0);
 
-<<<<<<< HEAD
-      // Verifica si el total pagado coincide con el total calculado (incluyendo la donación ya sumada)
-      if (totalPagado !== parseFloat(totalAPagar)) {
-        alert(
-          `La suma de los pagos (Q${totalPagado.toFixed(2)}) no coincide con el total a pagar (Q${totalAPagar.toFixed(2)}).`
-        );
-        return;
-      }
-=======
         // Asegúrate de que totalAPagar es un número
         const totalAPagarNumber = parseFloat(totalAPagar);
 
@@ -333,7 +324,6 @@ function Ventas() {
             );
             return;
         }
->>>>>>> a06e192d859193ad3bd8919db38f6018cbdb4ca1
 
       // Validar que cada pago tenga el formato correcto
       const pagosValidados = tiposPagos.map((pago) => {

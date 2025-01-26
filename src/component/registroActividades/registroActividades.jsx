@@ -65,6 +65,7 @@ function InscripcionesActividades() {
       const inscripcionesData = response.data.map((inscripcion) => ({
         idDetalleInscripcionActividad: inscripcion.idDetalleInscripcionActividad,
         estado: inscripcion.estado === 1 ? "Activo" : "Inactivo",
+        nombreVoluntario: inscripcion.inscripcionEvento?.voluntario?.persona?.nombre || "No disponible",
         nombreEvento: inscripcion.inscripcionEvento?.evento?.nombreEvento || "No disponible",
         nombreComision: inscripcion.inscripcion_comisione?.comisione?.comision || "No disponible",
         nombreActividad: inscripcion.actividad?.actividad || "No disponible",
@@ -99,6 +100,7 @@ function InscripcionesActividades() {
                     Inscripción #{inscripcion.idDetalleInscripcionActividad}
                   </Card.Title>
                   <Card.Text>
+                   <strong>Voluntario:</strong> {inscripcion.nombreVoluntario}<br />                    
                     <strong>Evento:</strong> {inscripcion.nombreEvento}<br />
                     <strong>Comisión:</strong> {inscripcion.nombreComision}<br />
                     <strong>Actividad:</strong> {inscripcion.nombreActividad}<br />
