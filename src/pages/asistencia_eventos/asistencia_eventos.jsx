@@ -36,8 +36,8 @@ function AsistenciasPage () {
           >
             <option value="inscripcion">Inscripciones a eventos</option>
             <option value="registroComision">Registros a comisiones</option>
-            <option value="registroMateriales">Registros a Materiales</option>
             <option value="registroActividades">Registros a Actividades</option>
+            <option value="registroMateriales">Registros a Materiales</option>        
           </select>
         </div>
 
