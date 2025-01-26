@@ -487,7 +487,7 @@ function Comisiones() {
                     <option value="">Seleccionar Detalle Horario</option>
                     {detallesHorarios.map((detalle) => (
                       <option key={detalle.idDetalleHorario} value={detalle.idDetalleHorario}>
-                        {`${detalle.cantidadPersonas} personas - ${new Date(`1970-01-01T${detalle.horario?.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${detalle.horario?.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}
+                        {`${detalle.cantidadPersonas} personas - ${new Date(`1970-01-01T${detalle.horario.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${detalle.horario.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}
                       </option>
                     ))}
                   </Form.Control>
