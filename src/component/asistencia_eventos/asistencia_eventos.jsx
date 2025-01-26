@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Card, Button, Container, Row, Col, Table, Modal } from "react-bootstrap";
-import { QrReader } from "react-qr-reader";
+import jsQR from "jsqr";
 
 function EventosActivos() {
   const [eventos, setEventos] = useState([]);
@@ -12,6 +12,8 @@ function EventosActivos() {
   const [selectedInscripcion, setSelectedInscripcion] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [hasScanned, setHasScanned] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     fetchEventosActivos();
@@ -49,23 +51,53 @@ function EventosActivos() {
     setSelectedInscripcion(inscripcion);
     setShowQRScannerModal(true);
     setHasScanned(false);
+    startCamera();
   };
 
   const handleCloseQRScannerModal = () => {
     setShowQRScannerModal(false);
     setSelectedInscripcion(null);
+    setHasScanned(false); // Resetear para futuros escaneos
+    stopCamera();
   };
 
-  const handleScan = (scannedData) => {
-    if (scannedData && !hasScanned) {
-      setHasScanned(true);
-      handleCompareQRCode(scannedData);
+  const startCamera = () => {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      })
+      .catch((err) => {
+        console.error("Error accessing camera:", err);
+      });
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
     }
   };
 
-  const handleError = (err) => {
-    console.error("Error scanning QR Code:", err);
+  const capturePhoto = () => {
+    const context = canvasRef.current.getContext("2d");
+    context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
+    const imageData = context.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code) {
+      handleScan(code.data);
+    } else {
+      alert("No se detectó ningún código QR. Inténtalo de nuevo.");
+    }
   };
+
+  const handleScan = (scannedData) => {
+    if (scannedData && !hasScanned && selectedInscripcion) {
+      setHasScanned(true); // Marcar que ya se ha escaneado
+      handleCompareQRCode(scannedData);
+    }
+  };  
 
   const handleCompareQRCode = async (scannedCode) => {
     if (selectedInscripcion) {
@@ -86,9 +118,10 @@ function EventosActivos() {
           // Refrescar la lista de inscripciones
           await handleShowInscripciones(selectedEvento);
 
-          // Cerrar el mensaje de éxito después de 3 segundos
+          // Cerrar el mensaje de éxito después de 3 segundos y recargar la página para evitar el bucle
           setTimeout(() => {
             setShowSuccessModal(false);
+            window.location.reload(); // Recargar la página
           }, 3000);
         } catch (error) {
           console.error("Error registrando asistencia:", error);
@@ -96,6 +129,7 @@ function EventosActivos() {
         }
       } else {
         alert("Código QR no coincide con el voluntario esperado. Asistencia no registrada.");
+        setHasScanned(false); // Permitir un nuevo intento si el código no coincide
       }
     }
   };
@@ -204,18 +238,13 @@ function EventosActivos() {
           <Modal.Title>Escanear Código QR del Voluntario</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <QrReader
-            onResult={(result, error) => {
-              if (!!result) {
-                handleScan(result?.text);
-              }
-
-              if (!!error) {
-                handleError(error);
-              }
-            }}
-            style={{ width: "100%" }}
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <video ref={videoRef} style={{ width: '100%', maxWidth: '500px' }} />
+            <canvas ref={canvasRef} style={{ display: 'none' }} width="500" height="500" />
+            <Button variant="success" onClick={capturePhoto} style={{ marginTop: '10px' }}>
+              Capturar Foto
+            </Button>
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseQRScannerModal}>
