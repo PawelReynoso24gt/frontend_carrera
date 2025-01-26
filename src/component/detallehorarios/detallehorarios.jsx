@@ -436,7 +436,7 @@ function DetalleHorariosComponent() {
                   ID Horario
                 </Form.Label>
                 <Form.Control
-                  type="number"
+                  as="select" // Cambiar a select
                   name="idHorario"
                   value={newDetalle.idHorario}
                   onChange={handleChange}
