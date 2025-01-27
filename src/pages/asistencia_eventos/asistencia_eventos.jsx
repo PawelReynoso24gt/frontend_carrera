@@ -35,9 +35,9 @@ function AsistenciasPage () {
             style={{ padding: "5px", fontSize: "16px" }}
           >
             <option value="inscripcion">Inscripciones a eventos</option>
-            <option value="registroComision">Registros a comisiones</option>
-            <option value="registroActividades">Registros a Actividades</option>
-            <option value="registroMateriales">Registros a Materiales</option>        
+            <option value="registroComision">Inscripciones a comisiones</option>
+            <option value="registroActividades">Inscripciones a Actividades</option>
+            <option value="registroMateriales">Inscripciones a Materiales</option>        
           </select>
         </div>
 
