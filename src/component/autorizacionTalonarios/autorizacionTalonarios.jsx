@@ -10,9 +10,12 @@ function AutorizacionTalonarios() {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [cardsPerPage, setCardsPerPage] = useState(9);
-      const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-      const [permissionMessage, setPermissionMessage] = useState('');
-      const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -23,16 +26,31 @@ function AutorizacionTalonarios() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver solicitudes de talonarios']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchSolicitudes();
   }, []);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchSolicitudes();
+        } else {
+          checkPermission('Ver solicitudes de talonarios', 'No tienes permisos para ver solicitudes de talonarios');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -66,18 +84,18 @@ function AutorizacionTalonarios() {
 
   const logBitacora = async (descripcion, idCategoriaBitacora) => {
     const bitacoraData = {
-        descripcion,
-        idCategoriaBitacora,
-        idUsuario,
-        fechaHora: new Date(),
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario,
+      fechaHora: new Date(),
     };
-  
+
     try {
-        const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
-        return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
+      const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
-        console.error("Error logging bitacora:", error);
-        throw error; // Lanza el error para manejarlo en handleSave
+      console.error("Error logging bitacora:", error);
+      throw error; // Lanza el error para manejarlo en handleSave
     }
   };
 
@@ -87,9 +105,9 @@ function AutorizacionTalonarios() {
       idTipoNotificacion,
       idPersona,
     };
-  
+
     //console.log("Datos enviados para crear la notificación:", notificationData);
-  
+
     try {
       await axios.post("http://localhost:5000/notificaciones/create", notificationData);
     } catch (error) {
@@ -111,29 +129,29 @@ function AutorizacionTalonarios() {
     try {
       // Actualizar estado de la solicitud
       await axios.put(`http://localhost:5000/solicitudes/${idSolicitud}`, { estado });
-  
+
       // Obtener nuevamente la solicitud completa
       const responseSolicitud = await axios.get(`http://localhost:5000/solicitudes/${idSolicitud}`);
       //console.log("API Response Solicitud:", responseSolicitud);
-  
+
       const solicitud = responseSolicitud.data;
-  
+
       // Verificar la estructura de la respuesta antes de acceder a voluntario
       if (solicitud && solicitud.idVoluntario) {
         // Obtener la información del voluntario
         const voluntario = await getVoluntario(solicitud.idVoluntario);
         //console.log("API Response Voluntario:", voluntario);
-  
+
         // Verificar que voluntario y persona existan
         if (voluntario && voluntario.persona && voluntario.persona.idPersona) {
           const idPersona = voluntario.persona.idPersona;
-  
+
           // Log de bitácora y obtener idBitacora
           const idBitacora = await logBitacora(`Solicitud de talonario ${idSolicitud} actualizada`, 21);
-  
+
           // Verifica que todos los campos necesarios estén presentes
           if (idBitacora && idPersona) {
-            const idTipoNotificacion = 4; 
+            const idTipoNotificacion = 4;
             await createNotification(idBitacora, idTipoNotificacion, idPersona);
           } else {
             console.error("Faltan datos necesarios para crear la notificación");
@@ -144,7 +162,7 @@ function AutorizacionTalonarios() {
       } else {
         console.error("La estructura de la respuesta de la solicitud no contiene los datos esperados");
       }
-  
+
       // Actualizamos la lista de solicitudes después de cambiar el estado
       fetchSolicitudes();
       setShowConfirmationModal(false);
@@ -333,19 +351,20 @@ function AutorizacionTalonarios() {
           </Button>
         </Modal.Footer>
       </Modal>
-       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                     <Modal.Header closeButton>
-                      <Modal.Title>Permiso Denegado</Modal.Title>
-                      </Modal.Header>
-                      <Modal.Body>{permissionMessage}</Modal.Body>
-                      <Modal.Footer>
-                      <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                        Aceptar
-                      </Button>
-                     </Modal.Footer>
-                  </Modal>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
 
 export default AutorizacionTalonarios;
+

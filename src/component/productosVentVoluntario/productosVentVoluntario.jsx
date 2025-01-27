@@ -21,12 +21,56 @@ function DetalleProductoVoluntario() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
-    fetchDetalles();
-    fetchProductos();
-    fetchVoluntarios();
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, 
+          },
+        });
+        setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver detalles de productos voluntario']
+      
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
+
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchProductos();
+            fetchDetalles();
+            fetchVoluntarios();
+          } else {
+            checkPermission('Ver detalles de productos voluntario', 'No tienes permisos para ver detalles de productos voluntario');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+
+      const checkPermission = (permission, message) => {
+        if (!permissions[permission]) {
+          setPermissionMessage(message);
+          setShowPermissionModal(true);
+          return false;
+        }
+        return true;
+      };
 
   const fetchDetalles = async () => {
     try {
@@ -43,9 +87,13 @@ function DetalleProductoVoluntario() {
 
   const fetchActiveProductosVol = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios/activos");
       setDetalles(response.data);
       setFilteredDetalles(response.data);
+    } else {
+      checkPermission('Ver detalles de productos voluntario', 'No tienes permisos para Ver detalles de productos voluntario')
+    }
     } catch (error) {
       console.error("Error fetching active productos:", error);
     }
@@ -53,9 +101,13 @@ function DetalleProductoVoluntario() {
 
   const fetchInactiveProductosVol = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios/inactivos");
       setDetalles(response.data);
       setFilteredDetalles(response.data);
+    } else {
+      checkPermission('Ver detalles de productos voluntario', 'No tienes permisos para Ver detalles de productos voluntario')
+    }
     } catch (error) {
       console.error("Error fetching inactive productos:", error);
     }
@@ -89,22 +141,22 @@ function DetalleProductoVoluntario() {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-  
+
     // Filtrar los detalles en función del producto y el voluntario
     const filtered = detalles.filter((detalle) => {
       const productoNombre = detalle.producto?.nombreProducto?.toLowerCase() || "";
       const voluntarioNombre = detalle.voluntario?.nombre?.toLowerCase() || "";
-  
-      return 
+
+      return
       productoNombre.includes(value) ||
-       voluntarioNombre.includes(value);
+        voluntarioNombre.includes(value);
     });
-  
+
     setFilteredDetalles(filtered);
     setCurrentPage(1); // Reinicia a la primera página después de filtrar
   };
-  
-  
+
+
 
 
   const handleShowModal = (detalle = null) => {
@@ -268,7 +320,11 @@ function DetalleProductoVoluntario() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear detalle de producto voluntario', 'No tienes permisos para crear detalle de producto voluntario')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Detalle
           </Button>
@@ -351,7 +407,11 @@ function DetalleProductoVoluntario() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(detalle)}
+                    onClick={() => {
+                      if (checkPermission('Editar detalle de producto voluntario', 'No tienes permisos para editar detalle de producto voluntario')) {
+                        handleShowModal(detalle);
+                      }
+                    }}
                   />
                   {detalle.estado ? (
                     <FaToggleOn
@@ -362,7 +422,11 @@ function DetalleProductoVoluntario() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(detalle.idDetalleProductoVoluntario, detalle.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar detalle de producto voluntario', 'No tienes permisos para desactivar detalle de producto voluntario')) {
+                          toggleEstado(detalle.idDetalleProductoVoluntario, detalle.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -373,7 +437,11 @@ function DetalleProductoVoluntario() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(detalle.idDetalleProductoVoluntario, detalle.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar detalle de producto voluntario', 'No tienes permisos para activar detalle de producto voluntario')) {
+                          toggleEstado(detalle.idDetalleProductoVoluntario, detalle.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -467,6 +535,17 @@ function DetalleProductoVoluntario() {
             </Form>
           </Modal.Body>
         </Modal>
+          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+                        <Modal.Header closeButton>
+                          <Modal.Title>Permiso Denegado</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>{permissionMessage}</Modal.Body>
+                        <Modal.Footer>
+                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+                            Aceptar
+                          </Button>
+                        </Modal.Footer>
+                      </Modal>
       </div>
     </>
   );

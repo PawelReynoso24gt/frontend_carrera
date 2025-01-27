@@ -23,6 +23,8 @@ function HorariosComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -30,17 +32,33 @@ function HorariosComponent() {
         const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver horarios']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchActiveHorarios();
   }, []);
+
+    useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchActiveHorarios();
+        } else {
+          checkPermission('Ver horarios', 'No tienes permisos para ver horarios');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -53,9 +71,13 @@ function HorariosComponent() {
 
   const fetchActiveHorarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/horarios/activos");
       setHorarios(formatDates(response.data));
       setFilter("activos");
+    } else {
+      checkPermission('Ver horarios', 'No tienes permisos para ver horarios')
+    }
     } catch (error) {
       console.error("Error fetching active horarios:", error);
     }
@@ -63,12 +85,16 @@ function HorariosComponent() {
 
   const fetchInactiveHorarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/horarios");
       console.log(response.data);
       // Filtrar horarios con estado 0
       const inactiveHorarios = response.data.filter((horario) => horario.estado === 0);
       setHorarios(formatDates(inactiveHorarios));
       setFilter("inactivos");
+    } else {
+      checkPermission('Ver horarios', 'No tienes permisos para ver horarios')
+    }
     } catch (error) {
       console.error("Error fetching inactive horarios:", error);
     }

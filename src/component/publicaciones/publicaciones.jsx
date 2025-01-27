@@ -41,6 +41,8 @@ function Publicaciones() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -51,17 +53,33 @@ function Publicaciones() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver publicaciones']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchPublicaciones();
     fetchSedes();
     fetchEventos(); // Cargar eventos
     fetchRifas(); // Cargar rifas
   }, [photoToConfirm]);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchPublicaciones();
+          } else {
+            checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+  
 
   // Obtener el idPersona desde localStorage
   const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
@@ -123,6 +141,7 @@ function Publicaciones() {
     try {
       const response = await axios.get(`http://localhost:5000/publicaciones/detalles/${id}`);
       setDetallesPublicacion(response.data);
+      console.log("Detalles de la publicación:", response.data);
     } catch (error) {
       console.error("Error al cargar los detalles de la publicación:", error);
     }
@@ -143,8 +162,12 @@ function Publicaciones() {
 
   const fetchActivePublicaciones = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/publicaciones/activos");
       setFilteredPublicaciones(response.data);
+    } else {
+      checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
+    }
     } catch (error) {
       console.error("Error fetching active publicaciones:", error);
     }
@@ -152,8 +175,12 @@ function Publicaciones() {
 
   const fetchInactivePublicaciones = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/publicaciones/inactivos");
       setFilteredPublicaciones(response.data);
+    } else {
+      checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
+    }
     } catch (error) {
       console.error("Error fetching inactive publicaciones:", error);
     }
@@ -188,6 +215,20 @@ function Publicaciones() {
     setEditingPublicacion(publicacion);
     if (publicacion) {
 
+      // Determinar el tipo de publicación basado en los arrays
+      let tipo = "";
+      let idEvento = "";
+      let idRifa = "";
+      if (publicacion.publicacionesGenerales && publicacion.publicacionesGenerales.length > 0) {
+        tipo = "generales";
+      } else if (publicacion.publicacionesEventos && publicacion.publicacionesEventos.length > 0) {
+        tipo = "eventos";
+        idEvento = publicacion.publicacionesEventos[0]?.idEvento || ""; // Asume que todas las publicaciones de eventos tienen el mismo idEvento
+      } else if (publicacion.publicacionesRifas && publicacion.publicacionesRifas.length > 0) {
+        tipo = "rifas";
+        idRifa = publicacion.publicacionesRifas[0]?.idRifa || ""; // Asume que todas las publicaciones de rifas tienen el mismo idRifa
+      }
+
       // Cargar fotos existentes según el tipo de publicación
       const fotosExistentes = [
         ...(publicacion.publicacionesGenerales || []),
@@ -204,9 +245,9 @@ function Publicaciones() {
         fechaPublicacion: format(parseISO(publicacion.fechaPublicacion), "yyyy-MM-dd'T'HH:mm"),
         estado: publicacion.estado,
         idSede: publicacion.idSede,
-        tipo: publicacion.tipo,
-        idEvento: publicacion.idEvento || "", // ID del evento (si aplica)
-        idRifa: publicacion.idRifa || "", // ID de la rifa (si aplica)
+        tipo: tipo,
+        idEvento: idEvento || "", // ID del evento (si aplica)
+        idRifa: idRifa || "", // ID de la rifa (si aplica)
       });
       // Configurar las fotos existentes
       setExistingPhotos(fotosExistentes);
@@ -238,7 +279,22 @@ function Publicaciones() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewPublicacion({ ...newPublicacion, [name]: value });
+    setNewPublicacion((prevNewPublicacion) => ({
+      ...prevNewPublicacion,
+      [name]: value,
+    }));
+  };
+
+  const handleDescriptionChange = (e) => {
+    const { name, value } = e.target;
+    setNewPublicacion((prevNewPublicacion) => ({
+      ...prevNewPublicacion,
+      [name]: value,
+    }));
+  
+    // Ajustar la altura del textarea automáticamente
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   const handleFileChange = (e) => {
@@ -308,8 +364,9 @@ function Publicaciones() {
       files.forEach((file) => formData.append("fotos", file));
 
       // Log para inspeccionar los datos que se están enviando
-      for (let pair of formData.entries()) {
-      }
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
 
       const endpoint = editingPublicacion
         ? `http://localhost:5000/publicaciones/completa/update/${editingPublicacion.idPublicacion}`
@@ -735,11 +792,15 @@ function Publicaciones() {
                   Descripción
                 </Form.Label>
                 <Form.Control
-                  type="text"
+                  as="textarea"
                   name="descripcion"
                   value={newPublicacion.descripcion}
-                  onChange={handleChange}
+                  onChange={handleDescriptionChange}
                   required
+                  style={{
+                    height: "150px", // Establece una altura fija
+                    overflowY: "scroll", // Habilita el scroll vertical
+                  }} // Deshabilitar redimensionamiento manual
                 />
               </Form.Group>
               <Form.Group controlId="fechaPublicacion">

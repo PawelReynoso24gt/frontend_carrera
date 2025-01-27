@@ -423,7 +423,7 @@ function DetalleStands() {
               color: "#fff",
             }}
             onClick={() => {
-              if (checkPermission('Crear detalle de stand', 'No tienes permisos para crear detalle de stand')) {
+              if (checkPermission('Crear inventario stand', 'No tienes permisos para crear detalle de stand')) {
                 handleShowModal();
               }
             }}
@@ -507,7 +507,7 @@ function DetalleStands() {
                     }}
                     title="Editar"
                     onClick={() => {
-                      if (checkPermission('Editar detalle de stand', 'No tienes permisos para editar detalle de stand')) {
+                      if (checkPermission('Editar inventario stand', 'No tienes permisos para editar inventario stand')) {
                         handleShowModal(detalle);
                       }
                     }}
@@ -522,7 +522,7 @@ function DetalleStands() {
                       }}
                       title="Inactivar"
                       onClick={() => {
-                        if (checkPermission('Desactivar detalle de stand', 'No tienes permisos para desactivar detalle de stand')) {
+                        if (checkPermission('Desactivar inventario stand', 'No tienes permisos para desactivar inventario stand')) {
                           toggleEstado(detalle.idDetalleStands, detalle.estado);
                         }
                       }}
@@ -537,7 +537,7 @@ function DetalleStands() {
                       }}
                       title="Activar"
                       onClick={() => {
-                        if (checkPermission('Activar detalle de stand', 'No tienes permisos para activar detalle de stand')) {
+                        if (checkPermission('Activar inventario stand', 'No tienes permisos para activar inventario stand')) {
                           toggleEstado(detalle.idDetalleStands, detalle.estado);
                         }
                       }}

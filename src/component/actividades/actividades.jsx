@@ -24,6 +24,8 @@ function Actividades() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -34,15 +36,30 @@ function Actividades() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver actividades']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchActividades();
     fetchComisiones();
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchActividades();
+          } else {
+            checkPermission('Ver actividades', 'No tienes permisos para ver actividades');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -74,8 +91,12 @@ function Actividades() {
 
   const fetchActiveActividades = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/actividades/activos");
       setFilteredActividades(response.data);
+    } else {
+      checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
+    }
     } catch (error) {
       console.error("Error fetching active actividades:", error);
     }
@@ -83,8 +104,12 @@ function Actividades() {
 
   const fetchInactiveActividades = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/actividades/inactivos");
       setFilteredActividades(response.data);
+    } else {
+      checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
+    }
     } catch (error) {
       console.error("Error fetching inactive actividades:", error);
     }
@@ -496,17 +521,17 @@ function Actividades() {
             </Form>
           </Modal.Body>
         </Modal>
-           <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                         <Modal.Header closeButton>
-                          <Modal.Title>Permiso Denegado</Modal.Title>
-                          </Modal.Header>
-                          <Modal.Body>{permissionMessage}</Modal.Body>
-                          <Modal.Footer>
-                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                            Aceptar
-                          </Button>
-                         </Modal.Footer>
-                      </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

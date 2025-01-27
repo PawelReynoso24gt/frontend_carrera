@@ -25,6 +25,8 @@ function UsuariosAdminComponent() {
   const [permissions, setPermissions] = useState({});
   const [roles, setRoles] = useState([]);
 
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -35,17 +37,34 @@ function UsuariosAdminComponent() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver usuarios']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchActiveUsuarios();
     fetchPersonas(); // Obtener la lista de personas al cargar el componente
     fetchSedes(); // Obtener la lista de sedes al cargar el componente
     fetchRoles(); // Obtener la lista de roles al cargar el componente
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchActiveUsuarios();
+          } else {
+            console.log(hasViewPermission)
+            checkPermission('Ver usuarios', 'No tienes permisos para ver usuarios');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+  
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -59,11 +78,15 @@ function UsuariosAdminComponent() {
 
   const fetchActiveUsuarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/usuarios/activos');
       const usuariosActivos = response.data.filter(usuario => usuario.estado === 1);
       setUsuarios(usuariosActivos);
       setFilteredUsuarios(usuariosActivos);
       setFilter('activos');
+    } else {
+      checkPermission('Ver usuarios', 'No tienes permisos para ver usuarios')
+    }
     } catch (error) {
       console.error('Error fetching active usuarios:', error);
     }
@@ -71,6 +94,7 @@ function UsuariosAdminComponent() {
 
   const fetchInactiveUsuarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/usuarios', {
         params: { estado: 0 }
       });
@@ -78,6 +102,9 @@ function UsuariosAdminComponent() {
       setUsuarios(usuariosInactivos);
       setFilteredUsuarios(usuariosInactivos);
       setFilter('inactivos');
+    } else {
+      checkPermission('Ver usuarios', 'No tienes permisos para ver usuarios')
+    }
     } catch (error) {
       console.error('Error fetching inactive usuarios:', error);
     }
