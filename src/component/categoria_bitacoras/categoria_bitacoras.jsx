@@ -292,7 +292,7 @@ function CategoriaBitacoras() {
                       }
                     }}
                   />
-                  <FaTrashAlt
+                  {/* <FaTrashAlt
                     style={{
                       color: "#e10f0f",
                       cursor: "pointer",
@@ -304,7 +304,7 @@ function CategoriaBitacoras() {
                         handleDelete(categoria.idCategoriaBitacora);
                       }
                     }}
-                  />
+                  /> */}
                 </td>
               </tr>
             ))}
