@@ -217,7 +217,7 @@ function Pedidos() {
         fecha: "",
         descripcion: "",
         idSede: "",
-        idUsuario: "",
+        idUsuario: idUsuario,
         estado: 1,
       }
     );
@@ -594,23 +594,6 @@ function Pedidos() {
                   {sedes.map((sede) => (
                     <option key={sede.idSede} value={sede.idSede}>
                       {sede.nombreSede}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-              <Form.Group controlId="idUsuario">
-                <Form.Label>Usuario</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idUsuario"
-                  value={newPedido.idUsuario}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Usuario</option>
-                  {usuarios.map((usuario) => (
-                    <option key={usuario.idUsuario} value={usuario.idUsuario}>
-                      {usuario.usuario}
                     </option>
                   ))}
                 </Form.Control>

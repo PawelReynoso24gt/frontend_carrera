@@ -269,7 +269,7 @@ function Ventas() {
           correlativo: pago.correlativo,
           imagenTransferencia: pago.imagenTransferencia,
           estado: pago.estado,
-          nombreProducto: detalle.producto?.nombreProducto || "Producto no definido",
+          idProducto: detalle.idProducto,
         }))
       );
 
@@ -281,6 +281,13 @@ function Ventas() {
 
       // Asignar el voluntario seleccionado a partir de los detalles
       const voluntarioSeleccionado = detalles[0].voluntario?.idVoluntario || null;
+
+      // Asignar el voluntario seleccionado
+      if (standSeleccionado.idStand === 1 && standSeleccionado.idTipoStands === 1) {
+        setVoluntarioGlobalSeleccionado(voluntarioSeleccionado); // Para el stand especial
+      } else {
+        setVoluntarioStandSeleccionado(voluntarioSeleccionado); // Para otros stands
+      }
   
       setVentaEditada({
         venta: {
@@ -298,7 +305,7 @@ function Ventas() {
       setTiposPagos(pagosMapeados);
       setStandSeleccionado(standSeleccionado);
       setVoluntarioStandSeleccionado(voluntarioSeleccionado);
-  
+
       setIsEditMode(true); // Cambia a modo edición
       setShowDetailsModal(true); // Abre el modal
     } catch (error) {
@@ -317,22 +324,29 @@ function Ventas() {
 
   const handleUpdateVenta = async () => {
     try {
-  
       // Validar que se haya seleccionado un voluntario si es requerido
       if (
         standSeleccionado?.idStand === 1 &&
         standSeleccionado?.idTipoStands === 1 &&
-        !standSeleccionado?.voluntarioAsignado
+        !voluntarioGlobalSeleccionado
       ) {
         alert("Debe seleccionar un voluntario para este stand.");
         return; // Detener la ejecución si no se ha seleccionado un voluntario
       }
+
+      // Validar que todos los pagos tengan un idProducto válido
+      const pagosInvalidos = tiposPagos.filter((pago) => !pago.idProducto);
+
+      if (pagosInvalidos.length > 0) {
+        alert("Todos los pagos deben estar asociados a un producto válido.");
+        return;
+      }
   
       // Filtrar y validar detalles con cantidad mayor que 0
-      const detallesVentaValidos = ventaEditada.detalles
+      const detallesVentaValidos = detallesVenta
         .filter((detalle) => detalle.cantidad > 0 && detalle.estado !== 0) // Solo productos válidos
         .map((detalle) => {
-          const isDonation = ventaEditada.pagos.some(
+          const isDonation = tiposPagos.some(
             (pago) => pago.idProducto === detalle.idProducto && pago.monto === 0 // Verificar si es una donación
           );
   
@@ -342,7 +356,7 @@ function Ventas() {
           return {
             ...detalle,
             subTotal, // Asignar el subtotal calculado
-            donacion: detalle.donacion,
+            donacion: 0, // Inicialmente establecer la donación en 0
             idVoluntario:
               standSeleccionado?.idStand === 1 || voluntarios.length > 0
                 ? voluntarioStandSeleccionado || voluntarioGlobalSeleccionado
@@ -352,19 +366,41 @@ function Ventas() {
           };
         });
   
-      const totalDonacionDetalles = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.donacion, 0);
-  
-      // Distribuir la donación global en los detalles
-      if (totalDonacionDetalles !== ventaEditada.venta.donacion) {
-        // Si las donaciones no coinciden, actualiza la donación de los detalles
-        const diferenciaDonacion = ventaEditada.venta.donacion - totalDonacionDetalles;
-        if (diferenciaDonacion !== 0) {
-          detallesVentaValidos[0].donacion += diferenciaDonacion;
-        }
+      // Asignar la donación global solo al primer detalle
+      if (detallesVentaValidos.length > 0) {
+        detallesVentaValidos[0].donacion = ventaEditada.venta.donacion;
       }
-
+  
       const totalDonacionActualizado = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.donacion, 0);
-
+  
+      // Calcular el subtotal de los productos y el total de la venta
+      const subtotal = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0);
+      const totalVenta = subtotal + (ventaEditada.venta.donacion || 0); // Sumar la donación al subtotal
+  
+      // Construir los datos de la venta para enviar al backend
+      const ventaData = {
+        venta: { ...ventaEditada.venta, totalVenta: subtotal + (ventaEditada.venta?.donacion || 0) }, // Incluye la donación y el total
+        detalles: detallesVentaValidos, // Incluye los subtotales y donaciones
+        pagos: ventaEditada.pagos.map((pago) => ({
+          idTipoPago: pago.idTipoPago,
+          monto: Number(pago.monto),
+          correlativo: pago.correlativo || "NA",
+          imagenTransferencia: pago.imagenTransferencia || "efectivo",
+          estado: pago.estado,
+          idProducto: pago.idProducto,
+        })), // Pagos validados con sus requisitos
+        idVoluntario: standSeleccionado?.idStand === 1 ? voluntarioGlobalSeleccionado : voluntarioStandSeleccionado || null, // Asegurarse de tener un voluntario si el idStand es 1
+      };
+  
+      // Imprimir los cálculos en la consola
+      console.log("Subtotal:", subtotal.toFixed(2));
+      console.log("Total Donación:", totalDonacionActualizado.toFixed(2));
+      console.log("Total de la Venta:", totalVenta.toFixed(2));
+  
+      // Imprimir el JSON en la consola
+      console.log("JSON enviado al backend:", JSON.stringify(ventaData, null, 2));
+  
+      // Validaciones después de los logs
       if (totalDonacionActualizado !== ventaEditada.venta.donacion) {
         alert(
           `La donación global (Q${ventaEditada.venta.donacion}) no coincide con el total de las donaciones de los detalles (Q${totalDonacionActualizado}).`
@@ -372,14 +408,13 @@ function Ventas() {
         return;
       }
   
-      // Calcular el subtotal de los productos y el total de la venta
-      const subtotal = detallesVentaValidos.reduce((sum, detalle) => sum + detalle.subTotal, 0);
-      const totalVenta = subtotal + (ventaEditada.venta.donacion || 0); // Sumar la donación al subtotal
-  
       // Validar que la suma de los montos de los pagos coincida con el total calculado
       const totalPagado = ventaEditada.pagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
   
-      if (totalPagado !== totalVenta) {
+      // Verificar si existe algún pago con idTipoPago 5
+      const tienePagoSolicitado = ventaEditada.pagos.some((pago) => pago.idTipoPago === 5);
+  
+      if (!tienePagoSolicitado && totalPagado !== totalVenta) {
         alert(
           `La suma de los pagos (Q${totalPagado.toFixed(
             2
@@ -388,52 +423,6 @@ function Ventas() {
         return;
       }
   
-      // Validar los pagos
-      const pagosValidados = ventaEditada.pagos.map((pago) => {
-        if (!pago.idTipoPago || pago.monto < 0 || !pago.idProducto) {
-          throw new Error("Cada pago debe tener un tipo, monto válido y producto asociado.");
-        }
-  
-        // Validar lógica específica para el tipo de pago
-        if ([1, 2, 4].includes(pago.idTipoPago)) {
-          // Validar correlativo e imagen para estos tipos de pago
-          if (!pago.correlativo || !pago.imagenTransferencia) {
-            throw new Error(`El tipo de pago ${pago.idTipoPago} requiere correlativo e imagen.`);
-          }
-          return {
-            ...pago,
-            correlativo: pago.correlativo,
-            imagenTransferencia: pago.imagenTransferencia,
-          };
-        } else if (pago.idTipoPago === 5) {
-          // Manejar tipo de pago solicitado
-          return {
-            ...pago,
-            correlativo: "NA" || pago.correlativo,
-            imagenTransferencia: "solicitado" || pago.imagenTransferencia,
-          };
-        } else if (pago.idTipoPago === 3) { // Efectivo
-          return {
-            ...pago,
-            correlativo: "NA",
-            imagenTransferencia: "efectivo",
-          };
-        }
-  
-        return {
-          ...pago,
-          correlativo: pago.correlativo || "NA", // Valores por defecto
-          imagenTransferencia: pago.imagenTransferencia || "efectivo", // Valores por defecto
-        };
-      });
-  
-      // Construir los datos de la venta para enviar al backend
-      const ventaData = {
-        venta: { ...ventaEditada.venta, totalVenta: subtotal + (ventaEditada.venta?.donacion || 0) }, // Incluye la donación y el total
-        detalles: detallesVentaValidos, // Incluye los subtotales y donaciones
-        pagos: pagosValidados, // Pagos validados con sus requisitos
-      };
-  
       // Enviar los datos al backend
       const response = await axios.put(
         `http://localhost:5000/ventas/update/stands/completa/${ventaEditada.venta.idVenta}`,
@@ -441,15 +430,14 @@ function Ventas() {
       );
   
       if (response.status === 200) {
-
         const bitacoraData = {
           descripcion: "Venta de stands actualizada",
           idCategoriaBitacora: 18, // ID de categoría para creación
           idUsuario: idUsuario,
           fechaHora: new Date()
-      };
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
-
+        };
+        await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+  
         alert("Venta actualizada con éxito");
         setShowDetailsModal(false); // Cerrar el modal
         fetchVentas(); // Refrescar lista de ventas
@@ -514,6 +502,7 @@ function Ventas() {
 
       if (response.data && response.data.length > 0) {
         setDetalleSeleccionado(response.data); // Guarda todos los detalles de la venta
+        console.log("Detalles de la venta:", JSON.stringify(response.data, null, 2)); // Imprimir en consola
         const imagen = response.data[0]?.detalle_pago_ventas_stands[0]?.imagenTransferencia || null;
         setImagenBase64(imagen); // Establecer la imagen Base64
       } else {
@@ -563,26 +552,36 @@ function Ventas() {
   const handleAddPago = () => {
     // Filtrar productos con cantidad > 0
     const productosValidos = detallesVenta.filter((detalle) => detalle.cantidad > 0);
-
+  
     if (productosValidos.length === 0) {
       alert("No hay productos válidos para asociar al pago.");
       return;
     };
-
-    // Crear un nuevo pago
+  
+    // Seleccionar el primer producto válido
+    const primerProductoValido = productosValidos[0];
+  
+    // Crear un nuevo pago asociado al primer producto válido
     const nuevoPago = {
       idTipoPago: "", // Campo vacío para que el usuario lo seleccione
       monto: 0.0,
       correlativo: "",
       imagenTransferencia: "",
       estado: 1,
-      idProducto: productosValidos[0]?.idProducto || null, // Asociar al primer producto válido
+      idProducto: primerProductoValido.idProducto, // Asociar al primer producto válido
     };
+  
+    // Agregar el pago a la lista de pagos
     setTiposPagos((prevPagos) => [...prevPagos, nuevoPago]);
-  };  
+  };
   
   const handlePagoChange = (index, field, value) => {
     const nuevosPagos = [...tiposPagos];
+
+    if (field === "idProducto") {
+      // Si se cambia el producto, asegúrate de que el idProducto se actualice
+      nuevosPagos[index].idProducto = value;
+    }
   
     if (field === "idTipoPago" && parseInt(value) === 5) {
       // Si el tipo de pago es "solicitado", asignar valores predeterminados
@@ -961,6 +960,7 @@ function Ventas() {
                       title="Editar Venta"
                       onClick={() => {
                         if (checkPermission('Editar venta stand', 'No tienes permisos para editar venta stand')) {
+                          console.log("Datos de la venta a editar:", JSON.stringify(venta, null, 2));
                           handleEditVenta(venta.idVenta);
                         }
                       }}
@@ -1200,74 +1200,73 @@ function Ventas() {
                         ))}
                     </Form.Control>
                     </Form.Group>
-                <>
+                    <>
                     {/* Voluntarios Asignados */}
                     <h5>Voluntarios Asignados</h5>
                     {standSeleccionado?.idStand === 1 && standSeleccionado?.idTipoStands === 1 ? (
-                        <>
-                            <p>Este stand requiere seleccionar un voluntario:</p>
+                      <>
+                        <p>Este stand requiere seleccionar un voluntario:</p>
+                        <Form.Group>
+                          <Form.Label>Seleccionar Voluntario</Form.Label>
+                          <Form.Control
+                            as="select"
+                            value={voluntarioGlobalSeleccionado || ""}
+                            onChange={(e) => {
+                              const voluntarioSeleccionado = voluntarioVirtual.find(
+                                (voluntario) => voluntario.idVoluntario === parseInt(e.target.value)
+                              );
+                              setVoluntarioGlobalSeleccionado(voluntarioSeleccionado?.idVoluntario || null);
+                              setStandSeleccionado((prev) => ({
+                                ...prev,
+                                voluntarioAsignado: voluntarioSeleccionado,
+                              }));
+                            }}
+                          >
+                            <option value="">Seleccione un voluntario</option>
+                            {voluntarioVirtual.map((voluntario) => (
+                              <option key={voluntario.idVoluntario} value={voluntario.idVoluntario}>
+                                {voluntario.persona?.nombre || "Sin Nombre"}
+                              </option>
+                            ))}
+                          </Form.Control>
+                        </Form.Group>
+                      </>
+                    ) : (
+                      <>
+                        {voluntarios.length > 0 ? (
                             <Form.Group>
                             <Form.Label>Seleccionar Voluntario</Form.Label>
                             <Form.Control
-                                as="select"
-                                onChange={(e) => {
-                                const voluntarioSeleccionado = voluntarioVirtual.find(
-                                    (voluntario) => voluntario.idVoluntario === parseInt(e.target.value)
+                              as="select"
+                              value={voluntarioStandSeleccionado || ""}
+                              onChange={(e) => {
+                                const voluntarioSeleccionado = voluntarios.find(
+                                  (voluntario) => voluntario.inscripcionEvento?.voluntario?.idVoluntario === parseInt(e.target.value)
                                 );
-                                // Actualizar el estado con el ID del voluntario seleccionado
-                                setVoluntarioGlobalSeleccionado(voluntarioSeleccionado?.idVoluntario || null);
-                                // Aquí puedes guardar el voluntario seleccionado en el estado si es necesario
+                                setVoluntarioStandSeleccionado(voluntarioSeleccionado?.inscripcionEvento?.voluntario?.idVoluntario || null);
                                 setStandSeleccionado((prev) => ({
-                                    ...prev,
-                                    voluntarioAsignado: voluntarioSeleccionado,
+                                  ...prev,
+                                  voluntarioAsignado: voluntarioSeleccionado,
                                 }));
-                                }}
+                              }}
                             >
-                                <option value="">Seleccione un voluntario</option>
-                                {voluntarioVirtual.map((voluntario) => (
-                                <option key={voluntario.idVoluntario} value={voluntario.idVoluntario}>
-                                    {voluntario.persona?.nombre || "Sin Nombre"}
+                              <option value="">Seleccione un voluntario</option>
+                              {voluntarios.map((voluntario) => (
+                                <option
+                                  key={voluntario.inscripcionEvento?.voluntario?.idVoluntario}
+                                  value={voluntario.inscripcionEvento?.voluntario?.idVoluntario}
+                                >
+                                  {voluntario?.inscripcionEvento?.voluntario?.persona?.nombre || "Sin Nombre"}
                                 </option>
-                                ))}
+                              ))}
                             </Form.Control>
-                            </Form.Group>
-                        </>
+                          </Form.Group>
                         ) : (
-                        <>
-                            {voluntarios.length > 0 ? (
-                                <Form.Group>
-                                <Form.Label>Seleccionar Voluntario</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    onChange={(e) => {
-                                    const voluntarioSeleccionado = voluntarios.find(
-                                        (voluntario) => voluntario.inscripcionEvento?.voluntario?.idVoluntario === parseInt(e.target.value)
-                                    );
-                                    setVoluntarioStandSeleccionado(voluntarioSeleccionado?.inscripcionEvento?.voluntario?.idVoluntario || null);
-
-                          setStandSeleccionado((prev) => ({
-                            ...prev,
-                            voluntarioAsignado: voluntarioSeleccionado,
-                          }));
-                        }}
-                      >
-                        <option value="">Seleccione un voluntario</option>
-                        {voluntarios.map((voluntario) => (
-                          <option
-                            key={voluntario.inscripcionEvento?.voluntario?.idVoluntario}
-                            value={voluntario.inscripcionEvento?.voluntario?.idVoluntario}
-                          >
-                            {voluntario?.inscripcionEvento?.voluntario?.persona?.nombre || "Sin Nombre"}
-                          </option>
-                        ))}
-                      </Form.Control>
-                    </Form.Group>
-                  ) : (
-                    <p>No hay voluntarios asignados a este stand.</p>
-                  )}
-                </>
-              )}
-            </>
+                          <p>No hay voluntarios asignados a este stand.</p>
+                        )}
+                      </>
+                    )}
+                  </>
             {/* Detalles de los productos */}
             <h5>Productos Asignados</h5>
             <Table>
@@ -1364,7 +1363,7 @@ function Ventas() {
                         <Form.Label>Producto Asociado</Form.Label>
                         <Form.Control
                             as="select"
-                            value={pago.idProducto}
+                            value={pago.idProducto || detallesVenta.find((d) => d.cantidad > 0)?.idProducto || ""}
                             onChange={(e) =>
                             handlePagoChange(idx, "idProducto", parseInt(e.target.value))
                             }
