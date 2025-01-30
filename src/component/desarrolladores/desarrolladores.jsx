@@ -98,16 +98,26 @@ const Desarrolladores = () => {
       </div>
 
 
-      <Row>
+      <Row className="justify-content-center">
         {developers.map((developer, index) => (
-          <Col key={index} md={6} lg={4} className="mb-4">
-            <Card
-              style={{
-                border: "none",
-                borderRadius: "10px",
-                boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-              }}
-            >
+          <Col
+            key={index}
+            md={6}
+            lg={4}
+            className={`mb-4 d-flex justify-content-center ${
+              developer.name === "Alejandra González Monterrosa" ? "align-self-center" : ""
+            }`}
+          >
+           <Card
+            style={{
+              border: "none",
+              borderRadius: "10px",
+              boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+              width: "100%",
+              maxWidth: "500px", // Aumenta el ancho máximo
+              minWidth: "300px", // Establece un ancho mínimo si es necesario
+            }}
+          >
               <Card.Img
                 variant="top"
                 src={developer.image}
@@ -115,7 +125,7 @@ const Desarrolladores = () => {
                 style={{
                   borderTopLeftRadius: "10px",
                   borderTopRightRadius: "10px",
-                  ...developer.imageStyle, 
+                  ...developer.imageStyle,
                 }}
               />
 
@@ -128,7 +138,7 @@ const Desarrolladores = () => {
                 >
                   {developer.role}
                 </Card.Subtitle>
-                <Card.Text style={{ color: "#555", textAlign: "justify"}}>
+                <Card.Text style={{ color: "#555", textAlign: "justify" }}>
                   {developer.description}
                 </Card.Text>
               </Card.Body>
@@ -136,6 +146,7 @@ const Desarrolladores = () => {
           </Col>
         ))}
       </Row>
+
     </Container>
   );
 };
