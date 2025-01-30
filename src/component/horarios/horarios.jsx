@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO, parse } from "date-fns";
 
 function HorariosComponent() {
   const [horarios, setHorarios] = useState([]);
@@ -85,6 +87,7 @@ function HorariosComponent() {
     try {
       if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/horarios");
+      console.log(response.data);
       // Filtrar horarios con estado 0
       const inactiveHorarios = response.data.filter((horario) => horario.estado === 0);
       setHorarios(formatDates(inactiveHorarios));
@@ -130,13 +133,19 @@ function HorariosComponent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Convertimos los valores de horarioInicio y horarioFinal al formato requerido
+      const [startHour, startMinute] = newHorario.horarioInicio.split(":");
+      const [finalHour, finalMinute] = newHorario.horarioFinal.split(":");
+  
+      // Construir el formato "HH:mm:ss"
+      const formattedInicio = `${startHour}:${startMinute}:00`;
+      const formattedFinal = `${finalHour}:${finalMinute}:00`;
+  
       const formattedHorario = {
         ...newHorario,
-        horarioInicio: new Date(newHorario.horarioInicio).toISOString().replace("T", " ").split(".")[0],
-        horarioFinal: new Date(newHorario.horarioFinal).toISOString().replace("T", " ").split(".")[0],
+        horarioInicio: formattedInicio,
+        horarioFinal: formattedFinal,
       };
-
+  
       if (editingHorario) {
         await axios.put(`http://localhost:5000/horarios/${editingHorario.idHorario}`, formattedHorario);
         setAlertMessage("Horario actualizado con éxito");
@@ -144,6 +153,7 @@ function HorariosComponent() {
         await axios.post("http://localhost:5000/horarios", formattedHorario);
         setAlertMessage("Horario creado con éxito");
       }
+  
       filter === "activos" ? fetchActiveHorarios() : fetchInactiveHorarios();
       setShowAlert(true);
       handleCloseModal();
@@ -327,8 +337,16 @@ function HorariosComponent() {
             {horarios.map((horario) => (
               <tr key={horario.idHorario}>
                 <td style={{ textAlign: "center" }}>{horario.idHorario}</td>
-                <td style={{ textAlign: "center" }}>{horario.horarioInicio}</td>
-                <td style={{ textAlign: "center" }}>{horario.horarioFinal}</td>
+                <td style={{ textAlign: "center" }}>
+                  {horario.horarioInicio
+                    ? format(parse(horario.horarioInicio, "HH:mm:ss", new Date()), "hh:mm a")
+                    : "Sin fecha"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {horario.horarioFinal
+                    ? format(parse(horario.horarioFinal, "HH:mm:ss", new Date()), "hh:mm a")
+                    : "Sin fecha"}
+                </td>
                 <td style={{ textAlign: "center" }}>{horario.estado ? "Activo" : "Inactivo"}</td>
                 <td style={{ textAlign: "center" }}>
                   <FaPencilAlt
@@ -396,7 +414,7 @@ function HorariosComponent() {
               <Form.Group controlId="horarioInicio">
                 <Form.Label>Horario Inicio</Form.Label>
                 <Form.Control
-                  type="datetime-local"
+                  type="time"
                   name="horarioInicio"
                   value={newHorario.horarioInicio}
                   onChange={handleChange}
@@ -406,7 +424,7 @@ function HorariosComponent() {
               <Form.Group controlId="horarioFinal">
                 <Form.Label>Horario Final</Form.Label>
                 <Form.Control
-                  type="datetime-local"
+                  type="time"
                   name="horarioFinal"
                   value={newHorario.horarioFinal}
                   onChange={handleChange}

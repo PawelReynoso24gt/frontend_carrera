@@ -381,19 +381,37 @@ function Ventas() {
 
   const handleUpdateVenta = async () => {
     try {
-      // Calcular el total de la venta correctamente
-      const subtotal = detallesVenta.reduce(
-        (sum, detalle) => sum + detalle.subTotal,
-        0
-      );
-      const totalDonacion = detallesVenta.reduce(
-        (sum, detalle) => sum + (detalle.donacion || 0),
-        0
-      );
-      const totalVenta = Number(subtotal) + Number(totalDonacion);
+    // Calcular el subtotal de los productos
+    const subtotal = detallesVenta.reduce(
+      (sum, detalle) => sum + (parseFloat(detalle.subTotal) || 0),
+      0
+    );
+
+    // Tomar la donación directamente de newVenta.donacion
+    const totalDonacion = parseFloat(newVenta.donacion) || 0;
+
+    // Calcular el total a pagar
+    const totalVenta = subtotal + totalDonacion;
+
+      // Imprimir los cálculos en la consola
+    console.log("Subtotal:", subtotal.toFixed(2));
+    console.log("Total Donación:", totalDonacion.toFixed(2));
+    console.log("Total a Pagar:", totalVenta.toFixed(2));
 
       // Asegúrate de que totalAPagar es un número
       const totalAPagarNumber = parseFloat(totalAPagar);
+
+       // Filtrar los detalles con cantidad mayor a 0
+      const detallesValidos = detallesVenta.filter(detalle => detalle.cantidad > 0);
+
+      // Aplicar la donación solo al primer detalle válido
+      if (detallesValidos.length > 0) {
+        detallesValidos[0].donacion = totalDonacion;
+        // Asegurarse de que los demás detalles no tengan la donación
+        for (let i = 1; i < detallesValidos.length; i++) {
+          detallesValidos[i].donacion = 0;
+        }
+      }
 
       // Construir JSON para enviar
       const ventaData = {
@@ -401,7 +419,7 @@ function Ventas() {
           ...ventaEditada.venta,
           totalVenta: totalVenta.toFixed(2), // Asignar el total como número
         },
-        detalles: detallesVenta.map((detalle) => ({
+        detalles: detallesValidos.map((detalle) => ({
           idProducto: detalle.idProducto,
           cantidad: detalle.cantidad,
           subTotal: detalle.cantidad * detalle.precio,
@@ -418,6 +436,9 @@ function Ventas() {
           idProducto: pago.idProducto,
         })),
       };
+
+    // Imprimir el JSON en la consola
+    console.log("JSON enviado al backend:", JSON.stringify(ventaData, null, 2));
 
       const response = await axios.put(
         `http://localhost:5000/ventas/update/completa/${ventaEditada.venta.idVenta}`,
@@ -462,6 +483,8 @@ function Ventas() {
           estado: detalle.estado,
         }));
 
+        const productosValidos = detalles.filter((detalle) => detalle.cantidad > 0);
+
         const pagos = response.data
           .flatMap((detalle) => detalle.detalle_pago_ventas_voluntarios)
           .map((pago) => ({
@@ -471,7 +494,7 @@ function Ventas() {
             correlativo: pago.correlativo,
             imagenTransferencia: pago.imagenTransferencia,
             estado: pago.estado,
-            idProducto: pago.idProducto, // Asociar el pago con el producto
+            idProducto: productosValidos[0]?.idProducto || null, // Asociar el pago con el producto
           }));
 
         const venta = {
@@ -772,7 +795,9 @@ function Ventas() {
           </Modal.Header>
           <Modal.Body>
             {detalleSeleccionado ? (
-              detalleSeleccionado.map((detalle, index) => (
+              detalleSeleccionado
+              .filter(detalle => detalle.cantidad > 0) // Filtrar detalles con cantidad > 0
+              .map((detalle, index) => (
                 <div key={index}>
                   <h5>Detalle #{index + 1}</h5>
                   <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
