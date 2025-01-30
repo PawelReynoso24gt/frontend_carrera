@@ -508,7 +508,7 @@ function Traslados() {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ textAlign: "center" }}>
             {currentTraslados.map((traslado) => (
               <tr key={traslado.idTraslado}>
                 <td>{traslado.idTraslado}</td>
