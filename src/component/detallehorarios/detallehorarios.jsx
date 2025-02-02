@@ -355,8 +355,8 @@ function DetalleHorariosComponent() {
             <tr>
               <th>ID</th>
               <th>Cantidad de Personas</th>
-              <th>ID Horario</th>
-              <th>ID Categoría Horario</th>
+              <th>Horario</th>
+              <th>Categoría Horario</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -457,7 +457,7 @@ function DetalleHorariosComponent() {
               </Form.Group>
               <Form.Group controlId="idHorario">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Horario
+                  Horario
                 </Form.Label>
                 <Form.Control
                   as="select"
