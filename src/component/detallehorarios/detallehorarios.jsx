@@ -57,10 +57,10 @@ function DetalleHorariosComponent() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver detalle horario']
+          response.data.permisos['Ver detalle horario']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -72,15 +72,15 @@ function DetalleHorariosComponent() {
     fetchPermissions();
   }, []);
 
-    useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchActiveDetalles();
-        } else {
-          checkPermission('Ver detalle horario', 'No tienes permisos para ver detalle horario');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchActiveDetalles();
+      } else {
+        checkPermission('Ver detalle horario', 'No tienes permisos para ver detalle horario');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -104,12 +104,12 @@ function DetalleHorariosComponent() {
   const fetchActiveDetalles = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('http://localhost:5000/detalle_horarios/activos');
-      setDetalles(response.data);
-      setFilteredDetalleHorarios(response.data);
-    } else {
-      checkPermission('Ver detalle horario', 'No tienes permisos para ver detalle horario');
-    }
+        const response = await axios.get('http://localhost:5000/detalle_horarios/activos');
+        setDetalles(response.data);
+        setFilteredDetalleHorarios(response.data);
+      } else {
+        checkPermission('Ver detalle horario', 'No tienes permisos para ver detalle horario');
+      }
     } catch (error) {
       console.error('Error fetching active detalles:', error);
     }
@@ -118,14 +118,14 @@ function DetalleHorariosComponent() {
   const fetchInactiveDetalles = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('http://localhost:5000/detalle_horarios/inactivos', {
-        params: { estado: 0 }
-      });
-      setDetalles(response.data.filter(detalle => detalle.estado === 0));
-      setFilteredDetalleHorarios(response.data);
-    } else {
-      checkPermission('Ver detalle horario', 'No tienes permisos para ver detalle horario');
-    }
+        const response = await axios.get('http://localhost:5000/detalle_horarios/inactivos', {
+          params: { estado: 0 }
+        });
+        setDetalles(response.data.filter(detalle => detalle.estado === 0));
+        setFilteredDetalleHorarios(response.data);
+      } else {
+        checkPermission('Ver detalle horario', 'No tienes permisos para ver detalle horario');
+      }
     } catch (error) {
       console.error('Error fetching active detalles:', error);
     }
@@ -469,7 +469,7 @@ function DetalleHorariosComponent() {
                   <option value="">Seleccione un horario</option>
                   {horarios.map((horario) => (
                     <option key={horario.idHorario} value={horario.idHorario}>
-                      {horario.nombreHorario || `Horario ${horario.idHorario}`}
+                      {`Inicio: ${horario.horarioInicio} - Fin: ${horario.horarioFinal}`}
                     </option>
                   ))}
                 </Form.Control>
