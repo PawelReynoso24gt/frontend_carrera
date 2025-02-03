@@ -463,10 +463,14 @@ function Sedes() {
                 <Form.Label>Información</Form.Label>
                 <Form.Control
                   as="textarea"
-                  rows={3}
                   name="informacion"
                   value={newSede.informacion}
                   onChange={handleChange}
+                  required
+                  style={{
+                    height: "150px", // Establece una altura fija
+                    overflowY: "scroll", // Habilita el scroll vertical
+                  }} // Deshabilitar redimensionamiento manualnp
                 />
               </Form.Group>
               <Form.Group controlId="estado">
