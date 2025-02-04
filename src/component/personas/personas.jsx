@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 function Personas() {
   const [personas, setPersonas] = useState([]);
@@ -319,8 +321,10 @@ function Personas() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
             marginTop: "20px",
+            overflow: "hidden",
+            textAlign: "center",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
@@ -342,7 +346,7 @@ function Personas() {
               <tr key={persona.idPersona}>
                 <td>{persona.idPersona}</td>
                 <td>{persona.nombre}</td>
-                <td>{new Date(persona.fechaNacimiento).toLocaleDateString()}</td>
+                <td>{persona.fechaNacimiento ? format(parseISO(persona.fechaNacimiento), "dd/MM/yyyy") : "Sin fecha"}</td>
                 <td>{persona.telefono}</td>
                 <td>{persona.domicilio}</td>
                 <td>{persona.CUI}</td>
