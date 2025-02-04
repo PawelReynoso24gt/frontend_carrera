@@ -26,14 +26,8 @@ function NotificationsCom() {
   };
 
   useEffect(() => {
-    const storedNotifications = localStorage.getItem("notifications");
-    if (storedNotifications) {
-      setNotifications(JSON.parse(storedNotifications));
-    } else {
-      fetchNotifications(); // Llamada inicial para cargar las notificaciones
-    }
-    
-  }, []); // Este efecto solo se ejecutará una vez al montar el componente  
+    fetchNotifications(); // Llamada inicial para cargar las notificaciones
+  }, []); // Este efecto solo se ejecutará una vez al montar el componente
 
   // Manejar el cambio de estado (marcar como revisada)
   const handleCheckNotification = async (idNotificacion) => {
@@ -42,7 +36,7 @@ function NotificationsCom() {
       await axios.put(`http://localhost:5000/notificaciones/${idNotificacion}`, {
         estado: 0, // Cambiar el estado a 0 (marcar como revisada)
       });
-  
+
       // Actualizar localmente la notificación específica
       setNotifications((prevNotifications) =>
         prevNotifications.map((notification) =>
@@ -51,17 +45,16 @@ function NotificationsCom() {
             : notification
         )
       );
-  
+
       // Esperar 5 segundos antes de recargar las notificaciones
       setTimeout(async () => {
         console.log("Recargando las notificaciones...");
         await fetchNotifications(); // Recargar las notificaciones
       }, 5000);
-  
     } catch (error) {
       console.error("Error al actualizar la notificación:", error);
     }
-  };  
+  };
 
   return (
     <div className="row">
