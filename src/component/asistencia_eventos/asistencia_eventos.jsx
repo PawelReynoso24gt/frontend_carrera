@@ -3,6 +3,9 @@ import axios from "axios";
 import { Card, Button, Container, Row, Col, Table, Modal } from "react-bootstrap";
 import jsQR from "jsqr";
 import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
+import { FaCheckCircle } from "react-icons/fa";
 
 function EventosActivos() {
   const [eventos, setEventos] = useState([]);
@@ -18,6 +21,8 @@ function EventosActivos() {
   const [permissions, setPermissions] = useState({});
   const [hasViewPermission, setHasViewPermission] = useState(false);
   const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+  const [asistencias, setAsistencias] = useState([]);
+  const [showAsistenciasModal, setShowAsistenciasModal] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -74,6 +79,19 @@ function EventosActivos() {
     }
   };
 
+  const handleShowAsistencias = async (idEvento) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/asistencia_eventos/evento/${idEvento}`
+      );
+      setAsistencias(response.data);
+      setSelectedEvento(idEvento);
+      setShowAsistenciasModal(true);
+    } catch (error) {
+      console.error("Error fetching asistencias:", error);
+    }
+  };
+
   const handleShowInscripciones = async (idEvento) => {
     try {
       const response = await axios.get(
@@ -87,6 +105,12 @@ function EventosActivos() {
     }
   };
 
+  const handleCloseAsistenciasModal = () => {
+    setShowAsistenciasModal(false);
+    setSelectedEvento(null);
+    setAsistencias([]);
+  };
+
   const handleCloseInscripcionesModal = () => {
     setShowInscripcionesModal(false);
     setSelectedEvento(null);
@@ -95,6 +119,12 @@ function EventosActivos() {
 
   const handleOpenQRScanner = (inscripcion) => {
     setSelectedInscripcion(inscripcion);
+    
+    // Simular el escaneo del código QR "ABC123"
+    //const scannedCode = "ABC123"; // Código QR quemado
+    //handleScan(scannedCode); // Llamar directamente a handleScan con el código quemado
+  
+    // No abrir el modal del escáner
     setShowQRScannerModal(true);
     setHasScanned(false);
     startCamera();
@@ -158,16 +188,19 @@ function EventosActivos() {
             idEmpleado: idEmpleado,
           });
 
+            // Cerrar el modal del escáner
           handleCloseQRScannerModal();
+
+          // Mostrar el modal de éxito
           setShowSuccessModal(true);
 
-          // Refrescar la lista de inscripciones
+          // Refrescar la lista de inscripciones y asistencias
           await handleShowInscripciones(selectedEvento);
+          //await handleShowAsistencias(selectedEvento);
 
-          // Cerrar el mensaje de éxito después de 3 segundos y recargar la página para evitar el bucle
+          // Cerrar el mensaje de éxito después de 3 segundos
           setTimeout(() => {
             setShowSuccessModal(false);
-            window.location.reload(); // Recargar la página
           }, 3000);
         } catch (error) {
           console.error("Error registrando asistencia:", error);
@@ -193,10 +226,10 @@ function EventosActivos() {
                 <Card.Body>
                   <Card.Title>{evento.nombreEvento}</Card.Title>
                   <Card.Text>
-                    <strong>Fecha Inicio:</strong>{" "}
-                    {new Date(evento.fechaHoraInicio).toLocaleString()} <br />
+                  <strong>Fecha Inicio:</strong>{" "}
+                    {evento.fechaHoraInicio ? format(parseISO(evento.fechaHoraInicio), "dd-MM-yyyy hh:mm a") : "Sin fecha"} <br />
                     <strong>Fecha Fin:</strong>{" "}
-                    {new Date(evento.fechaHoraFin).toLocaleString()} <br />
+                    {evento.fechaHoraFin ? format(parseISO(evento.fechaHoraFin), "dd-MM-yyyy hh:mm a") : "Sin fecha"} <br />
                     <strong>Descripción:</strong> {evento.descripcion} <br />
                     <strong>Dirección:</strong> {evento.direccion} <br />
                     <strong>Sede:</strong>{" "}
@@ -222,6 +255,26 @@ function EventosActivos() {
                     }}
                   >
                     Ver Inscripciones
+                  </Button>
+                  {/* Ver asistencias */}
+                  <Button
+                    variant="info"
+                    onClick={() => {
+                      {
+                        handleShowAsistencias(evento.idEvento);
+                      }
+                    }}
+                    style={{
+                      backgroundColor: "#009B85",
+                      borderColor: "#007AC3",
+                      padding: "5px 10px",
+                      width: "180px",
+                      marginTop: "10px",
+                      fontWeight: "bold",
+                      color: "#fff",
+                    }}
+                  >
+                    Ver Asistencias
                   </Button>
                 </Card.Footer>
               </Card>
@@ -257,7 +310,7 @@ function EventosActivos() {
                 {inscripciones.map((inscripcion) => (
                   <tr key={inscripcion.idInscripcionEvento}>
                     <td>{inscripcion.idInscripcionEvento}</td>
-                    <td>{new Date(inscripcion.fechaHoraInscripcion).toLocaleString()}</td>
+                    <td>{inscripcion.fechaHoraInscripcion ? format(parseISO(inscripcion.fechaHoraInscripcion), "dd-MM-yyyy hh:mm a") : "Sin fecha"}</td>
                     <td>{inscripcion.voluntario.persona.nombre}</td>
                     <td>{inscripcion.voluntario.codigoQR}</td>
                     <td>
@@ -287,6 +340,48 @@ function EventosActivos() {
         </Modal.Footer>
       </Modal>
 
+      <Modal
+        show={showAsistenciasModal}
+        onHide={() => setShowAsistenciasModal(false)}
+        size="lg"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Asistencias del Evento</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {asistencias.length > 0 ? (
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>ID Asistencia</th>
+                  <th>Fecha y Hora de Asistencia</th>
+                  <th>Voluntario</th>
+                  <th>Empleado que Registró</th>
+                </tr>
+              </thead>
+              <tbody>
+                {asistencias.map((asistencia) => (
+                  <tr key={asistencia.idAsistenciaEvento}>
+                    <td>{asistencia.idAsistenciaEvento}</td>
+                    <td>{asistencia.fechaHoraAsistencia ? format(parseISO(asistencia.fechaHoraAsistencia), "dd-MM-yyyy hh:mm a") : "Sin fecha"}</td>
+                    <td>{asistencia.inscripcionEvento?.voluntario?.persona?.nombre || 'Nombre no disponible'}</td>
+                    <td>{asistencia.empleado?.persona?.nombre || 'Nombre no disponible'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          ) : (
+            <p className="text-center">No hay asistencias registradas para este evento.</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAsistenciasModal(false)}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <Modal show={showQRScannerModal} onHide={handleCloseQRScannerModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Escanear Código QR del Voluntario</Modal.Title>
@@ -309,8 +404,29 @@ function EventosActivos() {
 
       {/* Modal de éxito que se cierra automáticamente */}
       <Modal show={showSuccessModal} centered>
-        <Modal.Body className="text-center">
-          <h4>Asistencia registrada con éxito</h4>
+        <Modal.Body
+          className="text-center"
+          style={{
+            backgroundColor: "#fff", // Fondo blanco
+            color: "#000", // Texto negro
+            borderRadius: "10px",
+            padding: "20px",
+            border: "2px solid #007BFF", // Bordes azules
+          }}
+        >
+          <FaCheckCircle
+            style={{
+              fontSize: "50px",
+              marginBottom: "10px",
+              color: "#28a745", // Ícono verde
+            }}
+          />
+          <h4 style={{ fontWeight: "bold", marginBottom: "10px", color: "#000" }}>
+            Asistencia registrada con éxito
+          </h4>
+          <p style={{ fontSize: "16px", marginBottom: "0", color: "#000" }}>
+            La asistencia ha sido registrada correctamente.
+          </p>
         </Modal.Body>
       </Modal>
       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
