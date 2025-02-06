@@ -206,20 +206,34 @@ function Recaudaciones() {
     const handleOpenUpdateModal = async (idRecaudacionRifa) => {
         try {
             const response = await axios.get(`http://localhost:5000/recaudaciones/detalle/${idRecaudacionRifa}`);
-            const precioBoleto = response.data.solicitudTalonario?.talonario?.rifa?.precioBoleto || 0;
 
-            setRecaudacionToUpdate(response.data);
-            setSelectedRifa(response.data.solicitudTalonario.talonario.idRifa);
-            setSelectedTalonario(response.data.solicitudTalonario.idTalonario);
-            setBoletosVendidos(response.data.boletosVendidos);
-            setPagos(response.data.detalle_pago_recaudacion_rifas.map(pago => ({
+            const recaudacion = response.data;
+
+            setRecaudacionToUpdate(recaudacion);
+
+             // Asignar el ID de la rifa y el talonario desde la respuesta
+             const idRifa = recaudacion.solicitudTalonario?.talonario?.rifa?.idRifa || "";
+             const idTalonario = recaudacion.solicitudTalonario?.talonario?.idTalonario || "";
+             const precio = parseFloat(recaudacion.solicitudTalonario?.talonario?.rifa?.precioBoleto) || 0;
+     
+             console.log("ID de la Rifa seleccionado:", idRifa);
+             console.log("ID del Talonario seleccionado:", idTalonario);
+
+            setSelectedRifa(idRifa);
+            setSelectedTalonario(idTalonario);
+            setBoletosVendidos(recaudacion.boletosVendidos);
+            setPrecioBoleto(precio); // Establecer el precio del boleto
+            setPagos(recaudacion.detalle_pago_recaudacion_rifas.map(pago => ({
                 idTipoPago: pago.idTipoPago,
                 monto: pago.pago,
                 correlativo: pago.correlativo,
                 imagenTransferencia: pago.imagenTransferencia
             })));
+
+             // Agregar console.log para ver el JSON de la recaudación antes de abrir el modal
+            console.log("Datos de la recaudación a actualizar:", JSON.stringify(response.data, null, 2));
             await fetchRifas(); // Cargar rifas disponibles
-            await fetchTalonarios(response.data.solicitudTalonario.talonario.idRifa); // Cargar talonarios para la rifa seleccionada
+            await fetchTalonarios(idRifa); // Cargar talonarios para la rifa seleccionada
             setShowUpdateModal(true);
         } catch (error) {
             console.error("Error fetching detalle recaudación:", error);
@@ -234,11 +248,21 @@ function Recaudaciones() {
         setSelectedTalonario("");
         setBoletosVendidos(0);
         setPagos([]);
+        setPrecioBoleto(0);
     };
+
+    const resetCreateModalState = () => {
+        setSelectedRifa(""); // Reinicia la rifa seleccionada
+        setSelectedTalonario(""); // Reinicia el talonario seleccionado
+        setBoletosVendidos(0); // Reinicia el número de boletos vendidos
+        setPagos([]); // Reinicia los pagos
+        setPrecioBoleto(0); // Reinicia el precio del boleto
+    };    
 
     const handleCloseModal = () => {
         setShowModal(false);
         setDetalleRecaudacion(null);
+        resetModalState();
     };
 
     const handleCloseUpdateModal = () => {
@@ -334,6 +358,9 @@ function Recaudaciones() {
                 pagos,
             };
 
+            // Agregar console.log para depuración
+            //console.log("Datos enviados al backend:", JSON.stringify(recaudacionData, null, 2));
+
             const response = await axios.post(
                 "http://localhost:5000/recaudaciones/rifa/completa",
                 recaudacionData
@@ -350,8 +377,9 @@ function Recaudaciones() {
                 await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
 
                 alert("Recaudación creada con éxito.");
+                resetCreateModalState(); // Reinicia el estado del modal
                 setShowCreateModal(false); // Cierra el modal
-                fetchRecaudaciones(); // Refresca la lista de recaudaciones
+                fetchRecaudaciones(); // Actualiza la lista de recaudaciones
             }
         } catch (error) {
             console.error("Error creando recaudación:", error.response?.data || error.message);
@@ -704,7 +732,7 @@ function Recaudaciones() {
                     )}
                 </Modal.Body>
             </Modal>
-            <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
+            <Modal show={showCreateModal} onHide={() => { resetCreateModalState(); setShowCreateModal(false); }}>
                 <Modal.Header closeButton>
                     <Modal.Title>Crear Recaudación</Modal.Title>
                 </Modal.Header>
@@ -740,12 +768,18 @@ function Recaudaciones() {
                             value={selectedTalonario}
                             onChange={(e) => setSelectedTalonario(e.target.value)}
                         >
-                            <option value="">Seleccione un talonario</option>
-                            {talonarios.map((talonario) => (
-                                <option key={talonario.idTalonario} value={talonario.idTalonario}>
-                                    {`Código: ${talonario.codigoTalonario} - Boletos disponibles: ${talonario.cantidadBoletos}`}
+                            <option value="">Seleccione un talonario (solo talonarios aceptados)</option>
+                            {talonarios.length > 0 ? (
+                                talonarios.map((talonario) => (
+                                    <option key={talonario.idTalonario} value={talonario.idTalonario}>
+                                        {`Código: ${talonario.codigoTalonario} - Boletos disponibles: ${talonario.cantidadBoletos}`}
+                                    </option>
+                                ))
+                            ) : (
+                                <option disabled value="">
+                                    No hay talonarios aceptados para esta rifa
                                 </option>
-                            ))}
+                            )}
                         </Form.Control>
                     </Form.Group>
 
@@ -832,7 +866,13 @@ function Recaudaciones() {
                     <Button onClick={handleCreateRecaudacion}>
                         Crear Recaudación
                     </Button>
-                    <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
+                    <Button
+                        variant="secondary"
+                        onClick={() => {
+                            resetCreateModalState(); // Restablece el estado del formulario
+                            setShowCreateModal(false); // Cierra el modal
+                        }}
+                    >
                         Cancelar
                     </Button>
                 </Modal.Footer>

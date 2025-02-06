@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 function Personas() {
   const [personas, setPersonas] = useState([]);
@@ -10,13 +12,16 @@ function Personas() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingPersona, setEditingPersona] = useState(null);
-  const [newPersona, setNewPersona] = useState({
+  const [departamentos, setDepartamentos] = useState([]);
+  const [allMunicipios, setAllMunicipios] = useState([]);
+  const [formData, setFormData] = useState({
     nombre: "",
     fechaNacimiento: "",
     telefono: "",
     domicilio: "",
     CUI: "",
     correo: "",
+    idDepartamento: "",
     idMunicipio: "",
     estado: 1,
   });
@@ -29,6 +34,22 @@ function Personas() {
   useEffect(() => {
     fetchPersonas();
     fetchMunicipios();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const departamentosResponse = await axios.get('http://localhost:5000/departamentos');
+        const municipiosResponse = await axios.get('http://localhost:5000/municipios');
+        setDepartamentos(departamentosResponse.data);
+        setAllMunicipios(municipiosResponse.data); // Guardar todos los municipios
+      } catch (error) {
+        console.error('Error al cargar los datos:', error);
+        setAlertMessage('No se pudieron cargar los datos.');
+        setShowAlert(true);
+      }
+    };
+    fetchData();
   }, []);
 
   const fetchPersonas = async () => {
@@ -48,6 +69,17 @@ function Personas() {
     } catch (error) {
       console.error("Error fetching municipios:", error);
     }
+  };
+
+  const handleDepartamentoChange = (idDepartamento) => {
+    // Actualizar el idDepartamento en formData y limpiar el idMunicipio
+    setFormData({ ...formData, idDepartamento, idMunicipio: '' });
+  
+    // Filtrar los municipios según el idDepartamento seleccionado
+    const filteredMunicipios = allMunicipios.filter(
+      (municipio) => municipio.idDepartamento === parseInt(idDepartamento)
+    );
+    setMunicipios(filteredMunicipios);
   };
 
   const fetchActivePersonas = async () => {
@@ -83,18 +115,35 @@ function Personas() {
 
   const handleShowModal = (persona = null) => {
     setEditingPersona(persona);
-    setNewPersona(
-      persona || {
+    if (persona) {
+      // Verificar si persona tiene idDepartamento directamente, si no, obtenerlo desde municipio
+      const idDepartamento = persona.idDepartamento || (persona.municipio ? persona.municipio.idDepartamento : undefined);
+      
+      handleDepartamentoChange(idDepartamento); // Filtrar municipios según el departamento
+      
+      setFormData({
+        ...persona,
+        idDepartamento: idDepartamento,
+        idMunicipio: persona.idMunicipio,
+      });
+      // console.log("JSON de formData al editar:", {
+      //   ...persona,
+      //   idDepartamento: idDepartamento,
+      //   idMunicipio: persona.idMunicipio,
+      // });
+    } else {
+      setFormData({
         nombre: "",
         fechaNacimiento: "",
         telefono: "",
         domicilio: "",
         CUI: "",
         correo: "",
+        idDepartamento: "",
         idMunicipio: "",
         estado: 1,
-      }
-    );
+      });
+    }
     setShowModal(true);
   };
 
@@ -106,14 +155,14 @@ function Personas() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
+  
     // Validaciones
     const regexNombre = /^[A-Za-záéíóúÁÉÍÓÚÑñ\s]+$/;
     const regexTelefono = /^\d{8}$/;
     const regexDomicilio = /^[A-Za-záéíóúÁÉÍÓÚÑñ0-9\s\.\-]+$/;
     const regexCUI = /^\d{13}$/;
     const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+  
     if (name === "nombre" && !regexNombre.test(value)) {
       setShowValidationError("El nombre solo puede contener letras y espacios.");
     } else if (name === "telefono" && !regexTelefono.test(value)) {
@@ -127,8 +176,8 @@ function Personas() {
     } else {
       setShowValidationError(null);
     }
-
-    setNewPersona({ ...newPersona, [name]: value });
+  
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -137,11 +186,11 @@ function Personas() {
       if (editingPersona) {
         await axios.put(
           `http://localhost:5000/personas/update/${editingPersona.idPersona}`,
-          newPersona
+          formData
         );
         setAlertMessage("Persona actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/personas/create", newPersona);
+        await axios.post("http://localhost:5000/personas/create", formData);
         setAlertMessage("Persona creada con éxito");
       }
       fetchPersonas();
@@ -319,8 +368,10 @@ function Personas() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
             marginTop: "20px",
+            overflow: "hidden",
+            textAlign: "center",
           }}
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
@@ -342,7 +393,7 @@ function Personas() {
               <tr key={persona.idPersona}>
                 <td>{persona.idPersona}</td>
                 <td>{persona.nombre}</td>
-                <td>{new Date(persona.fechaNacimiento).toLocaleDateString()}</td>
+                <td>{persona.fechaNacimiento ? format(parseISO(persona.fechaNacimiento), "dd/MM/yyyy") : "Sin fecha"}</td>
                 <td>{persona.telefono}</td>
                 <td>{persona.domicilio}</td>
                 <td>{persona.CUI}</td>
@@ -407,7 +458,7 @@ function Personas() {
                 <Form.Control
                   type="text"
                   name="nombre"
-                  value={newPersona.nombre}
+                  value={formData.nombre}
                   onChange={handleChange}
                   required
                 />
@@ -417,7 +468,7 @@ function Personas() {
                 <Form.Control
                   type="date"
                   name="fechaNacimiento"
-                  value={newPersona.fechaNacimiento}
+                  value={formData.fechaNacimiento}
                   onChange={handleChange}
                   required
                 />
@@ -427,7 +478,7 @@ function Personas() {
                 <Form.Control
                   type="text"
                   name="telefono"
-                  value={newPersona.telefono}
+                  value={formData.telefono}
                   onChange={handleChange}
                   required
                 />
@@ -437,7 +488,7 @@ function Personas() {
                 <Form.Control
                   type="text"
                   name="domicilio"
-                  value={newPersona.domicilio}
+                  value={formData.domicilio}
                   onChange={handleChange}
                   required
                 />
@@ -447,7 +498,7 @@ function Personas() {
                 <Form.Control
                   type="text"
                   name="CUI"
-                  value={newPersona.CUI}
+                  value={formData.CUI}
                   onChange={handleChange}
                   required
                 />
@@ -457,17 +508,35 @@ function Personas() {
                 <Form.Control
                   type="email"
                   name="correo"
-                  value={newPersona.correo}
+                  value={formData.correo}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
+              <Form.Group controlId="idDepartamento">
+                <Form.Label>Departamento</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idDepartamento"
+                  value={formData.idDepartamento}
+                  onChange={(e) => handleDepartamentoChange(e.target.value)}
+                  required
+                >
+                  <option value="">Seleccionar Departamento</option>
+                  {departamentos.map((departamento) => (
+                    <option key={departamento.idDepartamento} value={departamento.idDepartamento}>
+                      {departamento.departamento}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+
               <Form.Group controlId="idMunicipio">
                 <Form.Label>Municipio</Form.Label>
                 <Form.Control
                   as="select"
                   name="idMunicipio"
-                  value={newPersona.idMunicipio}
+                  value={formData.idMunicipio}
                   onChange={handleChange}
                   required
                 >
@@ -484,7 +553,7 @@ function Personas() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newPersona.estado}
+                  value={formData.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>

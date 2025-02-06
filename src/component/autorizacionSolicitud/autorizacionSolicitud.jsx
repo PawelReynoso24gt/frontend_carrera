@@ -3,6 +3,9 @@ import axios from "axios";
 import { Button, Modal, Card, Row, Col, Pagination } from "react-bootstrap";
 import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
+
 const formatDate = (date) => {
   const options = { day: "2-digit", month: "2-digit", year: "numeric" };
   return new Date(date).toLocaleDateString("es-ES", options);
@@ -245,7 +248,7 @@ function SolicitudesVoluntariado() {
               <Card.Body style={{ position: "relative", paddingBottom: "40px" }}>
                 <Card.Title>Aspirante ID: {aspirante.idAspirante}</Card.Title>
                 <Card.Text>Estado: {aspirante.estado === 1 ? "Activo" : "Inactivo"}</Card.Text>
-                <Card.Text>Fecha de Registro: {formatDate(aspirante.fechaRegistro)}</Card.Text>
+                <Card.Text>Fecha de Registro: {format(parseISO(aspirante.fechaRegistro), "dd-MM-yyyy")}</Card.Text>
                 <div style={{ display: "flex", gap: "5px", justifyContent: "center" }}>
                   <Button
                     variant="success"
@@ -318,7 +321,7 @@ function SolicitudesVoluntariado() {
               <p style={{ color: "#000000" }}><strong>Teléfono:</strong> {selectedPersona.telefono}</p>
               <p style={{ color: "#000000" }}><strong>Domicilio:</strong> {selectedPersona.domicilio}</p>
               <p style={{ color: "#000000" }}><strong>CUI:</strong> {selectedPersona.CUI}</p>
-              <p style={{ color: "#000000" }}><strong>Fecha de Nacimiento:</strong> {formatDate(selectedPersona.fechaNacimiento)}</p>
+              <p style={{ color: "#000000" }}><strong>Fecha de Nacimiento:</strong> {format(parseISO(selectedPersona.fechaNacimiento), "dd-MM-yyyy")}</p>
               <p style={{ color: "#000000" }}><strong>Estado:</strong> {selectedPersona.estado === 1 ? "Activo" : "Inactivo"}</p>
             </>
           ) : (
