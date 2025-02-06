@@ -155,11 +155,11 @@ function FotosSedesComponent() {
     formData.append('idSede', Number(newFoto.idSede)); // Convertir idSede a número
     formData.append('estado', Number(newFoto.estado)); // Convertir estado a número
 
-    console.log("Datos enviados al backend:", {
+    /*console.log("Datos enviados al backend:", {
       foto: newFoto.foto,
       idSede: Number(newFoto.idSede),
       estado: Number(newFoto.estado)
-    });
+    });*/
 
     try {
       if (editingFoto) {
