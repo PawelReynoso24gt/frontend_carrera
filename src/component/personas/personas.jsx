@@ -30,11 +30,55 @@ function Personas() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showValidationError, setShowValidationError] = useState(null); // Nuevo estado para validaciones
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
-    fetchPersonas();
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+          response.data.permisos['Ver personas']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchMunicipios();
   }, []);
+
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchPersonas();
+      } else {
+        checkPermission('Ver personas', 'No tienes permisos para ver eventos');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,7 +118,7 @@ function Personas() {
   const handleDepartamentoChange = (idDepartamento) => {
     // Actualizar el idDepartamento en formData y limpiar el idMunicipio
     setFormData({ ...formData, idDepartamento, idMunicipio: '' });
-  
+
     // Filtrar los municipios según el idDepartamento seleccionado
     const filteredMunicipios = allMunicipios.filter(
       (municipio) => municipio.idDepartamento === parseInt(idDepartamento)
@@ -118,9 +162,9 @@ function Personas() {
     if (persona) {
       // Verificar si persona tiene idDepartamento directamente, si no, obtenerlo desde municipio
       const idDepartamento = persona.idDepartamento || (persona.municipio ? persona.municipio.idDepartamento : undefined);
-      
+
       handleDepartamentoChange(idDepartamento); // Filtrar municipios según el departamento
-      
+
       setFormData({
         ...persona,
         idDepartamento: idDepartamento,
@@ -155,14 +199,14 @@ function Personas() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
+
     // Validaciones
     const regexNombre = /^[A-Za-záéíóúÁÉÍÓÚÑñ\s]+$/;
     const regexTelefono = /^\d{8}$/;
     const regexDomicilio = /^[A-Za-záéíóúÁÉÍÓÚÑñ0-9\s\.\-]+$/;
     const regexCUI = /^\d{13}$/;
     const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
+
     if (name === "nombre" && !regexNombre.test(value)) {
       setShowValidationError("El nombre solo puede contener letras y espacios.");
     } else if (name === "telefono" && !regexTelefono.test(value)) {
@@ -176,7 +220,7 @@ function Personas() {
     } else {
       setShowValidationError(null);
     }
-  
+
     setFormData({ ...formData, [name]: value });
   };
 
@@ -317,7 +361,11 @@ function Personas() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear personas', 'No tienes permisos para crear personas')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Persona
           </Button>
@@ -409,7 +457,11 @@ function Personas() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(persona)}
+                    onClick={() => {
+                      if (checkPermission('Editar persona', 'No tienes permisos para editar personas')) {
+                        handleShowModal(persona);
+                      }
+                    }}
                   />
                   {persona.estado ? (
                     <FaToggleOn
@@ -420,7 +472,11 @@ function Personas() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(persona.idPersona, persona.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar persona', 'No tienes permisos para desactivar personas')) {
+                          toggleEstado(persona.idPersona, persona.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -431,7 +487,11 @@ function Personas() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(persona.idPersona, persona.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar persona', 'No tienes permisos para activar personas')) {
+                          toggleEstado(persona.idPersona, persona.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -580,6 +640,17 @@ function Personas() {
               </Button>
             </Form>
           </Modal.Body>
+        </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
         </Modal>
       </div>
     </>

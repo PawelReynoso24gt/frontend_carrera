@@ -5,72 +5,75 @@ function TermsAndCondition() {
     <div className="tab-pane fade show active">
       <div className="crancy-ptabs__page crancy__item-group">
         <h4 className="crancy__item-group__title mg-btm-20">
-          Terms and Conditions
+          Términos y Condiciones de Uso
         </h4>
-        <h3 className="crancy-ptabs__page-title">1. Definitions</h3>
+        <h3 className="crancy-ptabs__page-title">1. Introducción</h3>
         <p>
-          What you do own when you buy an NFT are the keys to a non-fungible –
-          perhaps unique – token. That token is yours to trade or hold or
-          display in Decentraland. But the digital file associated with an NFT
-          is just as easy to copy and paste and download as any other – the
-          Finally, players lose their NFTs sometimes according to the rules and
-          regulations of the NFT game.
+          Bienvenido a la aplicación web y móvil "AYUDANDO A VIVIR". Al utilizar esta aplicación, usted acepta cumplir con estos Términos y Condiciones de Uso. Esta aplicación ha sido desarrollada por estudiantes de la carrera de Ingeniería en Sistemas, Informática y Ciencias de la Computación de la Universidad Mesoamericana, sede Quetzaltenango, para la Fundación AYUVI en Quetzaltenango, Guatemala.
         </p>
 
-        <h3 className="crancy-ptabs__page-title">2. Acceptance</h3>
+        <h3 className="crancy-ptabs__page-title">2. Aceptación de los Términos</h3>
         <p>
-          Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet
-          sint. Velit officia consequat duis enim velit mollit. Exercitation
-          veniam consequat sunt nostrud amet.Capacity. You confirm that you have
-          the legal capacity to receive and hold and make use of the NFT under
-          French jurisdiction and any other relevant jurisdiction.Acceptance. By
-          participating in the Sale, You accept and agree to these Terms and
-          Conditions without any condition or restriction.If You do not agree to
-          this Contract, You shall not participate in the Sale made by the
-          Company Exercitation veniam consequat sunt nostrud amet.Capacity. You
-          confirm that you have the legal capacity to receive and hold find to
-          end.Contract, You shall not participate in the Sale made by the
-          Company Exercitation venia
+          Al acceder o utilizar nuestra aplicación, usted acepta estar sujeto a estos Términos y Condiciones. Si no está de acuerdo con alguna parte de estos términos, no debe usar nuestra aplicación.
         </p>
 
-        <blockquote>
-          In reality, the most important aspect of a great dashboard is the part
-          that gets the least amount of attention: The underlying data. More
-          than any other aspect, the data will make or break a dashboard.Within
-          this definition, successful administration appears to rest on three
-          basic skills, which we will call technical, and conceptual.
-        </blockquote>
-
-        <h3 className="crancy-ptabs__page-title">3. The Sale</h3>
+        <h3 className="crancy-ptabs__page-title">3. Modificaciones de los Términos</h3>
         <p>
-          The Company offers NFTs featuring the Betonyou universe. The holders
-          of one or more NFTs will be able to win cryptos while playing video
-          games. In the future, the Company plans to develop its own games and
-          Metaverse around the Betonyou universe (“Project”).
-        </p>
-        <p>
-          To release the NFTs and fund the project, the Company offers NFTs from
-          a dedicated website("Sale"). The web address of this website will be
-          given at the time of the mint. The NFT acquisition does not confer any
-          rights on the Company or in the future development.
+          Nos reservamos el derecho de modificar estos Términos y Condiciones en cualquier momento. Notificaremos a los usuarios sobre cualquier cambio a través de nuestra aplicación o por correo electrónico. El uso continuo de la aplicación después de tales modificaciones constituirá su reconocimiento y aceptación de los términos modificados.
         </p>
 
-        <h3 className="crancy-ptabs__page-title">4. Purchaser’s obligations</h3>
+        <h3 className="crancy-ptabs__page-title">4. Descripción del Servicio</h3>
         <p>
-          To the fullest extent permitted by applicable law, You undertake to
-          indemnify, defend and hold harmless the Company from and against all
-          claims, demands, actions, damages, losses, costs and expenses
-          (including attorneys’ fees) that arise from or relate to (i) your
-          Subscription or use of the NFTs; (ii) your responsibilities or
-          obligations under this Contract; and (iii) your breach of this
-          Contract.
+          La aplicación "AYUDANDO A VIVIR" está diseñada para facilitar la gestión del voluntariado de la Fundación AYUVI. Los usuarios pueden registrarse, crear un perfil y participar en tareas y actividades organizadas por el equipo administrativo. Estas actividades están enfocadas en recaudar fondos destinados al tratamiento de niños con cáncer.
         </p>
 
+        <h3 className="crancy-ptabs__page-title">5. Uso del Servicio</h3>
         <p>
-          Company undertakes to act with the care normally expected from a
-          professional in his field and to comply with the best practice in
-          force. The best endeavor obligation only binds the Company.
+          <strong>Registro y Cuenta:</strong> Los usuarios deben proporcionar información precisa y completa al registrarse. Es responsabilidad del usuario mantener la confidencialidad de sus credenciales de acceso.
         </p>
+        <p>
+          <strong>Conducta del Usuario:</strong> Los usuarios deben comportarse de manera respetuosa y no utilizar la aplicación para actividades ilegales o no autorizadas.
+        </p>
+        <p>
+          <strong>Seguridad:</strong> Nos comprometemos a implementar medidas de seguridad para proteger la información personal de los usuarios, pero no garantizamos que la aplicación sea completamente segura frente a posibles amenazas.
+        </p>
+
+        <h3 className="crancy-ptabs__page-title">6. Propiedad Intelectual</h3>
+        <p>
+          Todo el código y diseño de esta aplicación ha sido donado a la Fundación AYUVI por el grupo de desarrollo y está disponible para su uso por el equipo de TI de la fundación.
+        </p>
+
+        <h3 className="crancy-ptabs__page-title">7. Privacidad y Protección de Datos</h3>
+        <p>
+        <strong>Datos Personales:</strong> Recopilamos y manejamos información personal, como CUI, fecha de nacimiento, teléfonos y direcciones, con el fin de conocer quiénes son responsables de las actividades que se llevan a cabo dentro del sistema.
+        </p>
+
+        <h3 className="crancy-ptabs__page-title">8. Limitación de Responsabilidad</h3>
+        <p>
+          La Fundación AYUVI no será responsable por cualquier daño que pueda ocurrir al usar la aplicación o si no puedes usarla por algún problema. Esto incluye, pero no se limita a, la pérdida de dinero, datos u otros daños, incluso si te hemos advertido que esto podría pasar. Esta limitación de responsabilidad se aplicará en la medida permitida por la ley.
+        </p>
+
+        <h3 className="crancy-ptabs__page-title">9. Desarrolladores y Licencias</h3>
+        <p>
+          Los desarrolladores de la aplicación, aunque han tenido el control de la misma durante su creación, tienen la obligación de no causar daño a la aplicación. Después de la entrega, los desarrolladores no son responsables de futuras actualizaciones o modificaciones, pero se les reconoce haberla creado inicialmente. Toda la propiedad intelectual, incluyendo el código y diseño, ha sido donada a la Fundación AYUVI y puede ser utilizada por el equipo de TI de la fundación.
+        </p>
+        <p>
+          Todo el software y las plantillas utilizadas en la aplicación han sido adquiridos legalmente y cuentan con las licencias correspondientes. El uso de este software y plantillas es exclusivamente para apoyar a la fundación en la automatización de sus procesos.
+        </p>
+        <p>
+          Los desarrolladores se desligan de cualquier demanda o responsabilidad legal que pueda surgir después de la implementación final de la aplicación.
+        </p>
+
+        <h3 className="crancy-ptabs__page-title">10. Ley Aplicable y Jurisdicción</h3>
+        <p>
+          Estos Términos y Condiciones se regirán e interpretarán de acuerdo con las leyes de Guatemala. Cualquier disputa que surja en relación con estos términos estará sujeta a la jurisdicción exclusiva de los tribunales de Guatemala.
+        </p>
+
+        <h3 className="crancy-ptabs__page-title">11. Contacto</h3>
+        <p>
+          Si tiene alguna pregunta sobre estos Términos y Condiciones, puede contactarnos a través de <strong>eduardo.godinez@ayuvi.org.gt</strong> o <strong>+502 35757028</strong>.
+        </p>
+
       </div>
     </div>
   );
