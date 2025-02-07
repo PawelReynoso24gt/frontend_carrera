@@ -76,7 +76,7 @@ function Eventos() {
   useEffect(() => {
     if (isPermissionsLoaded) {
       if (hasViewPermission) {
-        fetchEventos();
+        fetchActiveEventos(); 
       } else {
         checkPermission('Ver eventos', 'No tienes permisos para ver eventos');
       }
