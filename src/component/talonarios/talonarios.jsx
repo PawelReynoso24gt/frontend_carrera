@@ -139,6 +139,7 @@ function Talonarios() {
         idRifa: "",
       }
     );
+    // console.log("Editing talonario:", talonario);
     setShowModal(true);
   };
 
@@ -160,21 +161,33 @@ function Talonarios() {
         return;
       }
     }
-
+    // console.log(`Updating field ${name} to value ${value}`);
     setNewTalonario({ ...newTalonario, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Convertir idRifa a número
+    const updatedTalonario = {
+      ...newTalonario,
+      idRifa: Number(newTalonario.idRifa),
+    };
+    
     try {
+      // console.log("Submitting talonario:", updatedTalonario);
       if (editingTalonario) {
+        // console.log(`Updating talonario with ID ${editingTalonario.idTalonario}`);
+        // console.log("Data to update:", updatedTalonario);
         await axios.put(
           `http://localhost:5000/talonarios/update/${editingTalonario.idTalonario}`,
-          newTalonario
+          updatedTalonario
         );
         setAlertMessage("Talonario actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/talonarios/create", newTalonario);
+        // console.log("Creating new talonario");
+        // console.log("Data to create:", updatedTalonario);
+        await axios.post("http://localhost:5000/talonarios/create", updatedTalonario);
         setAlertMessage("Talonario creado con éxito");
       }
       fetchTalonarios();

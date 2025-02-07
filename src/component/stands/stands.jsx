@@ -692,6 +692,19 @@ function Stand() {
                 );
               })}
             </Form.Group>
+            <Form.Group controlId="estado">
+              <Form.Label>Estado</Form.Label>
+              <Form.Control
+                as="select"
+                name="estado"
+                value={newStand.estado}
+                onChange={handleChange}
+                required
+              >
+                <option value={1}>Activo</option>
+                <option value={0}>Inactivo</option>
+              </Form.Control>
+            </Form.Group>
 
             <Button
               type="submit"

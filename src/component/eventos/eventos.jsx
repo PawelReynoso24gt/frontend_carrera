@@ -598,6 +598,20 @@ function Eventos() {
                   ))}
                 </Form.Control>
               </Form.Group>
+              {/* Campo de estado */}
+              <Form.Group controlId="estado">
+                <Form.Label>Estado</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="estado"
+                  value={newEvento.estado}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value={1}>Activo</option>
+                  <option value={0}>Inactivo</option>
+                </Form.Control>
+              </Form.Group>
               <Button
                 style={{
                   backgroundColor: "#007AC3",

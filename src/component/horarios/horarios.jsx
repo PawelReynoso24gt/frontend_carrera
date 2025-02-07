@@ -69,6 +69,13 @@ function HorariosComponent() {
     return true;
   };
 
+  const validateHorario = (horarioInicio, horarioFinal) => {
+    if (horarioInicio >= horarioFinal) {
+      return "El horario de inicio no puede ser mayor o igual al horario final.";
+    }
+    return null; // No hay errores
+  };
+
   const fetchActiveHorarios = async () => {
     try {
       if (hasViewPermission) {
@@ -127,11 +134,24 @@ function HorariosComponent() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewHorario({ ...newHorario, [name]: value });
+    setNewHorario((prev) => {
+      const updatedHorario = { ...prev, [name]: value };
+      console.log("Nuevo estado de newHorario:", updatedHorario); // <-- Aquí
+      return updatedHorario;
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Validar que el horario de inicio no sea mayor o igual al horario final
+    const validationError = validateHorario(newHorario.horarioInicio, newHorario.horarioFinal);
+    if (validationError) {
+      setAlertMessage(validationError); // Mostrar mensaje de error
+      setShowAlert(true);
+      return; // Detener la ejecución
+    }
+  
     try {
       const [startHour, startMinute] = newHorario.horarioInicio.split(":");
       const [finalHour, finalMinute] = newHorario.horarioFinal.split(":");
@@ -146,10 +166,14 @@ function HorariosComponent() {
         horarioFinal: formattedFinal,
       };
   
+      console.log("Datos que se enviarán al backend:", formattedHorario);
+  
       if (editingHorario) {
+        console.log("Modo: Editar horario. ID:", editingHorario.idHorario);
         await axios.put(`http://localhost:5000/horarios/${editingHorario.idHorario}`, formattedHorario);
         setAlertMessage("Horario actualizado con éxito");
       } else {
+        console.log("Modo: Crear horario");
         await axios.post("http://localhost:5000/horarios", formattedHorario);
         setAlertMessage("Horario creado con éxito");
       }
@@ -159,6 +183,8 @@ function HorariosComponent() {
       handleCloseModal();
     } catch (error) {
       console.error("Error submitting horario:", error.response?.data || error);
+      setAlertMessage("Error al procesar la solicitud");
+      setShowAlert(true);
     }
   };
 
