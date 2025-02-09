@@ -745,6 +745,7 @@ function Recaudaciones() {
                             onChange={(e) => {
                                 const selectedIdRifa = e.target.value;
                                 setSelectedRifa(selectedIdRifa);
+                                setTalonarios([]);
                                 fetchTalonarios(selectedIdRifa);
 
                                 const rifaSeleccionada = rifas.find(rifa => rifa.idRifa === parseInt(selectedIdRifa));
@@ -891,6 +892,7 @@ function Recaudaciones() {
                             onChange={(e) => {
                                 const selectedIdRifa = e.target.value;
                                 setSelectedRifa(selectedIdRifa);
+                                setTalonarios([]);
                                 fetchTalonarios(selectedIdRifa);
 
                                 const rifaSeleccionada = rifas.find(rifa => rifa.idRifa === parseInt(selectedIdRifa));

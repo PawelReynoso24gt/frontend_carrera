@@ -38,6 +38,9 @@ const ReporteContabilidad = () => {
           },
         });
 
+        // Log para ver la respuesta completa de la API
+        //console.log('Respuesta de la API:', response);
+
         setProductos(response.data.productos);
         setMovimientos(response.data.movimientosProductos);
         setTraslados(response.data.traslados);
@@ -114,12 +117,12 @@ const ReporteContabilidad = () => {
       if (!acc[tipo]) {
         acc[tipo] = [];
       }
-      const detalles = traslado.detalle_traslados.map(detalle => `Producto ID: ${detalle.idProducto}, ${tipo === 'Recibido' ? 'Cantidad Recibida' : 'Cantidad Enviada'}: ${detalle.cantidad}`).join(", ");
+      const detalles = traslado.detalle_traslados.map(detalle => `Producto: ${detalle.producto.nombreProducto} (ID: ${detalle.idProducto}), ${tipo === 'Recibido' ? 'Cantidad Recibida' : 'Cantidad Enviada'}: ${detalle.cantidad}`).join(", ");
       acc[tipo].push(detalles);
       return acc;
     }, {});
   
-    const detallesPedidos = pedidos.map(pedido => pedido.detalle_pedidos.map(detalle => `Producto ID: ${detalle.idProducto}, Cantidad: ${detalle.cantidad}`).join(", ")).join("\n");
+    const detallesPedidos = pedidos.map(pedido => pedido.detalle_pedidos.map(detalle => `Producto: ${detalle.producto.nombreProducto} (ID: ${detalle.idProducto}), Cantidad: ${detalle.cantidad}`).join(", ")).join("\n");
   
     const totalVentasVoluntarios = ventasVoluntarios.reduce((acc, venta) => acc + parseFloat(venta.totalVenta || 0), 0).toFixed(2);
     const totalVentasStands = ventasStands.reduce((acc, venta) => acc + parseFloat(venta.totalVenta || 0), 0).toFixed(2);
@@ -230,7 +233,9 @@ const ReporteContabilidad = () => {
         traslado.fecha ? format(parseISO(traslado.fecha), "dd-MM-yyyy") : "Sin fecha",
         traslado.descripcion,
         traslado.tipoTraslado.tipo,
-        traslado.detalle_traslados.map(detalle => `Producto ID: ${detalle.idProducto}, ${traslado.tipoTraslado.tipo === "Recibido" ? "Cantidad Recibida" : "Cantidad Enviada"}: ${detalle.cantidad}`).join(", "),
+        traslado.detalle_traslados.map(detalle => 
+          `Producto: ${detalle.producto.nombreProducto} (ID: ${detalle.idProducto}), ${traslado.tipoTraslado.tipo === "Recibido" ? "Cantidad Recibida" : "Cantidad Enviada"}: ${detalle.cantidad}`
+        ).join(", "),
       ]),
       styles: { fontSize: 10, cellPadding: 2 },
       headStyles: { fillColor: [0, 122, 195], textColor: 255 },
@@ -252,7 +257,9 @@ const ReporteContabilidad = () => {
         pedido.fecha ? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha",
         pedido.descripcion,
         pedido.sede.nombreSede,
-        pedido.detalle_pedidos.map(detalle => `Producto ID: ${detalle.idProducto}, Cantidad: ${detalle.cantidad}`).join(", "),
+        pedido.detalle_pedidos.map(detalle => 
+          `Producto: ${detalle.producto.nombreProducto} (ID: ${detalle.idProducto}), Cantidad: ${detalle.cantidad}`
+        ).join(", "),
       ]),
       styles: { fontSize: 10, cellPadding: 2 },
       headStyles: { fillColor: [0, 122, 195], textColor: 255 },
@@ -647,7 +654,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
                 <ul>
                   {traslado.detalle_traslados.map((detalle, idx) => (
                     <li key={idx}>
-                      Producto ID: {detalle.idProducto}, {traslado.tipoTraslado.tipo === "Recibido" ? "Cantidad Recibida" : "Cantidad Enviada"}: {detalle.cantidad}
+                      Producto: {detalle.producto.nombreProducto} (ID: {detalle.idProducto}), {traslado.tipoTraslado.tipo === "Recibido" ? "Cantidad Recibida" : "Cantidad Enviada"}: {detalle.cantidad}
                     </li>
                   ))}
                 </ul>
@@ -679,7 +686,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
                 <ul>
                   {pedido.detalle_pedidos.map((detalle, idx) => (
                     <li key={idx}>
-                      Producto ID: {detalle.idProducto}, Cantidad: {detalle.cantidad}
+                      Producto: {detalle.producto.nombreProducto} (ID: {detalle.idProducto}), Cantidad: {detalle.cantidad}
                     </li>
                   ))}
                 </ul>

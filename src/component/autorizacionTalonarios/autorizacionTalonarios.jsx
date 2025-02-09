@@ -65,6 +65,7 @@ function AutorizacionTalonarios() {
     try {
       const response = await axios.get("http://localhost:5000/solicitudes");
       setSolicitudes(response.data);
+      //console.log("Solicitudes obtenidas:", response.data);
     } catch (error) {
       console.error("Error fetching solicitudes:", error);
     }
@@ -136,6 +137,9 @@ function AutorizacionTalonarios() {
 
       const solicitud = responseSolicitud.data;
 
+      // Extraer el código del talonario
+      const codigoTalonario = solicitud.talonario?.codigoTalonario || "Código no disponible";
+
       // Verificar la estructura de la respuesta antes de acceder a voluntario
       if (solicitud && solicitud.idVoluntario) {
         // Obtener la información del voluntario
@@ -147,7 +151,10 @@ function AutorizacionTalonarios() {
           const idPersona = voluntario.persona.idPersona;
 
           // Log de bitácora y obtener idBitacora
-          const idBitacora = await logBitacora(`Solicitud de talonario ${idSolicitud} actualizada`, 21);
+        const idBitacora = await logBitacora(
+          `Solicitud del talonario #${codigoTalonario} actualizada`, // Usar codigoTalonario en lugar de idSolicitud
+          21
+        );
 
           // Verifica que todos los campos necesarios estén presentes
           if (idBitacora && idPersona) {

@@ -162,22 +162,31 @@ function SolicitudesVoluntariado() {
   };
 
   const acceptSolicitud = async (idAspirante) => {
-    try {
-      // Actualizar estado del aspirante
-      await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
-      fetchAspirantes();
-      setShowConfirmationModal(false);
-  
-      // Obtener la información del aspirante
-      const aspirante = await getAspirante(idAspirante);
-  
-      // Verificar que aspirante y persona existan
-      if (aspirante && aspirante.idPersona) {
-        const idPersona = aspirante.idPersona;
-  
+  try {
+    // Actualizar estado del aspirante
+    await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
+    fetchAspirantes();
+    setShowConfirmationModal(false);
+
+    // Obtener la información del aspirante
+    const aspirante = await getAspirante(idAspirante);
+
+    // Verificar que aspirante y persona existan
+    if (aspirante && aspirante.idPersona) {
+      const idPersona = aspirante.idPersona;
+
+      // Buscar la persona correspondiente en la lista de personas
+      const persona = personas.find((p) => p.idPersona === idPersona);
+
+      if (persona) {
+        const nombrePersona = persona.nombre; // Obtener el nombre de la persona
+
         // Log de bitácora y obtener idBitacora
-        const idBitacora = await logBitacora(`Solicitud de aspirante ${idAspirante} aceptada`, 20);
-  
+        const idBitacora = await logBitacora(
+          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) aceptada`, // Incluir el nombre en el mensaje
+          20
+        );
+
         // Crear la notificación
         if (idBitacora && idPersona) {
           const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
@@ -186,44 +195,59 @@ function SolicitudesVoluntariado() {
           console.error("Faltan datos necesarios para crear la notificación");
         }
       } else {
-        console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
+        console.error("No se encontró la persona asociada al aspirante");
       }
-    } catch (error) {
-      console.error("Error accepting solicitud:", error);
+    } else {
+      console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
     }
-  };
+  } catch (error) {
+    console.error("Error accepting solicitud:", error);
+  }
+};
   
-  const denySolicitud = async (idAspirante) => {
-    try {
-      // Actualizar estado del aspirante
-      await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
-      fetchAspirantes();
-      setShowConfirmationModal(false);
-  
-      // Obtener la información del aspirante
-      const aspirante = await getAspirante(idAspirante);
-  
-      // Verificar que aspirante y persona existan
-      if (aspirante && aspirante.idPersona) {
-        const idPersona = aspirante.idPersona;
-  
+const denySolicitud = async (idAspirante) => {
+  try {
+    // Actualizar estado del aspirante
+    await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
+    fetchAspirantes();
+    setShowConfirmationModal(false);
+
+    // Obtener la información del aspirante
+    const aspirante = await getAspirante(idAspirante);
+
+    // Verificar que aspirante y persona existan
+    if (aspirante && aspirante.idPersona) {
+      const idPersona = aspirante.idPersona;
+
+      // Buscar la persona correspondiente en la lista de personas
+      const persona = personas.find((p) => p.idPersona === idPersona);
+
+      if (persona) {
+        const nombrePersona = persona.nombre; // Obtener el nombre de la persona
+
         // Log de bitácora y obtener idBitacora
-        const idBitacora = await logBitacora(`Solicitud de aspirante ${idAspirante} denegada`, 26);
-  
+        const idBitacora = await logBitacora(
+          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) denegada`, // Incluir el nombre en el mensaje
+          26
+        );
+
         // Crear la notificación
         if (idBitacora && idPersona) {
-          const idTipoNotificacion = 4; 
+          const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
           await createNotification(idBitacora, idTipoNotificacion, idPersona);
         } else {
           console.error("Faltan datos necesarios para crear la notificación");
         }
       } else {
-        console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
+        console.error("No se encontró la persona asociada al aspirante");
       }
-    } catch (error) {
-      console.error("Error denying solicitud:", error);
+    } else {
+      console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
     }
-  };
+  } catch (error) {
+    console.error("Error denying solicitud:", error);
+  }
+};
 
   // Paginación
   const indexOfLastItem = currentPage * itemsPerPage;
