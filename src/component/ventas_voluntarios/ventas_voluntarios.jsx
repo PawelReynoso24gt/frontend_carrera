@@ -394,9 +394,9 @@ function Ventas() {
     const totalVenta = subtotal + totalDonacion;
 
       // Imprimir los cálculos en la consola
-    console.log("Subtotal:", subtotal.toFixed(2));
-    console.log("Total Donación:", totalDonacion.toFixed(2));
-    console.log("Total a Pagar:", totalVenta.toFixed(2));
+    // console.log("Subtotal:", subtotal.toFixed(2));
+    // console.log("Total Donación:", totalDonacion.toFixed(2));
+    // console.log("Total a Pagar:", totalVenta.toFixed(2));
 
       // Asegúrate de que totalAPagar es un número
       const totalAPagarNumber = parseFloat(totalAPagar);
@@ -438,7 +438,7 @@ function Ventas() {
       };
 
     // Imprimir el JSON en la consola
-    console.log("JSON enviado al backend:", JSON.stringify(ventaData, null, 2));
+    //console.log("JSON enviado al backend:", JSON.stringify(ventaData, null, 2));
 
       const response = await axios.put(
         `http://localhost:5000/ventas/update/completa/${ventaEditada.venta.idVenta}`,

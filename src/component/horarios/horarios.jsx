@@ -94,7 +94,7 @@ function HorariosComponent() {
     try {
       if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/horarios");
-      console.log(response.data);
+      //console.log(response.data);
       // Filtrar horarios con estado 0
       const inactiveHorarios = response.data.filter((horario) => horario.estado === 0);
       setHorarios(formatDates(inactiveHorarios));
@@ -136,7 +136,7 @@ function HorariosComponent() {
     const { name, value } = e.target;
     setNewHorario((prev) => {
       const updatedHorario = { ...prev, [name]: value };
-      console.log("Nuevo estado de newHorario:", updatedHorario); // <-- Aquí
+      //console.log("Nuevo estado de newHorario:", updatedHorario); // <-- Aquí
       return updatedHorario;
     });
   };
@@ -166,14 +166,14 @@ function HorariosComponent() {
         horarioFinal: formattedFinal,
       };
   
-      console.log("Datos que se enviarán al backend:", formattedHorario);
+      //console.log("Datos que se enviarán al backend:", formattedHorario);
   
       if (editingHorario) {
-        console.log("Modo: Editar horario. ID:", editingHorario.idHorario);
+        //console.log("Modo: Editar horario. ID:", editingHorario.idHorario);
         await axios.put(`http://localhost:5000/horarios/${editingHorario.idHorario}`, formattedHorario);
         setAlertMessage("Horario actualizado con éxito");
       } else {
-        console.log("Modo: Crear horario");
+        //console.log("Modo: Crear horario");
         await axios.post("http://localhost:5000/horarios", formattedHorario);
         setAlertMessage("Horario creado con éxito");
       }

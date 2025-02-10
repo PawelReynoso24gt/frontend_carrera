@@ -64,7 +64,7 @@ function DetalleStandsVoluntarios() {
       if (hasViewPermission) {
         fetchDetalleStands();
       } else {
-        console.log(hasViewPermission)
+        //console.log(hasViewPermission)
         //Ver permisos de voluntarios
         checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
       }

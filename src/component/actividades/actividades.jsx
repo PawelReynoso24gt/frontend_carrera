@@ -168,11 +168,11 @@ function Actividades() {
     setEditingActividad(actividad);
   
     if (actividad) {
-      console.log("Actividad seleccionada para editar:", actividad);
+      //console.log("Actividad seleccionada para editar:", actividad);
   
       // Usar directamente el idEvento de la comisión asociada a la actividad
       const idEvento = actividad.comision.idEvento;
-      console.log("ID del evento asociado a la actividad:", idEvento);
+      //console.log("ID del evento asociado a la actividad:", idEvento);
   
       // Guardar solo el idEvento (sin buscar en la lista de eventos)
       setSelectedEvento({ idEvento });

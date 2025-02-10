@@ -59,7 +59,7 @@ function UsuariosAdminComponent() {
       if (hasViewPermission) {
         fetchActiveUsuarios();
       } else {
-        console.log(hasViewPermission)
+        //console.log(hasViewPermission)
         checkPermission('Ver usuarios', 'No tienes permisos para ver usuarios');
       }
     }

@@ -49,7 +49,7 @@ function Roles() {
           if (hasViewPermission) {
             fetchRoles();
           } else {
-            console.log(hasViewPermission)
+            //console.log(hasViewPermission)
             checkPermission('Ver roles', 'No tienes permisos para ver roles');
           }
         }

@@ -114,19 +114,19 @@ function EventosActivos() {
     setIsVoluntariosLoaded(false);
 
     try {
-      console.log("ID del evento:", idEvento);
-      console.log("ID de la comisión:", idComision);
+      // console.log("ID del evento:", idEvento);
+      // console.log("ID de la comisión:", idComision);
 
       const response = await axios.get(
         `http://localhost:5000/inscripcion_comisiones/activos?eventoId=${idEvento}`
       );
 
-      console.log("Respuesta completa de la API:", response.data);
+      //console.log("Respuesta completa de la API:", response.data);
 
       // Filtrar inscripciones por idComision y mapear datos del voluntario
       const voluntarios = response.data
         .filter((inscripcion) => {
-          console.log("ID Comisión en inscripción:", inscripcion.idComision);
+          //console.log("ID Comisión en inscripción:", inscripcion.idComision);
           return inscripcion.idComision === idComision; // Comparar directamente con idComision
         })
         .map((inscripcion) => ({

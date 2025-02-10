@@ -62,7 +62,7 @@ function Empleados() {
       if (hasViewPermission) {
         fetchEmpleados();
       } else {
-        console.log(hasViewPermission)
+        //console.log(hasViewPermission)
         checkPermission('Ver empleados', 'No tienes permisos para ver empleados');
       }
     }

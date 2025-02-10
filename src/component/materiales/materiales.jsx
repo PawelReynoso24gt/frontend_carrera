@@ -139,11 +139,11 @@ function MaterialesComponent() {
     setEditingMaterial(material);
   
     if (material) {
-      console.log("Material seleccionado para editar:", material);
+      //console.log("Material seleccionado para editar:", material);
   
       // Usar directamente el idEvento de la comisión asociada al material
       const idEvento = material.comisione?.idEvento;
-      console.log("ID del evento asociado al material:", idEvento);
+      //console.log("ID del evento asociado al material:", idEvento);
   
       // Buscar el evento en la lista de eventos (opcional, si necesitas más detalles del evento)
       const eventoAsociado = eventos.find((evento) => evento.idEvento === idEvento);

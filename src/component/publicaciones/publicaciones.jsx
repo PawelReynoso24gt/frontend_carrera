@@ -141,7 +141,7 @@ function Publicaciones() {
     try {
       const response = await axios.get(`http://localhost:5000/publicaciones/detalles/${id}`);
       setDetallesPublicacion(response.data);
-      console.log("Detalles de la publicación:", response.data);
+      //console.log("Detalles de la publicación:", response.data);
     } catch (error) {
       console.error("Error al cargar los detalles de la publicación:", error);
     }
@@ -365,7 +365,7 @@ function Publicaciones() {
 
       // Log para inspeccionar los datos que se están enviando
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
+      //console.log(`${pair[0]}: ${pair[1]}`);
     }
 
       const endpoint = editingPublicacion

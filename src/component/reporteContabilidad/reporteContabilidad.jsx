@@ -28,8 +28,8 @@ const ReporteContabilidad = () => {
 
       try {
         // Log para ver las fechas antes de enviarlas en la solicitud
-        console.log('Fecha inicio (React):', fechaInicio);
-        console.log('Fecha fin (React):', fechaFin);
+        // console.log('Fecha inicio (React):', fechaInicio);
+        // console.log('Fecha fin (React):', fechaFin);
 
         const response = await axios.get("http://localhost:5000/reporteContabilidad", {
           params: {

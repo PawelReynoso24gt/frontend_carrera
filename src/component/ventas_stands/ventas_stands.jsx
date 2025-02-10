@@ -393,12 +393,12 @@ function Ventas() {
       };
   
       // Imprimir los cálculos en la consola
-      console.log("Subtotal:", subtotal.toFixed(2));
-      console.log("Total Donación:", totalDonacionActualizado.toFixed(2));
-      console.log("Total de la Venta:", totalVenta.toFixed(2));
+      // console.log("Subtotal:", subtotal.toFixed(2));
+      // console.log("Total Donación:", totalDonacionActualizado.toFixed(2));
+      // console.log("Total de la Venta:", totalVenta.toFixed(2));
   
       // Imprimir el JSON en la consola
-      console.log("JSON enviado al backend:", JSON.stringify(ventaData, null, 2));
+      //console.log("JSON enviado al backend:", JSON.stringify(ventaData, null, 2));
   
       // Validaciones después de los logs
       if (totalDonacionActualizado !== ventaEditada.venta.donacion) {
@@ -502,7 +502,7 @@ function Ventas() {
 
       if (response.data && response.data.length > 0) {
         setDetalleSeleccionado(response.data); // Guarda todos los detalles de la venta
-        console.log("Detalles de la venta:", JSON.stringify(response.data, null, 2)); // Imprimir en consola
+        //console.log("Detalles de la venta:", JSON.stringify(response.data, null, 2)); // Imprimir en consola
         const imagen = response.data[0]?.detalle_pago_ventas_stands[0]?.imagenTransferencia || null;
         setImagenBase64(imagen); // Establecer la imagen Base64
       } else {
@@ -960,7 +960,7 @@ function Ventas() {
                       title="Editar Venta"
                       onClick={() => {
                         if (checkPermission('Editar venta stand', 'No tienes permisos para editar venta stand')) {
-                          console.log("Datos de la venta a editar:", JSON.stringify(venta, null, 2));
+                          //console.log("Datos de la venta a editar:", JSON.stringify(venta, null, 2));
                           handleEditVenta(venta.idVenta);
                         }
                       }}

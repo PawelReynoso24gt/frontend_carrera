@@ -60,7 +60,7 @@ function AsignacionStands() {
     try {
       const response = await axios.get("http://localhost:5000/asignacion_stands/voluntarios_por_stand");
       if (Array.isArray(response.data)) {
-        console.log("Asignaciones recibidas:", response.data); 
+        //console.log("Asignaciones recibidas:", response.data); 
         setAsignaciones(response.data);
         setLoading(false);
       } else {

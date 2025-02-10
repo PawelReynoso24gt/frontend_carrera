@@ -72,7 +72,7 @@ function DetalleStands() {
       if (hasViewPermission) {
         fetchDetalleStands();
       } else {
-        console.log(hasViewPermission)
+        //console.log(hasViewPermission)
         checkPermission('Ver inventario de stands', 'No tienes permisos para ver inventario de stands');
       }
     }
