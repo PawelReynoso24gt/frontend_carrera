@@ -30,7 +30,7 @@ function Layout({ children }) {
   useEffect(() => {
     const checkPasswordChange = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/usuarios/verify", {
+        const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/verify", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`, // Incluye el token de autenticación
           },

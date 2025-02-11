@@ -16,7 +16,7 @@ function SignUpForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/usuarios", {
+      const response = await axios.post("https://api.voluntariadoayuvi.com/usuarios", {
         usuario,
         contrasenia: password,
         idRol: 1, // Puedes ajustar el rol según sea necesario

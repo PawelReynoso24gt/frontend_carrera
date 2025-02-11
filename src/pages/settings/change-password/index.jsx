@@ -101,7 +101,7 @@ function ChangePassword() {
       }
 
       // Enviar la solicitud al backend con el token en el encabezado
-      const response = await fetchWithToken(`http://localhost:5000/usuarios/${idUsuario}/contrasenia`, {
+      const response = await fetchWithToken(`https://api.voluntariadoayuvi.com/usuarios/${idUsuario}/contrasenia`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

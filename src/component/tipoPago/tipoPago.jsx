@@ -25,7 +25,7 @@ function TipoPago() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -67,7 +67,7 @@ function TipoPago() {
 
   const fetchTiposPago = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipospagos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/tipospagos");
       setTiposPago(response.data);
       setFilteredTiposPago(response.data); // Inicializa filteredTiposPago
     } catch (error) {
@@ -78,7 +78,7 @@ function TipoPago() {
   const fetchActiveTiposPago = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/tipopago/activas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/tipopago/activas");
       setTiposPago(response.data);
       setFilteredTiposPago(response.data);
     } else {
@@ -92,7 +92,7 @@ function TipoPago() {
   const fetchInactiveTiposPago = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/tipopago/inactivas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/tipopago/inactivas");
       setTiposPago(response.data);
       setFilteredTiposPago(response.data);
     } else {
@@ -124,12 +124,12 @@ function TipoPago() {
     try {
       if (editingTipoPago) {
         await axios.put(
-          `http://localhost:5000/tipopagos/${editingTipoPago.idTipoPago}`,
+          `https://api.voluntariadoayuvi.com/tipopagos/${editingTipoPago.idTipoPago}`,
           newTipoPago
         );
         setAlertMessage("Tipo de pago actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/tipopagos/create", newTipoPago);
+        await axios.post("https://api.voluntariadoayuvi.com/tipopagos/create", newTipoPago);
         setAlertMessage("Tipo de pago creado con éxito");
       }
       fetchTiposPago();
@@ -143,7 +143,7 @@ function TipoPago() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/tipopagos/${id}`, {
+      await axios.put(`https://api.voluntariadoayuvi.com/tipopagos/${id}`, {
         estado: nuevoEstado,
       });
       fetchTiposPago();

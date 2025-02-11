@@ -31,7 +31,7 @@ function Talonarios() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -73,7 +73,7 @@ function Talonarios() {
 
   const fetchTalonarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/talonarios");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/talonarios");
       setTalonarios(response.data);
       setFilteredTalonarios(response.data);
     } catch (error) {
@@ -83,7 +83,7 @@ function Talonarios() {
 
   const fetchRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/rifas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/rifas");
       setRifas(response.data);
     } catch (error) {
       console.error("Error fetching rifas:", error);
@@ -93,7 +93,7 @@ function Talonarios() {
   const fetchActiveTalonarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/talonarios/activos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/talonarios/activos");
       setTalonarios(response.data);
       setFilteredTalonarios(response.data);
     } else {
@@ -107,7 +107,7 @@ function Talonarios() {
   const fetchInactiveTalonarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/talonarios/inactivos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/talonarios/inactivos");
       setTalonarios(response.data);
       setFilteredTalonarios(response.data);
     } else {
@@ -180,14 +180,14 @@ function Talonarios() {
         // console.log(`Updating talonario with ID ${editingTalonario.idTalonario}`);
         // console.log("Data to update:", updatedTalonario);
         await axios.put(
-          `http://localhost:5000/talonarios/update/${editingTalonario.idTalonario}`,
+          `https://api.voluntariadoayuvi.com/talonarios/update/${editingTalonario.idTalonario}`,
           updatedTalonario
         );
         setAlertMessage("Talonario actualizado con éxito");
       } else {
         // console.log("Creating new talonario");
         // console.log("Data to create:", updatedTalonario);
-        await axios.post("http://localhost:5000/talonarios/create", updatedTalonario);
+        await axios.post("https://api.voluntariadoayuvi.com/talonarios/create", updatedTalonario);
         setAlertMessage("Talonario creado con éxito");
       }
       fetchTalonarios();
@@ -201,7 +201,7 @@ function Talonarios() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/talonarios/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/talonarios/update/${id}`, { estado: nuevoEstado });
       fetchTalonarios();
       setAlertMessage(
         `Talonario ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

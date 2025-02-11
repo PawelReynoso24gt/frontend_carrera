@@ -31,7 +31,7 @@ function Comisiones() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -74,7 +74,7 @@ function Comisiones() {
 
   const fetchComisiones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/comisiones");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones");
       setComisiones(response.data);
       setFilteredComisiones(response.data);
     } catch (error) {
@@ -84,7 +84,7 @@ function Comisiones() {
 
   const fetchDetallesHorarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/detalle_horarios/comisiones"); // Endpoint para obtener todos los detalles
+      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_horarios/comisiones"); // Endpoint para obtener todos los detalles
       setDetallesHorarios(response.data);
     } catch (error) {
       console.error("Error fetching detalle horarios:", error);
@@ -93,7 +93,7 @@ function Comisiones() {
 
   const fetchEventos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/eventos");
       setEventos(response.data);
     } catch (error) {
       console.error("Error fetching eventos:", error);
@@ -103,7 +103,7 @@ function Comisiones() {
   const fetchActiveComisiones = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/comisiones/activos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones/activos");
       setFilteredComisiones(response.data);
     } else {
       checkPermission('Ver comisiones', 'No tienes permisos para ver comisiones')
@@ -116,7 +116,7 @@ function Comisiones() {
   const fetchInactiveComisiones = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/comisiones/inactivos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones/inactivos");
       setFilteredComisiones(response.data);
     } else {
       checkPermission('Ver comisiones', 'No tienes permisos para ver comisiones')
@@ -175,12 +175,12 @@ function Comisiones() {
     try {
       if (editingComision) {
         await axios.put(
-          `http://localhost:5000/comisiones/update/${editingComision.idComision}`,
+          `https://api.voluntariadoayuvi.com/comisiones/update/${editingComision.idComision}`,
           newComision
         );
         setAlertMessage("Comisión actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/comisiones/create", newComision);
+        await axios.post("https://api.voluntariadoayuvi.com/comisiones/create", newComision);
         setAlertMessage("Comisión creada con éxito");
       }
       fetchComisiones();
@@ -194,7 +194,7 @@ function Comisiones() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/comisiones/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/comisiones/update/${id}`, { estado: nuevoEstado });
       fetchComisiones();
       setAlertMessage(`Comisión ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
       setShowAlert(true);

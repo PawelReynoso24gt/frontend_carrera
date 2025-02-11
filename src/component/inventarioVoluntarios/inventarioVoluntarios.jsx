@@ -34,7 +34,7 @@ function DetalleStandsVoluntarios() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -84,11 +84,11 @@ function DetalleStandsVoluntarios() {
   const fetchDetalleStands = async () => {
     try {
       // Obtén los detalles de stands
-      const response = await axios.get("http://localhost:5000/detalle_stands");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_stands");
       const allDetalleStands = response.data;
 
       // Obtén los stands
-      const standsResponse = await axios.get("http://localhost:5000/stand");
+      const standsResponse = await axios.get("https://api.voluntariadoayuvi.com/stand");
       const allStands = standsResponse.data;
 
       // Filtrar los stands que cumplen con la condición
@@ -110,7 +110,7 @@ function DetalleStandsVoluntarios() {
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/productos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/productos");
       setProductos(response.data);
     } catch (error) {
       console.error("Error fetching productos:", error);
@@ -119,7 +119,7 @@ function DetalleStandsVoluntarios() {
 
   const fetchStands = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/stand");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/stand");
 
       // Filtramos los stands que cumplen con las condiciones
       const filteredStands = response.data.filter(
@@ -136,13 +136,13 @@ function DetalleStandsVoluntarios() {
     try {
       let allActiveDetalleStands = [];
       if (hasViewPermission) {
-        const response = await axios.get("http://localhost:5000/detalle_stands/activos");
+        const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_stands/activos");
         allActiveDetalleStands = response.data;
       } else {
         checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
       }
       // Obtener los stands
-      const standsResponse = await axios.get("http://localhost:5000/stand");
+      const standsResponse = await axios.get("https://api.voluntariadoayuvi.com/stand");
       const allStands = standsResponse.data;
 
       // Filtrar los stands que cumplen con la condición
@@ -166,13 +166,13 @@ function DetalleStandsVoluntarios() {
     try {
       let allInactiveDetalleStands = [];
       if (hasViewPermission) {
-        const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
+        const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_stands/inactivos");
         allInactiveDetalleStands = response.data;
       } else {
         checkPermission('Ver inventario de voluntarios', 'No tienes permisos para ver inventario de voluntarios');
       }
       // Obtener los stands
-      const standsResponse = await axios.get("http://localhost:5000/stand");
+      const standsResponse = await axios.get("https://api.voluntariadoayuvi.com/stand");
       const allStands = standsResponse.data;
 
       // Filtrar los stands que cumplen con la condición
@@ -232,7 +232,7 @@ function DetalleStandsVoluntarios() {
     if (!idProducto) return;
 
     try {
-      const response = await axios.get(`http://localhost:5000/productos/${idProducto}`);
+      const response = await axios.get(`https://api.voluntariadoayuvi.com/productos/${idProducto}`);
       setSelectedProduct(response.data); // Actualizar con datos completos
       setShowProductModal(true); // Mostrar el modal
     } catch (error) {
@@ -287,12 +287,12 @@ function DetalleStandsVoluntarios() {
 
       if (editingDetalleStand) {
         await axios.put(
-          `http://localhost:5000/detalle_stands/update/${editingDetalleStand.idDetalleStands}`,
+          `https://api.voluntariadoayuvi.com/detalle_stands/update/${editingDetalleStand.idDetalleStands}`,
           standData
         );
         setMessageModalContent("Información actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/detalle_stands/create", standData);
+        await axios.post("https://api.voluntariadoayuvi.com/detalle_stands/create", standData);
         setMessageModalContent("Producto creado con éxito");
       }
 
@@ -314,7 +314,7 @@ function DetalleStandsVoluntarios() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/detalle_stands/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/detalle_stands/update/${id}`, { estado: nuevoEstado });
       fetchDetalleStands();
       setMessageModalContent(
         `Producto ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

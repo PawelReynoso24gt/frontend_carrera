@@ -31,7 +31,7 @@ function UsuariosAdminComponent() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -79,7 +79,7 @@ function UsuariosAdminComponent() {
   const fetchActiveUsuarios = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get('http://localhost:5000/usuarios/activos');
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/activos');
         const usuariosActivos = response.data.filter(usuario => usuario.estado === 1);
         setUsuarios(usuariosActivos);
         setFilteredUsuarios(usuariosActivos);
@@ -95,7 +95,7 @@ function UsuariosAdminComponent() {
   const fetchInactiveUsuarios = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get('http://localhost:5000/usuarios');
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios');
         const usuariosInactivos = response.data.filter(usuario => usuario.estado === 0);
         setUsuarios(usuariosInactivos);
         setFilteredUsuarios(usuariosInactivos);
@@ -110,7 +110,7 @@ function UsuariosAdminComponent() {
 
   const fetchPersonas = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/personas');
+      const response = await axios.get('https://api.voluntariadoayuvi.com/personas');
       setPersonas(response.data);
     } catch (error) {
       console.error('Error fetching personas:', error);
@@ -119,7 +119,7 @@ function UsuariosAdminComponent() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/sedes');
+      const response = await axios.get('https://api.voluntariadoayuvi.com/sedes');
       setSedes(response.data);
     } catch (error) {
       console.error('Error fetching sedes:', error);
@@ -128,7 +128,7 @@ function UsuariosAdminComponent() {
 
   const fetchRoles = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/roles');
+      const response = await axios.get('https://api.voluntariadoayuvi.com/roles');
       setRoles(response.data);
     } catch (error) {
       console.error('Error fetching roles:', error);
@@ -184,10 +184,10 @@ function UsuariosAdminComponent() {
     e.preventDefault();
     try {
       if (editingUsuario) {
-        await axios.put(`http://localhost:5000/usuarios/${editingUsuario.idUsuario}`, newUsuario);
+        await axios.put(`https://api.voluntariadoayuvi.com/usuarios/${editingUsuario.idUsuario}`, newUsuario);
         setAlertMessage('Usuario actualizado con éxito');
       } else {
-        await axios.post('http://localhost:5000/usuarios', newUsuario);
+        await axios.post('https://api.voluntariadoayuvi.com/usuarios', newUsuario);
         setAlertMessage('Usuario creado con éxito');
       }
       filter === 'activos' ? fetchActiveUsuarios() : fetchInactiveUsuarios();
@@ -201,7 +201,7 @@ function UsuariosAdminComponent() {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:5000/usuarios/${editingUsuario.idUsuario}/reset`, {
+      await axios.put(`https://api.voluntariadoayuvi.com/usuarios/${editingUsuario.idUsuario}/reset`, {
         newPassword,
       });
       setAlertMessage('Contraseña reseteada con éxito');
@@ -217,7 +217,7 @@ function UsuariosAdminComponent() {
   const toggleUsuarioEstado = async (id, currentEstado) => {
     try {
       const newEstado = currentEstado === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/usuarios/${id}`, { estado: newEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/usuarios/${id}`, { estado: newEstado });
       setAlertMessage(`Usuario ${newEstado === 1 ? 'activado' : 'desactivado'} con éxito`);
       setShowAlert(true);
       filter === 'activos' ? fetchActiveUsuarios() : fetchInactiveUsuarios();

@@ -17,8 +17,8 @@ function mercanciaVoluntariosComponent() {
 
   const fetchProductosConDetalle = async () => {
     try {
-      const responseProductos = await axios.get("http://localhost:5000/productos");
-      const responseDetalles = await axios.get("http://localhost:5000/detalle_stands");
+      const responseProductos = await axios.get("https://api.voluntariadoayuvi.com/productos");
+      const responseDetalles = await axios.get("https://api.voluntariadoayuvi.com/detalle_stands");
 
       const productosCombinados = responseProductos.data.map((producto) => {
         const detalle = responseDetalles.data.find(
@@ -50,7 +50,7 @@ function mercanciaVoluntariosComponent() {
     }
 
     try {
-      await axios.put(`http://localhost:5000/detalle_stands/update/${idDetalleStands}`, {
+      await axios.put(`https://api.voluntariadoayuvi.com/detalle_stands/update/${idDetalleStands}`, {
         cantidad: nuevaCantidad,
       });
       alert("Stock actualizado con éxito.");

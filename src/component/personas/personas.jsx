@@ -39,7 +39,7 @@ function Personas() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -83,8 +83,8 @@ function Personas() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const departamentosResponse = await axios.get('http://localhost:5000/departamentos');
-        const municipiosResponse = await axios.get('http://localhost:5000/municipios');
+        const departamentosResponse = await axios.get('https://api.voluntariadoayuvi.com/departamentos');
+        const municipiosResponse = await axios.get('https://api.voluntariadoayuvi.com/municipios');
         setDepartamentos(departamentosResponse.data);
         setAllMunicipios(municipiosResponse.data); // Guardar todos los municipios
       } catch (error) {
@@ -98,7 +98,7 @@ function Personas() {
 
   const fetchPersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/personas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/personas");
       setPersonas(response.data);
       setFilteredPersonas(response.data);
     } catch (error) {
@@ -108,7 +108,7 @@ function Personas() {
 
   const fetchMunicipios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/municipios");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/municipios");
       setMunicipios(response.data);
     } catch (error) {
       console.error("Error fetching municipios:", error);
@@ -128,7 +128,7 @@ function Personas() {
 
   const fetchActivePersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/personas/activos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/personas/activos");
       setFilteredPersonas(response.data);
     } catch (error) {
       console.error("Error fetching active personas:", error);
@@ -137,7 +137,7 @@ function Personas() {
 
   const fetchInactivePersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/personas/inactivos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/personas/inactivos");
       setFilteredPersonas(response.data);
     } catch (error) {
       console.error("Error fetching inactive personas:", error);
@@ -229,12 +229,12 @@ function Personas() {
     try {
       if (editingPersona) {
         await axios.put(
-          `http://localhost:5000/personas/update/${editingPersona.idPersona}`,
+          `https://api.voluntariadoayuvi.com/personas/update/${editingPersona.idPersona}`,
           formData
         );
         setAlertMessage("Persona actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/personas/create", formData);
+        await axios.post("https://api.voluntariadoayuvi.com/personas/create", formData);
         setAlertMessage("Persona creada con éxito");
       }
       fetchPersonas();
@@ -248,7 +248,7 @@ function Personas() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/personas/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/personas/update/${id}`, { estado: nuevoEstado });
       fetchPersonas();
       setAlertMessage(
         `Persona ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`

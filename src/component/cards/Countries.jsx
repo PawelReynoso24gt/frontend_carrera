@@ -10,7 +10,7 @@ function Countries() {
 
   useEffect(() => {
     const token = localStorage.getItem("token"); // Obtén el token del localStorage
-    fetch("http://localhost:5000/recaudacion_evento", {
+    fetch("https://api.voluntariadoayuvi.com/recaudacion_evento", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}` // Incluye el token en los encabezados

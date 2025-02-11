@@ -19,7 +19,7 @@ function ReporteTecnico() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -39,7 +39,7 @@ function ReporteTecnico() {
 
         setAlerta("");
         const response = await axios.get(
-          `http://localhost:5000/situaciones/reporte?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
+          `https://api.voluntariadoayuvi.com/situaciones/reporte?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
         );
 
         const data = response.data.reporte;
@@ -53,7 +53,7 @@ function ReporteTecnico() {
 
     const fetchLoggedUser = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/usuarios/me", {
+        const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },

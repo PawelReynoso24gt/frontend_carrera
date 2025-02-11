@@ -20,7 +20,7 @@ function AutorizacionTalonarios() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -63,7 +63,7 @@ function AutorizacionTalonarios() {
 
   const fetchSolicitudes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/solicitudes");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/solicitudes");
       setSolicitudes(response.data);
       //console.log("Solicitudes obtenidas:", response.data);
     } catch (error) {
@@ -92,7 +92,7 @@ function AutorizacionTalonarios() {
     };
 
     try {
-      const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      const response = await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
       return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
       console.error("Error logging bitacora:", error);
@@ -110,7 +110,7 @@ function AutorizacionTalonarios() {
     //console.log("Datos enviados para crear la notificación:", notificationData);
 
     try {
-      await axios.post("http://localhost:5000/notificaciones/create", notificationData);
+      await axios.post("https://api.voluntariadoayuvi.com/notificaciones/create", notificationData);
     } catch (error) {
       console.error("Error creating notification:", error);
     }
@@ -118,7 +118,7 @@ function AutorizacionTalonarios() {
 
   const getVoluntario = async (idVoluntario) => {
     try {
-      const response = await axios.get(`http://localhost:5000/voluntarios/${idVoluntario}`);
+      const response = await axios.get(`https://api.voluntariadoayuvi.com/voluntarios/${idVoluntario}`);
       return response.data;
     } catch (error) {
       console.error(`Error al obtener el voluntario ${idVoluntario}:`, error);
@@ -129,10 +129,10 @@ function AutorizacionTalonarios() {
   const updateSolicitud = async (idSolicitud, estado) => {
     try {
       // Actualizar estado de la solicitud
-      await axios.put(`http://localhost:5000/solicitudes/${idSolicitud}`, { estado });
+      await axios.put(`https://api.voluntariadoayuvi.com/solicitudes/${idSolicitud}`, { estado });
 
       // Obtener nuevamente la solicitud completa
-      const responseSolicitud = await axios.get(`http://localhost:5000/solicitudes/${idSolicitud}`);
+      const responseSolicitud = await axios.get(`https://api.voluntariadoayuvi.com/solicitudes/${idSolicitud}`);
       //console.log("API Response Solicitud:", responseSolicitud);
 
       const solicitud = responseSolicitud.data;

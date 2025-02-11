@@ -24,7 +24,7 @@ function PermisosRolesComponent() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -48,7 +48,7 @@ function PermisosRolesComponent() {
   // Obtener módulos desde el backend
   const fetchModulos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/modulos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/modulos");
       setModulos(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching modulos:", error);
@@ -67,7 +67,7 @@ function PermisosRolesComponent() {
   // Obtener roles desde el backend
   const fetchRoles = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/roles");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/roles");
       setRoles(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching roles:", error);
@@ -77,7 +77,7 @@ function PermisosRolesComponent() {
   // Obtener todos los permisos disponibles desde el backend
   const fetchPermisos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/permisos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/permisos");
       setPermisos(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching permisos:", error);
@@ -88,7 +88,7 @@ function PermisosRolesComponent() {
   const fetchAssignedPermisos = async (roleId) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/asignacionPermisos?roleId=${roleId}`
+        `https://api.voluntariadoayuvi.com/asignacionPermisos?roleId=${roleId}`
       );
   
       const permisosDelRol = response.data.filter(
@@ -168,7 +168,7 @@ function PermisosRolesComponent() {
         (permiso) => permiso.estado !== permiso.originalEstado // Solo enviar los que cambiaron
       );
 
-      await axios.post("http://localhost:5000/asignacionPermisos/update", {
+      await axios.post("https://api.voluntariadoayuvi.com/asignacionPermisos/update", {
         roleId: selectedRole.idRol,
         permisos: permisosToSend,
       });

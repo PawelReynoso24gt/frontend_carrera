@@ -23,7 +23,7 @@ function CategoriaBitacoras() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -65,7 +65,7 @@ function CategoriaBitacoras() {
 
   const fetchCategorias = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/categoria_bitacoras");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/categoria_bitacoras");
       setCategorias(response.data);
       setFilteredCategorias(response.data);
     } catch (error) {
@@ -106,12 +106,12 @@ function CategoriaBitacoras() {
     try {
       if (editingCategoria) {
         await axios.put(
-          `http://localhost:5000/categoria_bitacoras/update/${editingCategoria.idCategoriaBitacora}`,
+          `https://api.voluntariadoayuvi.com/categoria_bitacoras/update/${editingCategoria.idCategoriaBitacora}`,
           newCategoria
         );
         setAlertMessage("Categoría de bitácora actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/categoria_bitacoras/create", newCategoria);
+        await axios.post("https://api.voluntariadoayuvi.com/categoria_bitacoras/create", newCategoria);
         setAlertMessage("Categoría de bitácora creada con éxito");
       }
       fetchCategorias();
@@ -124,7 +124,7 @@ function CategoriaBitacoras() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/categoria_bitacoras/delete/${id}`);
+      await axios.delete(`https://api.voluntariadoayuvi.com/categoria_bitacoras/delete/${id}`);
       fetchCategorias();
       setAlertMessage("Categoría de bitácora eliminada correctamente");
       setShowAlert(true);

@@ -60,7 +60,7 @@ function Pedidos() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -119,7 +119,7 @@ function Pedidos() {
 
   const fetchDetallePedido = async (idPedido) => {
     try {
-      const response = await axios.get(`http://localhost:5000/detalle_pedido/${idPedido}`);
+      const response = await axios.get(`https://api.voluntariadoayuvi.com/detalle_pedido/${idPedido}`);
       setDetallePedido(response.data.pedido);
       setShowDetalleModal(true);
     } catch (error) {
@@ -129,7 +129,7 @@ function Pedidos() {
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/productos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/productos");
       setProductos(response.data);
     } catch (error) {
       console.error("Error fetching productos:", error);
@@ -139,7 +139,7 @@ function Pedidos() {
 
   const fetchPedidos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/pedidos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/pedidos");
       setPedidos(response.data);
       setFilteredPedidos(response.data);
     } catch (error) {
@@ -150,7 +150,7 @@ function Pedidos() {
   const fetchActivePedidos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/pedidos/activas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/pedidos/activas");
       setPedidos(response.data);
       setFilteredPedidos(response.data);
     } else {
@@ -164,7 +164,7 @@ function Pedidos() {
   const fetchInactivePedidos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/pedidos/inactivas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/pedidos/inactivas");
       setPedidos(response.data);
       setFilteredPedidos(response.data);
     } else {
@@ -177,7 +177,7 @@ function Pedidos() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes");
       setSedes(response.data);
     } catch (error) {
       console.error("Error fetching sedes:", error);
@@ -186,7 +186,7 @@ function Pedidos() {
 
   const fetchUsuarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/usuarios");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios");
       setUsuarios(response.data);
     } catch (error) {
       console.error("Error fetching usuarios:", error);
@@ -243,7 +243,7 @@ function Pedidos() {
     };
 
     try {
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
@@ -260,13 +260,13 @@ function Pedidos() {
     try {
       if (editingPedido) {
         await axios.put(
-          `http://localhost:5000/pedidosCompletos/${editingPedido.idPedido}`,
+          `https://api.voluntariadoayuvi.com/pedidosCompletos/${editingPedido.idPedido}`,
           pedidoConDetalle
         );
         setAlertMessage("Pedido actualizado con éxito");
         logBitacora(`Actualizó el pedido #${editingPedido.idPedido}`, 14);
       } else {
-        await axios.post("http://localhost:5000/pedidosCompletos", pedidoConDetalle);
+        await axios.post("https://api.voluntariadoayuvi.com/pedidosCompletos", pedidoConDetalle);
         setAlertMessage("Pedido creado con éxito");
         logBitacora("Creó un nuevo pedido", 10);
       }
@@ -282,7 +282,7 @@ function Pedidos() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/pedidos/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/pedidos/${id}`, { estado: nuevoEstado });
       fetchPedidos();
       setAlertMessage(
         `Pedido ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

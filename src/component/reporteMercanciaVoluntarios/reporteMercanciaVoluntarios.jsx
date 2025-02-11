@@ -18,7 +18,7 @@ function ReporteMercanciaVoluntarios() {
     const fetchReporte = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/reporteVoluntarios/getReporte?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
+          `https://api.voluntariadoayuvi.com/reporteVoluntarios/getReporte?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
         );
         setReporte(response.data.reporte || []);
         setTotales(response.data.totales || { totalSubTotal: 0, totalDonaciones: 0 });
@@ -30,7 +30,7 @@ function ReporteMercanciaVoluntarios() {
 
     const fetchLoggedUser = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/usuarios/me", {
+        const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },

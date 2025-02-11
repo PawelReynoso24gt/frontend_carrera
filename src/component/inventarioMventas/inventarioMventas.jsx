@@ -45,7 +45,7 @@ function DetalleStands() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -89,7 +89,7 @@ function DetalleStands() {
 
   const fetchDetalleStands = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/detalle_stands");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_stands");
       setDetalleStands(response.data);
     } catch (error) {
       console.error("Error fetching detalle stands:", error);
@@ -98,7 +98,7 @@ function DetalleStands() {
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/productos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/productos");
       setProductos(response.data);
     } catch (error) {
       console.error("Error fetching productos:", error);
@@ -108,7 +108,7 @@ function DetalleStands() {
   // Función para obtener stands
   const fetchStands = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/stand");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/stand");
       setStands(response.data);
     } catch (error) {
       console.error("Error fetching stands:", error);
@@ -118,7 +118,7 @@ function DetalleStands() {
   const fetchActiveDetalleStands = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("http://localhost:5000/detalle_stands/activos");
+        const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_stands/activos");
         setDetalleStands(response.data);
         setFilteredDetalleStands(response.data);
       } else {
@@ -132,7 +132,7 @@ function DetalleStands() {
   const fetchInactiveDetalleStands = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("http://localhost:5000/detalle_stands/inactivos");
+        const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_stands/inactivos");
         setDetalleStands(response.data);
         setFilteredDetalleStands(response.data);
       } else {
@@ -182,7 +182,7 @@ function DetalleStands() {
     if (!idProducto) return;
 
     try {
-      const response = await axios.get(`http://localhost:5000/productos/${idProducto}`);
+      const response = await axios.get(`https://api.voluntariadoayuvi.com/productos/${idProducto}`);
       setSelectedProduct(response.data); // Actualizar con datos completos
       setShowProductModal(true); // Mostrar el modal
     } catch (error) {
@@ -228,12 +228,12 @@ function DetalleStands() {
 
       if (editingDetalleStand) {
         await axios.put(
-          `http://localhost:5000/detalle_stands/update/${editingDetalleStand.idDetalleStands}`,
+          `https://api.voluntariadoayuvi.com/detalle_stands/update/${editingDetalleStand.idDetalleStands}`,
           newDetalleStand
         );
         setMessageModalContent("Detalle Stand actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/detalle_stands/create", newDetalleStand);
+        await axios.post("https://api.voluntariadoayuvi.com/detalle_stands/create", newDetalleStand);
         setMessageModalContent("Detalle Stand creado con éxito");
       }
 
@@ -255,7 +255,7 @@ function DetalleStands() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/detalle_stands/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/detalle_stands/update/${id}`, { estado: nuevoEstado });
       fetchDetalleStands();
       setMessageModalContent(
         `Detalle Stand ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

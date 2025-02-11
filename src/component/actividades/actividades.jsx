@@ -33,7 +33,7 @@ function Actividades() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -67,7 +67,7 @@ function Actividades() {
   useEffect(() => {
     const fetchEventos = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/eventos");
+        const response = await axios.get("https://api.voluntariadoayuvi.com/eventos");
         setEventos(response.data);
       } catch (error) {
         console.error("Error fetching eventos:", error);
@@ -89,7 +89,7 @@ function Actividades() {
   const fetchComisionesPorEvento = async (eventoId) => {
     try {
       setComisionesPorEvento([]); // Resetear las comisiones antes de hacer la solicitud
-      const response = await axios.get("http://localhost:5000/comisiones/poreventoFr", {
+      const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones/poreventoFr", {
         params: { eventoId }
       });
       setComisionesPorEvento(response.data);
@@ -101,7 +101,7 @@ function Actividades() {
 
   const fetchActividades = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/actividades");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/actividades");
       setActividades(response.data);
       setFilteredActividades(response.data);
     } catch (error) {
@@ -111,7 +111,7 @@ function Actividades() {
 
   const fetchComisiones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/comisiones");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones");
       setComisiones(response.data);
     } catch (error) {
       console.error("Error fetching comisiones:", error);
@@ -121,7 +121,7 @@ function Actividades() {
   const fetchActiveActividades = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/actividades/activos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/actividades/activos");
       setFilteredActividades(response.data);
     } else {
       checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
@@ -134,7 +134,7 @@ function Actividades() {
   const fetchInactiveActividades = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/actividades/inactivos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/actividades/inactivos");
       setFilteredActividades(response.data);
     } else {
       checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
@@ -226,12 +226,12 @@ function Actividades() {
 
       if (editingActividad) {
         await axios.put(
-          `http://localhost:5000/actividades/update/${editingActividad.idActividad}`,
+          `https://api.voluntariadoayuvi.com/actividades/update/${editingActividad.idActividad}`,
           data
         );
         setAlertMessage("Actividad actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/actividades/create", data);
+        await axios.post("https://api.voluntariadoayuvi.com/actividades/create", data);
         setAlertMessage("Actividad creada con éxito");
       }
       fetchActividades();
@@ -245,7 +245,7 @@ function Actividades() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/actividades/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/actividades/update/${id}`, { estado: nuevoEstado });
       fetchActividades();
       setAlertMessage(
         `Actividad ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`

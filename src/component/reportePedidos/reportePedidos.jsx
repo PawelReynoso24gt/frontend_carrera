@@ -21,7 +21,7 @@ function ReportePedidos() {
         const fechaFinFormato = fechaFin.split("-").reverse().join("-");
 
         const response = await axios.get(
-          `http://localhost:5000/reportePedidos?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
+          `https://api.voluntariadoayuvi.com/reportePedidos?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
         );
         setPedidos(response.data.reporte);
         const pedidosActivos = response.data.reporte.filter(pedido => pedido.estado === 1); // Filtrar solo pedidos activos
@@ -35,7 +35,7 @@ function ReportePedidos() {
 
     const fetchLoggedUser = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/usuarios/me", {
+        const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
