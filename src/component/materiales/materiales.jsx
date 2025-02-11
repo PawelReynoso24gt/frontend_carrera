@@ -19,6 +19,11 @@ function MaterialesComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+  const [eventos, setEventos] = useState([]); // Estado para almacenar los eventos
+  const [comisionesPorEvento, setComisionesPorEvento] = useState([]); // Estado para almacenar las comisiones por evento
+  const [selectedEvento, setSelectedEvento] = useState(null); // Estado para el evento seleccionado
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -29,13 +34,42 @@ function MaterialesComponent() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        
+        const hasPermission =
+        response.data.permisos['Ver materiales']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchActiveMateriales();
+  }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchActiveMateriales();
+          } else {
+            checkPermission('Ver materiales', 'No tienes permisos para ver materiales');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+
+  useEffect(() => {
+    const fetchEventos = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/eventos"); // URL para obtener los eventos
+        setEventos(response.data);
+      } catch (error) {
+        console.error("Error fetching eventos:", error);
+      }
+    };
+  
+    fetchEventos();
   }, []);
 
   const checkPermission = (permission, message) => {
@@ -47,13 +81,30 @@ function MaterialesComponent() {
     return true;
   };
 
+  const fetchComisionesPorEvento = async (eventoId) => {
+    try {
+      setComisionesPorEvento([]); // Resetear las comisiones antes de hacer la solicitud
+      const response = await axios.get("http://localhost:5000/comisiones/poreventoFr", {
+        params: { eventoId },
+      });
+      setComisionesPorEvento(response.data);
+    } catch (error) {
+      console.error("Error fetching comisiones por evento:", error);
+      setComisionesPorEvento([]); // Asegurarse de que no haya comisiones en caso de error
+    }
+  };
+
   const fetchActiveMateriales = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/materiales/all');
       const activeMateriales = response.data.filter(material => material.estado === 1);
       setMateriales(activeMateriales);
       setFilteredMateriales(activeMateriales);
       setFilter('activos');
+    } else {
+      checkPermission('Ver materiales', 'No tienes permisos para ver materiales')
+    }
     } catch (error) {
       console.error('Error fetching active materiales:', error);
     }
@@ -61,11 +112,15 @@ function MaterialesComponent() {
 
   const fetchInactiveMateriales = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/materiales/all');
       const inactiveMateriales = response.data.filter(material => material.estado === 0);
       setMateriales(inactiveMateriales);
       setFilteredMateriales(inactiveMateriales);
       setFilter('inactivos');
+    } else {
+      checkPermission('Ver materiales', 'No tienes permisos para ver materiales')
+    }
     } catch (error) {
       console.error('Error fetching inactive materiales:', error);
     }
@@ -80,15 +135,48 @@ function MaterialesComponent() {
     setFilteredMateriales(filtered);
   };
 
-  const handleShowModal = (material = null) => {
+  const handleShowModal = async (material = null) => {
     setEditingMaterial(material);
-    setNewMaterial(material || { material: '', cantidad: '', descripcion: '', estado: 1, idComision: '' });
+  
+    if (material) {
+      //console.log("Material seleccionado para editar:", material);
+  
+      // Usar directamente el idEvento de la comisión asociada al material
+      const idEvento = material.comisione?.idEvento;
+      //console.log("ID del evento asociado al material:", idEvento);
+  
+      // Buscar el evento en la lista de eventos (opcional, si necesitas más detalles del evento)
+      const eventoAsociado = eventos.find((evento) => evento.idEvento === idEvento);
+      setSelectedEvento(eventoAsociado || null); // Guardar el evento asociado (si existe)
+  
+      // Cargar las comisiones asociadas al evento
+      await fetchComisionesPorEvento(idEvento);
+    } else {
+      // Si es un nuevo material, resetear el evento seleccionado y las comisiones
+      setSelectedEvento(null);
+      setComisionesPorEvento([]);
+    }
+  
+    // Establecer los datos del material en el formulario
+    setNewMaterial(
+      material || {
+        material: "",
+        cantidad: "",
+        descripcion: "",
+        estado: 1,
+        idComision: "",
+        idEvento: "",
+      }
+    );
+  
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingMaterial(null);
+    setSelectedEvento(null); // Resetear el evento seleccionado
+    setComisionesPorEvento([]); // Resetear las comisiones
   };
 
   const handleChange = (e) => {
@@ -415,17 +503,55 @@ function MaterialesComponent() {
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="idComision">
+              <Form.Group controlId="evento">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  ID Comisión
+                  Evento
                 </Form.Label>
                 <Form.Control
-                  type="number"
-                  name="idComision"
-                  value={newMaterial.idComision}
-                  onChange={handleChange}
+                  as="select"
+                  name="evento"
+                  value={selectedEvento ? selectedEvento.idEvento : ""}
+                  onChange={(e) => {
+                    const eventoId = e.target.value;
+                    const eventoSeleccionado = eventos.find((evento) => evento.idEvento === parseInt(eventoId));
+                    setSelectedEvento(eventoSeleccionado);
+                    fetchComisionesPorEvento(eventoId);
+                  }}
                   required
-                />
+                >
+                  <option value="">Seleccionar Evento</option>
+                  {eventos.map((evento) => (
+                    <option key={evento.idEvento} value={evento.idEvento}>
+                      {evento.nombreEvento}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+
+              <Form.Group controlId="comision">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Comisión
+                </Form.Label>
+                {comisionesPorEvento.length > 0 ? (
+                  <Form.Control
+                    as="select"
+                    name="idComision"
+                    value={newMaterial.idComision}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccionar Comisión</option>
+                    {comisionesPorEvento.map((comision) => (
+                      <option key={comision.idComision} value={comision.idComision}>
+                        {comision.comision}
+                      </option>
+                    ))}
+                  </Form.Control>
+                ) : (
+                  <Alert variant="info" style={{ marginTop: "10px", fontWeight: "bold" }}>
+                    No hay comisiones disponibles para este evento.
+                  </Alert>
+                )}
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>

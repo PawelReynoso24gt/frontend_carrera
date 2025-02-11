@@ -26,9 +26,12 @@ function Categorias() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -39,14 +42,29 @@ function Categorias() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver categorias']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchCategorias();
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchCategorias();
+          } else {
+            checkPermission('Ver categorias', 'No tienes permisos para ver categorias');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -56,7 +74,7 @@ function Categorias() {
     }
     return true;
   };
-  
+
 
   const fetchCategorias = async () => {
     try {
@@ -70,11 +88,15 @@ function Categorias() {
 
   const fetchActiveCategorias = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get(
         "http://localhost:5000/categorias/activas"
       );
       setCategorias(response.data);
       setFilteredCategorias(response.data);
+    } else {
+      checkPermission('Ver categorias', 'No tienes permisos para ver categorias')
+    }
     } catch (error) {
       console.error("Error fetching active categorias:", error);
     }
@@ -82,11 +104,15 @@ function Categorias() {
 
   const fetchInactiveCategorias = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get(
         "http://localhost:5000/categorias/inactivas"
       );
       setCategorias(response.data);
       setFilteredCategorias(response.data);
+    } else {
+      checkPermission('Ver categorias', 'No tienes permisos para ver categorias')
+    }
     } catch (error) {
       console.error("Error fetching inactive categorias:", error);
     }
@@ -455,17 +481,17 @@ function Categorias() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

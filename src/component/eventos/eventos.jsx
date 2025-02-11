@@ -12,12 +12,10 @@ import {
 } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 import { getUserDataFromToken } from "../../utils/jwtUtils";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
-// Utilidad para formatear fechas
-const formatDate = (date) => {
-  const options = { day: "2-digit", month: "2-digit", year: "numeric" };
-  return new Date(date).toLocaleDateString("es-ES", options);
-};
+
 
 function Eventos() {
   const [eventos, setEventos] = useState([]);
@@ -42,6 +40,9 @@ function Eventos() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // extraer el dato para idSede
   const sedeId = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
@@ -57,15 +58,30 @@ function Eventos() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+          response.data.permisos['Ver eventos']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchEventos();
     fetchSedes();
   }, []);
+
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchActiveEventos(); 
+      } else {
+        checkPermission('Ver eventos', 'No tienes permisos para ver eventos');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const logBitacora = async (descripcion, idCategoriaBitacora) => {
     const bitacoraData = {
@@ -74,7 +90,7 @@ function Eventos() {
       idUsuario,
       fechaHora: new Date()
     };
-  
+
     try {
       await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
@@ -103,9 +119,13 @@ function Eventos() {
 
   const fetchActiveEventos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos/activas");
-      setEventos(response.data);
-      setFilteredEventos(response.data);
+      if (hasViewPermission) {
+        const response = await axios.get("http://localhost:5000/eventos/activas");
+        setEventos(response.data);
+        setFilteredEventos(response.data);
+      } else {
+        checkPermission('Ver eventos', 'No tienes permisos para ver eventos')
+      }
     } catch (error) {
       console.error("Error fetching active eventos:", error);
     }
@@ -113,9 +133,13 @@ function Eventos() {
 
   const fetchInactiveEventos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos/inactivas");
-      setEventos(response.data);
-      setFilteredEventos(response.data);
+      if (hasViewPermission) {
+        const response = await axios.get("http://localhost:5000/eventos/inactivas");
+        setEventos(response.data);
+        setFilteredEventos(response.data);
+      } else {
+        checkPermission('Ver eventos', 'No tienes permisos para ver eventos')
+      }
     } catch (error) {
       console.error("Error fetching inactive eventos:", error);
     }
@@ -145,12 +169,9 @@ function Eventos() {
   const handleShowModal = (evento = null) => {
     if (evento) {
       // Convertir fechas al formato requerido por datetime-local
-      evento.fechaHoraInicio = new Date(evento.fechaHoraInicio)
-        .toISOString()
-        .slice(0, 16);
-      evento.fechaHoraFin = new Date(evento.fechaHoraFin)
-        .toISOString()
-        .slice(0, 16);
+      evento.fechaHoraInicio = format(parseISO(evento.fechaHoraInicio), "yyyy-MM-dd'T'HH:mm");
+      evento.fechaHoraFin = format(parseISO(evento.fechaHoraFin), "yyyy-MM-dd'T'HH:mm");
+
     }
 
     setEditingEvento(evento);
@@ -179,6 +200,34 @@ function Eventos() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const { nombreEvento, fechaHoraInicio, fechaHoraFin, descripcion, direccion, idSede } = newEvento;
+
+    // Expresiones regulares basadas en el backend
+    const regexNombreEvento = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/; // Solo letras y espacios
+    const regexDescripcion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/; // Letras, números, espacios y signos .,-
+    const regexDireccion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,#/-]+$/; // Dirección con signos comunes
+
+    // **Validaciones**
+
+    if (!regexNombreEvento.test(nombreEvento)) {
+      setErrorMessage("El nombre del evento solo debe contener letras y espacios.");
+      return;
+    }
+
+    if (new Date(fechaHoraInicio) >= new Date(fechaHoraFin)) {
+      setErrorMessage("La fecha de inicio debe ser anterior a la fecha de fin.");
+      return;
+    }
+    if (descripcion && !regexDescripcion.test(descripcion)) {
+      setErrorMessage("La descripción solo puede contener letras, números, espacios y los signos .,-");
+      return;
+    }
+    if (!regexDireccion.test(direccion)) {
+      setErrorMessage("La dirección solo puede contener letras, números, espacios y los signos ., #/-");
+      return;
+    }
+
     try {
       const data = {
         ...newEvento,
@@ -195,11 +244,12 @@ function Eventos() {
       } else {
         await axios.post("http://localhost:5000/eventos", newEvento);
         setAlertMessage("Evento creado con éxito");
-         // Log the create action in the bitacora
+        // Log the create action in the bitacora
         await logBitacora(`Evento ${newEvento.nombreEvento} creado`, 23);
       }
       fetchEventos();
       setShowAlert(true);
+      setErrorMessage("");
       handleCloseModal();
     } catch (error) {
       console.error("Error submitting evento:", error);
@@ -406,10 +456,10 @@ function Eventos() {
                 <td style={{ textAlign: "center" }}>{evento.idEvento}</td>
                 <td style={{ textAlign: "center" }}>{evento.nombreEvento}</td>
                 <td style={{ textAlign: "center" }}>
-                  {formatDate(evento.fechaHoraInicio)}
+                  {(evento.fechaHoraInicio ? format(parseISO(evento.fechaHoraInicio), "dd-MM-yyyy - hh:mm a") : "Sin fecha")}
                 </td>
                 <td style={{ textAlign: "center" }}>
-                  {formatDate(evento.fechaHoraFin)}
+                  {(evento.fechaHoraFin ? format(parseISO(evento.fechaHoraFin), "dd-MM-yyyy - hh:mm a") : "Sin fecha")}
                 </td>
                 <td style={{ textAlign: "center" }}>{evento.descripcion}</td>
                 <td style={{ textAlign: "center" }}>{evento.direccion}</td>
@@ -551,6 +601,20 @@ function Eventos() {
                   ))}
                 </Form.Control>
               </Form.Group>
+              {/* Campo de estado */}
+              <Form.Group controlId="estado">
+                <Form.Label>Estado</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="estado"
+                  value={newEvento.estado}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value={1}>Activo</option>
+                  <option value={0}>Inactivo</option>
+                </Form.Control>
+              </Form.Group>
               <Button
                 style={{
                   backgroundColor: "#007AC3",
@@ -564,6 +628,11 @@ function Eventos() {
               >
                 {editingEvento ? "Actualizar" : "Crear"}
               </Button>
+              {errorMessage && (
+                <Alert variant="danger" onClose={() => setErrorMessage("")} dismissible>
+                  {errorMessage}
+                </Alert>
+              )}
             </Form>
           </Modal.Body>
         </Modal>

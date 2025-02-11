@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 function Personas() {
   const [personas, setPersonas] = useState([]);
@@ -10,13 +12,16 @@ function Personas() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingPersona, setEditingPersona] = useState(null);
-  const [newPersona, setNewPersona] = useState({
+  const [departamentos, setDepartamentos] = useState([]);
+  const [allMunicipios, setAllMunicipios] = useState([]);
+  const [formData, setFormData] = useState({
     nombre: "",
     fechaNacimiento: "",
     telefono: "",
     domicilio: "",
     CUI: "",
     correo: "",
+    idDepartamento: "",
     idMunicipio: "",
     estado: 1,
   });
@@ -25,10 +30,70 @@ function Personas() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showValidationError, setShowValidationError] = useState(null); // Nuevo estado para validaciones
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
-    fetchPersonas();
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
+          },
+        });
+        setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+          response.data.permisos['Ver personas']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchMunicipios();
+  }, []);
+
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchPersonas();
+      } else {
+        checkPermission('Ver personas', 'No tienes permisos para ver eventos');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const departamentosResponse = await axios.get('http://localhost:5000/departamentos');
+        const municipiosResponse = await axios.get('http://localhost:5000/municipios');
+        setDepartamentos(departamentosResponse.data);
+        setAllMunicipios(municipiosResponse.data); // Guardar todos los municipios
+      } catch (error) {
+        console.error('Error al cargar los datos:', error);
+        setAlertMessage('No se pudieron cargar los datos.');
+        setShowAlert(true);
+      }
+    };
+    fetchData();
   }, []);
 
   const fetchPersonas = async () => {
@@ -48,6 +113,17 @@ function Personas() {
     } catch (error) {
       console.error("Error fetching municipios:", error);
     }
+  };
+
+  const handleDepartamentoChange = (idDepartamento) => {
+    // Actualizar el idDepartamento en formData y limpiar el idMunicipio
+    setFormData({ ...formData, idDepartamento, idMunicipio: '' });
+
+    // Filtrar los municipios según el idDepartamento seleccionado
+    const filteredMunicipios = allMunicipios.filter(
+      (municipio) => municipio.idDepartamento === parseInt(idDepartamento)
+    );
+    setMunicipios(filteredMunicipios);
   };
 
   const fetchActivePersonas = async () => {
@@ -83,18 +159,35 @@ function Personas() {
 
   const handleShowModal = (persona = null) => {
     setEditingPersona(persona);
-    setNewPersona(
-      persona || {
+    if (persona) {
+      // Verificar si persona tiene idDepartamento directamente, si no, obtenerlo desde municipio
+      const idDepartamento = persona.idDepartamento || (persona.municipio ? persona.municipio.idDepartamento : undefined);
+
+      handleDepartamentoChange(idDepartamento); // Filtrar municipios según el departamento
+
+      setFormData({
+        ...persona,
+        idDepartamento: idDepartamento,
+        idMunicipio: persona.idMunicipio,
+      });
+      // console.log("JSON de formData al editar:", {
+      //   ...persona,
+      //   idDepartamento: idDepartamento,
+      //   idMunicipio: persona.idMunicipio,
+      // });
+    } else {
+      setFormData({
         nombre: "",
         fechaNacimiento: "",
         telefono: "",
         domicilio: "",
         CUI: "",
         correo: "",
+        idDepartamento: "",
         idMunicipio: "",
         estado: 1,
-      }
-    );
+      });
+    }
     setShowModal(true);
   };
 
@@ -128,7 +221,7 @@ function Personas() {
       setShowValidationError(null);
     }
 
-    setNewPersona({ ...newPersona, [name]: value });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -137,11 +230,11 @@ function Personas() {
       if (editingPersona) {
         await axios.put(
           `http://localhost:5000/personas/update/${editingPersona.idPersona}`,
-          newPersona
+          formData
         );
         setAlertMessage("Persona actualizada con éxito");
       } else {
-        await axios.post("http://localhost:5000/personas/create", newPersona);
+        await axios.post("http://localhost:5000/personas/create", formData);
         setAlertMessage("Persona creada con éxito");
       }
       fetchPersonas();
@@ -271,7 +364,11 @@ function Personas() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear personas', 'No tienes permisos para crear personas')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Persona
           </Button>
@@ -322,8 +419,10 @@ function Personas() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
             marginTop: "20px",
+            overflow: "hidden",
+            textAlign: "center",
           }}
           //commit de cambios
         >
@@ -346,7 +445,7 @@ function Personas() {
               <tr key={persona.idPersona}>
                 <td>{persona.idPersona}</td>
                 <td>{persona.nombre}</td>
-                <td>{new Date(persona.fechaNacimiento).toLocaleDateString()}</td>
+                <td>{persona.fechaNacimiento ? format(parseISO(persona.fechaNacimiento), "dd/MM/yyyy") : "Sin fecha"}</td>
                 <td>{persona.telefono}</td>
                 <td>{persona.domicilio}</td>
                 <td>{persona.CUI}</td>
@@ -362,7 +461,11 @@ function Personas() {
                       fontSize: "20px",
                     }}
                     title="Editar"
-                    onClick={() => handleShowModal(persona)}
+                    onClick={() => {
+                      if (checkPermission('Editar persona', 'No tienes permisos para editar personas')) {
+                        handleShowModal(persona);
+                      }
+                    }}
                   />
                   {persona.estado ? (
                     <FaToggleOn
@@ -373,7 +476,11 @@ function Personas() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleEstado(persona.idPersona, persona.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar persona', 'No tienes permisos para desactivar personas')) {
+                          toggleEstado(persona.idPersona, persona.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -384,7 +491,11 @@ function Personas() {
                         fontSize: "20px",
                       }}
                       title="Activar"
-                      onClick={() => toggleEstado(persona.idPersona, persona.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar persona', 'No tienes permisos para activar personas')) {
+                          toggleEstado(persona.idPersona, persona.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -411,7 +522,7 @@ function Personas() {
                 <Form.Control
                   type="text"
                   name="nombre"
-                  value={newPersona.nombre}
+                  value={formData.nombre}
                   onChange={handleChange}
                   required
                 />
@@ -421,7 +532,7 @@ function Personas() {
                 <Form.Control
                   type="date"
                   name="fechaNacimiento"
-                  value={newPersona.fechaNacimiento}
+                  value={formData.fechaNacimiento}
                   onChange={handleChange}
                   required
                 />
@@ -431,7 +542,7 @@ function Personas() {
                 <Form.Control
                   type="text"
                   name="telefono"
-                  value={newPersona.telefono}
+                  value={formData.telefono}
                   onChange={handleChange}
                   required
                 />
@@ -441,7 +552,7 @@ function Personas() {
                 <Form.Control
                   type="text"
                   name="domicilio"
-                  value={newPersona.domicilio}
+                  value={formData.domicilio}
                   onChange={handleChange}
                   required
                 />
@@ -451,7 +562,7 @@ function Personas() {
                 <Form.Control
                   type="text"
                   name="CUI"
-                  value={newPersona.CUI}
+                  value={formData.CUI}
                   onChange={handleChange}
                   required
                 />
@@ -461,17 +572,35 @@ function Personas() {
                 <Form.Control
                   type="email"
                   name="correo"
-                  value={newPersona.correo}
+                  value={formData.correo}
                   onChange={handleChange}
                   required
                 />
               </Form.Group>
+              <Form.Group controlId="idDepartamento">
+                <Form.Label>Departamento</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idDepartamento"
+                  value={formData.idDepartamento}
+                  onChange={(e) => handleDepartamentoChange(e.target.value)}
+                  required
+                >
+                  <option value="">Seleccionar Departamento</option>
+                  {departamentos.map((departamento) => (
+                    <option key={departamento.idDepartamento} value={departamento.idDepartamento}>
+                      {departamento.departamento}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+
               <Form.Group controlId="idMunicipio">
                 <Form.Label>Municipio</Form.Label>
                 <Form.Control
                   as="select"
                   name="idMunicipio"
-                  value={newPersona.idMunicipio}
+                  value={formData.idMunicipio}
                   onChange={handleChange}
                   required
                 >
@@ -488,7 +617,7 @@ function Personas() {
                 <Form.Control
                   as="select"
                   name="estado"
-                  value={newPersona.estado}
+                  value={formData.estado}
                   onChange={handleChange}
                 >
                   <option value={1}>Activo</option>
@@ -515,6 +644,17 @@ function Personas() {
               </Button>
             </Form>
           </Modal.Body>
+        </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
         </Modal>
       </div>
     </>

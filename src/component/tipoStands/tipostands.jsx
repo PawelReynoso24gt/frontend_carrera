@@ -13,6 +13,11 @@ function TipoStandsComponent() {
   const [filter, setFilter] = useState('activos');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -23,14 +28,30 @@ function TipoStandsComponent() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver tipo stands']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
+
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchActiveTipoStands();
   }, []);
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchActiveTipoStands();
+        } else {
+          checkPermission('Ver tipo stands', 'No tienes permisos para ver tipo stands');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -44,9 +65,13 @@ function TipoStandsComponent() {
 
   const fetchActiveTipoStands = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/tipo_stands/activos');
       setTipoStands(response.data);
       setFilter('activos');
+    } else {
+      checkPermission('Ver tipo stands', 'No tienes permisos para ver tipo stands')
+    }
     } catch (error) {
       console.error('Error fetching active tipoStands:', error);
     }
@@ -54,11 +79,15 @@ function TipoStandsComponent() {
 
   const fetchInactiveTipoStands = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/tipo_stands', {
         params: { estado: 0 }
       });
       setTipoStands(response.data.filter(tipoStand => tipoStand.estado === 0));
       setFilter('inactivos');
+    } else {
+      checkPermission('Ver tipo stands', 'No tienes permisos para ver tipo stands')
+    }
     } catch (error) {
       console.error('Error fetching inactive tipoStands:', error);
     }
@@ -399,17 +428,17 @@ function TipoStandsComponent() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                       <Modal.Header closeButton>
-                        <Modal.Title>Permiso Denegado</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>{permissionMessage}</Modal.Body>
-                        <Modal.Footer>
-                        <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                          Aceptar
-                        </Button>
-                       </Modal.Footer>
-                    </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

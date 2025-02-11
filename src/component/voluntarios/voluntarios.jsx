@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 const formatDate = (date) => {
   const options = { day: "2-digit", month: "2-digit", year: "numeric" };
@@ -19,7 +21,7 @@ function Voluntarios() {
   const [newVoluntario, setNewVoluntario] = useState({
     codigoQR: "",
     fechaRegistro: "",
-    fechaSalida: "",
+    fechaSalida: null,
     estado: 1,
     idPersona: "",
   });
@@ -31,25 +33,42 @@ function Voluntarios() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
         const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`, 
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+          response.data.permisos['Ver voluntarios']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchVoluntarios();
     fetchPersonas();
   }, []);
+
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchVoluntarios();
+      } else {
+        checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -81,9 +100,13 @@ function Voluntarios() {
 
   const fetchActiveVoluntarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/voluntarios/activos");
-      setVoluntarios(response.data);
-      setFilteredVoluntarios(response.data);
+      if (hasViewPermission) {
+        const response = await axios.get("http://localhost:5000/voluntarios/activos");
+        setVoluntarios(response.data);
+        setFilteredVoluntarios(response.data);
+      } else {
+        checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios')
+      }
     } catch (error) {
       console.error("Error fetching active voluntarios:", error);
     }
@@ -91,9 +114,13 @@ function Voluntarios() {
 
   const fetchInactiveVoluntarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/voluntarios/inactivos");
-      setVoluntarios(response.data);
-      setFilteredVoluntarios(response.data);
+      if (hasViewPermission) {
+        const response = await axios.get("http://localhost:5000/voluntarios/inactivos");
+        setVoluntarios(response.data);
+        setFilteredVoluntarios(response.data);
+      } else {
+        checkPermission('Ver voluntarios', 'No tienes permisos para ver voluntarios')
+      }
     } catch (error) {
       console.error("Error fetching inactive voluntarios:", error);
     }
@@ -137,7 +164,7 @@ function Voluntarios() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewVoluntario({ ...newVoluntario, [name]: value });
+    setNewVoluntario({ ...newVoluntario, [name]: value === "" ? null : value });
   };
 
   const handleShowQRModal = (codigoQR) => {
@@ -157,7 +184,7 @@ function Voluntarios() {
       const voluntarioToSubmit = {
         ...newVoluntario,
         fechaRegistro: new Date(newVoluntario.fechaRegistro).toISOString().split('T')[0],
-        fechaSalida: new Date(newVoluntario.fechaSalida).toISOString().split('T')[0],
+        fechaSalida: newVoluntario.fechaSalida ? new Date(newVoluntario.fechaSalida).toISOString().split('T')[0] : null,
       };
 
       if (editingVoluntario) {
@@ -380,8 +407,10 @@ function Voluntarios() {
                     {voluntario.codigoQR}
                   </span>
                 </td>
-                <td style={{ textAlign: "center" }}>{formatDate(voluntario.fechaRegistro)}</td>
-                <td style={{ textAlign: "center" }}>{formatDate(voluntario.fechaSalida)}</td>
+                <td style={{ textAlign: "center" }}>{voluntario.fechaRegistro ? format(parseISO(voluntario.fechaRegistro), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td style={{ textAlign: "center" }}>
+                  {voluntario.fechaSalida ? format(parseISO(voluntario.fechaSalida), "dd-MM-yyyy") : "Sin fecha"}
+                </td>
                 <td style={{ textAlign: "center" }}>
                   {personas.find((persona) => persona.idPersona === voluntario.idPersona)?.nombre ||
                     "Desconocido"}
@@ -485,9 +514,8 @@ function Voluntarios() {
                 <Form.Control
                   type="date"
                   name="fechaSalida"
-                  value={newVoluntario.fechaSalida}
+                  value={newVoluntario.fechaSalida || ""}
                   onChange={handleChange}
-                  required
                 />
               </Form.Group>
               <Form.Group controlId="idPersona">
@@ -535,17 +563,17 @@ function Voluntarios() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

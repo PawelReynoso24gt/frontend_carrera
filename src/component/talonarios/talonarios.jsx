@@ -25,6 +25,8 @@ function Talonarios() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -35,15 +37,30 @@ function Talonarios() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver talonarios']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchTalonarios();
     fetchRifas();
   }, []);
+
+  useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchTalonarios();
+        } else {
+          checkPermission('Ver talonarios', 'No tienes permisos para ver talonarios');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -75,9 +92,13 @@ function Talonarios() {
 
   const fetchActiveTalonarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/talonarios/activos");
       setTalonarios(response.data);
       setFilteredTalonarios(response.data);
+    } else {
+      checkPermission('Ver talonarios', 'No tienes permisos para ver talonarios')
+    }
     } catch (error) {
       console.error("Error fetching active talonarios:", error);
     }
@@ -85,9 +106,13 @@ function Talonarios() {
 
   const fetchInactiveTalonarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/talonarios/inactivos");
       setTalonarios(response.data);
       setFilteredTalonarios(response.data);
+    } else {
+      checkPermission('Ver talonarios', 'No tienes permisos para ver talonarios')
+    }
     } catch (error) {
       console.error("Error fetching inactive talonarios:", error);
     }
@@ -114,6 +139,7 @@ function Talonarios() {
         idRifa: "",
       }
     );
+    // console.log("Editing talonario:", talonario);
     setShowModal(true);
   };
 
@@ -135,21 +161,33 @@ function Talonarios() {
         return;
       }
     }
-
+    // console.log(`Updating field ${name} to value ${value}`);
     setNewTalonario({ ...newTalonario, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Convertir idRifa a número
+    const updatedTalonario = {
+      ...newTalonario,
+      idRifa: Number(newTalonario.idRifa),
+    };
+    
     try {
+      // console.log("Submitting talonario:", updatedTalonario);
       if (editingTalonario) {
+        // console.log(`Updating talonario with ID ${editingTalonario.idTalonario}`);
+        // console.log("Data to update:", updatedTalonario);
         await axios.put(
           `http://localhost:5000/talonarios/update/${editingTalonario.idTalonario}`,
-          newTalonario
+          updatedTalonario
         );
         setAlertMessage("Talonario actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/talonarios/create", newTalonario);
+        // console.log("Creating new talonario");
+        // console.log("Data to create:", updatedTalonario);
+        await axios.post("http://localhost:5000/talonarios/create", updatedTalonario);
         setAlertMessage("Talonario creado con éxito");
       }
       fetchTalonarios();

@@ -51,8 +51,10 @@ function Pedidos() {
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [detallePedido, setDetallePedido] = useState(null);
   const [productos, setProductos] = useState([]);
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
-  const idUsuario = getUserDataFromToken().idUsuario;
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
 
 
   useEffect(() => {
@@ -64,17 +66,33 @@ function Pedidos() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver pedidos']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchPedidos();
     fetchSedes();
     fetchUsuarios();
     fetchProductos();
   }, []);
+
+  useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchPedidos();
+          } else {
+            checkPermission('Ver pedidos', 'No tienes permisos para ver pedidos');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+  
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -111,12 +129,12 @@ function Pedidos() {
 
   const fetchProductos = async () => {
     try {
-        const response = await axios.get("http://localhost:5000/productos");
-        setProductos(response.data);
+      const response = await axios.get("http://localhost:5000/productos");
+      setProductos(response.data);
     } catch (error) {
-        console.error("Error fetching productos:", error);
+      console.error("Error fetching productos:", error);
     }
-};
+  };
 
 
   const fetchPedidos = async () => {
@@ -131,9 +149,13 @@ function Pedidos() {
 
   const fetchActivePedidos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/pedidos/activas");
       setPedidos(response.data);
       setFilteredPedidos(response.data);
+    } else {
+      checkPermission('Ver pedidos', 'No tienes permisos para ver pedidos')
+    }
     } catch (error) {
       console.error("Error fetching active pedidos:", error);
     }
@@ -141,9 +163,13 @@ function Pedidos() {
 
   const fetchInactivePedidos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/pedidos/inactivas");
       setPedidos(response.data);
       setFilteredPedidos(response.data);
+    } else {
+      checkPermission('Ver pedidos', 'No tienes permisos para ver pedidos')
+    }
     } catch (error) {
       console.error("Error fetching inactive pedidos:", error);
     }
@@ -191,7 +217,7 @@ function Pedidos() {
         fecha: "",
         descripcion: "",
         idSede: "",
-        idUsuario: "",
+        idUsuario: idUsuario,
         estado: 1,
       }
     );
@@ -215,7 +241,7 @@ function Pedidos() {
       idUsuario,
       fechaHora: new Date()
     };
-  
+
     try {
       await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
@@ -449,7 +475,7 @@ function Pedidos() {
             {currentPedidos.map((pedido) => (
               <tr key={pedido.idPedido}>
                 <td style={{ textAlign: "center" }}>{pedido.idPedido}</td>
-                <td style={{ textAlign: "center" }}>{formatDateDMY(pedido.fecha)}</td>
+                <td style={{ textAlign: "center" }}>{pedido.fecha ? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</td>
                 <td style={{ textAlign: "center" }}>{pedido.descripcion}</td>
                 <td style={{ textAlign: "center" }}>
                   {sedes.find((sede) => sede.idSede === pedido.idSede)?.nombreSede ||
@@ -575,23 +601,6 @@ function Pedidos() {
                   ))}
                 </Form.Control>
               </Form.Group>
-              <Form.Group controlId="idUsuario">
-                <Form.Label>Usuario</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="idUsuario"
-                  value={newPedido.idUsuario}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar Usuario</option>
-                  {usuarios.map((usuario) => (
-                    <option key={usuario.idUsuario} value={usuario.idUsuario}>
-                      {usuario.usuario}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
               <hr />
               <h5>Detalles de Productos</h5>
               {detallesProductos.map((detalle, index) => (
@@ -655,36 +664,36 @@ function Pedidos() {
         </Modal>
 
         <Modal show={showDetalleModal} onHide={() => setShowDetalleModal(false)}>
-    <Modal.Header closeButton>
-        <Modal.Title>Detalle del Pedido</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-        {detallePedido ? (
-            <div>
+          <Modal.Header closeButton>
+            <Modal.Title>Detalle del Pedido</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {detallePedido ? (
+              <div>
                 <p><strong>Fecha:</strong> {detallePedido.fecha ? format(parseISO(detallePedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</p>
                 <p><strong>Descripción:</strong> {detallePedido.descripcion}</p>
                 <p><strong>Estado:</strong> {detallePedido.estado === 1 ? "Activo" : "Inactivo"}</p>
                 <p><strong>Detalles:</strong></p>
                 <ul>
-                    {detallePedido.detalle_pedidos.map((detalle) => (
-                        <li key={detalle.idDetallePedido}>
-                            Producto: {detalle.producto.nombreProducto} | Cantidad: {detalle.cantidad}
-                        </li>
-                    ))}
+                  {detallePedido.detalle_pedidos.map((detalle) => (
+                    <li key={detalle.idDetallePedido}>
+                      Producto: {detalle.producto.nombreProducto} | Cantidad: {detalle.cantidad}
+                    </li>
+                  ))}
                 </ul>
-            </div>
-        ) : (
-            <p>Cargando detalles...</p>
-        )}
-    </Modal.Body>
-    <Modal.Footer>
-        <Button variant="secondary" onClick={() => setShowDetalleModal(false)}>
-            Cerrar
-        </Button>
-    </Modal.Footer>
-</Modal>
+              </div>
+            ) : (
+              <p>Cargando detalles...</p>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowDetalleModal(false)}>
+              Cerrar
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
-        
+
         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
           <Modal.Header closeButton>
             <Modal.Title>Permiso Denegado</Modal.Title>

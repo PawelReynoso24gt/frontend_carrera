@@ -26,9 +26,11 @@ function TipoTraslado() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -39,14 +41,29 @@ function TipoTraslado() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver tipo traslados']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchTipoTraslados();
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchTipoTraslados();
+          } else {
+            checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -69,8 +86,12 @@ function TipoTraslado() {
 
   const fetchActiveTipoTraslados = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/tipoTraslados/activas");
       setFilteredTipoTraslados(response.data);
+    } else {
+      checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados')
+    }
     } catch (error) {
       console.error("Error fetching active tipo traslados:", error);
     }
@@ -78,8 +99,12 @@ function TipoTraslado() {
 
   const fetchInactiveTipoTraslados = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/tipoTraslados/inactivas");
       setFilteredTipoTraslados(response.data);
+    } else {
+      checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados')
+    }
     } catch (error) {
       console.error("Error fetching inactive tipo traslados:", error);
     }
@@ -448,17 +473,17 @@ function TipoTraslado() {
             </Form>
           </Modal.Body>
         </Modal>
-          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                         <Modal.Header closeButton>
-                          <Modal.Title>Permiso Denegado</Modal.Title>
-                          </Modal.Header>
-                          <Modal.Body>{permissionMessage}</Modal.Body>
-                          <Modal.Footer>
-                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                            Aceptar
-                          </Button>
-                         </Modal.Footer>
-                      </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

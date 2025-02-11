@@ -30,6 +30,8 @@ function Rifas() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
 
   // extraer el dato para idSede
@@ -44,15 +46,30 @@ function Rifas() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver rifas']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchRifas();
     fetchSedes();
   }, []);
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchRifas();
+        } else {
+          checkPermission('Ver rifas', 'No tienes permisos para ver rifas');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -64,9 +81,9 @@ function Rifas() {
   };
 
   // Obtener el idPersona desde localStorage
-      const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
+  const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
-      const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // ! USO DE LA FUNCIÓN getUserDataFromToken
+  const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // ! USO DE LA FUNCIÓN getUserDataFromToken
 
   const fetchRifas = async () => {
     try {
@@ -89,8 +106,12 @@ function Rifas() {
 
   const fetchActiveRifas = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/rifas/activos");
       setFilteredRifas(response.data);
+    } else {
+      checkPermission('Ver rifas', 'No tienes permisos para ver rifas')
+    }
     } catch (error) {
       console.error("Error fetching active rifas:", error);
     }
@@ -98,8 +119,12 @@ function Rifas() {
 
   const fetchInactiveRifas = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/rifas/inactivos");
       setFilteredRifas(response.data);
+    } else {
+      checkPermission('Ver rifas', 'No tienes permisos para ver rifas')
+    }
     } catch (error) {
       console.error("Error fetching inactive rifas:", error);
     }
@@ -162,7 +187,7 @@ function Rifas() {
       idUsuario,
       fechaHora: new Date()
     };
-  
+
     try {
       await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {

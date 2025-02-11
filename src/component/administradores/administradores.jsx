@@ -23,7 +23,10 @@ function UsuariosAdminComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
-  
+  const [roles, setRoles] = useState([]);
+
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -34,16 +37,34 @@ function UsuariosAdminComponent() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+          response.data.permisos['Ver usuarios']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchActiveUsuarios();
     fetchPersonas(); // Obtener la lista de personas al cargar el componente
     fetchSedes(); // Obtener la lista de sedes al cargar el componente
+    fetchRoles(); // Obtener la lista de roles al cargar el componente
   }, []);
+
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchActiveUsuarios();
+      } else {
+        //console.log(hasViewPermission)
+        checkPermission('Ver usuarios', 'No tienes permisos para ver usuarios');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -53,15 +74,19 @@ function UsuariosAdminComponent() {
     }
     return true;
   };
-  
+
 
   const fetchActiveUsuarios = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/usuarios/activos');
-      const usuariosActivos = response.data.filter(usuario => usuario.estado === 1);
-      setUsuarios(usuariosActivos);
-      setFilteredUsuarios(usuariosActivos);
-      setFilter('activos');
+      if (hasViewPermission) {
+        const response = await axios.get('http://localhost:5000/usuarios/activos');
+        const usuariosActivos = response.data.filter(usuario => usuario.estado === 1);
+        setUsuarios(usuariosActivos);
+        setFilteredUsuarios(usuariosActivos);
+        setFilter('activos');
+      } else {
+        checkPermission('Ver usuarios', 'No tienes permisos para ver usuarios')
+      }
     } catch (error) {
       console.error('Error fetching active usuarios:', error);
     }
@@ -69,13 +94,15 @@ function UsuariosAdminComponent() {
 
   const fetchInactiveUsuarios = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/usuarios', {
-        params: { estado: 0 }
-      });
-      const usuariosInactivos = response.data.filter(usuario => usuario.idRol === 1 && usuario.estado === 0);
-      setUsuarios(usuariosInactivos);
-      setFilteredUsuarios(usuariosInactivos);
-      setFilter('inactivos');
+      if (hasViewPermission) {
+        const response = await axios.get('http://localhost:5000/usuarios');
+        const usuariosInactivos = response.data.filter(usuario => usuario.estado === 0);
+        setUsuarios(usuariosInactivos);
+        setFilteredUsuarios(usuariosInactivos);
+        setFilter('inactivos');
+      } else {
+        checkPermission('Ver usuarios', 'No tienes permisos para ver usuarios');
+      }
     } catch (error) {
       console.error('Error fetching inactive usuarios:', error);
     }
@@ -99,6 +126,15 @@ function UsuariosAdminComponent() {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/roles');
+      setRoles(response.data);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    }
+  };
+
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -110,7 +146,7 @@ function UsuariosAdminComponent() {
 
   const handleShowModal = (usuario = null) => {
     setEditingUsuario(usuario);
-    setNewUsuario(usuario || { usuario: '', estado: 1, idRol: 1, idSede: '', idPersona: '', contrasenia: '' });
+    setNewUsuario(usuario || { usuario: '', estado: 1, idRol: '', idSede: '', idPersona: '', contrasenia: '' });
     setShowModal(true);
   };
 
@@ -158,7 +194,7 @@ function UsuariosAdminComponent() {
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
-        console.error('Error submitting usuario:', error);
+      console.error('Error submitting usuario:', error);
     }
   };
 
@@ -276,7 +312,7 @@ function UsuariosAdminComponent() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-      <Button
+        <Button
           style={{
             backgroundColor: "#007abf",
             borderColor: "#007AC3",
@@ -286,14 +322,14 @@ function UsuariosAdminComponent() {
             fontWeight: "bold",
             color: "#fff",
           }}
-           onClick={() => {
-      if (checkPermission('Crear usuario', 'No tienes permisos para crear usuarios')) {
-        handleShowModal();
-      }
-    }}
+          onClick={() => {
+            if (checkPermission('Crear usuario', 'No tienes permisos para crear usuarios')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Usuario
-        </Button> 
+        </Button>
         <Button
           style={{
             backgroundColor: "#009B85",
@@ -444,7 +480,7 @@ function UsuariosAdminComponent() {
             style={{ backgroundColor: "#007AC3", color: "#fff" }}
           >
             <Modal.Title>
-              {editingUsuario ? "Editar Administrador" : "Agregar Administrador"}
+              {editingUsuario ? "Editar Usuario" : "Agregar Usuario"}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -477,7 +513,25 @@ function UsuariosAdminComponent() {
                   />
                 </Form.Group>
               )}
-
+              <Form.Group controlId="idRol">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Rol
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idRol"
+                  value={newUsuario.idRol}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccione Rol</option>
+                  {roles.map((rol) => (
+                    <option key={rol.idRol} value={rol.idRol}>
+                      {rol.roles}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
               <Form.Group controlId="idSede">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
                   Sede
@@ -545,7 +599,7 @@ function UsuariosAdminComponent() {
               </Button>
             </Form>
           </Modal.Body>
-         </Modal>
+        </Modal>
 
         {/* Modal para cambiar la contraseña */}
         <Modal show={showPasswordModal} onHide={handleClosePasswordModal}>
@@ -585,8 +639,8 @@ function UsuariosAdminComponent() {
             </Form>
           </Modal.Body>
         </Modal>
-           {/* Modal de notificación */}
-           <Modal show={showPermissionModal} onHide={handlePermissionModalClose}>
+        {/* Modal de notificación */}
+        <Modal show={showPermissionModal} onHide={handlePermissionModalClose}>
           <Modal.Header closeButton>
             <Modal.Title>Notificación</Modal.Title>
           </Modal.Header>
@@ -598,16 +652,16 @@ function UsuariosAdminComponent() {
           </Modal.Footer>
         </Modal>
         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-         <Modal.Header closeButton>
-          <Modal.Title>Permiso Denegado</Modal.Title>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
           </Modal.Header>
           <Modal.Body>{permissionMessage}</Modal.Body>
           <Modal.Footer>
-          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-            Aceptar
-          </Button>
-         </Modal.Footer>
-       </Modal>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

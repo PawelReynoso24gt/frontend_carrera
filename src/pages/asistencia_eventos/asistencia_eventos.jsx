@@ -4,12 +4,14 @@ import BreadCrumb from "../../component/home-two/BreadCrumb";
 import Wrapper from "../../component/pricing/Wrapper";
 import AsistenciaEventosComponent  from "../../component/asistencia_eventos/asistencia_eventos";
 import RegistroComisiones  from "../../component/registroComisiones/registroComisiones";
+import RegistroMateriales from "../../component/registroMateriales/registroMateriales";
+import RegistroActividades  from "../../component/registroActividades/registroActividades";
 import useMenu from "../../hooks/useMenu";
 
 function AsistenciasPage () {
   useMenu();
   // Estado para controlar el componente seleccionado
-    const [selectedComponent, setSelectedComponent] = useState("mventas");
+    const [selectedComponent, setSelectedComponent] = useState("inscripcion");
   
     // Función para manejar el cambio en el combobox
     const handleSelectionChange = (event) => {
@@ -33,7 +35,9 @@ function AsistenciasPage () {
             style={{ padding: "5px", fontSize: "16px" }}
           >
             <option value="inscripcion">Inscripciones a eventos</option>
-            <option value="registroComision">Registros a comisiones</option>
+            <option value="registroComision">Inscripciones a comisiones</option>
+            <option value="registroActividades">Inscripciones a Actividades</option>
+            <option value="registroMateriales">Inscripciones a Materiales</option>        
           </select>
         </div>
 

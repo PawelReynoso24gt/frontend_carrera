@@ -27,9 +27,11 @@ function CategoriasHorarios() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -40,15 +42,30 @@ function CategoriasHorarios() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver categoria horarios']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchCategoriasHorarios();
   }, []);
-  
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchCategoriasHorarios();
+        } else {
+          checkPermission('Ver categoria horarios', 'No tienes permisos para ver categoria horarios');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
+
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
       setPermissionMessage(message);
@@ -70,11 +87,15 @@ function CategoriasHorarios() {
 
   const fetchActiveCategoriasHorarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get(
         "http://localhost:5000/categoriaHorarios/activas"
       );
       setCategoriasHorarios(response.data);
       setFilteredCategoriasHorarios(response.data);
+    } else {
+      checkPermission('Ver categoria horarios', 'No tienes permisos para ver categoria horarios')
+    }
     } catch (error) {
       console.error("Error fetching active categorías de horarios:", error);
     }
@@ -82,11 +103,15 @@ function CategoriasHorarios() {
 
   const fetchInactiveCategoriasHorarios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get(
         "http://localhost:5000/categoriaHorarios/inactivas"
       );
       setCategoriasHorarios(response.data);
       setFilteredCategoriasHorarios(response.data);
+    } else {
+      checkPermission('Ver categoria horarios', 'No tienes permisos para ver categoria horarios')
+    }
     } catch (error) {
       console.error("Error fetching inactive categorías de horarios:", error);
     }
@@ -152,12 +177,12 @@ function CategoriasHorarios() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-  
+
       // Realiza la solicitud para cambiar el estado
       await axios.put(`http://localhost:5000/categoriaHorarios/${id}`, {
         estado: nuevoEstado,
       });
-  
+
       // Actualiza la lista de categorías global
       const updatedCategorias = categoriasHorarios.map((categoria) =>
         categoria.idCategoriaHorario === id
@@ -165,7 +190,7 @@ function CategoriasHorarios() {
           : categoria
       );
       setCategoriasHorarios(updatedCategorias);
-  
+
       // Filtra nuevamente las categorías para actualizar la vista actual
       const updatedFilteredCategorias = updatedCategorias.filter(
         (categoria) => categoria.estado === (estadoActual === 1 ? 1 : 0)
@@ -173,10 +198,9 @@ function CategoriasHorarios() {
       setFilteredCategoriasHorarios(
         filteredCategoriasHorarios.filter((categoria) => categoria.idCategoriaHorario !== id)
       );
-  
+
       setAlertMessage(
-        `Categoría de horario ${
-          nuevoEstado === 1 ? "activada" : "inactivada"
+        `Categoría de horario ${nuevoEstado === 1 ? "activada" : "inactivada"
         } con éxito`
       );
       setShowAlert(true);
@@ -184,7 +208,7 @@ function CategoriasHorarios() {
       console.error("Error toggling estado:", error.response?.data || error);
     }
   };
-  
+
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
@@ -254,20 +278,20 @@ function CategoriasHorarios() {
   );
 
   return (
-    
-      
-    <div className="container mt-4" style={{ maxWidth: "100%", margin: "0 auto"}}>
+
+
+    <div className="container mt-4">
       {/* Título y Breadcrumb */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-        .
+          .
         </h3>
         <Breadcrumb>
           <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
           <Breadcrumb.Item active>Categoría Horarios</Breadcrumb.Item>
         </Breadcrumb>
       </div>
-      
+
 
       {/* Contenedor Principal */}
       <div
@@ -281,15 +305,14 @@ function CategoriasHorarios() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-     <div className="row justify-content-center" style={{marginBottom: "20px" }}>
-        <div className="col-12 text-center">
-          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
-            Gestión de Horarios
-          </h3>
+        <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
+          <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
+            <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
+              Categoría Horarios
+            </h3>
+          </div>
         </div>
-      </div>
 
-        
 
         <InputGroup className="mb-3">
           <FormControl
@@ -493,20 +516,20 @@ function CategoriasHorarios() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-               </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
-      </div>
-    
+    </div>
+
   );
 }
 

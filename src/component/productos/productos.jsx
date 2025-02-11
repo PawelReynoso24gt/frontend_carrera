@@ -28,9 +28,11 @@ function Productos() {
   const [showValidationError, setShowValidationError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-      const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-      const [permissionMessage, setPermissionMessage] = useState('');
-      const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -41,17 +43,32 @@ function Productos() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver productos']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchProductos();
     fetchCategorias();
   }, []);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
+
+  useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchProductos();
+          } else {
+            checkPermission('Ver productos', 'No tienes permisos para ver productos');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -83,9 +100,13 @@ function Productos() {
 
   const fetchActiveProductos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/productos/activos");
       setProductos(response.data);
       setFilteredProductos(response.data);
+    } else {
+      checkPermission('Ver productos', 'No tienes permisos para ver productos')
+    }
     } catch (error) {
       console.error("Error fetching active productos:", error);
     }
@@ -93,9 +114,13 @@ function Productos() {
 
   const fetchInactiveProductos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/productos/inactivos");
       setProductos(response.data);
       setFilteredProductos(response.data);
+    } else {
+      checkPermission('Ver productos', 'No tienes permisos para ver productos')
+    }
     } catch (error) {
       console.error("Error fetching inactive productos:", error);
     }
@@ -144,7 +169,7 @@ function Productos() {
     }
   };
 
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -178,7 +203,7 @@ function Productos() {
       idUsuario,
       fechaHora: new Date()
     };
-  
+
     try {
       await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
@@ -202,11 +227,11 @@ function Productos() {
       formData.append("cantidadMaxima", parseInt(newProducto.cantidadMaxima, 10));
       formData.append("idCategoria", parseInt(newProducto.idCategoria, 10));
       formData.append("estado", parseInt(newProducto.estado, 10));
-      
+
       if (newProducto.foto && typeof newProducto.foto !== "string") {
         formData.append("foto", newProducto.foto);
-      }      
-  
+      }
+
       if (editingProducto) {
         await axios.put(`http://localhost:5000/productos/${editingProducto.idProducto}`, formData, {
           headers: {
@@ -231,7 +256,7 @@ function Productos() {
       console.error("Error submitting producto:", error.response?.data || error);
     }
   };
-  
+
 
   const toggleEstado = async (id, estadoActual) => {
     try {
@@ -568,24 +593,24 @@ function Productos() {
                 />
               </Form.Group>
               <Form.Group>
-              <Form.Label>Foto</Form.Label>
-              <Form.Control type="file" onChange={handleFileChange} accept="image/*" />
-              {previewImage && (
-                <div style={{ marginTop: "10px", textAlign: "center" }}>
-                  <img
-                    src={previewImage}
-                    alt="Vista previa"
-                    style={{
-                      width: "150px",
-                      height: "150px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                </div>
-              )}
-            </Form.Group>
+                <Form.Label>Foto</Form.Label>
+                <Form.Control type="file" onChange={handleFileChange} accept="image/*" />
+                {previewImage && (
+                  <div style={{ marginTop: "10px", textAlign: "center" }}>
+                    <img
+                      src={previewImage}
+                      alt="Vista previa"
+                      style={{
+                        width: "150px",
+                        height: "150px",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                      }}
+                    />
+                  </div>
+                )}
+              </Form.Group>
               <Form.Group controlId="cantidadMinima">
                 <Form.Label>Cantidad Mínima</Form.Label>
                 <Form.Control
@@ -651,17 +676,17 @@ function Productos() {
             </Form>
           </Modal.Body>
         </Modal>
-           <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                         <Modal.Header closeButton>
-                          <Modal.Title>Permiso Denegado</Modal.Title>
-                          </Modal.Header>
-                          <Modal.Body>{permissionMessage}</Modal.Body>
-                          <Modal.Footer>
-                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                            Aceptar
-                          </Button>
-                         </Modal.Footer>
-                      </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

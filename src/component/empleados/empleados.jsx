@@ -27,11 +27,55 @@ function Empleados() {
   const [personas, setPersonas] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
-    fetchEmpleados();
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+          response.data.permisos['Ver empleados']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
     fetchPersonas();
   }, []);
+
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchEmpleados();
+      } else {
+        //console.log(hasViewPermission)
+        checkPermission('Ver empleados', 'No tienes permisos para ver empleados');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchEmpleados = async () => {
     try {
@@ -54,23 +98,31 @@ function Empleados() {
 
   const fetchActiveEmpleados = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/empleados/activos");
-      setEmpleados(response.data);
-      setFilteredEmpleados(response.data);
+      if (hasViewPermission) {
+        const response = await axios.get("http://localhost:5000/empleados/activos");
+        setEmpleados(response.data);
+        setFilteredEmpleados(response.data);
+      } else {
+        checkPermission('Ver empleados', 'No tienes permisos para ver empleados')
+      }
     } catch (error) {
       console.error("Error fetching active empleados:", error);
     }
   };
-  
+
   const fetchInactiveEmpleados = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/empleados/inactivos");
-      setEmpleados(response.data);
-      setFilteredEmpleados(response.data);
+      if (hasViewPermission) {
+        const response = await axios.get("http://localhost:5000/empleados/inactivos");
+        setEmpleados(response.data);
+        setFilteredEmpleados(response.data);
+      } else {
+        checkPermission('Ver empleados', 'No tienes permisos para ver empleados')
+      }
     } catch (error) {
       console.error("Error fetching inactive empleados:", error);
     }
-  };  
+  };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
@@ -250,37 +302,41 @@ function Empleados() {
               fontWeight: "bold",
               color: "#fff",
             }}
-            onClick={() => handleShowModal()}
+            onClick={() => {
+              if (checkPermission('Crear empleado', 'No tienes permisos para crear empleado')) {
+                handleShowModal();
+              }
+            }}
           >
             Agregar Empleado
           </Button>
           <Button
             style={{
-            backgroundColor: "#009B85",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            marginRight: "10px",
-            fontWeight: "bold",
-            color: "#fff",
+              backgroundColor: "#009B85",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              marginRight: "10px",
+              fontWeight: "bold",
+              color: "#fff",
             }}
             onClick={fetchActiveEmpleados}
-        >
+          >
             Activos
-        </Button>
-        <Button
+          </Button>
+          <Button
             style={{
-            backgroundColor: "#bf2200",
-            borderColor: "#007AC3",
-            padding: "5px 10px",
-            width: "100px",
-            fontWeight: "bold",
-            color: "#fff",
+              backgroundColor: "#bf2200",
+              borderColor: "#007AC3",
+              padding: "5px 10px",
+              width: "100px",
+              fontWeight: "bold",
+              color: "#fff",
             }}
             onClick={fetchInactiveEmpleados}
-        >
+          >
             Inactivos
-        </Button>
+          </Button>
         </div>
 
         <Alert
@@ -327,17 +383,29 @@ function Empleados() {
                 <td>
                   <FaPencilAlt
                     style={{ color: "#007AC3", cursor: "pointer", marginRight: "10px" }}
-                    onClick={() => handleShowModal(empleado)}
+                    onClick={() => {
+                      if (checkPermission('Editar empleado', 'No tienes permisos para editar empleado')) {
+                        handleShowModal(empleado);
+                      }
+                    }}
                   />
                   {empleado.estado ? (
                     <FaToggleOn
                       style={{ color: "#30c10c", cursor: "pointer", marginLeft: "10px" }}
-                      onClick={() => toggleEstado(empleado.idEmpleado, empleado.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar empleado', 'No tienes permisos para desactivar empleado')) {
+                          toggleEstado(empleado.idEmpleado, empleado.estado);
+                        }
+                      }}
                     />
                   ) : (
                     <FaToggleOff
                       style={{ color: "#e10f0f", cursor: "pointer", marginLeft: "10px" }}
-                      onClick={() => toggleEstado(empleado.idEmpleado, empleado.estado)}
+                      onClick={() => {
+                        if (checkPermission('Activar empleado', 'No tienes permisos para activar empleado')) {
+                          toggleEstado(empleado.idEmpleado, empleado.estado);
+                        }
+                      }}
                     />
                   )}
                 </td>
@@ -415,10 +483,22 @@ function Empleados() {
                 }}
                 type="submit"
               >
+
                 {editingEmpleado ? "Actualizar" : "Crear"}
               </Button>
             </Form>
           </Modal.Body>
+        </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
         </Modal>
       </div>
     </>

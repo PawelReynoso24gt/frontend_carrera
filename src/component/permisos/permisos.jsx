@@ -18,7 +18,8 @@ function PermisosRolesComponent() {
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
   const [searchTerm, setSearchTerm] = useState(""); 
-
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);    
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -29,15 +30,20 @@ function PermisosRolesComponent() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Editar asignación de permisos']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
   
     fetchPermissions();
-    fetchRoles(); // Obtener lista de roles
-    fetchPermisos(); // Obtener todos los permisos
   }, []);
+  
 
   // Obtener módulos desde el backend
   const fetchModulos = async () => {
@@ -109,10 +115,16 @@ function PermisosRolesComponent() {
   };
   
   useEffect(() => {
+          if (isPermissionsLoaded) {
+            if (hasViewPermission) {   
     fetchRoles(); // Obtener lista de roles
     fetchPermisos(); // Obtener todos los permisos
     fetchModulos(); // Obtener módulos
-  }, []);
+            } else {
+              checkPermission('Editar asignación de permisos', 'No tienes permisos para ver asignación de permisos');
+            }
+          }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   
   // Abrir modal y cargar permisos asignados al rol seleccionado
