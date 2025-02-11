@@ -37,7 +37,7 @@ function PersonalInfo() {
     }
 
     try {
-      const response = await fetchWithToken(`http://localhost:5000/personas/update/${idPersona}`, {
+      const response = await fetchWithToken(`https://api.voluntariadoayuvi.com/personas/update/${idPersona}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -39,7 +39,7 @@ function Voluntarios() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -81,7 +81,7 @@ function Voluntarios() {
 
   const fetchVoluntarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/voluntarios");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/voluntarios");
       setVoluntarios(response.data);
       setFilteredVoluntarios(response.data);
     } catch (error) {
@@ -91,7 +91,7 @@ function Voluntarios() {
 
   const fetchPersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/personas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/personas");
       setPersonas(response.data);
     } catch (error) {
       console.error("Error fetching personas:", error);
@@ -101,7 +101,7 @@ function Voluntarios() {
   const fetchActiveVoluntarios = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("http://localhost:5000/voluntarios/activos");
+        const response = await axios.get("https://api.voluntariadoayuvi.com/voluntarios/activos");
         setVoluntarios(response.data);
         setFilteredVoluntarios(response.data);
       } else {
@@ -115,7 +115,7 @@ function Voluntarios() {
   const fetchInactiveVoluntarios = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("http://localhost:5000/voluntarios/inactivos");
+        const response = await axios.get("https://api.voluntariadoayuvi.com/voluntarios/inactivos");
         setVoluntarios(response.data);
         setFilteredVoluntarios(response.data);
       } else {
@@ -170,7 +170,7 @@ function Voluntarios() {
   const handleShowQRModal = (codigoQR) => {
     // Aquí puedes usar una URL de generación de QR como Google Chart API o algún servicio para mostrar el QR
     // Supongamos que tienes un backend que genera la imagen del QR a partir del valor:
-    setQrCodeUrl(`http://localhost:5000/generateQR?data=${codigoQR}`);
+    setQrCodeUrl(`https://api.voluntariadoayuvi.com/generateQR?data=${codigoQR}`);
     setShowQRModal(true);
   };
 
@@ -189,12 +189,12 @@ function Voluntarios() {
 
       if (editingVoluntario) {
         await axios.put(
-          `http://localhost:5000/voluntarios/update/${editingVoluntario.idVoluntario}`,
+          `https://api.voluntariadoayuvi.com/voluntarios/update/${editingVoluntario.idVoluntario}`,
           voluntarioToSubmit
         );
         setAlertMessage("Voluntario actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/voluntarios/create", voluntarioToSubmit);
+        await axios.post("https://api.voluntariadoayuvi.com/voluntarios/create", voluntarioToSubmit);
         setAlertMessage("Voluntario creado con éxito");
       }
       fetchVoluntarios();
@@ -208,7 +208,7 @@ function Voluntarios() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/voluntarios/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/voluntarios/update/${id}`, { estado: nuevoEstado });
       fetchVoluntarios();
       setAlertMessage(
         `Voluntario ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

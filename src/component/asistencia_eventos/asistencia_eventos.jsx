@@ -31,7 +31,7 @@ function EventosActivos() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -72,7 +72,7 @@ function EventosActivos() {
 
   const fetchEventosActivos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos/activas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/eventos/activas");
       setEventos(response.data);
     } catch (error) {
       console.error("Error fetching eventos activos:", error);
@@ -82,7 +82,7 @@ function EventosActivos() {
   const handleShowAsistencias = async (idEvento) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/asistencia_eventos/evento/${idEvento}`
+        `https://api.voluntariadoayuvi.com/asistencia_eventos/evento/${idEvento}`
       );
       setAsistencias(response.data);
       setSelectedEvento(idEvento);
@@ -95,7 +95,7 @@ function EventosActivos() {
   const handleShowInscripciones = async (idEvento) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/inscripcion_eventos/activos?eventoId=${idEvento}`
+        `https://api.voluntariadoayuvi.com/inscripcion_eventos/activos?eventoId=${idEvento}`
       );
       setInscripciones(response.data);
       setSelectedEvento(idEvento);
@@ -181,7 +181,7 @@ function EventosActivos() {
 
       if (scannedCode === expectedCode) {
         try {
-          await axios.post(`http://localhost:5000/asistencia_eventos/create`, {
+          await axios.post(`https://api.voluntariadoayuvi.com/asistencia_eventos/create`, {
             idInscripcionEvento: selectedInscripcion.idInscripcionEvento,
             fechaHoraAsistencia: new Date(),
             estado: 1,

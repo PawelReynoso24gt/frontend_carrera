@@ -32,7 +32,7 @@ function SolicitudesVoluntariado() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -75,7 +75,7 @@ function SolicitudesVoluntariado() {
     };
 
     try {
-      const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      const response = await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
       return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
       console.error("Error logging bitacora:", error);
@@ -93,7 +93,7 @@ function SolicitudesVoluntariado() {
     //console.log("Datos enviados para crear la notificación:", notificationData);
 
     try {
-      await axios.post("http://localhost:5000/notificaciones/create", notificationData);
+      await axios.post("https://api.voluntariadoayuvi.com/notificaciones/create", notificationData);
     } catch (error) {
       console.error("Error creating notification:", error);
     }
@@ -101,7 +101,7 @@ function SolicitudesVoluntariado() {
 
   const getAspirante = async (idAspirante) => {
     try {
-      const response = await axios.get(`http://localhost:5000/aspirantes/${idAspirante}`);
+      const response = await axios.get(`https://api.voluntariadoayuvi.com/aspirantes/${idAspirante}`);
       return response.data;
     } catch (error) {
       console.error(`Error al obtener el aspirante ${idAspirante}:`, error);
@@ -120,7 +120,7 @@ function SolicitudesVoluntariado() {
 
   const fetchAspirantes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/aspirantes");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/aspirantes");
       
       const activos = response.data.filter((aspirante) => aspirante.estado === 1);
       setAspirantes(activos);
@@ -131,7 +131,7 @@ function SolicitudesVoluntariado() {
 
   const fetchPersonas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/personas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/personas");
       setPersonas(response.data);
     } catch (error) {
       console.error("Error fetching personas:", error);
@@ -164,7 +164,7 @@ function SolicitudesVoluntariado() {
   const acceptSolicitud = async (idAspirante) => {
   try {
     // Actualizar estado del aspirante
-    await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
+    await axios.put(`https://api.voluntariadoayuvi.com/aspirantes/aceptar/${idAspirante}`);
     fetchAspirantes();
     setShowConfirmationModal(false);
 
@@ -208,7 +208,7 @@ function SolicitudesVoluntariado() {
 const denySolicitud = async (idAspirante) => {
   try {
     // Actualizar estado del aspirante
-    await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
+    await axios.put(`https://api.voluntariadoayuvi.com/aspirantes/denegar/${idAspirante}`);
     fetchAspirantes();
     setShowConfirmationModal(false);
 

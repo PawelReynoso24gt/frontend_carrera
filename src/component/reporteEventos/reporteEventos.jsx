@@ -21,7 +21,7 @@ function ReporteEventos() {
         const fechaFinFormato = fechaFin.split("-").reverse().join("-"); // Convierte de DD-MM-YYYY a YYYY-MM-DD
 
         const response = await axios.get(
-          `http://localhost:5000/eventos/reporte?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
+          `https://api.voluntariadoayuvi.com/eventos/reporte?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
         );
         setEventos(response.data.eventos);
       } catch (error) {
@@ -32,7 +32,7 @@ function ReporteEventos() {
 
     const fetchLoggedUser = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/usuarios/me", {
+        const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`, // Asegúrate de tener el token en localStorage
           },

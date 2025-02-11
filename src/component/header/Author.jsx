@@ -18,11 +18,11 @@ function Author({ subNav, setSubNav, title }) {
           return;
         }
 
-        const response = await axios.get(`http://localhost:5000/usuarios/activos`);
+        const response = await axios.get(`https://api.voluntariadoayuvi.com/usuarios/activos`);
         const loggedUser = response.data.find((user) => user.idUsuario === userData.idUsuario);
 
         if (loggedUser) {
-          const photoPath = loggedUser.persona.foto !== "sin foto" ? `http://localhost:5000/${loggedUser.persona.foto.replace(/\\/g, '/')}` : profileImg;
+          const photoPath = loggedUser.persona.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${loggedUser.persona.foto.replace(/\\/g, '/')}` : profileImg;
           setProfilePicture(photoPath);
         }
       } catch (err) {
@@ -41,7 +41,7 @@ function Author({ subNav, setSubNav, title }) {
       if (token) {
         const idUsuario = userData ? userData.idUsuario : null;
 
-        await axios.put(`http://localhost:5000/usuarios/logout/${idUsuario}`, {}, {
+        await axios.put(`https://api.voluntariadoayuvi.com/usuarios/logout/${idUsuario}`, {}, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

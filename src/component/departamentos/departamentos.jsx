@@ -23,7 +23,7 @@ function Departamentos() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -65,7 +65,7 @@ function Departamentos() {
 
   const fetchDepartamentos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/departamentos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/departamentos");
       setDepartamentos(response.data);
       setFilteredDepartamentos(response.data);
     } catch (error) {
@@ -76,7 +76,7 @@ function Departamentos() {
   const fetchActiveDepartamentos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/departamentos/activas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/departamentos/activas");
       setDepartamentos(response.data);
       setFilteredDepartamentos(response.data);
     } else {
@@ -90,7 +90,7 @@ function Departamentos() {
   const fetchInactiveDepartamentos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/departamentos/inactivas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/departamentos/inactivas");
       setDepartamentos(response.data);
       setFilteredDepartamentos(response.data);
     } else {
@@ -132,10 +132,10 @@ function Departamentos() {
     e.preventDefault();
     try {
       if (editingDepartamento) {
-        await axios.put(`http://localhost:5000/departamentos/${editingDepartamento.idDepartamento}`, newDepartamento);
+        await axios.put(`https://api.voluntariadoayuvi.com/departamentos/${editingDepartamento.idDepartamento}`, newDepartamento);
         setMessageModalContent("Departamento actualizado con éxito");
       } else {
-        await axios.post("http://localhost:5000/departamentos/create", newDepartamento);
+        await axios.post("https://api.voluntariadoayuvi.com/departamentos/create", newDepartamento);
         setMessageModalContent("Departamento creado con éxito");
       }
       fetchDepartamentos();
@@ -151,7 +151,7 @@ function Departamentos() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/departamentos/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/departamentos/${id}`, { estado: nuevoEstado });
       fetchDepartamentos();
       setMessageModalContent(
         `Departamento ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

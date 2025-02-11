@@ -40,7 +40,7 @@ function Rifas() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -87,7 +87,7 @@ function Rifas() {
 
   const fetchRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/rifas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/rifas");
       setRifas(response.data);
       setFilteredRifas(response.data);
     } catch (error) {
@@ -97,7 +97,7 @@ function Rifas() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes");
       setSedes(response.data);
     } catch (error) {
       console.error("Error fetching sedes:", error);
@@ -107,7 +107,7 @@ function Rifas() {
   const fetchActiveRifas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/rifas/activos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/rifas/activos");
       setFilteredRifas(response.data);
     } else {
       checkPermission('Ver rifas', 'No tienes permisos para ver rifas')
@@ -120,7 +120,7 @@ function Rifas() {
   const fetchInactiveRifas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/rifas/inactivos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/rifas/inactivos");
       setFilteredRifas(response.data);
     } else {
       checkPermission('Ver rifas', 'No tienes permisos para ver rifas')
@@ -189,7 +189,7 @@ function Rifas() {
     };
 
     try {
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
@@ -213,12 +213,12 @@ function Rifas() {
       };
 
       if (editingRifa) {
-        await axios.put(`http://localhost:5000/rifas/${editingRifa.idRifa}`, data);
+        await axios.put(`https://api.voluntariadoayuvi.com/rifas/${editingRifa.idRifa}`, data);
         setAlertMessage("Rifa actualizada con éxito");
         // bitacora
         await logBitacora(`Rifa actualizada: ${editingRifa.nombreRifa}`, 28);
       } else {
-        await axios.post("http://localhost:5000/rifas", data);
+        await axios.post("https://api.voluntariadoayuvi.com/rifas", data);
         setAlertMessage("Rifa creada con éxito");
         // bitacora
         await logBitacora(`Rifa creada: ${newRifa.nombreRifa}`, 24);
@@ -234,7 +234,7 @@ function Rifas() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/rifas/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/rifas/${id}`, { estado: nuevoEstado });
       fetchRifas();
       setAlertMessage(
         `Rifa ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`

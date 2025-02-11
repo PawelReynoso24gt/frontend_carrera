@@ -17,7 +17,7 @@ function ReporteAspirantes() {
   useEffect(() => {
     const fetchLoggedUser = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/usuarios/me", {
+        const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -36,7 +36,7 @@ function ReporteAspirantes() {
     const fetchReporte = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:5000/reportesAspirantes",
+          "https://api.voluntariadoayuvi.com/reportesAspirantes",
           {
             fechaInicio,
             fechaFin,

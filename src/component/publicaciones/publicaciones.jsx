@@ -47,7 +47,7 @@ function Publicaciones() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -97,7 +97,7 @@ function Publicaciones() {
 
   const fetchPublicaciones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/publicaciones/completas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/completas");
       setPublicaciones(response.data);
       setFilteredPublicaciones(response.data);
     } catch (error) {
@@ -139,7 +139,7 @@ function Publicaciones() {
 
   const fetchDetallesPublicacion = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:5000/publicaciones/detalles/${id}`);
+      const response = await axios.get(`https://api.voluntariadoayuvi.com/publicaciones/detalles/${id}`);
       setDetallesPublicacion(response.data);
       //console.log("Detalles de la publicación:", response.data);
     } catch (error) {
@@ -153,7 +153,7 @@ function Publicaciones() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes");
       setSedes(response.data);
     } catch (error) {
       console.error("Error fetching sedes:", error);
@@ -163,7 +163,7 @@ function Publicaciones() {
   const fetchActivePublicaciones = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/publicaciones/activos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/activos");
       setFilteredPublicaciones(response.data);
     } else {
       checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
@@ -176,7 +176,7 @@ function Publicaciones() {
   const fetchInactivePublicaciones = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/publicaciones/inactivos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/inactivos");
       setFilteredPublicaciones(response.data);
     } else {
       checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
@@ -303,7 +303,7 @@ function Publicaciones() {
 
   const fetchEventos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/eventos");
       setEventos(response.data);
     } catch (error) {
       console.error("Error fetching eventos:", error);
@@ -312,7 +312,7 @@ function Publicaciones() {
 
   const fetchRifas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/rifas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/rifas");
       setRifas(response.data);
     } catch (error) {
       console.error("Error fetching rifas:", error);
@@ -369,8 +369,8 @@ function Publicaciones() {
     }
 
       const endpoint = editingPublicacion
-        ? `http://localhost:5000/publicaciones/completa/update/${editingPublicacion.idPublicacion}`
-        : "http://localhost:5000/publicaciones/completa/create";
+        ? `https://api.voluntariadoayuvi.com/publicaciones/completa/update/${editingPublicacion.idPublicacion}`
+        : "https://api.voluntariadoayuvi.com/publicaciones/completa/create";
 
       const method = editingPublicacion ? "put" : "post";
 
@@ -391,7 +391,7 @@ function Publicaciones() {
         fechaHora: new Date()
       };
 
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
 
       setAlertMessage(
         editingPublicacion
@@ -409,7 +409,7 @@ function Publicaciones() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/publicaciones/completa/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/publicaciones/completa/update/${id}`, { estado: nuevoEstado });
       fetchPublicaciones();
       setAlertMessage(`Publicación ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
       setShowAlert(true);
@@ -698,7 +698,7 @@ function Publicaciones() {
                       detallesPublicacion.publicacionesGenerales.map((foto) => (
                         <img
                           key={foto.idPublicacionGeneral}
-                          src={`http://localhost:5000/${foto.foto}`}
+                          src={`https://api.voluntariadoayuvi.com/${foto.foto}`}
                           alt="Foto general"
                           style={{
                             width: "200px", // Ajusta el ancho
@@ -716,7 +716,7 @@ function Publicaciones() {
                       detallesPublicacion.publicacionesEventos.map((foto) => (
                         <img
                           key={foto.idPublicacionEvento}
-                          src={`http://localhost:5000/${foto.foto}`}
+                          src={`https://api.voluntariadoayuvi.com/${foto.foto}`}
                           alt="Foto de evento"
                           style={{
                             width: "200px", // Ajusta el ancho
@@ -734,7 +734,7 @@ function Publicaciones() {
                       detallesPublicacion.publicacionesRifas.map((foto) => (
                         <img
                           key={foto.idPublicacionRifa}
-                          src={`http://localhost:5000/${foto.foto}`}
+                          src={`https://api.voluntariadoayuvi.com/${foto.foto}`}
                           alt="Foto de rifa"
                           style={{
                             width: "200px", // Ajusta el ancho
@@ -912,7 +912,7 @@ function Publicaciones() {
                     {detallesPublicacion?.fotos?.map((foto) => (
                       <div key={foto.id} style={{ position: "relative", margin: "10px" }}>
                         <img
-                          src={`http://localhost:5000/${foto.ruta}`}
+                          src={`https://api.voluntariadoayuvi.com/${foto.ruta}`}
                           alt="Foto actual"
                           style={{
                             width: "100px",
@@ -935,7 +935,7 @@ function Publicaciones() {
                   {existingPhotos.map((foto) => (
                     <img
                       key={foto.id}
-                      src={`http://localhost:5000/${foto.ruta}`}
+                      src={`https://api.voluntariadoayuvi.com/${foto.ruta}`}
                       alt="Foto existente"
                       style={{
                         width: "100px",
