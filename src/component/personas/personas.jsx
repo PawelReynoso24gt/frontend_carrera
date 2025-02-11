@@ -325,6 +325,7 @@ function Personas() {
             borderRadius: "8px",
             marginTop: "20px",
           }}
+          //commit de cambios
         >
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
             <tr>
