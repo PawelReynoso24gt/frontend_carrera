@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import logo from "../../assets/img/LogoAYUVIicon.png"; 
-import fondo from "../../assets/img/wellington.jpeg"; 
+import logo from "../../assets/img/LogoAYUVIicon.png";
+import fondo from "../../assets/img/wellington.jpeg";
 import SlickSlider from "react-slick";
-import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa"; // Iconos de flechas
 import { format, parseISO } from "date-fns"; // formato de fechas
 
 function HomePage() {
-  const [isHovered, setIsHovered] = useState(false); 
+  const [isHovered, setIsHovered] = useState(false);
   const [fotosPublicaciones, setFotosPublicaciones] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0); // Estado para la foto activa
 
@@ -121,9 +121,9 @@ function HomePage() {
         console.error("Error fetching photos:", error);
       }
     };
-  
+
     fetchFotos();
-  }, []);    
+  }, []);
 
   const styles = {
     container: {
@@ -138,6 +138,8 @@ function HomePage() {
       textAlign: "center",
       padding: "20px",
       fontFamily: "'Arial', sans-serif",
+      maxWidth: "100%",
+      margin: "0 auto",
     },
     header: {
       position: "absolute",
@@ -210,7 +212,7 @@ function HomePage() {
       objectPosition: "center", // Centra la imagen dentro del contenedor
       borderRadius: "10px", // Bordes redondeados
       backgroundColor: "rgb(8, 171, 215)", // Fondo para relleno en caso de que la imagen no ocupe todo el espacio
-    },    
+    },
   };
 
   const sliderSettings = {

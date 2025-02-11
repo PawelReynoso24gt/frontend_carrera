@@ -39,10 +39,10 @@ function Comisiones() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver comisiones']
+          response.data.permisos['Ver comisiones']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -53,15 +53,15 @@ function Comisiones() {
     fetchDetallesHorarios();
   }, []);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchComisiones();
-          } else {
-            checkPermission('Ver comisiones', 'No tienes permisos para ver comisiones');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchComisiones();
+      } else {
+        checkPermission('Ver comisiones', 'No tienes permisos para ver comisiones');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -103,11 +103,11 @@ function Comisiones() {
   const fetchActiveComisiones = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones/activos");
-      setFilteredComisiones(response.data);
-    } else {
-      checkPermission('Ver comisiones', 'No tienes permisos para ver comisiones')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones/activos");
+        setFilteredComisiones(response.data);
+      } else {
+        checkPermission('Ver comisiones', 'No tienes permisos para ver comisiones')
+      }
     } catch (error) {
       console.error("Error fetching active comisiones:", error);
     }
@@ -116,11 +116,11 @@ function Comisiones() {
   const fetchInactiveComisiones = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones/inactivos");
-      setFilteredComisiones(response.data);
-    } else {
-      checkPermission('Ver comisiones', 'No tienes permisos para ver comisiones')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones/inactivos");
+        setFilteredComisiones(response.data);
+      } else {
+        checkPermission('Ver comisiones', 'No tienes permisos para ver comisiones')
+      }
     } catch (error) {
       console.error("Error fetching inactive comisiones:", error);
     }
@@ -284,6 +284,8 @@ function Comisiones() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">
@@ -501,22 +503,22 @@ function Comisiones() {
                 </Form.Control>
               </Form.Group>
               <Form.Group controlId="idDetalleHorario">
-                  <Form.Label>Detalle Horario</Form.Label>
-                  <Form.Control
-                    as="select"
-                    name="idDetalleHorario"
-                    value={newComision.idDetalleHorario}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Seleccionar Detalle Horario</option>
-                    {detallesHorarios.map((detalle) => (
-                      <option key={detalle.idDetalleHorario} value={detalle.idDetalleHorario}>
-                        {`${detalle.cantidadPersonas} personas - ${new Date(`1970-01-01T${detalle.horario.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${detalle.horario.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
+                <Form.Label>Detalle Horario</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="idDetalleHorario"
+                  value={newComision.idDetalleHorario}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar Detalle Horario</option>
+                  {detallesHorarios.map((detalle) => (
+                    <option key={detalle.idDetalleHorario} value={detalle.idDetalleHorario}>
+                      {`${detalle.cantidadPersonas} personas - ${new Date(`1970-01-01T${detalle.horario.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${detalle.horario.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
 
               {/* Campo: Estado */}
               <Form.Group controlId="estado">

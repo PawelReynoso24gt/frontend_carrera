@@ -32,16 +32,16 @@ function HorariosComponent() {
         const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
-          
+
           },
         });
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver horarios']
+          response.data.permisos['Ver horarios']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -50,15 +50,15 @@ function HorariosComponent() {
     fetchPermissions();
   }, []);
 
-    useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchActiveHorarios();
-        } else {
-          checkPermission('Ver horarios', 'No tienes permisos para ver horarios');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchActiveHorarios();
+      } else {
+        checkPermission('Ver horarios', 'No tienes permisos para ver horarios');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -79,12 +79,12 @@ function HorariosComponent() {
   const fetchActiveHorarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/horarios/activos");
-      setHorarios(formatDates(response.data));
-      setFilter("activos");
-    } else {
-      checkPermission('Ver horarios', 'No tienes permisos para ver horarios')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/horarios/activos");
+        setHorarios(formatDates(response.data));
+        setFilter("activos");
+      } else {
+        checkPermission('Ver horarios', 'No tienes permisos para ver horarios')
+      }
     } catch (error) {
       console.error("Error fetching active horarios:", error);
     }
@@ -93,15 +93,15 @@ function HorariosComponent() {
   const fetchInactiveHorarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/horarios");
-      //console.log(response.data);
-      // Filtrar horarios con estado 0
-      const inactiveHorarios = response.data.filter((horario) => horario.estado === 0);
-      setHorarios(formatDates(inactiveHorarios));
-      setFilter("inactivos");
-    } else {
-      checkPermission('Ver horarios', 'No tienes permisos para ver horarios')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/horarios");
+        //console.log(response.data);
+        // Filtrar horarios con estado 0
+        const inactiveHorarios = response.data.filter((horario) => horario.estado === 0);
+        setHorarios(formatDates(inactiveHorarios));
+        setFilter("inactivos");
+      } else {
+        checkPermission('Ver horarios', 'No tienes permisos para ver horarios')
+      }
     } catch (error) {
       console.error("Error fetching inactive horarios:", error);
     }
@@ -143,7 +143,7 @@ function HorariosComponent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Validar que el horario de inicio no sea mayor o igual al horario final
     const validationError = validateHorario(newHorario.horarioInicio, newHorario.horarioFinal);
     if (validationError) {
@@ -151,23 +151,23 @@ function HorariosComponent() {
       setShowAlert(true);
       return; // Detener la ejecución
     }
-  
+
     try {
       const [startHour, startMinute] = newHorario.horarioInicio.split(":");
       const [finalHour, finalMinute] = newHorario.horarioFinal.split(":");
-  
+
       // Construir el formato "HH:mm:ss"
       const formattedInicio = `${startHour}:${startMinute}:00`;
       const formattedFinal = `${finalHour}:${finalMinute}:00`;
-  
+
       const formattedHorario = {
         ...newHorario,
         horarioInicio: formattedInicio,
         horarioFinal: formattedFinal,
       };
-  
+
       //console.log("Datos que se enviarán al backend:", formattedHorario);
-  
+
       if (editingHorario) {
         //console.log("Modo: Editar horario. ID:", editingHorario.idHorario);
         await axios.put(`https://api.voluntariadoayuvi.com/horarios/${editingHorario.idHorario}`, formattedHorario);
@@ -177,7 +177,7 @@ function HorariosComponent() {
         await axios.post("https://api.voluntariadoayuvi.com/horarios", formattedHorario);
         setAlertMessage("Horario creado con éxito");
       }
-  
+
       filter === "activos" ? fetchActiveHorarios() : fetchInactiveHorarios();
       setShowAlert(true);
       handleCloseModal();
@@ -282,6 +282,8 @@ function HorariosComponent() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <div className="d-flex justify-content-start mb-3">

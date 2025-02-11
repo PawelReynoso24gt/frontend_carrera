@@ -45,10 +45,10 @@ function Productos() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver productos']
+          response.data.permisos['Ver productos']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -61,14 +61,14 @@ function Productos() {
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchProductos();
-          } else {
-            checkPermission('Ver productos', 'No tienes permisos para ver productos');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchProductos();
+      } else {
+        checkPermission('Ver productos', 'No tienes permisos para ver productos');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -101,12 +101,12 @@ function Productos() {
   const fetchActiveProductos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/productos/activos");
-      setProductos(response.data);
-      setFilteredProductos(response.data);
-    } else {
-      checkPermission('Ver productos', 'No tienes permisos para ver productos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/productos/activos");
+        setProductos(response.data);
+        setFilteredProductos(response.data);
+      } else {
+        checkPermission('Ver productos', 'No tienes permisos para ver productos')
+      }
     } catch (error) {
       console.error("Error fetching active productos:", error);
     }
@@ -115,12 +115,12 @@ function Productos() {
   const fetchInactiveProductos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/productos/inactivos");
-      setProductos(response.data);
-      setFilteredProductos(response.data);
-    } else {
-      checkPermission('Ver productos', 'No tienes permisos para ver productos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/productos/inactivos");
+        setProductos(response.data);
+        setFilteredProductos(response.data);
+      } else {
+        checkPermission('Ver productos', 'No tienes permisos para ver productos')
+      }
     } catch (error) {
       console.error("Error fetching inactive productos:", error);
     }
@@ -353,6 +353,8 @@ function Productos() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">

@@ -35,12 +35,12 @@ function MaterialesComponent() {
         });
         setPermissions(response.data.permisos || {});
 
-        
-        const hasPermission =
-        response.data.permisos['Ver materiales']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        const hasPermission =
+          response.data.permisos['Ver materiales']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -49,15 +49,15 @@ function MaterialesComponent() {
     fetchPermissions();
   }, []);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchActiveMateriales();
-          } else {
-            checkPermission('Ver materiales', 'No tienes permisos para ver materiales');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchActiveMateriales();
+      } else {
+        checkPermission('Ver materiales', 'No tienes permisos para ver materiales');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   useEffect(() => {
     const fetchEventos = async () => {
@@ -68,7 +68,7 @@ function MaterialesComponent() {
         console.error("Error fetching eventos:", error);
       }
     };
-  
+
     fetchEventos();
   }, []);
 
@@ -97,14 +97,14 @@ function MaterialesComponent() {
   const fetchActiveMateriales = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/materiales/all');
-      const activeMateriales = response.data.filter(material => material.estado === 1);
-      setMateriales(activeMateriales);
-      setFilteredMateriales(activeMateriales);
-      setFilter('activos');
-    } else {
-      checkPermission('Ver materiales', 'No tienes permisos para ver materiales')
-    }
+        const response = await axios.get('https://api.voluntariadoayuvi.com/materiales/all');
+        const activeMateriales = response.data.filter(material => material.estado === 1);
+        setMateriales(activeMateriales);
+        setFilteredMateriales(activeMateriales);
+        setFilter('activos');
+      } else {
+        checkPermission('Ver materiales', 'No tienes permisos para ver materiales')
+      }
     } catch (error) {
       console.error('Error fetching active materiales:', error);
     }
@@ -113,14 +113,14 @@ function MaterialesComponent() {
   const fetchInactiveMateriales = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/materiales/all');
-      const inactiveMateriales = response.data.filter(material => material.estado === 0);
-      setMateriales(inactiveMateriales);
-      setFilteredMateriales(inactiveMateriales);
-      setFilter('inactivos');
-    } else {
-      checkPermission('Ver materiales', 'No tienes permisos para ver materiales')
-    }
+        const response = await axios.get('https://api.voluntariadoayuvi.com/materiales/all');
+        const inactiveMateriales = response.data.filter(material => material.estado === 0);
+        setMateriales(inactiveMateriales);
+        setFilteredMateriales(inactiveMateriales);
+        setFilter('inactivos');
+      } else {
+        checkPermission('Ver materiales', 'No tienes permisos para ver materiales')
+      }
     } catch (error) {
       console.error('Error fetching inactive materiales:', error);
     }
@@ -137,18 +137,18 @@ function MaterialesComponent() {
 
   const handleShowModal = async (material = null) => {
     setEditingMaterial(material);
-  
+
     if (material) {
       //console.log("Material seleccionado para editar:", material);
-  
+
       // Usar directamente el idEvento de la comisión asociada al material
       const idEvento = material.comisione?.idEvento;
       //console.log("ID del evento asociado al material:", idEvento);
-  
+
       // Buscar el evento en la lista de eventos (opcional, si necesitas más detalles del evento)
       const eventoAsociado = eventos.find((evento) => evento.idEvento === idEvento);
       setSelectedEvento(eventoAsociado || null); // Guardar el evento asociado (si existe)
-  
+
       // Cargar las comisiones asociadas al evento
       await fetchComisionesPorEvento(idEvento);
     } else {
@@ -156,7 +156,7 @@ function MaterialesComponent() {
       setSelectedEvento(null);
       setComisionesPorEvento([]);
     }
-  
+
     // Establecer los datos del material en el formulario
     setNewMaterial(
       material || {
@@ -168,7 +168,7 @@ function MaterialesComponent() {
         idEvento: "",
       }
     );
-  
+
     setShowModal(true);
   };
 
@@ -307,6 +307,8 @@ function MaterialesComponent() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <Button

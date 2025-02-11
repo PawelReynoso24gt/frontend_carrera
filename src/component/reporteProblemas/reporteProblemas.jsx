@@ -14,7 +14,7 @@ function ReporteTecnico() {
   const [cargo, setCargo] = useState("");
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
-  const [permissions, setPermissions] = useState({});
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -207,11 +207,11 @@ function ReporteTecnico() {
     });
 
     startY += 20 + Object.keys(totalPorEstado).length * 10;
-    if (startY + 30> pageHeight) {
-        doc.addPage();
-        startY = 10;
+    if (startY + 30 > pageHeight) {
+      doc.addPage();
+      startY = 10;
     }
-    
+
     // Espacio para la firma
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
@@ -232,6 +232,8 @@ function ReporteTecnico() {
         padding: "20px",
         borderRadius: "8px",
         boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        maxWidth: "100%",
+        margin: "0 auto",
       }}
     >
       <div className="row mb-3">

@@ -211,13 +211,13 @@ function Recaudaciones() {
 
             setRecaudacionToUpdate(recaudacion);
 
-             // Asignar el ID de la rifa y el talonario desde la respuesta
-             const idRifa = recaudacion.solicitudTalonario?.talonario?.rifa?.idRifa || "";
-             const idTalonario = recaudacion.solicitudTalonario?.talonario?.idTalonario || "";
-             const precio = parseFloat(recaudacion.solicitudTalonario?.talonario?.rifa?.precioBoleto) || 0;
-     
-             console.log("ID de la Rifa seleccionado:", idRifa);
-             console.log("ID del Talonario seleccionado:", idTalonario);
+            // Asignar el ID de la rifa y el talonario desde la respuesta
+            const idRifa = recaudacion.solicitudTalonario?.talonario?.rifa?.idRifa || "";
+            const idTalonario = recaudacion.solicitudTalonario?.talonario?.idTalonario || "";
+            const precio = parseFloat(recaudacion.solicitudTalonario?.talonario?.rifa?.precioBoleto) || 0;
+
+            console.log("ID de la Rifa seleccionado:", idRifa);
+            console.log("ID del Talonario seleccionado:", idTalonario);
 
             setSelectedRifa(idRifa);
             setSelectedTalonario(idTalonario);
@@ -230,7 +230,7 @@ function Recaudaciones() {
                 imagenTransferencia: pago.imagenTransferencia
             })));
 
-             // Agregar console.log para ver el JSON de la recaudación antes de abrir el modal
+            // Agregar console.log para ver el JSON de la recaudación antes de abrir el modal
             console.log("Datos de la recaudación a actualizar:", JSON.stringify(response.data, null, 2));
             await fetchRifas(); // Cargar rifas disponibles
             await fetchTalonarios(idRifa); // Cargar talonarios para la rifa seleccionada
@@ -257,7 +257,7 @@ function Recaudaciones() {
         setBoletosVendidos(0); // Reinicia el número de boletos vendidos
         setPagos([]); // Reinicia los pagos
         setPrecioBoleto(0); // Reinicia el precio del boleto
-    };    
+    };
 
     const handleCloseModal = () => {
         setShowModal(false);
@@ -484,6 +484,8 @@ function Recaudaciones() {
                 padding: "20px",
                 borderRadius: "8px",
                 boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                maxWidth: "100%",
+                margin: "0 auto",
             }}
         >
             <h3

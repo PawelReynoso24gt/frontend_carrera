@@ -49,10 +49,10 @@ function Stand() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver stands']
+          response.data.permisos['Ver stands']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -66,14 +66,14 @@ function Stand() {
   }, []);
 
   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchStands();
-        } else {
-          checkPermission('Ver stands', 'No tienes permisos para ver stands');
-        }
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchStands();
+      } else {
+        checkPermission('Ver stands', 'No tienes permisos para ver stands');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
@@ -276,12 +276,12 @@ function Stand() {
   const fetchActiveStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/stand/activas");
-      const data = Array.isArray(response.data) ? response.data : []; // Validación
-      setStands(data);
-    } else {
-      checkPermission('Ver stands', 'No tienes permisos para ver stands')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/stand/activas");
+        const data = Array.isArray(response.data) ? response.data : []; // Validación
+        setStands(data);
+      } else {
+        checkPermission('Ver stands', 'No tienes permisos para ver stands')
+      }
     } catch (error) {
       console.error("Error fetching active stands:", error);
       setStands([]); // Respaldo en caso de error
@@ -291,12 +291,12 @@ function Stand() {
   const fetchInactiveStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/stand/inactivas");
-      const data = Array.isArray(response.data) ? response.data : []; // Validación
-      setStands(data);
-    } else {
-      checkPermission('Ver stands', 'No tienes permisos para ver stands')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/stand/inactivas");
+        const data = Array.isArray(response.data) ? response.data : []; // Validación
+        setStands(data);
+      } else {
+        checkPermission('Ver stands', 'No tienes permisos para ver stands')
+      }
     } catch (error) {
       console.error("Error fetching inactive stands:", error);
       setStands([]); // Respaldo en caso de error
@@ -397,6 +397,8 @@ function Stand() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <div className="d-flex justify-content-start align-items-center mb-3">

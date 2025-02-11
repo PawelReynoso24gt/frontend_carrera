@@ -39,10 +39,10 @@ function Talonarios() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver talonarios']
+          response.data.permisos['Ver talonarios']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -53,14 +53,14 @@ function Talonarios() {
   }, []);
 
   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchTalonarios();
-        } else {
-          checkPermission('Ver talonarios', 'No tienes permisos para ver talonarios');
-        }
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchTalonarios();
+      } else {
+        checkPermission('Ver talonarios', 'No tienes permisos para ver talonarios');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -93,12 +93,12 @@ function Talonarios() {
   const fetchActiveTalonarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/talonarios/activos");
-      setTalonarios(response.data);
-      setFilteredTalonarios(response.data);
-    } else {
-      checkPermission('Ver talonarios', 'No tienes permisos para ver talonarios')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/talonarios/activos");
+        setTalonarios(response.data);
+        setFilteredTalonarios(response.data);
+      } else {
+        checkPermission('Ver talonarios', 'No tienes permisos para ver talonarios')
+      }
     } catch (error) {
       console.error("Error fetching active talonarios:", error);
     }
@@ -107,12 +107,12 @@ function Talonarios() {
   const fetchInactiveTalonarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/talonarios/inactivos");
-      setTalonarios(response.data);
-      setFilteredTalonarios(response.data);
-    } else {
-      checkPermission('Ver talonarios', 'No tienes permisos para ver talonarios')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/talonarios/inactivos");
+        setTalonarios(response.data);
+        setFilteredTalonarios(response.data);
+      } else {
+        checkPermission('Ver talonarios', 'No tienes permisos para ver talonarios')
+      }
     } catch (error) {
       console.error("Error fetching inactive talonarios:", error);
     }
@@ -167,13 +167,13 @@ function Talonarios() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Convertir idRifa a número
     const updatedTalonario = {
       ...newTalonario,
       idRifa: Number(newTalonario.idRifa),
     };
-    
+
     try {
       // console.log("Submitting talonario:", updatedTalonario);
       if (editingTalonario) {
@@ -294,6 +294,8 @@ function Talonarios() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">

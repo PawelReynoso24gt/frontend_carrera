@@ -19,7 +19,7 @@ function FotosSedesComponent() {
   const [permissions, setPermissions] = useState({});
   const [hasViewPermission, setHasViewPermission] = useState(false);
   const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
-  
+
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
 
@@ -34,29 +34,29 @@ function FotosSedesComponent() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver fotos sedes']
+          response.data.permisos['Ver fotos sedes']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchSedes();
   }, []);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchActiveFotos();
-          } else {
-            checkPermission('Ver fotos sedes', 'No tienes permisos para ver fotos sedes');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
-  
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchActiveFotos();
+      } else {
+        checkPermission('Ver fotos sedes', 'No tienes permisos para ver fotos sedes');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -70,15 +70,15 @@ function FotosSedesComponent() {
   const fetchActiveFotos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/fotos_sedes/activos');
-      const fotosWithFullPath = response.data.map(foto => ({
-        ...foto,
-        foto: foto.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
-      }));
-      setFotos(fotosWithFullPath);
-    } else {
-      checkPermission('Ver fotos sedes', 'No tienes permisos para ver fotos sedes')
-    }
+        const response = await axios.get('https://api.voluntariadoayuvi.com/fotos_sedes/activos');
+        const fotosWithFullPath = response.data.map(foto => ({
+          ...foto,
+          foto: foto.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
+        }));
+        setFotos(fotosWithFullPath);
+      } else {
+        checkPermission('Ver fotos sedes', 'No tienes permisos para ver fotos sedes')
+      }
     } catch (error) {
       console.error('Error fetching active fotos:', error);
     }
@@ -87,17 +87,17 @@ function FotosSedesComponent() {
   const fetchInactiveFotos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/fotos_sedes', {
-        params: { estado: 0 }
-      });
-      const inactiveFotos = response.data.filter(foto => foto.estado === 0).map(foto => ({
-        ...foto,
-        foto: foto.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
-      }));
-      setFotos(inactiveFotos);
-    } else {
-      checkPermission('Ver fotos sedes', 'No tienes permisos para ver fotos sedes')
-    }
+        const response = await axios.get('https://api.voluntariadoayuvi.com/fotos_sedes', {
+          params: { estado: 0 }
+        });
+        const inactiveFotos = response.data.filter(foto => foto.estado === 0).map(foto => ({
+          ...foto,
+          foto: foto.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
+        }));
+        setFotos(inactiveFotos);
+      } else {
+        checkPermission('Ver fotos sedes', 'No tienes permisos para ver fotos sedes')
+      }
     } catch (error) {
       console.error('Error fetching inactive fotos:', error);
     }
@@ -140,7 +140,7 @@ function FotosSedesComponent() {
       idUsuario,
       fechaHora: new Date()
     };
-  
+
     try {
       await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
     } catch (error) {
@@ -280,6 +280,8 @@ function FotosSedesComponent() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <Button
@@ -401,7 +403,7 @@ function FotosSedesComponent() {
                         if (checkPermission('Desactivar foto sede', 'No tienes permisos para desactivar voluntario')) {
                           toggleFotoEstado(foto.idFotoSede, foto.estado);
                         }
-                    }}
+                      }}
                     />
                   ) : (
                     <FaToggleOff
@@ -416,7 +418,7 @@ function FotosSedesComponent() {
                         if (checkPermission('Activar foto sede', 'No tienes permisos para activar voluntario')) {
                           toggleFotoEstado(foto.idFotoSede, foto.estado);
                         }
-                    }}
+                      }}
                     />
                   )}
                 </td>
@@ -496,17 +498,17 @@ function FotosSedesComponent() {
             </Form>
           </Modal.Body>
         </Modal>
-          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

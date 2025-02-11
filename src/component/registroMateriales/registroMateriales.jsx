@@ -83,7 +83,10 @@ function InscripcionesMateriales() {
   };
 
   return (
-    <Container className="mt-5">
+    <Container className="mt-5" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         Detalle de Inscripciones de Materiales
       </h2>
@@ -102,7 +105,7 @@ function InscripcionesMateriales() {
                     Inscripción #{inscripcion.idDetalleInscripcionMaterial}
                   </Card.Title>
                   <Card.Text>
-                   <strong>Voluntario:</strong> {inscripcion.nombreVoluntario}<br />  
+                    <strong>Voluntario:</strong> {inscripcion.nombreVoluntario}<br />
                     <strong>Evento:</strong> {inscripcion.nombreEvento}<br />
                     <strong>Comisión:</strong> {inscripcion.nombreComision}<br />
                     <strong>Material:</strong> {inscripcion.nombreMaterial}<br />

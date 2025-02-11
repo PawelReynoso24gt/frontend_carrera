@@ -45,6 +45,8 @@ const Desarrolladores = () => {
         padding: "20px",
         borderRadius: "8px",
         boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        maxWidth: "100%",
+        margin: "0 auto",
       }}
     >
       <h2
@@ -58,26 +60,7 @@ const Desarrolladores = () => {
         Equipo de Desarrolladores
       </h2>
 
-       {/* Nuevo recuadro para el texto */}
-       <div
-        style={{
-          backgroundColor: "#F9F7ED",
-          color: "#ffffff",
-          padding: "15px",
-          borderRadius: "8px",
-          marginBottom: "20px",
-          textAlign: "center",
-        }}
-      >
-        <p style={{ margin: 0,  fontWeight: "bold", fontSize: "20px" }}>
-        Este proyecto fue desarrollado por estudiantes de la Facultad de Ingeniería de la Universidad Mesoamericana, sede Quetzaltenango, 
-        como parte de los requisitos del Proyecto de Carrera para la obtención del título de Ingeniería en Sistemas, Informática y Ciencias de la Computación. 
-        Cada integrante del equipo contribuyó con sus conocimientos y habilidades técnicas, abarcando áreas como diseño de bases de datos,
-        desarrollo backend y frontend, así como gestión de seguridad informática, demostrando un compromiso con la excelencia académica y profesional.
-        </p>
-      </div>
-
-      
+      {/* Nuevo recuadro para el texto */}
       <div
         style={{
           backgroundColor: "#F9F7ED",
@@ -88,12 +71,31 @@ const Desarrolladores = () => {
           textAlign: "center",
         }}
       >
-        <p style={{ margin: 0,  fontWeight: "bold", fontSize: "20px" }}>
-        Todas las imágenes utilizadas en este proyecto son propiedad exclusiva de AYUVI, y su uso está destinado únicamente para los fines específicos de este sistema. 
-        Asimismo, al finalizar el proyecto, el código fuente y el programa completo serán entregados a AYUVI para su uso, permitiéndoles realizar las modificaciones y 
-        adaptaciones necesarias según se requiera a futuro. El sistema será donado en su totalidad a la organización, bajo la condición de que su uso se limite exclusivamente a 
-        AYUVI y sus operaciones. Además, se incluirá una sección en el sistema para reconocer a los desarrolladores que participaron en su creación, como parte del compromiso y 
-        la transparencia del proyecto.
+        <p style={{ margin: 0, fontWeight: "bold", fontSize: "20px" }}>
+          Este proyecto fue desarrollado por estudiantes de la Facultad de Ingeniería de la Universidad Mesoamericana, sede Quetzaltenango,
+          como parte de los requisitos del Proyecto de Carrera para la obtención del título de Ingeniería en Sistemas, Informática y Ciencias de la Computación.
+          Cada integrante del equipo contribuyó con sus conocimientos y habilidades técnicas, abarcando áreas como diseño de bases de datos,
+          desarrollo backend y frontend, así como gestión de seguridad informática, demostrando un compromiso con la excelencia académica y profesional.
+        </p>
+      </div>
+
+
+      <div
+        style={{
+          backgroundColor: "#F9F7ED",
+          color: "#ffffff",
+          padding: "15px",
+          borderRadius: "8px",
+          marginBottom: "20px",
+          textAlign: "center",
+        }}
+      >
+        <p style={{ margin: 0, fontWeight: "bold", fontSize: "20px" }}>
+          Todas las imágenes utilizadas en este proyecto son propiedad exclusiva de AYUVI, y su uso está destinado únicamente para los fines específicos de este sistema.
+          Asimismo, al finalizar el proyecto, el código fuente y el programa completo serán entregados a AYUVI para su uso, permitiéndoles realizar las modificaciones y
+          adaptaciones necesarias según se requiera a futuro. El sistema será donado en su totalidad a la organización, bajo la condición de que su uso se limite exclusivamente a
+          AYUVI y sus operaciones. Además, se incluirá una sección en el sistema para reconocer a los desarrolladores que participaron en su creación, como parte del compromiso y
+          la transparencia del proyecto.
         </p>
       </div>
 
@@ -104,20 +106,19 @@ const Desarrolladores = () => {
             key={index}
             md={6}
             lg={4}
-            className={`mb-4 d-flex justify-content-center ${
-              developer.name === "Alejandra González Monterrosa" ? "align-self-center" : ""
-            }`}
+            className={`mb-4 d-flex justify-content-center ${developer.name === "Alejandra González Monterrosa" ? "align-self-center" : ""
+              }`}
           >
-           <Card
-            style={{
-              border: "none",
-              borderRadius: "10px",
-              boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-              width: "100%",
-              maxWidth: "500px", // Aumenta el ancho máximo
-              minWidth: "300px", // Establece un ancho mínimo si es necesario
-            }}
-          >
+            <Card
+              style={{
+                border: "none",
+                borderRadius: "10px",
+                boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                width: "100%",
+                maxWidth: "500px", // Aumenta el ancho máximo
+                minWidth: "300px", // Establece un ancho mínimo si es necesario
+              }}
+            >
               <Card.Img
                 variant="top"
                 src={developer.image}

@@ -55,10 +55,10 @@ function Ventas() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver ventas voluntarios']
+          response.data.permisos['Ver ventas voluntarios']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -83,14 +83,14 @@ function Ventas() {
 
 
   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchVentas();
-        } else {
-          checkPermission('Ver ventas voluntarios', 'No tienes permisos para ver ventas voluntarios');
-        }
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchVentas();
+      } else {
+        checkPermission('Ver ventas voluntarios', 'No tienes permisos para ver ventas voluntarios');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
@@ -227,12 +227,12 @@ function Ventas() {
   const fetchActiveVentas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/voluntarios/activas");
-      setFilteredVentas(response.data);
-      setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
-    } else {
-      checkPermission('Ver ventas voluntarios', 'No tienes permisos para ver ventas voluntarios');
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/voluntarios/activas");
+        setFilteredVentas(response.data);
+        setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
+      } else {
+        checkPermission('Ver ventas voluntarios', 'No tienes permisos para ver ventas voluntarios');
+      }
     } catch (error) {
       console.error("Error fetching active ventas:", error);
     }
@@ -241,12 +241,12 @@ function Ventas() {
   const fetchInactiveVentas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/voluntarios/inactivas");
-      setFilteredVentas(response.data);
-      setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
-    } else {
-      checkPermission('Ver ventas voluntarios', 'No tienes permisos para ver ventas voluntarios');
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/voluntarios/inactivas");
+        setFilteredVentas(response.data);
+        setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
+      } else {
+        checkPermission('Ver ventas voluntarios', 'No tienes permisos para ver ventas voluntarios');
+      }
     } catch (error) {
       console.error("Error fetching inactive ventas:", error);
     }
@@ -314,16 +314,16 @@ function Ventas() {
       // Validar que la suma de los montos de los pagos coincida con el total calculado
       const totalPagado = tiposPagos.reduce((sum, pago) => sum + (parseFloat(pago.monto) || 0), 0);
 
-        // Asegúrate de que totalAPagar es un número
-        const totalAPagarNumber = parseFloat(totalAPagar);
+      // Asegúrate de que totalAPagar es un número
+      const totalAPagarNumber = parseFloat(totalAPagar);
 
-        // Verifica si el total pagado coincide con el total calculado (incluyendo la donación ya sumada)
-        if (totalPagado !== totalAPagarNumber) {
-            alert(
-                `La suma de los pagos (Q${totalPagado.toFixed(2)}) no coincide con el total a pagar (Q${totalAPagarNumber.toFixed(2)}).`
-            );
-            return;
-        }
+      // Verifica si el total pagado coincide con el total calculado (incluyendo la donación ya sumada)
+      if (totalPagado !== totalAPagarNumber) {
+        alert(
+          `La suma de los pagos (Q${totalPagado.toFixed(2)}) no coincide con el total a pagar (Q${totalAPagarNumber.toFixed(2)}).`
+        );
+        return;
+      }
 
       // Validar que cada pago tenga el formato correcto
       const pagosValidados = tiposPagos.map((pago) => {
@@ -381,27 +381,27 @@ function Ventas() {
 
   const handleUpdateVenta = async () => {
     try {
-    // Calcular el subtotal de los productos
-    const subtotal = detallesVenta.reduce(
-      (sum, detalle) => sum + (parseFloat(detalle.subTotal) || 0),
-      0
-    );
+      // Calcular el subtotal de los productos
+      const subtotal = detallesVenta.reduce(
+        (sum, detalle) => sum + (parseFloat(detalle.subTotal) || 0),
+        0
+      );
 
-    // Tomar la donación directamente de newVenta.donacion
-    const totalDonacion = parseFloat(newVenta.donacion) || 0;
+      // Tomar la donación directamente de newVenta.donacion
+      const totalDonacion = parseFloat(newVenta.donacion) || 0;
 
-    // Calcular el total a pagar
-    const totalVenta = subtotal + totalDonacion;
+      // Calcular el total a pagar
+      const totalVenta = subtotal + totalDonacion;
 
       // Imprimir los cálculos en la consola
-    // console.log("Subtotal:", subtotal.toFixed(2));
-    // console.log("Total Donación:", totalDonacion.toFixed(2));
-    // console.log("Total a Pagar:", totalVenta.toFixed(2));
+      // console.log("Subtotal:", subtotal.toFixed(2));
+      // console.log("Total Donación:", totalDonacion.toFixed(2));
+      // console.log("Total a Pagar:", totalVenta.toFixed(2));
 
       // Asegúrate de que totalAPagar es un número
       const totalAPagarNumber = parseFloat(totalAPagar);
 
-       // Filtrar los detalles con cantidad mayor a 0
+      // Filtrar los detalles con cantidad mayor a 0
       const detallesValidos = detallesVenta.filter(detalle => detalle.cantidad > 0);
 
       // Aplicar la donación solo al primer detalle válido
@@ -437,8 +437,8 @@ function Ventas() {
         })),
       };
 
-    // Imprimir el JSON en la consola
-    //console.log("JSON enviado al backend:", JSON.stringify(ventaData, null, 2));
+      // Imprimir el JSON en la consola
+      //console.log("JSON enviado al backend:", JSON.stringify(ventaData, null, 2));
 
       const response = await axios.put(
         `https://api.voluntariadoayuvi.com/ventas/update/completa/${ventaEditada.venta.idVenta}`,
@@ -645,6 +645,8 @@ function Ventas() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">
@@ -796,49 +798,49 @@ function Ventas() {
           <Modal.Body>
             {detalleSeleccionado ? (
               detalleSeleccionado
-              .filter(detalle => detalle.cantidad > 0) // Filtrar detalles con cantidad > 0
-              .map((detalle, index) => (
-                <div key={index}>
-                  <h5>Detalle #{index + 1}</h5>
-                  <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
-                  <p><strong>Nombre Producto:</strong> {detalle.producto?.nombreProducto || "N/A"}</p>
-                  <p><strong>Cantidad:</strong> {detalle.cantidad || "N/A"}</p>
-                  <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
-                  <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
+                .filter(detalle => detalle.cantidad > 0) // Filtrar detalles con cantidad > 0
+                .map((detalle, index) => (
+                  <div key={index}>
+                    <h5>Detalle #{index + 1}</h5>
+                    <p><strong>ID Producto:</strong> {detalle.producto?.idProducto || "N/A"}</p>
+                    <p><strong>Nombre Producto:</strong> {detalle.producto?.nombreProducto || "N/A"}</p>
+                    <p><strong>Cantidad:</strong> {detalle.cantidad || "N/A"}</p>
+                    <p><strong>Subtotal:</strong> Q{detalle.subTotal || "N/A"}</p>
+                    <p><strong>Donación:</strong> Q{detalle.donacion || "N/A"}</p>
 
-                  <h5>Pagos Asociados</h5>
-                  {detalle.detalle_pago_ventas_voluntarios && detalle.detalle_pago_ventas_voluntarios.length > 0 ? (
-                    detalle.detalle_pago_ventas_voluntarios.map((pago, idx) => (
-                      <div key={idx}>
-                        <p><strong>Tipo de Pago:</strong> {pago.tipo_pago?.tipo || "N/A"}</p>
-                        <p><strong>Monto:</strong> Q{pago.pago || "N/A"}</p>
-                        <p><strong>Correlativo:</strong> {pago.correlativo || "N/A"}</p>
-                        <p>
-                          <strong>Comprobante:</strong>
-                          {pago.imagenTransferencia === "efectivo" ? (
-                            "Efectivo"
-                          ) : (
-                            <img
-                              src={`data:image/png;base64,${pago.imagenTransferencia}`}
-                              alt="Comprobante de Pago"
-                              style={{ width: "100%", maxWidth: "150px", marginTop: "10px", borderRadius: "8px" }}
-                            />
-                          )}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p>No hay pagos asociados.</p>
-                  )}
+                    <h5>Pagos Asociados</h5>
+                    {detalle.detalle_pago_ventas_voluntarios && detalle.detalle_pago_ventas_voluntarios.length > 0 ? (
+                      detalle.detalle_pago_ventas_voluntarios.map((pago, idx) => (
+                        <div key={idx}>
+                          <p><strong>Tipo de Pago:</strong> {pago.tipo_pago?.tipo || "N/A"}</p>
+                          <p><strong>Monto:</strong> Q{pago.pago || "N/A"}</p>
+                          <p><strong>Correlativo:</strong> {pago.correlativo || "N/A"}</p>
+                          <p>
+                            <strong>Comprobante:</strong>
+                            {pago.imagenTransferencia === "efectivo" ? (
+                              "Efectivo"
+                            ) : (
+                              <img
+                                src={`data:image/png;base64,${pago.imagenTransferencia}`}
+                                alt="Comprobante de Pago"
+                                style={{ width: "100%", maxWidth: "150px", marginTop: "10px", borderRadius: "8px" }}
+                              />
+                            )}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p>No hay pagos asociados.</p>
+                    )}
 
-                  <h5>Información del Voluntario</h5>
-                  <p><strong>Nombre:</strong> {detalle.voluntario?.persona?.nombre || "N/A"}</p>
-                  <p><strong>Teléfono:</strong> {detalle.voluntario?.persona?.telefono || "N/A"}</p>
-                  <p><strong>Domicilio:</strong> {detalle.voluntario?.persona?.domicilio || "N/A"}</p>
-                  <p><strong>Código QR:</strong> {detalle.voluntario?.codigoQR || "N/A"}</p>
-                  <hr />
-                </div>
-              ))
+                    <h5>Información del Voluntario</h5>
+                    <p><strong>Nombre:</strong> {detalle.voluntario?.persona?.nombre || "N/A"}</p>
+                    <p><strong>Teléfono:</strong> {detalle.voluntario?.persona?.telefono || "N/A"}</p>
+                    <p><strong>Domicilio:</strong> {detalle.voluntario?.persona?.domicilio || "N/A"}</p>
+                    <p><strong>Código QR:</strong> {detalle.voluntario?.codigoQR || "N/A"}</p>
+                    <hr />
+                  </div>
+                ))
             ) : (
               <p>No se encontraron detalles.</p>
             )}
@@ -1079,17 +1081,17 @@ function Ventas() {
             </Button>
           </Modal.Footer>
         </Modal>
-          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                  <Modal.Header closeButton>
-                    <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                    <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                      Aceptar
-                    </Button>
-                  </Modal.Footer>
-                </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

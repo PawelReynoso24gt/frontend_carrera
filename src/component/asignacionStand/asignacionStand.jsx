@@ -37,24 +37,24 @@ function AsignacionStands() {
     fetchPermissions();
   }, []);
 
-   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchAsignaciones();
-        } else {
-          checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchAsignaciones();
+      } else {
+        checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
-    const checkPermission = (permission, message) => {
-      if (!permissions[permission]) {
-        setPermissionMessage(message);
-        setShowPermissionModal(true);
-        return false;
-      }
-      return true;
-    };
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchAsignaciones = async () => {
     try {
@@ -76,17 +76,17 @@ function AsignacionStands() {
   const fetchAsignacionesActivas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/asignacion_stands/voluntarios_por_stand/activos"
-      );
-      if (Array.isArray(response.data)) {
-        setAsignaciones(response.data);
+        const response = await axios.get(
+          "https://api.voluntariadoayuvi.com/asignacion_stands/voluntarios_por_stand/activos"
+        );
+        if (Array.isArray(response.data)) {
+          setAsignaciones(response.data);
+        } else {
+          throw new Error("La respuesta de la API no es un arreglo");
+        }
       } else {
-        throw new Error("La respuesta de la API no es un arreglo");
+        checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands')
       }
-    } else {
-      checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands')
-    }
     } catch (err) {
       console.error("Error al obtener asignaciones activas:", err);
       setError("Error al obtener las asignaciones activas.");
@@ -96,17 +96,17 @@ function AsignacionStands() {
   const fetchAsignacionesInactivas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/asignacion_stands/voluntarios_por_stand/inactivos"
-      );
-      if (Array.isArray(response.data)) {
-        setAsignaciones(response.data);
+        const response = await axios.get(
+          "https://api.voluntariadoayuvi.com/asignacion_stands/voluntarios_por_stand/inactivos"
+        );
+        if (Array.isArray(response.data)) {
+          setAsignaciones(response.data);
+        } else {
+          throw new Error("La respuesta de la API no es un arreglo");
+        }
       } else {
-        throw new Error("La respuesta de la API no es un arreglo");
+        checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands')
       }
-    } else {
-      checkPermission('Ver asignación de stands', 'No tienes permisos para ver asignación de stands')
-    }
     } catch (err) {
       console.error("Error al obtener asignaciones inactivas:", err);
       setError("Error al obtener las asignaciones inactivas.");
@@ -124,7 +124,10 @@ function AsignacionStands() {
   }
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       {/* Título y Breadcrumb */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
@@ -144,6 +147,8 @@ function AsignacionStands() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -225,13 +230,13 @@ function AsignacionStands() {
                       <td>{voluntario.nombreVoluntario}</td>
                       <td>{voluntario.telefonoVoluntario}</td>
                       <td>
-                      {voluntario.horarioInicio
-    ? format(parseISO(`1970-01-01T${voluntario.horarioInicio}`), "hh:mm a")
-    : "Sin hora"}{" "}
-  -{" "}
-  {voluntario.horarioFinal
-    ? format(parseISO(`1970-01-01T${voluntario.horarioFinal}`), "hh:mm a")
-    : "Sin hora"}
+                        {voluntario.horarioInicio
+                          ? format(parseISO(`1970-01-01T${voluntario.horarioInicio}`), "hh:mm a")
+                          : "Sin hora"}{" "}
+                        -{" "}
+                        {voluntario.horarioFinal
+                          ? format(parseISO(`1970-01-01T${voluntario.horarioFinal}`), "hh:mm a")
+                          : "Sin hora"}
                       </td>
                     </tr>
                   ))}
@@ -244,16 +249,16 @@ function AsignacionStands() {
         )}
       </div>
       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Permiso Denegado</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>{permissionMessage}</Modal.Body>
-          <Modal.Footer>
-            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-              Aceptar
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

@@ -37,7 +37,7 @@ function SignUpForm() {
         className="crancy-wc crancy-wc__full crancy-bg-cover"
         style={{ backgroundImage: `url(${bg})`, width: "100%", height: "100%" }}
       >
-        <div className="container" style={{ maxWidth: "500px", padding: "40px", backgroundColor: "rgba(255, 255, 255, 0.95)", borderRadius: "16px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
+        <div className="container-fluid" style={{ maxWidth: "500px", padding: "40px", backgroundColor: "rgba(255, 255, 255, 0.95)", borderRadius: "16px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
           <div className="text-center mb-4">
             <img src={logoW} alt="Logo" style={{ width: "150px", marginBottom: "20px" }} />
             <h4 style={{ color: "#333", fontWeight: "bold" }}>Crea tu cuenta</h4>

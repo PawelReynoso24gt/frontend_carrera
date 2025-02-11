@@ -44,10 +44,10 @@ function CategoriasHorarios() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver categoria horarios']
+          response.data.permisos['Ver categoria horarios']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -56,15 +56,15 @@ function CategoriasHorarios() {
     fetchPermissions();
   }, []);
 
-   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchCategoriasHorarios();
-        } else {
-          checkPermission('Ver categoria horarios', 'No tienes permisos para ver categoria horarios');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchCategoriasHorarios();
+      } else {
+        checkPermission('Ver categoria horarios', 'No tienes permisos para ver categoria horarios');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -88,14 +88,14 @@ function CategoriasHorarios() {
   const fetchActiveCategoriasHorarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/categoriaHorarios/activas"
-      );
-      setCategoriasHorarios(response.data);
-      setFilteredCategoriasHorarios(response.data);
-    } else {
-      checkPermission('Ver categoria horarios', 'No tienes permisos para ver categoria horarios')
-    }
+        const response = await axios.get(
+          "https://api.voluntariadoayuvi.com/categoriaHorarios/activas"
+        );
+        setCategoriasHorarios(response.data);
+        setFilteredCategoriasHorarios(response.data);
+      } else {
+        checkPermission('Ver categoria horarios', 'No tienes permisos para ver categoria horarios')
+      }
     } catch (error) {
       console.error("Error fetching active categorías de horarios:", error);
     }
@@ -104,14 +104,14 @@ function CategoriasHorarios() {
   const fetchInactiveCategoriasHorarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/categoriaHorarios/inactivas"
-      );
-      setCategoriasHorarios(response.data);
-      setFilteredCategoriasHorarios(response.data);
-    } else {
-      checkPermission('Ver categoria horarios', 'No tienes permisos para ver categoria horarios')
-    }
+        const response = await axios.get(
+          "https://api.voluntariadoayuvi.com/categoriaHorarios/inactivas"
+        );
+        setCategoriasHorarios(response.data);
+        setFilteredCategoriasHorarios(response.data);
+      } else {
+        checkPermission('Ver categoria horarios', 'No tienes permisos para ver categoria horarios')
+      }
     } catch (error) {
       console.error("Error fetching inactive categorías de horarios:", error);
     }
@@ -280,7 +280,10 @@ function CategoriasHorarios() {
   return (
 
 
-    <div className="container mt-4">
+    <div className="container mt-4" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       {/* Título y Breadcrumb */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
@@ -301,6 +304,8 @@ function CategoriasHorarios() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>

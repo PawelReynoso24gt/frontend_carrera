@@ -35,6 +35,8 @@ function ActivitySection({ className }) {
       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
       padding: "20px",
       marginBottom: "20px",
+      maxWidth: "100%",
+      margin: "0 auto",
     },
     heading: {
       textAlign: "center",
@@ -86,10 +88,10 @@ function ActivitySection({ className }) {
 
       {voluntarioDestacado && (
         <div style={styles.alert} >
-           <span style={{ fontSize: '25px' }}>
-          <strong>Voluntario del mes:</strong> El voluntario{" "}
-          <strong>{voluntarioDestacado.nombreVoluntario}</strong> tiene{" "}
-          <strong>{voluntarioDestacado.puntos.punteo}</strong> puntos.
+          <span style={{ fontSize: '25px' }}>
+            <strong>Voluntario del mes:</strong> El voluntario{" "}
+            <strong>{voluntarioDestacado.nombreVoluntario}</strong> tiene{" "}
+            <strong>{voluntarioDestacado.puntos.punteo}</strong> puntos.
           </span>
         </div>
       )}
@@ -109,13 +111,13 @@ function ActivitySection({ className }) {
             <tr key={asistencia.idAsistenciaEvento} style={styles.tableRow}>
               <td style={styles.tableCell}>{asistencia.idAsistenciaEvento}</td>
               <td style={styles.tableCell}>
-                {asistencia.inscripcionEvento && asistencia.inscripcionEvento.evento 
-                  ? asistencia.inscripcionEvento.evento.nombreEvento 
+                {asistencia.inscripcionEvento && asistencia.inscripcionEvento.evento
+                  ? asistencia.inscripcionEvento.evento.nombreEvento
                   : "Desconocido"}
               </td>
               <td style={styles.tableCell}>
-                {asistencia.inscripcionEvento && asistencia.inscripcionEvento.voluntario 
-                  ? asistencia.inscripcionEvento.voluntario.persona.nombre 
+                {asistencia.inscripcionEvento && asistencia.inscripcionEvento.voluntario
+                  ? asistencia.inscripcionEvento.voluntario.persona.nombre
                   : "Desconocido"}
               </td>
               <td style={styles.tableCell}>{formatDate(asistencia.createdAt)}</td>

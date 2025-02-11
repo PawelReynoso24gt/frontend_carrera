@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import logo from "../../assets/img/LogoAYUVI_FullAzul.png"; 
+import logo from "../../assets/img/LogoAYUVI_FullAzul.png";
 
 function ReportePedidos() {
   const [fechaInicio, setFechaInicio] = useState("");
@@ -138,7 +138,10 @@ function ReportePedidos() {
   };
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <h3 className="text-center mb-4">Reporte de Pedidos</h3>
 
       {alerta && <div className="alert alert-warning">{alerta}</div>}
@@ -212,7 +215,7 @@ function ReportePedidos() {
           Descargar PDF
         </button>
       </div>
-      
+
       <table className="table table-bordered">
         <thead>
           <tr>

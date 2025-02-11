@@ -43,10 +43,10 @@ function TipoTraslado() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver tipo traslados']
+          response.data.permisos['Ver tipo traslados']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -55,15 +55,15 @@ function TipoTraslado() {
     fetchPermissions();
   }, []);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchTipoTraslados();
-          } else {
-            checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchTipoTraslados();
+      } else {
+        checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -87,11 +87,11 @@ function TipoTraslado() {
   const fetchActiveTipoTraslados = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipoTraslados/activas");
-      setFilteredTipoTraslados(response.data);
-    } else {
-      checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/tipoTraslados/activas");
+        setFilteredTipoTraslados(response.data);
+      } else {
+        checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados')
+      }
     } catch (error) {
       console.error("Error fetching active tipo traslados:", error);
     }
@@ -100,11 +100,11 @@ function TipoTraslado() {
   const fetchInactiveTipoTraslados = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipoTraslados/inactivas");
-      setFilteredTipoTraslados(response.data);
-    } else {
-      checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/tipoTraslados/inactivas");
+        setFilteredTipoTraslados(response.data);
+      } else {
+        checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados')
+      }
     } catch (error) {
       console.error("Error fetching inactive tipo traslados:", error);
     }
@@ -265,6 +265,8 @@ function TipoTraslado() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">

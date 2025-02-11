@@ -107,10 +107,10 @@ function RecaudacionDashboard() {
   const generateChartDataRecaudaciones = (data) => {
     // Ordena los eventos por fecha de registro en orden descendente
     const sortedData = [...data].sort((a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro));
-  
+
     // Toma los dos eventos más recientes
     const [mostRecent, previous] = sortedData;
-  
+
     // Configura los datos del gráfico
     setChartDataRecaudaciones({
       labels: previous
@@ -129,14 +129,14 @@ function RecaudacionDashboard() {
       ],
     });
   };
-  
+
   const generateChartDataVentas = (data) => {
     // Ordena las ventas por fecha en orden descendente
     const sortedData = [...data].sort((a, b) => new Date(b.fechaVenta) - new Date(a.fechaVenta));
-  
+
     // Toma las dos ventas más recientes
     const [mostRecent, previous] = sortedData;
-  
+
     // Configura los datos del gráfico
     setChartDataVentas({
       labels: previous ? [formatDate(previous.fechaVenta), formatDate(mostRecent.fechaVenta)] : [formatDate(mostRecent.fechaVenta)],
@@ -151,15 +151,15 @@ function RecaudacionDashboard() {
       ],
     });
   };
-  
+
   generateChartDataVentas
   const generateChartDataRifasBoletos = (data) => {
     // Ordena las rifas por fecha de creación de forma descendente
     const sortedData = [...data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
+
     // Toma las dos rifas más recientes
     const [mostRecent, previous] = sortedData;
-  
+
     // Configura los datos del gráfico
     setChartDataRifasBoletos({
       labels: previous ? [formatDate(previous.createdAt), formatDate(mostRecent.createdAt)] : [formatDate(mostRecent.createdAt)],
@@ -181,15 +181,15 @@ function RecaudacionDashboard() {
       ],
     });
   };
-  
+
 
   const generateChartDataRifasSubtotal = (data) => {
     // Ordena las rifas por fecha en orden descendente
     const sortedData = [...data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
+
     // Toma las dos rifas más recientes
     const [mostRecent, previous] = sortedData;
-  
+
     // Configura los datos del gráfico
     setChartDataRifasSubtotal({
       labels: previous ? [formatDate(previous.createdAt), formatDate(mostRecent.createdAt)] : [formatDate(mostRecent.createdAt)],
@@ -204,7 +204,7 @@ function RecaudacionDashboard() {
       ],
     });
   };
-  
+
 
   const styles = {
     header: {
@@ -224,7 +224,10 @@ function RecaudacionDashboard() {
     },
   };
   return (
-    <div className="container mt-4">
+    <div className="container mt-4" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <h3 style={styles.header}>RECAUDACIONES, VENTAS Y RIFAS</h3>
       <Container>
         <Row>
@@ -239,7 +242,7 @@ function RecaudacionDashboard() {
               )}
             </div>
           </Col>
-  
+
           {/* Número de Personas en Evento */}
           <Col md={6}>
             <div style={styles.chartContainer}>
@@ -252,7 +255,7 @@ function RecaudacionDashboard() {
             </div>
           </Col>
         </Row>
-  
+
         <Row className="mt-4">
           {/* Comparación de Boletos Vendidos */}
           <Col md={6}>
@@ -265,7 +268,7 @@ function RecaudacionDashboard() {
               )}
             </div>
           </Col>
-  
+
           {/* Recaudaciones de Rifas por Fecha */}
           <Col md={6}>
             <div style={styles.chartContainer}>
@@ -280,7 +283,7 @@ function RecaudacionDashboard() {
         </Row>
       </Container>
     </div>
-  );  
+  );
 }
 
 export default RecaudacionDashboard;

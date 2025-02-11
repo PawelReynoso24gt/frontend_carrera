@@ -32,7 +32,7 @@ const LoginLayout = () => {
       //   idUsuario: null,
       //   fechaHora: new Date()
       // });
-      
+
       navigate("/paginaPrincipal"); // Redirigir a la página del dashboard (cambia la ruta según tus necesidades)
     } catch (err) {
       setError("Usuario o contraseña incorrectos. Por favor, intenta de nuevo.");
@@ -51,7 +51,10 @@ const LoginLayout = () => {
   }, []);
 
   return (
-    <div className="body-bg" style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+    <div className="body-bg" style={{
+      display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <section
         className="crancy-wc crancy-wc__full"
         style={{
@@ -66,7 +69,7 @@ const LoginLayout = () => {
           backgroundPosition: "center",
         }}
       >
-        <div className="container" style={{ maxWidth: "450px", padding: "80px", backgroundColor: "#D5F8FB", borderRadius: "30px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
+        <div className="container-fluid" style={{ maxWidth: "450px", padding: "80px", backgroundColor: "#D5F8FB", borderRadius: "30px", boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)" }}>
           <div className="text-center mb-4">
             <h4 style={{ color: "#333", fontWeight: "bold" }}>Iniciar Sesión</h4>
           </div>

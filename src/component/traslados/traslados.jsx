@@ -66,10 +66,10 @@ function Traslados() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver traslados']
+          response.data.permisos['Ver traslados']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -82,14 +82,14 @@ function Traslados() {
   }, []);
 
   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchTraslados();
-          } else {
-            checkPermission('Ver traslados', 'No tienes permisos para ver traslados');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchTraslados();
+      } else {
+        checkPermission('Ver traslados', 'No tienes permisos para ver traslados');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const fetchProductos = async () => {
     try {
@@ -123,12 +123,12 @@ function Traslados() {
   const fetchActiveTraslados = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/traslados/activas");
-      setTraslados(response.data);
-      setFilteredTraslados(response.data);
-    } else {
-      checkPermission('Ver traslados', 'No tienes permisos para ver traslados')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/traslados/activas");
+        setTraslados(response.data);
+        setFilteredTraslados(response.data);
+      } else {
+        checkPermission('Ver traslados', 'No tienes permisos para ver traslados')
+      }
     } catch (error) {
       console.error("Error fetching active traslados:", error);
     }
@@ -137,12 +137,12 @@ function Traslados() {
   const fetchInactiveTraslados = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/traslados/inactivas");
-      setTraslados(response.data);
-      setFilteredTraslados(response.data);
-    } else {
-      checkPermission('Ver traslados', 'No tienes permisos para ver traslados')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/traslados/inactivas");
+        setTraslados(response.data);
+        setFilteredTraslados(response.data);
+      } else {
+        checkPermission('Ver traslados', 'No tienes permisos para ver traslados')
+      }
     } catch (error) {
       console.error("Error fetching inactive traslados:", error);
     }
@@ -417,6 +417,8 @@ function Traslados() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">
@@ -512,7 +514,7 @@ function Traslados() {
             {currentTraslados.map((traslado) => (
               <tr key={traslado.idTraslado}>
                 <td>{traslado.idTraslado}</td>
-                <td>{traslado.fecha ? format(parseISO(traslado.fecha ), "dd-MM-yyyy") : "Sin fecha"}</td>
+                <td>{traslado.fecha ? format(parseISO(traslado.fecha), "dd-MM-yyyy") : "Sin fecha"}</td>
                 <td>{traslado.descripcion}</td>
                 <td>
                   {tipoTraslados.find(

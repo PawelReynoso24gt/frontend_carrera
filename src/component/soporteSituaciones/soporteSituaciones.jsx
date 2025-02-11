@@ -38,8 +38,8 @@ function SituacionesPorEstado() {
   const [selectedSituacion, setSelectedSituacion] = useState(null);
 
   // Estados para la paginación
-const [currentPage, setCurrentPage] = useState(1);
-const [itemsPerPage] = useState(6); // Número de elementos por página
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6); // Número de elementos por página
 
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
@@ -169,18 +169,18 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
 
   const logBitacora = async (descripcion, idCategoriaBitacora) => {
     const bitacoraData = {
-        descripcion,
-        idCategoriaBitacora,
-        idUsuario: UserID,
-        fechaHora: new Date(),
+      descripcion,
+      idCategoriaBitacora,
+      idUsuario: UserID,
+      fechaHora: new Date(),
     };
-  
+
     try {
-        const response = await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
-        return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
+      const response = await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+      return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
-        console.error("Error logging bitacora:", error);
-        throw error; // Lanza el error para manejarlo en handleSave
+      console.error("Error logging bitacora:", error);
+      throw error; // Lanza el error para manejarlo en handleSave
     }
   };
 
@@ -190,7 +190,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
       idTipoNotificacion,
       idPersona,
     };
-  
+
     try {
       await axios.post("https://api.voluntariadoayuvi.com/notificaciones/create", notificationData);
     } catch (error) {
@@ -214,10 +214,10 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
         );
         // Log bitacora for editing and obtain idBitacora
         const idBitacora = await logBitacora(`Situación actualizada: ${formData.descripcion}`, 6);
-  
+
         // Obtener idPersona del usuario que reportó la situación
         const idPersona = selectedSituacion.usuario.persona.idPersona;
-  
+
         // Verifica que todos los campos necesarios estén presentes
         if (idBitacora && idPersona) {
           const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
@@ -235,7 +235,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
         // Log bitacora for creating
         await logBitacora(`Nueva situación creada: ${formData.descripcion}`, 5);
       }
-  
+
       fetchSituacionesByEstado(selectedEstado);
       setShowModal(false);
     } catch (error) {
@@ -252,15 +252,18 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
   };
 
   return (
-    <Container className="mt-5">
+    <Container className="mt-5" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <h2 className="text-center mb-4">Gestión de Situaciones por Estado</h2>
       <div className="text-center mb-4">
         <Button
-         onClick={() => {
-          if (checkPermission('Crear situación', 'No tienes permisos para crear situación')) {
-            handleCreate();
-          }
-        }}
+          onClick={() => {
+            if (checkPermission('Crear situación', 'No tienes permisos para crear situación')) {
+              handleCreate();
+            }
+          }}
           variant="primary"
           style={{
             backgroundColor: "#007abf",
@@ -344,18 +347,18 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
         ))}
       </Tabs>
 
-       {/* Barra de paginación */}
-            <Pagination className="justify-content-center mt-4">
-              {[...Array(totalPages).keys()].map((number) => (
-                <Pagination.Item
-                  key={number + 1}
-                  active={number + 1 === currentPage}
-                  onClick={() => handlePageChange(number + 1)}
-                >
-                  {number + 1}
-                </Pagination.Item>
-              ))}
-            </Pagination>
+      {/* Barra de paginación */}
+      <Pagination className="justify-content-center mt-4">
+        {[...Array(totalPages).keys()].map((number) => (
+          <Pagination.Item
+            key={number + 1}
+            active={number + 1 === currentPage}
+            onClick={() => handlePageChange(number + 1)}
+          >
+            {number + 1}
+          </Pagination.Item>
+        ))}
+      </Pagination>
 
       {/* Modal para Crear/Editar Situaciones */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
@@ -464,17 +467,17 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
           </Button>
         </Modal.Footer>
       </Modal>
-              <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }

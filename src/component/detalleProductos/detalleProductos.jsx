@@ -279,7 +279,10 @@ function DetalleProductosComponent() {
 
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <h3 className="text-center mb-4" style={{ fontWeight: "bold", color: "#333" }}>
         Gestión de Detalles de Productos
       </h3>

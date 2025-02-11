@@ -296,6 +296,8 @@ function Voluntarios() {
       <div
         className="container mt-4"
         style={{
+          maxWidth: "100%",
+          margin: "0 auto",
           backgroundColor: "#f8f9fa",
           padding: "20px",
           borderRadius: "8px",

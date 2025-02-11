@@ -40,7 +40,7 @@ function Header({ toggleMenu, menu }) {
   };
   return (
     <header className={`crancy-header ${menu && "crancy-close"}`} >
-      <div className="container g-0" >
+      <div className="container-fluid g-0" >
         <div className="row g-0">
           <div className="col-12">
             {/* <!-- Dashboard Header --> */}

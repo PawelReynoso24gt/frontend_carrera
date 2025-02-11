@@ -68,10 +68,10 @@ function Pedidos() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver pedidos']
+          response.data.permisos['Ver pedidos']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -84,15 +84,15 @@ function Pedidos() {
   }, []);
 
   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchPedidos();
-          } else {
-            checkPermission('Ver pedidos', 'No tienes permisos para ver pedidos');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
-  
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchPedidos();
+      } else {
+        checkPermission('Ver pedidos', 'No tienes permisos para ver pedidos');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -150,12 +150,12 @@ function Pedidos() {
   const fetchActivePedidos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/pedidos/activas");
-      setPedidos(response.data);
-      setFilteredPedidos(response.data);
-    } else {
-      checkPermission('Ver pedidos', 'No tienes permisos para ver pedidos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/pedidos/activas");
+        setPedidos(response.data);
+        setFilteredPedidos(response.data);
+      } else {
+        checkPermission('Ver pedidos', 'No tienes permisos para ver pedidos')
+      }
     } catch (error) {
       console.error("Error fetching active pedidos:", error);
     }
@@ -164,12 +164,12 @@ function Pedidos() {
   const fetchInactivePedidos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/pedidos/inactivas");
-      setPedidos(response.data);
-      setFilteredPedidos(response.data);
-    } else {
-      checkPermission('Ver pedidos', 'No tienes permisos para ver pedidos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/pedidos/inactivas");
+        setPedidos(response.data);
+        setFilteredPedidos(response.data);
+      } else {
+        checkPermission('Ver pedidos', 'No tienes permisos para ver pedidos')
+      }
     } catch (error) {
       console.error("Error fetching inactive pedidos:", error);
     }
@@ -374,6 +374,8 @@ function Pedidos() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">

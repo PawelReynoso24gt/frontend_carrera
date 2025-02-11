@@ -17,9 +17,9 @@ function PermisosRolesComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
-  const [searchTerm, setSearchTerm] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
   const [hasViewPermission, setHasViewPermission] = useState(false);
-  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);    
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -32,18 +32,18 @@ function PermisosRolesComponent() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Editar asignación de permisos']
+          response.data.permisos['Editar asignación de permisos']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
   }, []);
-  
+
 
   // Obtener módulos desde el backend
   const fetchModulos = async () => {
@@ -55,7 +55,7 @@ function PermisosRolesComponent() {
     }
   };
 
- const checkPermission = (permission, message) => {
+  const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
       setPermissionMessage(message);
       setShowPermissionModal(true);
@@ -90,11 +90,11 @@ function PermisosRolesComponent() {
       const response = await axios.get(
         `https://api.voluntariadoayuvi.com/asignacionPermisos?roleId=${roleId}`
       );
-  
+
       const permisosDelRol = response.data.filter(
         (assignment) => assignment.idRol === roleId
       );
-  
+
       const mappedPermisos = permisos.map((permiso) => {
         const assigned = permisosDelRol.find(
           (assignment) => assignment.idPermiso === permiso.idPermiso
@@ -107,33 +107,33 @@ function PermisosRolesComponent() {
           idModulo: permiso.idModulo, // Asociar permiso con módulo
         };
       });
-  
+
       setAssignedPermisos(mappedPermisos);
     } catch (error) {
       console.error("Error fetching assigned permisos:", error);
     }
   };
-  
+
   useEffect(() => {
-          if (isPermissionsLoaded) {
-            if (hasViewPermission) {   
-    fetchRoles(); // Obtener lista de roles
-    fetchPermisos(); // Obtener todos los permisos
-    fetchModulos(); // Obtener módulos
-            } else {
-              checkPermission('Editar asignación de permisos', 'No tienes permisos para ver asignación de permisos');
-            }
-          }
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchRoles(); // Obtener lista de roles
+        fetchPermisos(); // Obtener todos los permisos
+        fetchModulos(); // Obtener módulos
+      } else {
+        checkPermission('Editar asignación de permisos', 'No tienes permisos para ver asignación de permisos');
+      }
+    }
   }, [isPermissionsLoaded, hasViewPermission]);
 
-  
+
   // Abrir modal y cargar permisos asignados al rol seleccionado
   const handleShowModal = (role) => {
     setSelectedRole(role);
     fetchAssignedPermisos(role.idRol);
     setShowModal(true);
   };
-  
+
 
   // Cerrar modal y limpiar estado
   const handleCloseModal = () => {
@@ -184,9 +184,9 @@ function PermisosRolesComponent() {
   };
 
   // Filtrar permisos por nombre según el término de búsqueda
-const filteredPermisos = assignedPermisos.filter((permiso) =>
-  permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredPermisos = assignedPermisos.filter((permiso) =>
+    permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Paginación
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -197,49 +197,49 @@ const filteredPermisos = assignedPermisos.filter((permiso) =>
 
 
   // Renderizar permisos agrupados por módulo
-const renderPermisosPorModulo = () => {
-  return  modulos
-  .filter((modulo) => {
-    // Filtrar los módulos que tengan permisos que coincidan con el término de búsqueda
-    const permisosDelModulo = assignedPermisos.filter(
-      (permiso) =>
-        permiso.idModulo === modulo.idModulo &&
-        permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    return permisosDelModulo.length > 0; // Solo se renderiza el módulo si tiene permisos que coinciden
-  })
-  .map((modulo) => (
-    <div
-      key={modulo.idModulo}
-      style={{
-        backgroundColor: "#f5f5f5",
-        borderRadius: "8px",
-        padding: "10px",
-        marginBottom: "15px",
-        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-    <h5 style={{ fontWeight: "bold", textAlign: "center", fontSize:"25px" }}>{modulo.nombreModulo}</h5>
+  const renderPermisosPorModulo = () => {
+    return modulos
+      .filter((modulo) => {
+        // Filtrar los módulos que tengan permisos que coincidan con el término de búsqueda
+        const permisosDelModulo = assignedPermisos.filter(
+          (permiso) =>
+            permiso.idModulo === modulo.idModulo &&
+            permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        return permisosDelModulo.length > 0; // Solo se renderiza el módulo si tiene permisos que coinciden
+      })
+      .map((modulo) => (
+        <div
+          key={modulo.idModulo}
+          style={{
+            backgroundColor: "#f5f5f5",
+            borderRadius: "8px",
+            padding: "10px",
+            marginBottom: "15px",
+            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <h5 style={{ fontWeight: "bold", textAlign: "center", fontSize: "25px" }}>{modulo.nombreModulo}</h5>
 
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "20px" }}>
-        {assignedPermisos
-          .filter((permiso) => permiso.idModulo === modulo.idModulo) // Filtrar permisos por módulo
-          .filter((permiso) =>
-            permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase()) // Filtrar permisos por nombre
-          ) .map((permiso) => (
-            <Form.Check
-              key={permiso.idPermiso}
-              type="checkbox"
-              label={permiso.nombrePermiso}
-              checked={permiso.estado === 1}
-              onChange={() => handleCheckboxChange(permiso.idPermiso)}
-              style={{ flex: "0 1 calc(25% - 10px)", textAlign: "center" }}
-            />
-          ))}
-      </div>
-    </div>
-  ));
-};
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "20px" }}>
+            {assignedPermisos
+              .filter((permiso) => permiso.idModulo === modulo.idModulo) // Filtrar permisos por módulo
+              .filter((permiso) =>
+                permiso.nombrePermiso.toLowerCase().includes(searchTerm.toLowerCase()) // Filtrar permisos por nombre
+              ).map((permiso) => (
+                <Form.Check
+                  key={permiso.idPermiso}
+                  type="checkbox"
+                  label={permiso.nombrePermiso}
+                  checked={permiso.estado === 1}
+                  onChange={() => handleCheckboxChange(permiso.idPermiso)}
+                  style={{ flex: "0 1 calc(25% - 10px)", textAlign: "center" }}
+                />
+              ))}
+          </div>
+        </div>
+      ));
+  };
 
   const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
@@ -270,6 +270,8 @@ const renderPermisosPorModulo = () => {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <h3 className="text-center" style={{ fontWeight: "bold", color: "#333" }}>
@@ -287,13 +289,13 @@ const renderPermisosPorModulo = () => {
         </Alert>
 
 
-        <Table striped bordered hover responsive className="mt-3 "   style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "20px",
-            overflow: "hidden",
-            marginTop: "20px",
-          }}>
-          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center",  }}>
+        <Table striped bordered hover responsive className="mt-3 " style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "20px",
+          overflow: "hidden",
+          marginTop: "20px",
+        }}>
+          <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center", }}>
             <tr>
               <th>ID</th>
               <th>Rol</th>
@@ -334,53 +336,53 @@ const renderPermisosPorModulo = () => {
           <Modal.Title>Permisos para el Rol: {selectedRole?.roles}</Modal.Title>
         </Modal.Header>
         <Modal.Body>        {/* Buscador dentro del módulo */}
-        <InputGroup className="mb-3">
-        <FormControl
-          placeholder="Buscar permisos por nombre..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)} // Actualiza el término de búsqueda
-        />
-      </InputGroup>
-{renderPermisosPorModulo()}       
+          <InputGroup className="mb-3">
+            <FormControl
+              placeholder="Buscar permisos por nombre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)} // Actualiza el término de búsqueda
+            />
+          </InputGroup>
+          {renderPermisosPorModulo()}
         </Modal.Body>
-              <Modal.Footer style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-        <Button
-          variant="secondary"
-          onClick={handleCloseModal}
-          style={{
-            fontSize: "15px", 
-            padding: "4px 8px", 
-            width: "100px", // Ajustar el ancho
-            height: "50px", // Ajustar la altura
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          variant="primary"
-          onClick={handleSaveChanges}
-          style={{
-            fontSize: "15px", 
-            padding: "4px 8px", // Espaciado reducido
-            width: "100px", // Ajustar el ancho
-            height: "50px", // Ajustar la altura
-          }}
-        >
-          Guardar Cambios
-        </Button>
-      </Modal.Footer>
+        <Modal.Footer style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+          <Button
+            variant="secondary"
+            onClick={handleCloseModal}
+            style={{
+              fontSize: "15px",
+              padding: "4px 8px",
+              width: "100px", // Ajustar el ancho
+              height: "50px", // Ajustar la altura
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSaveChanges}
+            style={{
+              fontSize: "15px",
+              padding: "4px 8px", // Espaciado reducido
+              width: "100px", // Ajustar el ancho
+              height: "50px", // Ajustar la altura
+            }}
+          >
+            Guardar Cambios
+          </Button>
+        </Modal.Footer>
       </Modal>
-  <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                   <Modal.Title>Permiso Denegado</Modal.Title>
-                 </Modal.Header>
-                 <Modal.Body>{permissionMessage}</Modal.Body>
-                 <Modal.Footer>
-                   <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                     Aceptar
-                   </Button>
-                 </Modal.Footer>
-               </Modal>     
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

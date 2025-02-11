@@ -48,24 +48,24 @@ function EventosActivos() {
     fetchPermissions();
   }, []);
 
-    useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchEventosActivos();
-        } else {
-          checkPermission('Ver inscripciones a comisiones', 'No tienes permisos para ver inscripciones a comisiones');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchEventosActivos();
+      } else {
+        checkPermission('Ver inscripciones a comisiones', 'No tienes permisos para ver inscripciones a comisiones');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
-  
-    const checkPermission = (permission, message) => {
-      if (!permissions[permission]) {
-        setPermissionMessage(message);
-        setShowPermissionModal(true);
-        return false;
-      }
-      return true;
-    };
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchEventosActivos = async () => {
     try {
@@ -148,7 +148,10 @@ function EventosActivos() {
   };
 
   return (
-    <Container className="mt-5">
+    <Container className="mt-5" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         Inscripciones a comisiones activas
       </h2>
@@ -272,16 +275,16 @@ function EventosActivos() {
         ))}
       </Tabs>
       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Permiso Denegado</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>{permissionMessage}</Modal.Body>
-          <Modal.Footer>
-            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-              Aceptar
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }

@@ -14,11 +14,11 @@ function CategoriaBitacoras() {
   const [alertMessage, setAlertMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
-      const [hasViewPermission, setHasViewPermission] = useState(false);
-      const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -31,28 +31,28 @@ function CategoriaBitacoras() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver categoria bitacoras']
+          response.data.permisos['Ver categoria bitacoras']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
 
   }, []);
-  
-   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchCategorias();
-        } else {
-          checkPermission('Ver categoria bitacoras', 'No tienes permisos para ver categoria bitacoras');
-        }
+
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchCategorias();
+      } else {
+        checkPermission('Ver categoria bitacoras', 'No tienes permisos para ver categoria bitacoras');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -214,6 +214,8 @@ function CategoriaBitacoras() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">
@@ -347,17 +349,17 @@ function CategoriaBitacoras() {
             </Form>
           </Modal.Body>
         </Modal>
-          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-               </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

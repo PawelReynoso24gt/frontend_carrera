@@ -33,10 +33,10 @@ function TipoPublicos() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver tipo publicos']
+          response.data.permisos['Ver tipo publicos']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -45,15 +45,15 @@ function TipoPublicos() {
     fetchPermissions();
   }, []);
 
-   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchTipoPublicos();
-        } else {
-          checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchTipoPublicos();
+      } else {
+        checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -77,11 +77,11 @@ function TipoPublicos() {
   const fetchActiveTipoPublicos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_publicos/activos");
-      setFilteredTipoPublicos(response.data);
-    } else {
-      checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_publicos/activos");
+        setFilteredTipoPublicos(response.data);
+      } else {
+        checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos')
+      }
     } catch (error) {
       console.error("Error fetching active tipo_publicos:", error);
     }
@@ -90,11 +90,11 @@ function TipoPublicos() {
   const fetchInactiveTipoPublicos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_publicos/inactivos");
-      setFilteredTipoPublicos(response.data);
-    } else {
-      checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_publicos/inactivos");
+        setFilteredTipoPublicos(response.data);
+      } else {
+        checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos')
+      }
     } catch (error) {
       console.error("Error fetching inactive tipo_publicos:", error);
     }
@@ -261,6 +261,8 @@ function TipoPublicos() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">

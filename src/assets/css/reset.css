@@ -1690,10 +1690,8 @@ object {
 }
 .Prev.slick-arrow {
   right: 55px;
-  background: ;
 }
 .slick-arrow:hover {
-  background: ;
   background: linear-gradient(
     134.38deg,
     #0a82fd 0%,
@@ -1943,7 +1941,6 @@ object {
   color: #fff;
 }
 .section-white-style .sec-head__badge {
-  background: ;
   background: #f1e3fb2b;
   color: #fff;
 }

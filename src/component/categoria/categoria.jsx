@@ -44,10 +44,10 @@ function Categorias() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver categorias']
+          response.data.permisos['Ver categorias']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -56,15 +56,15 @@ function Categorias() {
     fetchPermissions();
   }, []);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchCategorias();
-          } else {
-            checkPermission('Ver categorias', 'No tienes permisos para ver categorias');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchCategorias();
+      } else {
+        checkPermission('Ver categorias', 'No tienes permisos para ver categorias');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -89,14 +89,14 @@ function Categorias() {
   const fetchActiveCategorias = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/categorias/activas"
-      );
-      setCategorias(response.data);
-      setFilteredCategorias(response.data);
-    } else {
-      checkPermission('Ver categorias', 'No tienes permisos para ver categorias')
-    }
+        const response = await axios.get(
+          "https://api.voluntariadoayuvi.com/categorias/activas"
+        );
+        setCategorias(response.data);
+        setFilteredCategorias(response.data);
+      } else {
+        checkPermission('Ver categorias', 'No tienes permisos para ver categorias')
+      }
     } catch (error) {
       console.error("Error fetching active categorias:", error);
     }
@@ -105,14 +105,14 @@ function Categorias() {
   const fetchInactiveCategorias = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/categorias/inactivas"
-      );
-      setCategorias(response.data);
-      setFilteredCategorias(response.data);
-    } else {
-      checkPermission('Ver categorias', 'No tienes permisos para ver categorias')
-    }
+        const response = await axios.get(
+          "https://api.voluntariadoayuvi.com/categorias/inactivas"
+        );
+        setCategorias(response.data);
+        setFilteredCategorias(response.data);
+      } else {
+        checkPermission('Ver categorias', 'No tienes permisos para ver categorias')
+      }
     } catch (error) {
       console.error("Error fetching inactive categorias:", error);
     }
@@ -277,6 +277,8 @@ function Categorias() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">

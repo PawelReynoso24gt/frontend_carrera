@@ -33,10 +33,10 @@ function TipoPago() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver tipo pagos']
+          response.data.permisos['Ver tipo pagos']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -46,15 +46,15 @@ function TipoPago() {
 
   }, []);
 
-   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchTiposPago();
-        } else {
-          checkPermission('Ver tipo pagos', 'No tienes permisos para ver tipo pagos');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchTiposPago();
+      } else {
+        checkPermission('Ver tipo pagos', 'No tienes permisos para ver tipo pagos');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -78,12 +78,12 @@ function TipoPago() {
   const fetchActiveTiposPago = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipopago/activas");
-      setTiposPago(response.data);
-      setFilteredTiposPago(response.data);
-    } else {
-      checkPermission('Ver tipo pagos', 'No tienes permisos para ver tipo pagos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/tipopago/activas");
+        setTiposPago(response.data);
+        setFilteredTiposPago(response.data);
+      } else {
+        checkPermission('Ver tipo pagos', 'No tienes permisos para ver tipo pagos')
+      }
     } catch (error) {
       console.error("Error fetching active tipos de pago:", error);
     }
@@ -92,12 +92,12 @@ function TipoPago() {
   const fetchInactiveTiposPago = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipopago/inactivas");
-      setTiposPago(response.data);
-      setFilteredTiposPago(response.data);
-    } else {
-      checkPermission('Ver tipo pagos', 'No tienes permisos para ver tipo pagos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/tipopago/inactivas");
+        setTiposPago(response.data);
+        setFilteredTiposPago(response.data);
+      } else {
+        checkPermission('Ver tipo pagos', 'No tienes permisos para ver tipo pagos')
+      }
     } catch (error) {
       console.error("Error fetching inactive tipos de pago:", error);
     }
@@ -247,6 +247,8 @@ function TipoPago() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">
@@ -286,7 +288,7 @@ function TipoPago() {
               color: "#fff",
               width: "100px",
             }}
-           onClick={fetchActiveTiposPago}
+            onClick={fetchActiveTiposPago}
           >
             Activos
           </Button>

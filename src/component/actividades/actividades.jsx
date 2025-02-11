@@ -41,10 +41,10 @@ function Actividades() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver actividades']
+          response.data.permisos['Ver actividades']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -54,15 +54,15 @@ function Actividades() {
     fetchComisiones();
   }, []);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchActividades();
-          } else {
-            checkPermission('Ver actividades', 'No tienes permisos para ver actividades');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchActividades();
+      } else {
+        checkPermission('Ver actividades', 'No tienes permisos para ver actividades');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   useEffect(() => {
     const fetchEventos = async () => {
@@ -73,7 +73,7 @@ function Actividades() {
         console.error("Error fetching eventos:", error);
       }
     };
-  
+
     fetchEventos();
   }, []);
 
@@ -121,11 +121,11 @@ function Actividades() {
   const fetchActiveActividades = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/actividades/activos");
-      setFilteredActividades(response.data);
-    } else {
-      checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/actividades/activos");
+        setFilteredActividades(response.data);
+      } else {
+        checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
+      }
     } catch (error) {
       console.error("Error fetching active actividades:", error);
     }
@@ -134,11 +134,11 @@ function Actividades() {
   const fetchInactiveActividades = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/actividades/inactivos");
-      setFilteredActividades(response.data);
-    } else {
-      checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/actividades/inactivos");
+        setFilteredActividades(response.data);
+      } else {
+        checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
+      }
     } catch (error) {
       console.error("Error fetching inactive actividades:", error);
     }
@@ -166,17 +166,17 @@ function Actividades() {
 
   const handleShowModal = async (actividad = null) => {
     setEditingActividad(actividad);
-  
+
     if (actividad) {
       //console.log("Actividad seleccionada para editar:", actividad);
-  
+
       // Usar directamente el idEvento de la comisión asociada a la actividad
       const idEvento = actividad.comision.idEvento;
       //console.log("ID del evento asociado a la actividad:", idEvento);
-  
+
       // Guardar solo el idEvento (sin buscar en la lista de eventos)
       setSelectedEvento({ idEvento });
-  
+
       // Cargar las comisiones asociadas al evento
       await fetchComisionesPorEvento(idEvento);
     } else {
@@ -184,7 +184,7 @@ function Actividades() {
       setSelectedEvento(null);
       setComisionesPorEvento([]);
     }
-  
+
     // Establecer los datos de la actividad en el formulario
     setNewActividad(
       actividad || {
@@ -195,7 +195,7 @@ function Actividades() {
         idEvento: "",
       }
     );
-  
+
     setShowModal(true);
     setShowValidationError(false);
   };
@@ -337,6 +337,8 @@ function Actividades() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">

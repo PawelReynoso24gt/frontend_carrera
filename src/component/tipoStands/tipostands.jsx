@@ -30,10 +30,10 @@ function TipoStandsComponent() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver tipo stands']
+          response.data.permisos['Ver tipo stands']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
 
       } catch (error) {
         console.error('Error fetching permissions:', error);
@@ -43,15 +43,15 @@ function TipoStandsComponent() {
     fetchPermissions();
   }, []);
 
-   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchActiveTipoStands();
-        } else {
-          checkPermission('Ver tipo stands', 'No tienes permisos para ver tipo stands');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchActiveTipoStands();
+      } else {
+        checkPermission('Ver tipo stands', 'No tienes permisos para ver tipo stands');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -66,12 +66,12 @@ function TipoStandsComponent() {
   const fetchActiveTipoStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/tipo_stands/activos');
-      setTipoStands(response.data);
-      setFilter('activos');
-    } else {
-      checkPermission('Ver tipo stands', 'No tienes permisos para ver tipo stands')
-    }
+        const response = await axios.get('https://api.voluntariadoayuvi.com/tipo_stands/activos');
+        setTipoStands(response.data);
+        setFilter('activos');
+      } else {
+        checkPermission('Ver tipo stands', 'No tienes permisos para ver tipo stands')
+      }
     } catch (error) {
       console.error('Error fetching active tipoStands:', error);
     }
@@ -80,14 +80,14 @@ function TipoStandsComponent() {
   const fetchInactiveTipoStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/tipo_stands', {
-        params: { estado: 0 }
-      });
-      setTipoStands(response.data.filter(tipoStand => tipoStand.estado === 0));
-      setFilter('inactivos');
-    } else {
-      checkPermission('Ver tipo stands', 'No tienes permisos para ver tipo stands')
-    }
+        const response = await axios.get('https://api.voluntariadoayuvi.com/tipo_stands', {
+          params: { estado: 0 }
+        });
+        setTipoStands(response.data.filter(tipoStand => tipoStand.estado === 0));
+        setFilter('inactivos');
+      } else {
+        checkPermission('Ver tipo stands', 'No tienes permisos para ver tipo stands')
+      }
     } catch (error) {
       console.error('Error fetching inactive tipoStands:', error);
     }
@@ -220,6 +220,8 @@ function TipoStandsComponent() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <Button

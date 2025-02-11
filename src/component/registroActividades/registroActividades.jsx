@@ -81,7 +81,10 @@ function InscripcionesActividades() {
   };
 
   return (
-    <Container className="mt-5">
+    <Container className="mt-5" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         Detalle de Inscripciones de Actividades
       </h2>
@@ -100,7 +103,7 @@ function InscripcionesActividades() {
                     Inscripción #{inscripcion.idDetalleInscripcionActividad}
                   </Card.Title>
                   <Card.Text>
-                   <strong>Voluntario:</strong> {inscripcion.nombreVoluntario}<br />                    
+                    <strong>Voluntario:</strong> {inscripcion.nombreVoluntario}<br />
                     <strong>Evento:</strong> {inscripcion.nombreEvento}<br />
                     <strong>Comisión:</strong> {inscripcion.nombreComision}<br />
                     <strong>Actividad:</strong> {inscripcion.nombreActividad}<br />

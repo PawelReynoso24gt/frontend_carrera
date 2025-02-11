@@ -19,11 +19,11 @@ function SolicitudesVoluntariado() {
   const [modalContent, setModalContent] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
-      const [hasViewPermission, setHasViewPermission] = useState(false);
-      const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   // Estados para la paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +39,7 @@ function SolicitudesVoluntariado() {
         });
         setPermissions(response.data.permisos || {});
 
-        
+
         const hasPermission =
           response.data.permisos['Ver aspirantes']
 
@@ -49,20 +49,20 @@ function SolicitudesVoluntariado() {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
     fetchPersonas();
   }, []);
 
-   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchAspirantes();
-        } else {
-          checkPermission('Ver aspirantes', 'No tienes permisos para ver aspirantes');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchAspirantes();
+      } else {
+        checkPermission('Ver aspirantes', 'No tienes permisos para ver aspirantes');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
@@ -73,7 +73,7 @@ function SolicitudesVoluntariado() {
       idUsuario,
       fechaHora: new Date(),
     };
-  
+
     try {
       const response = await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
       return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
@@ -89,9 +89,9 @@ function SolicitudesVoluntariado() {
       idTipoNotificacion,
       idPersona,
     };
-  
+
     //console.log("Datos enviados para crear la notificación:", notificationData);
-  
+
     try {
       await axios.post("https://api.voluntariadoayuvi.com/notificaciones/create", notificationData);
     } catch (error) {
@@ -121,7 +121,7 @@ function SolicitudesVoluntariado() {
   const fetchAspirantes = async () => {
     try {
       const response = await axios.get("https://api.voluntariadoayuvi.com/aspirantes");
-      
+
       const activos = response.data.filter((aspirante) => aspirante.estado === 1);
       setAspirantes(activos);
     } catch (error) {
@@ -162,92 +162,92 @@ function SolicitudesVoluntariado() {
   };
 
   const acceptSolicitud = async (idAspirante) => {
-  try {
-    // Actualizar estado del aspirante
-    await axios.put(`https://api.voluntariadoayuvi.com/aspirantes/aceptar/${idAspirante}`);
-    fetchAspirantes();
-    setShowConfirmationModal(false);
+    try {
+      // Actualizar estado del aspirante
+      await axios.put(`https://api.voluntariadoayuvi.com/aspirantes/aceptar/${idAspirante}`);
+      fetchAspirantes();
+      setShowConfirmationModal(false);
 
-    // Obtener la información del aspirante
-    const aspirante = await getAspirante(idAspirante);
+      // Obtener la información del aspirante
+      const aspirante = await getAspirante(idAspirante);
 
-    // Verificar que aspirante y persona existan
-    if (aspirante && aspirante.idPersona) {
-      const idPersona = aspirante.idPersona;
+      // Verificar que aspirante y persona existan
+      if (aspirante && aspirante.idPersona) {
+        const idPersona = aspirante.idPersona;
 
-      // Buscar la persona correspondiente en la lista de personas
-      const persona = personas.find((p) => p.idPersona === idPersona);
+        // Buscar la persona correspondiente en la lista de personas
+        const persona = personas.find((p) => p.idPersona === idPersona);
 
-      if (persona) {
-        const nombrePersona = persona.nombre; // Obtener el nombre de la persona
+        if (persona) {
+          const nombrePersona = persona.nombre; // Obtener el nombre de la persona
 
-        // Log de bitácora y obtener idBitacora
-        const idBitacora = await logBitacora(
-          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) aceptada`, // Incluir el nombre en el mensaje
-          20
-        );
+          // Log de bitácora y obtener idBitacora
+          const idBitacora = await logBitacora(
+            `Solicitud de aspirante ${idAspirante} (${nombrePersona}) aceptada`, // Incluir el nombre en el mensaje
+            20
+          );
 
-        // Crear la notificación
-        if (idBitacora && idPersona) {
-          const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
-          await createNotification(idBitacora, idTipoNotificacion, idPersona);
+          // Crear la notificación
+          if (idBitacora && idPersona) {
+            const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
+            await createNotification(idBitacora, idTipoNotificacion, idPersona);
+          } else {
+            console.error("Faltan datos necesarios para crear la notificación");
+          }
         } else {
-          console.error("Faltan datos necesarios para crear la notificación");
+          console.error("No se encontró la persona asociada al aspirante");
         }
       } else {
-        console.error("No se encontró la persona asociada al aspirante");
+        console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
       }
-    } else {
-      console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
+    } catch (error) {
+      console.error("Error accepting solicitud:", error);
     }
-  } catch (error) {
-    console.error("Error accepting solicitud:", error);
-  }
-};
-  
-const denySolicitud = async (idAspirante) => {
-  try {
-    // Actualizar estado del aspirante
-    await axios.put(`https://api.voluntariadoayuvi.com/aspirantes/denegar/${idAspirante}`);
-    fetchAspirantes();
-    setShowConfirmationModal(false);
+  };
 
-    // Obtener la información del aspirante
-    const aspirante = await getAspirante(idAspirante);
+  const denySolicitud = async (idAspirante) => {
+    try {
+      // Actualizar estado del aspirante
+      await axios.put(`https://api.voluntariadoayuvi.com/aspirantes/denegar/${idAspirante}`);
+      fetchAspirantes();
+      setShowConfirmationModal(false);
 
-    // Verificar que aspirante y persona existan
-    if (aspirante && aspirante.idPersona) {
-      const idPersona = aspirante.idPersona;
+      // Obtener la información del aspirante
+      const aspirante = await getAspirante(idAspirante);
 
-      // Buscar la persona correspondiente en la lista de personas
-      const persona = personas.find((p) => p.idPersona === idPersona);
+      // Verificar que aspirante y persona existan
+      if (aspirante && aspirante.idPersona) {
+        const idPersona = aspirante.idPersona;
 
-      if (persona) {
-        const nombrePersona = persona.nombre; // Obtener el nombre de la persona
+        // Buscar la persona correspondiente en la lista de personas
+        const persona = personas.find((p) => p.idPersona === idPersona);
 
-        // Log de bitácora y obtener idBitacora
-        const idBitacora = await logBitacora(
-          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) denegada`, // Incluir el nombre en el mensaje
-          26
-        );
+        if (persona) {
+          const nombrePersona = persona.nombre; // Obtener el nombre de la persona
 
-        // Crear la notificación
-        if (idBitacora && idPersona) {
-          const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
-          await createNotification(idBitacora, idTipoNotificacion, idPersona);
+          // Log de bitácora y obtener idBitacora
+          const idBitacora = await logBitacora(
+            `Solicitud de aspirante ${idAspirante} (${nombrePersona}) denegada`, // Incluir el nombre en el mensaje
+            26
+          );
+
+          // Crear la notificación
+          if (idBitacora && idPersona) {
+            const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
+            await createNotification(idBitacora, idTipoNotificacion, idPersona);
+          } else {
+            console.error("Faltan datos necesarios para crear la notificación");
+          }
         } else {
-          console.error("Faltan datos necesarios para crear la notificación");
+          console.error("No se encontró la persona asociada al aspirante");
         }
       } else {
-        console.error("No se encontró la persona asociada al aspirante");
+        console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
       }
-    } else {
-      console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
+    } catch (error) {
+      console.error("Error denying solicitud:", error);
     }
-  } catch (error) {
-    console.error("Error denying solicitud:", error);
-  }
-};
+  };
 
   // Paginación
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -258,7 +258,10 @@ const denySolicitud = async (idAspirante) => {
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <h3 className="text-center mb-4" style={{ fontWeight: "bold", color: "#007abf" }}>
         SOLICITUDES ENTRANTES PARA VOLUNTARIADO
       </h3>
@@ -282,7 +285,7 @@ const denySolicitud = async (idAspirante) => {
                         handleAccept(aspirante.idAspirante);
                       }
                     }}
-                    style={{ minWidth: "70px" , width: "100px"}}
+                    style={{ minWidth: "70px", width: "100px" }}
                   >
                     Aceptar
                   </Button>
@@ -294,7 +297,7 @@ const denySolicitud = async (idAspirante) => {
                         handleDeny(aspirante.idAspirante);
                       }
                     }}
-                    style={{ minWidth: "70px",  width: "100px" }}
+                    style={{ minWidth: "70px", width: "100px" }}
                   >
                     Denegar
                   </Button>
@@ -401,17 +404,17 @@ const denySolicitud = async (idAspirante) => {
           </Button>
         </Modal.Footer>
       </Modal>
-          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-               <Modal.Header closeButton>
-                <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                  Aceptar
-                </Button>
-               </Modal.Footer>
-             </Modal>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

@@ -182,26 +182,26 @@ function ReportePlayeras() {
     const totalRecaudadoPorStand = {};
 
     reportes.forEach((stand) => {
-        const totalVendidasStand = Object.values(stand.productosVendidos || {}).reduce(
-            (sum, tallas) =>
-                sum + Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + detalles.cantidad, 0),
-            0
-        );
+      const totalVendidasStand = Object.values(stand.productosVendidos || {}).reduce(
+        (sum, tallas) =>
+          sum + Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + detalles.cantidad, 0),
+        0
+      );
 
-        totalPorStand[stand.nombreStand] = totalVendidasStand;
-        totalRegistros += totalVendidasStand;
+      totalPorStand[stand.nombreStand] = totalVendidasStand;
+      totalRegistros += totalVendidasStand;
     });
 
     reportes.forEach((stand) => {
       const totalRecaudadoStand = Object.values(stand.productosVendidos || {}).reduce(
-          (sum, tallas) =>
-              sum + Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + (detalles.subTotal || 0), 0),
-          0
+        (sum, tallas) =>
+          sum + Object.values(tallas).reduce((sumTallas, detalles) => sumTallas + (detalles.subTotal || 0), 0),
+        0
       );
 
       totalRecaudadoPorStand[stand.nombreStand] = totalRecaudadoStand;
       totalRecaudadoGeneral += totalRecaudadoStand;
-  });
+    });
 
 
     doc.setFontSize(10);
@@ -209,7 +209,7 @@ function ReportePlayeras() {
     doc.text(`• Total Productos Vendidos: ${totalRegistros}`, 14, startY + 10);
 
     Object.entries(totalPorStand).forEach(([stand, total], index) => {
-        doc.text(`• ${stand}: ${total} productos vendidos`, 14, startY + 20 + index * 10);
+      doc.text(`• ${stand}: ${total} productos vendidos`, 14, startY + 20 + index * 10);
     });
 
     doc.setFontSize(10);
@@ -217,17 +217,17 @@ function ReportePlayeras() {
     doc.text(`• Total Recaudado General: Q${totalRecaudadoGeneral.toFixed(2)}`, 14, startY + 40);
 
     Object.entries(totalRecaudadoPorStand).forEach(([stand, total], index) => {
-        doc.text(`• ${stand}: Q${total.toFixed(2)}`, 14, startY + 50 + index * 10);
+      doc.text(`• ${stand}: Q${total.toFixed(2)}`, 14, startY + 50 + index * 10);
     });
-    
+
     // Espacio para la firma
     const firmaStartY = doc.lastAutoTable.finalY + 90;
     if (firmaStartY + 30 > doc.internal.pageSize.height) {
-        doc.addPage();
-        startY = 10;
+      doc.addPage();
+      startY = 10;
     }
 
-   
+
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.text("_______________________________", 105, firmaStartY, { align: "center" });
@@ -245,6 +245,8 @@ function ReportePlayeras() {
         padding: "20px",
         borderRadius: "8px",
         boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+        maxWidth: "100%",
+        margin: "0 auto",
       }}
     >
       <div className="row mb-3">

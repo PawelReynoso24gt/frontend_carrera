@@ -4,7 +4,7 @@ body {
   overflow-x: hidden; /* Elimina cualquier scroll horizontal */
 }
 
-.container {
+.container-fluid {
   margin-left: 250px; /* Sidebar */
   margin-right: 20px; /* Espacio derecho */
   padding: 20px;
@@ -76,7 +76,7 @@ body {
     color: white;
   }
 
-  .search-container {
+  .search-container-fluid {
     display: flex;
     align-items: center;
     gap: 10px;

@@ -36,10 +36,10 @@ function Municipio() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver municipios']
+          response.data.permisos['Ver municipios']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -49,15 +49,15 @@ function Municipio() {
     fetchDepartamentos();
   }, []);
 
-    useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchMunicipios();
-          } else {
-            checkPermission('Ver municipios', 'No tienes permisos para ver municipios');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchMunicipios();
+      } else {
+        checkPermission('Ver municipios', 'No tienes permisos para ver municipios');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const fetchMunicipios = async () => {
     try {
@@ -101,13 +101,13 @@ function Municipio() {
   const fetchActiveMunicipios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/municipios/activas");
-      const data = Array.isArray(response.data) ? response.data : [];
-      setMunicipios(data);
-      setFilteredMunicipios(data);
-    } else {
-      checkPermission('Ver municipios', 'No tienes permisos para ver municipios')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/municipios/activas");
+        const data = Array.isArray(response.data) ? response.data : [];
+        setMunicipios(data);
+        setFilteredMunicipios(data);
+      } else {
+        checkPermission('Ver municipios', 'No tienes permisos para ver municipios')
+      }
     } catch (error) {
       console.error("Error fetching active municipios:", error);
     }
@@ -116,13 +116,13 @@ function Municipio() {
   const fetchInactiveMunicipios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/municipios/inactivas");
-      const data = Array.isArray(response.data) ? response.data : [];
-      setMunicipios(data);
-      setFilteredMunicipios(data);
-    } else {
-      checkPermission('Ver municipios', 'No tienes permisos para ver municipios')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/municipios/inactivas");
+        const data = Array.isArray(response.data) ? response.data : [];
+        setMunicipios(data);
+        setFilteredMunicipios(data);
+      } else {
+        checkPermission('Ver municipios', 'No tienes permisos para ver municipios')
+      }
     } catch (error) {
       console.error("Error fetching inactive municipios:", error);
     }
@@ -281,6 +281,8 @@ function Municipio() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <div className="d-flex justify-content-start align-items-center mb-3">

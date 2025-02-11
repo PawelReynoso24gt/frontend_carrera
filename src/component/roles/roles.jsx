@@ -5,7 +5,7 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 function Roles() {
   const [roles, setRoles] = useState([]);
-  const [filteredRoles, setFilteredRoles] = useState([]); 
+  const [filteredRoles, setFilteredRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
@@ -31,30 +31,30 @@ function Roles() {
         });
         setPermissions(response.data.permisos || {});
         const hasPermission =
-        response.data.permisos['Ver roles']
+          response.data.permisos['Ver roles']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-  
+
   }, []);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchRoles();
-          } else {
-            //console.log(hasViewPermission)
-            checkPermission('Ver roles', 'No tienes permisos para ver roles');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
-  
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchRoles();
+      } else {
+        //console.log(hasViewPermission)
+        checkPermission('Ver roles', 'No tienes permisos para ver roles');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -69,7 +69,7 @@ function Roles() {
     try {
       const response = await axios.get("https://api.voluntariadoayuvi.com/roles");
       setRoles(response.data);
-      setFilteredRoles(response.data); 
+      setFilteredRoles(response.data);
     } catch (error) {
       console.error("Error fetching roles:", error);
     }
@@ -78,12 +78,12 @@ function Roles() {
   const fetchActiveRoles = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/roles/activos");
-      setRoles(response.data);
-      setFilteredRoles(response.data);
-    } else {
-      checkPermission('Ver roles', 'No tienes permisos para ver roles')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/roles/activos");
+        setRoles(response.data);
+        setFilteredRoles(response.data);
+      } else {
+        checkPermission('Ver roles', 'No tienes permisos para ver roles')
+      }
     } catch (error) {
       console.error("Error fetching active roles:", error);
     }
@@ -92,12 +92,12 @@ function Roles() {
   const fetchInactiveRoles = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/roles/inactivos");
-      setRoles(response.data);
-      setFilteredRoles(response.data);
-    } else {
-      checkPermission('Ver roles', 'No tienes permisos para ver roles')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/roles/inactivos");
+        setRoles(response.data);
+        setFilteredRoles(response.data);
+      } else {
+        checkPermission('Ver roles', 'No tienes permisos para ver roles')
+      }
     } catch (error) {
       console.error("Error fetching inactive roles:", error);
     }
@@ -127,9 +127,9 @@ function Roles() {
     const { name, value } = e.target;
 
     if (name === "roles") {
-      const regex = /^[a-zA-Z\s]*$/; 
+      const regex = /^[a-zA-Z\s]*$/;
       if (!regex.test(value)) {
-        return; 
+        return;
       }
     }
 
@@ -190,6 +190,8 @@ function Roles() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         {/* Barra de Búsqueda */}
@@ -284,7 +286,7 @@ function Roles() {
                 <td>{role.idRol}</td>
                 <td>{role.roles}</td>
                 <td>{role.estado === 1 ? "Activo" : "Inactivo"}</td>
-                <td> 
+                <td>
                   <FaPencilAlt
                     style={{
                       color: "#007AC3",
@@ -300,36 +302,36 @@ function Roles() {
                     }}
                   />
                   {role.estado ? (
-                  <FaToggleOn
-                  style={{
-                    color: "#30c10c",
-                    cursor: "pointer",
-                    marginLeft: "10px",
-                    fontSize: "20px",
-                  }}
-                    title="Inactivar"
-                    onClick={() => {
-                      if (checkPermission('Desactivar rol', 'No tienes permisos para desactivar rol')) {
-                        toggleEstado(role.idRol, role.estado);
-                      }
-                    }}
-                  />
-                ) : (
-                  <FaToggleOff
-                    style={{
-                      color: "#e10f0f",
-                      cursor: "pointer",
-                      marginLeft: "10px",
-                      fontSize: "20px",
-                    }}
+                    <FaToggleOn
+                      style={{
+                        color: "#30c10c",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Inactivar"
+                      onClick={() => {
+                        if (checkPermission('Desactivar rol', 'No tienes permisos para desactivar rol')) {
+                          toggleEstado(role.idRol, role.estado);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
                       title="Activar"
                       onClick={() => {
                         if (checkPermission('Activar rol', 'No tienes permisos para activar rol')) {
                           toggleEstado(role.idRol, role.estado);
                         }
                       }}
-                 />
-                )}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -389,17 +391,17 @@ function Roles() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

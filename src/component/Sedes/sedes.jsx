@@ -45,10 +45,10 @@ function Sedes() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver sedes']
+          response.data.permisos['Ver sedes']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -60,14 +60,14 @@ function Sedes() {
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchSedes();
-          } else {
-            checkPermission('Ver sedes', 'No tienes permisos para ver sede');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchSedes();
+      } else {
+        checkPermission('Ver sedes', 'No tienes permisos para ver sede');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -91,11 +91,11 @@ function Sedes() {
   const fetchActiveSedes = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes/activas");
-      setFilteredSedes(response.data);
-    } else {
-      checkPermission('Ver sedes', 'No tienes permisos para ver sedes')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/sedes/activas");
+        setFilteredSedes(response.data);
+      } else {
+        checkPermission('Ver sedes', 'No tienes permisos para ver sedes')
+      }
     } catch (error) {
       console.error("Error fetching active sedes:", error);
     }
@@ -104,11 +104,11 @@ function Sedes() {
   const fetchInactiveSedes = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes/inactivas");
-      setFilteredSedes(response.data);
-    } else {
-      checkPermission('Ver sedes', 'No tienes permisos para ver sedes')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/sedes/inactivas");
+        setFilteredSedes(response.data);
+      } else {
+        checkPermission('Ver sedes', 'No tienes permisos para ver sedes')
+      }
     } catch (error) {
       console.error("Error fetching inactive sedes:", error);
     }
@@ -283,6 +283,8 @@ function Sedes() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">

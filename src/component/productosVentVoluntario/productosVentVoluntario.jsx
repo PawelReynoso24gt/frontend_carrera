@@ -32,16 +32,16 @@ function DetalleProductoVoluntario() {
       try {
         const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`, 
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver detalles de productos voluntario']
-      
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+          response.data.permisos['Ver detalles de productos voluntario']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -51,26 +51,26 @@ function DetalleProductoVoluntario() {
 
   }, []);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchProductos();
-            fetchDetalles();
-            fetchVoluntarios();
-          } else {
-            checkPermission('Ver detalles de productos voluntario', 'No tienes permisos para ver detalles de productos voluntario');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchProductos();
+        fetchDetalles();
+        fetchVoluntarios();
+      } else {
+        checkPermission('Ver detalles de productos voluntario', 'No tienes permisos para ver detalles de productos voluntario');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
-      const checkPermission = (permission, message) => {
-        if (!permissions[permission]) {
-          setPermissionMessage(message);
-          setShowPermissionModal(true);
-          return false;
-        }
-        return true;
-      };
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchDetalles = async () => {
     try {
@@ -88,12 +88,12 @@ function DetalleProductoVoluntario() {
   const fetchActiveProductosVol = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos_voluntarios/activos");
-      setDetalles(response.data);
-      setFilteredDetalles(response.data);
-    } else {
-      checkPermission('Ver detalles de productos voluntario', 'No tienes permisos para Ver detalles de productos voluntario')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos_voluntarios/activos");
+        setDetalles(response.data);
+        setFilteredDetalles(response.data);
+      } else {
+        checkPermission('Ver detalles de productos voluntario', 'No tienes permisos para Ver detalles de productos voluntario')
+      }
     } catch (error) {
       console.error("Error fetching active productos:", error);
     }
@@ -102,12 +102,12 @@ function DetalleProductoVoluntario() {
   const fetchInactiveProductosVol = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos_voluntarios/inactivos");
-      setDetalles(response.data);
-      setFilteredDetalles(response.data);
-    } else {
-      checkPermission('Ver detalles de productos voluntario', 'No tienes permisos para Ver detalles de productos voluntario')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos_voluntarios/inactivos");
+        setDetalles(response.data);
+        setFilteredDetalles(response.data);
+      } else {
+        checkPermission('Ver detalles de productos voluntario', 'No tienes permisos para Ver detalles de productos voluntario')
+      }
     } catch (error) {
       console.error("Error fetching inactive productos:", error);
     }
@@ -298,6 +298,8 @@ function DetalleProductoVoluntario() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">
@@ -535,17 +537,17 @@ function DetalleProductoVoluntario() {
             </Form>
           </Modal.Body>
         </Modal>
-          <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                        <Modal.Header closeButton>
-                          <Modal.Title>Permiso Denegado</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>{permissionMessage}</Modal.Body>
-                        <Modal.Footer>
-                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                            Aceptar
-                          </Button>
-                        </Modal.Footer>
-                      </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

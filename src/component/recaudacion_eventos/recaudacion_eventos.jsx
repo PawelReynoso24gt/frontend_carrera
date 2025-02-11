@@ -52,10 +52,10 @@ function RecaudacionesEventos() {
                 setPermissions(response.data.permisos || {});
 
                 const hasPermission =
-        response.data.permisos['Ver recaudación de eventos']
+                    response.data.permisos['Ver recaudación de eventos']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+                setHasViewPermission(hasPermission);
+                setIsPermissionsLoaded(true);
             } catch (error) {
                 console.error('Error fetching permissions:', error);
             }
@@ -71,15 +71,15 @@ function RecaudacionesEventos() {
 
     const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
-     useEffect(() => {
-          if (isPermissionsLoaded) {
+    useEffect(() => {
+        if (isPermissionsLoaded) {
             if (hasViewPermission) {
                 fetchRecaudaciones();
             } else {
-              checkPermission('Ver recaudación de eventos', 'No tienes permisos para ver recaudación de eventos');
+                checkPermission('Ver recaudación de eventos', 'No tienes permisos para ver recaudación de eventos');
             }
-          }
-        }, [isPermissionsLoaded, hasViewPermission]);
+        }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
     const fetchRecaudaciones = async () => {
         try {
@@ -103,13 +103,13 @@ function RecaudacionesEventos() {
     const fetchActiveRecaudaciones = async () => {
         try {
             if (hasViewPermission) {
-            const response = await axios.get("https://api.voluntariadoayuvi.com/recaudacion_evento/activas");
-            setFilteredRecaudaciones(response.data); // Actualiza la lista de recaudaciones filtradas
-            //setAlertMessage("Se han cargado las recaudaciones activas.");
-            //setShowAlert(true);
-        } else {
-            checkPermission('Ver recaudación de eventos', 'No tienes permisos para ver recaudación de eventos')
-          }
+                const response = await axios.get("https://api.voluntariadoayuvi.com/recaudacion_evento/activas");
+                setFilteredRecaudaciones(response.data); // Actualiza la lista de recaudaciones filtradas
+                //setAlertMessage("Se han cargado las recaudaciones activas.");
+                //setShowAlert(true);
+            } else {
+                checkPermission('Ver recaudación de eventos', 'No tienes permisos para ver recaudación de eventos')
+            }
         } catch (error) {
             console.error("Error fetching active recaudaciones:", error);
             setAlertMessage("Error al cargar las recaudaciones activas.");
@@ -120,13 +120,13 @@ function RecaudacionesEventos() {
     const fetchInactiveRecaudaciones = async () => {
         try {
             if (hasViewPermission) {
-            const response = await axios.get("https://api.voluntariadoayuvi.com/recaudacion_evento/inactivas");
-            setFilteredRecaudaciones(response.data); // Actualiza la lista de recaudaciones filtradas
-            //setAlertMessage("Se han cargado las recaudaciones inactivas.");
-            //setShowAlert(true);
-        } else {
-            checkPermission('Ver recaudación de eventos', 'No tienes permisos para ver recaudación de eventos')
-          }
+                const response = await axios.get("https://api.voluntariadoayuvi.com/recaudacion_evento/inactivas");
+                setFilteredRecaudaciones(response.data); // Actualiza la lista de recaudaciones filtradas
+                //setAlertMessage("Se han cargado las recaudaciones inactivas.");
+                //setShowAlert(true);
+            } else {
+                checkPermission('Ver recaudación de eventos', 'No tienes permisos para ver recaudación de eventos')
+            }
         } catch (error) {
             console.error("Error fetching inactive recaudaciones:", error);
             setAlertMessage("Error al cargar las recaudaciones inactivas.");
@@ -355,6 +355,8 @@ function RecaudacionesEventos() {
             padding: "20px",
             borderRadius: "8px",
             boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+            maxWidth: "100%",
+            margin: "0 auto",
         }}
         >
             <h3

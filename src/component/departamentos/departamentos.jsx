@@ -31,28 +31,28 @@ function Departamentos() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver departamentos']
+          response.data.permisos['Ver departamentos']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
 
   }, []);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchDepartamentos();
-          } else {
-            checkPermission('Ver departamentos', 'No tienes permisos para ver departamentos');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchDepartamentos();
+      } else {
+        checkPermission('Ver departamentos', 'No tienes permisos para ver departamentos');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -76,12 +76,12 @@ function Departamentos() {
   const fetchActiveDepartamentos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/departamentos/activas");
-      setDepartamentos(response.data);
-      setFilteredDepartamentos(response.data);
-    } else {
-      checkPermission('Ver departamentos', 'No tienes permisos para ver departamentos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/departamentos/activas");
+        setDepartamentos(response.data);
+        setFilteredDepartamentos(response.data);
+      } else {
+        checkPermission('Ver departamentos', 'No tienes permisos para ver departamentos')
+      }
     } catch (error) {
       console.error("Error fetching active departamentos:", error);
     }
@@ -90,12 +90,12 @@ function Departamentos() {
   const fetchInactiveDepartamentos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/departamentos/inactivas");
-      setDepartamentos(response.data);
-      setFilteredDepartamentos(response.data);
-    } else {
-      checkPermission('Ver departamentos', 'No tienes permisos para ver departamentos')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/departamentos/inactivas");
+        setDepartamentos(response.data);
+        setFilteredDepartamentos(response.data);
+      } else {
+        checkPermission('Ver departamentos', 'No tienes permisos para ver departamentos')
+      }
     } catch (error) {
       console.error("Error fetching inactive departamentos:", error);
     }
@@ -258,6 +258,8 @@ function Departamentos() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">
@@ -295,7 +297,7 @@ function Departamentos() {
               marginRight: "10px",
               fontWeight: "bold",
               color: "#fff",
-               width: "100px"
+              width: "100px"
             }}
             onClick={fetchActiveDepartamentos}
           >
@@ -308,7 +310,7 @@ function Departamentos() {
               padding: "5px 10px",
               fontWeight: "bold",
               color: "#fff",
-               width: "100px"
+              width: "100px"
             }}
             onClick={fetchInactiveDepartamentos}
           >
@@ -449,17 +451,17 @@ function Departamentos() {
           </Form>
         </Modal.Body>
       </Modal>
-       <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-               <Modal.Header closeButton>
-                <Modal.Title>Permiso Denegado</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{permissionMessage}</Modal.Body>
-                <Modal.Footer>
-                <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                  Aceptar
-                </Button>
-               </Modal.Footer>
-            </Modal>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

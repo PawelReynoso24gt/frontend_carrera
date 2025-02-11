@@ -56,23 +56,23 @@ const ReporteContabilidad = () => {
     };
 
     const fetchLoggedUser = async () => {
-        try {
-          const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
-          setNombreUsuario(response.data.nombre);
-        } catch (error) {
-          console.error("Error al obtener el usuario logueado:", error);
-          setNombreUsuario("Sin nombre");
-        }
-      };
-  
-      fetchLoggedUser();
-      if (fechaInicio && fechaFin) {
-        fetchReporte();
+      try {
+        const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setNombreUsuario(response.data.nombre);
+      } catch (error) {
+        console.error("Error al obtener el usuario logueado:", error);
+        setNombreUsuario("Sin nombre");
       }
+    };
+
+    fetchLoggedUser();
+    if (fechaInicio && fechaFin) {
+      fetchReporte();
+    }
 
     fetchReporte();
   }, [fechaInicio, fechaFin]);
@@ -80,9 +80,9 @@ const ReporteContabilidad = () => {
   const renderPago = (pago) => {
     // Verificar si la imagen de transferencia es una cadena en base64
     if (/^[A-Za-z0-9+/]+={0,2}$/.test(pago.imagenTransferencia)) {
-        return <div style={{ width: '150px', height: '150px', overflow: 'hidden' }}>
-            <img src={`data:image/png;base64,${pago.imagenTransferencia}`} alt="Imagen de Transferencia" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>;
+      return <div style={{ width: '150px', height: '150px', overflow: 'hidden' }}>
+        <img src={`data:image/png;base64,${pago.imagenTransferencia}`} alt="Imagen de Transferencia" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      </div>;
     } else {
       return <span>{pago.imagenTransferencia}</span>;
     }
@@ -90,19 +90,19 @@ const ReporteContabilidad = () => {
 
   const generarPDF = () => {
     const doc = new jsPDF('landscape'); // Cambia la orientación a horizontal
-  
+
     // Calcula los datos necesarios para el resumen
     const productosTotales = productos.reduce((acc, producto) => {
-        if (!acc[producto.idProducto]) {
-          acc[producto.idProducto] = {
-            nombre: producto.nombreProducto,
-            cantidad: 0
-          };
-        }
-        acc[producto.idProducto].cantidad += producto.detalle_productos.reduce((sum, dp) => sum + dp.cantidad, 0);
-        return acc;
+      if (!acc[producto.idProducto]) {
+        acc[producto.idProducto] = {
+          nombre: producto.nombreProducto,
+          cantidad: 0
+        };
+      }
+      acc[producto.idProducto].cantidad += producto.detalle_productos.reduce((sum, dp) => sum + dp.cantidad, 0);
+      return acc;
     }, {});
-  
+
     const movimientosPorCategoria = movimientos.reduce((acc, movimiento) => {
       const categoria = movimiento.categoria_bitacora.categoria;
       if (!acc[categoria]) {
@@ -111,7 +111,7 @@ const ReporteContabilidad = () => {
       acc[categoria].push(movimiento.descripcion);
       return acc;
     }, {});
-  
+
     const trasladosPorTipo = traslados.reduce((acc, traslado) => {
       const tipo = traslado.tipoTraslado.tipo;
       if (!acc[tipo]) {
@@ -121,12 +121,12 @@ const ReporteContabilidad = () => {
       acc[tipo].push(detalles);
       return acc;
     }, {});
-  
+
     const detallesPedidos = pedidos.map(pedido => pedido.detalle_pedidos.map(detalle => `Producto: ${detalle.producto.nombreProducto} (ID: ${detalle.idProducto}), Cantidad: ${detalle.cantidad}`).join(", ")).join("\n");
-  
+
     const totalVentasVoluntarios = ventasVoluntarios.reduce((acc, venta) => acc + parseFloat(venta.totalVenta || 0), 0).toFixed(2);
     const totalVentasStands = ventasStands.reduce((acc, venta) => acc + parseFloat(venta.totalVenta || 0), 0).toFixed(2);
-  
+
     const totalRecaudacionesRifas = recaudacionesRifas.reduce((acc, recaudacion) => {
       const rifa = recaudacion.solicitudTalonario.talonario.rifa.nombreRifa;
       if (!acc[rifa]) {
@@ -135,17 +135,17 @@ const ReporteContabilidad = () => {
       acc[rifa] += parseFloat(recaudacion.subTotal || 0);
       return acc;
     }, {});
-  
+
     const rifaMayorRecaudacion = Object.keys(totalRecaudacionesRifas).reduce((max, rifa) => totalRecaudacionesRifas[rifa] > totalRecaudacionesRifas[max] ? rifa : max, Object.keys(totalRecaudacionesRifas)[0]);
     const rifaMenorRecaudacion = Object.keys(totalRecaudacionesRifas).reduce((min, rifa) => totalRecaudacionesRifas[rifa] < totalRecaudacionesRifas[min] ? rifa : min, Object.keys(totalRecaudacionesRifas)[0]);
-  
-    const eventoMayorRecaudacion = recaudacionesEventos.length > 0 
-    ? recaudacionesEventos.reduce((max, evento) => parseFloat(evento.recaudacion || 0) > parseFloat(max.recaudacion || 0) ? evento : max, recaudacionesEventos[0]) 
-    : null;
 
-    const eventoMenorRecaudacion = recaudacionesEventos.length > 0 
-    ? recaudacionesEventos.reduce((min, evento) => parseFloat(evento.recaudacion || 0) < parseFloat(min.recaudacion || 0) ? evento : min, recaudacionesEventos[0]) 
-    : null;
+    const eventoMayorRecaudacion = recaudacionesEventos.length > 0
+      ? recaudacionesEventos.reduce((max, evento) => parseFloat(evento.recaudacion || 0) > parseFloat(max.recaudacion || 0) ? evento : max, recaudacionesEventos[0])
+      : null;
+
+    const eventoMenorRecaudacion = recaudacionesEventos.length > 0
+      ? recaudacionesEventos.reduce((min, evento) => parseFloat(evento.recaudacion || 0) < parseFloat(min.recaudacion || 0) ? evento : min, recaudacionesEventos[0])
+      : null;
 
     const fechaInicioFormatted = fechaInicio ? fechaInicio.split("-").reverse().join("/") : "N/A";
     const fechaFinFormatted = fechaFin ? fechaFin.split("-").reverse().join("/") : "N/A";
@@ -162,22 +162,22 @@ const ReporteContabilidad = () => {
     doc.setFontSize(10);
     doc.text(`Desde: ${fechaInicioFormatted}   Hasta: ${fechaFinFormatted}`, 110, 35);
     doc.text(`Generado por: ${nombreUsuario}`, 110, 40);
-  
+
     doc.setLineWidth(0.5);
     doc.setDrawColor("#007AC3");
     doc.line(10, 50, 290, 50); // Ajusta la longitud de la línea
-  
+
     const tableLineStyle = {
       lineColor: [0, 0, 0], // Color de las líneas (negro)
       lineWidth: 0.75 // Grosor de las líneas
     };
-  
+
     // Productos
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
     doc.text("Productos", 145, 60, { align: "center" });
-  
+
     doc.autoTable({
       startY: 65,
       head: [["Nombre Producto", "Talla", "Precio", "Descripción", "Cantidad Min.", "Cantidad Max.", "Categoría", "Sede", "Cantidad"]],
@@ -197,13 +197,13 @@ const ReporteContabilidad = () => {
       theme: "grid",
       tableLineStyle: tableLineStyle
     });
-  
+
     // Movimientos de Productos
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
     doc.text("Movimientos de Productos", 145, doc.previousAutoTable.finalY + 10, { align: "center" });
-  
+
     doc.autoTable({
       startY: doc.previousAutoTable.finalY + 15,
       head: [["ID", "Fecha", "Descripción", "Categoría"]],
@@ -218,13 +218,13 @@ const ReporteContabilidad = () => {
       theme: "grid",
       tableLineStyle: tableLineStyle
     });
-  
+
     // Traslados
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
     doc.text("Traslados", 145, doc.previousAutoTable.finalY + 10, { align: "center" });
-  
+
     doc.autoTable({
       startY: doc.previousAutoTable.finalY + 15,
       head: [["ID", "Fecha", "Descripción", "Tipo", "Detalle"]],
@@ -233,7 +233,7 @@ const ReporteContabilidad = () => {
         traslado.fecha ? format(parseISO(traslado.fecha), "dd-MM-yyyy") : "Sin fecha",
         traslado.descripcion,
         traslado.tipoTraslado.tipo,
-        traslado.detalle_traslados.map(detalle => 
+        traslado.detalle_traslados.map(detalle =>
           `Producto: ${detalle.producto.nombreProducto} (ID: ${detalle.idProducto}), ${traslado.tipoTraslado.tipo === "Recibido" ? "Cantidad Recibida" : "Cantidad Enviada"}: ${detalle.cantidad}`
         ).join(", "),
       ]),
@@ -242,13 +242,13 @@ const ReporteContabilidad = () => {
       theme: "grid",
       tableLineStyle: tableLineStyle
     });
-  
+
     // Pedidos
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
     doc.text("Pedidos", 145, doc.previousAutoTable.finalY + 10, { align: "center" });
-  
+
     doc.autoTable({
       startY: doc.previousAutoTable.finalY + 15,
       head: [["ID", "Fecha", "Descripción", "Sede", "Detalle"]],
@@ -257,7 +257,7 @@ const ReporteContabilidad = () => {
         pedido.fecha ? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha",
         pedido.descripcion,
         pedido.sede.nombreSede,
-        pedido.detalle_pedidos.map(detalle => 
+        pedido.detalle_pedidos.map(detalle =>
           `Producto: ${detalle.producto.nombreProducto} (ID: ${detalle.idProducto}), Cantidad: ${detalle.cantidad}`
         ).join(", "),
       ]),
@@ -266,13 +266,13 @@ const ReporteContabilidad = () => {
       theme: "grid",
       tableLineStyle: tableLineStyle
     });
-  
+
     // Ventas de Voluntarios
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
     doc.text("Ventas de Voluntarios", 145, doc.previousAutoTable.finalY + 10, { align: "center" });
-  
+
     doc.autoTable({
       startY: doc.previousAutoTable.finalY + 15,
       head: [["ID Venta", "Total", "Fecha", "Tipo de Público", "Voluntario", "Detalle", "Pagos"]],
@@ -290,13 +290,13 @@ const ReporteContabilidad = () => {
       theme: "grid",
       tableLineStyle: tableLineStyle
     });
-  
+
     // Ventas de Stands
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
     doc.text("Ventas de Stands", 145, doc.previousAutoTable.finalY + 10, { align: "center" });
-  
+
     doc.autoTable({
       startY: doc.previousAutoTable.finalY + 15,
       head: [["ID Venta", "Total", "Fecha", "Tipo de Público", "Stand", "Detalle", "Pagos"]],
@@ -314,13 +314,13 @@ const ReporteContabilidad = () => {
       theme: "grid",
       tableLineStyle: tableLineStyle
     });
-  
+
     // Recaudaciones de Rifas
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
     doc.text("Recaudaciones de Rifas", 145, doc.previousAutoTable.finalY + 10, { align: "center" });
-  
+
     doc.autoTable({
       startY: doc.previousAutoTable.finalY + 15,
       head: [["ID Recaudación", "Boletos Vendidos", "SubTotal", "Código Talonario", "Voluntario", "Rifa", "Fecha Inicio", "Fecha Fin", "Pagos"]],
@@ -340,13 +340,13 @@ const ReporteContabilidad = () => {
       theme: "grid",
       tableLineStyle: tableLineStyle
     });
-  
+
     // Recaudaciones de Eventos
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
     doc.text("Recaudaciones de Eventos", 145, doc.previousAutoTable.finalY + 10, { align: "center" });
-  
+
     doc.autoTable({
       startY: doc.previousAutoTable.finalY + 15,
       head: [["ID Recaudación", "Recaudación", "Número de Personas", "Nombre del Evento", "Nombre de la Sede", "Fecha de Registro", "Nombre del Empleado"]],
@@ -365,126 +365,129 @@ const ReporteContabilidad = () => {
       tableLineStyle: tableLineStyle
     });
 
-// Resumen al final del PDF
-let currentY = doc.previousAutoTable.finalY + 20;
+    // Resumen al final del PDF
+    let currentY = doc.previousAutoTable.finalY + 20;
 
-const verificarEspacio = (currentY, incremento) => {
-  if (currentY + incremento > doc.internal.pageSize.height - 20) {
-    doc.addPage();
-    return 20; // Reinicia la posición en la nueva página
-  }
-  return currentY + incremento;
-};
+    const verificarEspacio = (currentY, incremento) => {
+      if (currentY + incremento > doc.internal.pageSize.height - 20) {
+        doc.addPage();
+        return 20; // Reinicia la posición en la nueva página
+      }
+      return currentY + incremento;
+    };
 
-currentY = verificarEspacio(currentY, 10);
-doc.setFontSize(12);
-doc.setFont("helvetica", "bold");
-doc.text("RESUMEN", 14, currentY);
-
-currentY = verificarEspacio(currentY, 10);
-doc.setFontSize(10);
-doc.setFont("helvetica", "bold");
-doc.text("Total de Productos:", 14, currentY);
-
-Object.keys(productosTotales).forEach(id => {
-  currentY = verificarEspacio(currentY, 10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`- ID ${id} - ${productosTotales[id].nombre}: ${productosTotales[id].cantidad}`, 14, currentY);
-});
-
-// Movimientos por Categoría
-currentY = verificarEspacio(currentY, 20);
-doc.setFont("helvetica", "bold");
-doc.text("Movimientos por Categoría:", 14, currentY);
-
-Object.keys(movimientosPorCategoria).forEach(categoria => {
-  currentY = verificarEspacio(currentY, 10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`- ${categoria}:`, 14, currentY);
-  movimientosPorCategoria[categoria].forEach(descripcion => {
     currentY = verificarEspacio(currentY, 10);
-    doc.text(`  * ${descripcion}`, 14, currentY);
-  });
-});
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("RESUMEN", 14, currentY);
 
-// Traslados por Tipo
-currentY = verificarEspacio(currentY, 20);
-doc.setFont("helvetica", "bold");
-doc.text("Traslados por Tipo:", 14, currentY);
-
-Object.keys(trasladosPorTipo).forEach(tipo => {
-  currentY = verificarEspacio(currentY, 10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`- ${tipo}:`, 14, currentY);
-  trasladosPorTipo[tipo].forEach(detalle => {
     currentY = verificarEspacio(currentY, 10);
-    doc.text(`  * ${detalle}`, 14, currentY);
-  });
-});
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("Total de Productos:", 14, currentY);
 
-// Pedidos
-currentY = verificarEspacio(currentY, 20);
-doc.setFont("helvetica", "bold");
-doc.text("Detalles de Pedidos:", 14, currentY);
-currentY = verificarEspacio(currentY, 10);
-doc.setFont("helvetica", "normal");
-doc.text(detallesPedidos, 14, currentY);
+    Object.keys(productosTotales).forEach(id => {
+      currentY = verificarEspacio(currentY, 10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`- ID ${id} - ${productosTotales[id].nombre}: ${productosTotales[id].cantidad}`, 14, currentY);
+    });
 
-// Ventas de Voluntarios y Stands
-currentY = verificarEspacio(currentY, 30);
-doc.setFont("helvetica", "bold");
-doc.text(`Total Ventas de Voluntarios: Q ${totalVentasVoluntarios}`, 14, currentY);
-currentY = verificarEspacio(currentY, 10);
-doc.text(`Total Ventas de Stands: Q ${totalVentasStands}`, 14, currentY);
+    // Movimientos por Categoría
+    currentY = verificarEspacio(currentY, 20);
+    doc.setFont("helvetica", "bold");
+    doc.text("Movimientos por Categoría:", 14, currentY);
 
-// Recaudaciones de Rifas
-currentY = verificarEspacio(currentY, 20);
-doc.setFont("helvetica", "bold");
-doc.text("Recaudaciones de Rifas:", 14, currentY);
+    Object.keys(movimientosPorCategoria).forEach(categoria => {
+      currentY = verificarEspacio(currentY, 10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`- ${categoria}:`, 14, currentY);
+      movimientosPorCategoria[categoria].forEach(descripcion => {
+        currentY = verificarEspacio(currentY, 10);
+        doc.text(`  * ${descripcion}`, 14, currentY);
+      });
+    });
 
-Object.keys(totalRecaudacionesRifas).forEach(rifa => {
+    // Traslados por Tipo
+    currentY = verificarEspacio(currentY, 20);
+    doc.setFont("helvetica", "bold");
+    doc.text("Traslados por Tipo:", 14, currentY);
+
+    Object.keys(trasladosPorTipo).forEach(tipo => {
+      currentY = verificarEspacio(currentY, 10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`- ${tipo}:`, 14, currentY);
+      trasladosPorTipo[tipo].forEach(detalle => {
+        currentY = verificarEspacio(currentY, 10);
+        doc.text(`  * ${detalle}`, 14, currentY);
+      });
+    });
+
+    // Pedidos
+    currentY = verificarEspacio(currentY, 20);
+    doc.setFont("helvetica", "bold");
+    doc.text("Detalles de Pedidos:", 14, currentY);
     currentY = verificarEspacio(currentY, 10);
     doc.setFont("helvetica", "normal");
-    doc.text(`- ${rifa}: Q ${(totalRecaudacionesRifas[rifa] || 0).toFixed(2)}`, 14, currentY);
-  });
-  currentY = verificarEspacio(currentY, 10);
-  doc.setFont("helvetica", "bold");
-  doc.text(`Rifa Mayor Recaudación: ${rifaMayorRecaudacion} (Q ${(totalRecaudacionesRifas[rifaMayorRecaudacion] || 0).toFixed(2)})`, 14, currentY);
-  currentY = verificarEspacio(currentY, 10);
-  doc.text(`Rifa Menor Recaudación: ${rifaMenorRecaudacion} (Q ${(totalRecaudacionesRifas[rifaMenorRecaudacion] || 0).toFixed(2)})`, 14, currentY);
+    doc.text(detallesPedidos, 14, currentY);
 
-// Recaudaciones de Eventos
-currentY = verificarEspacio(currentY, 20);
-doc.setFont("helvetica", "bold");
-
-if (eventoMayorRecaudacion) {
-    doc.text(`Evento Mayor Recaudación: ${eventoMayorRecaudacion.evento.nombreEvento} (Q ${(parseFloat(eventoMayorRecaudacion.recaudacion || 0)).toFixed(2)})`, 14, currentY);
+    // Ventas de Voluntarios y Stands
+    currentY = verificarEspacio(currentY, 30);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total Ventas de Voluntarios: Q ${totalVentasVoluntarios}`, 14, currentY);
     currentY = verificarEspacio(currentY, 10);
-} else {
-    doc.text(`Evento Mayor Recaudación: N/A`, 14, currentY);
+    doc.text(`Total Ventas de Stands: Q ${totalVentasStands}`, 14, currentY);
+
+    // Recaudaciones de Rifas
+    currentY = verificarEspacio(currentY, 20);
+    doc.setFont("helvetica", "bold");
+    doc.text("Recaudaciones de Rifas:", 14, currentY);
+
+    Object.keys(totalRecaudacionesRifas).forEach(rifa => {
+      currentY = verificarEspacio(currentY, 10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`- ${rifa}: Q ${(totalRecaudacionesRifas[rifa] || 0).toFixed(2)}`, 14, currentY);
+    });
     currentY = verificarEspacio(currentY, 10);
-}
+    doc.setFont("helvetica", "bold");
+    doc.text(`Rifa Mayor Recaudación: ${rifaMayorRecaudacion} (Q ${(totalRecaudacionesRifas[rifaMayorRecaudacion] || 0).toFixed(2)})`, 14, currentY);
+    currentY = verificarEspacio(currentY, 10);
+    doc.text(`Rifa Menor Recaudación: ${rifaMenorRecaudacion} (Q ${(totalRecaudacionesRifas[rifaMenorRecaudacion] || 0).toFixed(2)})`, 14, currentY);
 
-if (eventoMenorRecaudacion) {
-    doc.text(`Evento Menor Recaudación: ${eventoMenorRecaudacion.evento.nombreEvento} (Q ${(parseFloat(eventoMenorRecaudacion.recaudacion || 0)).toFixed(2)})`, 14, currentY);
-} else {
-    doc.text(`Evento Menor Recaudación: N/A`, 14, currentY);
-}
+    // Recaudaciones de Eventos
+    currentY = verificarEspacio(currentY, 20);
+    doc.setFont("helvetica", "bold");
 
-// Firma
-currentY = verificarEspacio(currentY, 30);
-doc.setFont("helvetica", "normal");
-doc.setFontSize(10);
-doc.text("_______________________________", 147, currentY, { align: "center" });
-doc.text(revisor || "Sin nombre", 147, currentY + 10, { align: "center" });
-doc.text(cargo || "Sin cargo", 147, currentY + 20, { align: "center" });
+    if (eventoMayorRecaudacion) {
+      doc.text(`Evento Mayor Recaudación: ${eventoMayorRecaudacion.evento.nombreEvento} (Q ${(parseFloat(eventoMayorRecaudacion.recaudacion || 0)).toFixed(2)})`, 14, currentY);
+      currentY = verificarEspacio(currentY, 10);
+    } else {
+      doc.text(`Evento Mayor Recaudación: N/A`, 14, currentY);
+      currentY = verificarEspacio(currentY, 10);
+    }
 
-// Guarda el PDF
-doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
-};
+    if (eventoMenorRecaudacion) {
+      doc.text(`Evento Menor Recaudación: ${eventoMenorRecaudacion.evento.nombreEvento} (Q ${(parseFloat(eventoMenorRecaudacion.recaudacion || 0)).toFixed(2)})`, 14, currentY);
+    } else {
+      doc.text(`Evento Menor Recaudación: N/A`, 14, currentY);
+    }
+
+    // Firma
+    currentY = verificarEspacio(currentY, 30);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("_______________________________", 147, currentY, { align: "center" });
+    doc.text(revisor || "Sin nombre", 147, currentY + 10, { align: "center" });
+    doc.text(cargo || "Sin cargo", 147, currentY + 20, { align: "center" });
+
+    // Guarda el PDF
+    doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
+  };
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <div className="row mb-3">
         <div className="col text-center">
           <h3>Reporte de Contabilidad</h3>
@@ -562,7 +565,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
           Descargar PDF
         </button>
       </div>
-      
+
 
       <h4>Productos</h4>
       <table className="table mt-4">
@@ -584,7 +587,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
         <tbody>
           {productos.map((producto, index) => (
             <tr key={index}>
-                <td>{producto.idProducto}</td>
+              <td>{producto.idProducto}</td>
               <td>{producto.nombreProducto}</td>
               <td>{producto.talla}</td>
               <td>{`Q ${producto.precio}`}</td>
@@ -679,7 +682,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
           {pedidos.map((pedido, index) => (
             <tr key={index}>
               <td>{pedido.idPedido}</td>
-              <td>{pedido.fecha? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</td>
+              <td>{pedido.fecha ? format(parseISO(pedido.fecha), "dd-MM-yyyy") : "Sin fecha"}</td>
               <td>{pedido.descripcion}</td>
               <td>{pedido.sede.nombreSede}</td>
               <td>
@@ -762,7 +765,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
               <td>{`Q ${venta.totalVenta}`}</td>
               <td>{venta.fechaVenta ? format(parseISO(venta.fechaVenta), "dd-MM-yyyy") : "Sin fecha"}</td>
               <td>{venta.tipo_publico.nombreTipo}</td>
-              <td>{venta.detalle_ventas_stands[0].stand.nombreStand}</td> 
+              <td>{venta.detalle_ventas_stands[0].stand.nombreStand}</td>
               <td>
                 <ul>
                   {venta.detalle_ventas_stands.map((detalle, idx) => (
@@ -798,7 +801,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
             <th>Código Talonario</th>
             <th>Voluntario</th>
             <th>Rifa</th>
-            <th>Fecha Inicio</th> 
+            <th>Fecha Inicio</th>
             <th>Fecha Fin</th>
             <th>Pagos</th>
           </tr>
@@ -810,8 +813,8 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
               <td>{recaudacion.boletosVendidos}</td>
               <td>{`Q ${recaudacion.subTotal}`}</td>
               <td>{recaudacion.solicitudTalonario.talonario.codigoTalonario}</td>
-              <td>{recaudacion.solicitudTalonario.voluntario.persona.nombre}</td> 
-              <td>{recaudacion.solicitudTalonario.talonario.rifa.nombreRifa}</td> 
+              <td>{recaudacion.solicitudTalonario.voluntario.persona.nombre}</td>
+              <td>{recaudacion.solicitudTalonario.talonario.rifa.nombreRifa}</td>
               <td>{recaudacion.solicitudTalonario.talonario.rifa.fechaInicio ? format(parseISO(recaudacion.solicitudTalonario.talonario.rifa.fechaInicio), "dd-MM-yyyy") : "Sin fecha"}</td>
               <td>{recaudacion.solicitudTalonario.talonario.rifa.fechaFin ? format(parseISO(recaudacion.solicitudTalonario.talonario.rifa.fechaFin), "dd-MM-yyyy") : "Sin fecha"}</td>
               <td>
@@ -829,32 +832,32 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
       </table>
 
       <h4>Recaudaciones de Eventos</h4>
-        <table className="table mt-4">
-            <thead className="thead-dark">
-                <tr>
-                <th>ID Recaudación</th>
-                <th>Recaudación</th>
-                <th>Número de Personas</th>
-                <th>Nombre del Evento</th>
-                <th>Nombre de la Sede</th>
-                <th>Fecha de Registro</th>
-                <th>Nombre del Empleado</th>
-                </tr>
-            </thead>
-            <tbody>
-                {recaudacionesEventos.map((recaudacion, index) => (
-                <tr key={index}>
-                    <td>{recaudacion.idRecaudacionEvento}</td>
-                    <td>{`Q ${recaudacion.recaudacion}`}</td>
-                    <td>{recaudacion.numeroPersonas}</td>
-                    <td>{recaudacion.evento.nombreEvento}</td>
-                    <td>{recaudacion.evento.sede.nombreSede}</td>
-                    <td>{recaudacion.fechaRegistro ? format(parseISO(recaudacion.fechaRegistro), "dd-MM-yyyy") : "Sin fecha"}</td>
-                    <td>{recaudacion.empleado.persona.nombre}</td>
-                </tr>
-                ))}
-            </tbody>
-        </table>
+      <table className="table mt-4">
+        <thead className="thead-dark">
+          <tr>
+            <th>ID Recaudación</th>
+            <th>Recaudación</th>
+            <th>Número de Personas</th>
+            <th>Nombre del Evento</th>
+            <th>Nombre de la Sede</th>
+            <th>Fecha de Registro</th>
+            <th>Nombre del Empleado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recaudacionesEventos.map((recaudacion, index) => (
+            <tr key={index}>
+              <td>{recaudacion.idRecaudacionEvento}</td>
+              <td>{`Q ${recaudacion.recaudacion}`}</td>
+              <td>{recaudacion.numeroPersonas}</td>
+              <td>{recaudacion.evento.nombreEvento}</td>
+              <td>{recaudacion.evento.sede.nombreSede}</td>
+              <td>{recaudacion.fechaRegistro ? format(parseISO(recaudacion.fechaRegistro), "dd-MM-yyyy") : "Sin fecha"}</td>
+              <td>{recaudacion.empleado.persona.nombre}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

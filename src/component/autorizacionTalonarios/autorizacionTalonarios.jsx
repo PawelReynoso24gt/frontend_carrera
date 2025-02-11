@@ -28,10 +28,10 @@ function AutorizacionTalonarios() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver solicitudes de talonarios']
+          response.data.permisos['Ver solicitudes de talonarios']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -42,15 +42,15 @@ function AutorizacionTalonarios() {
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
-   useEffect(() => {
-      if (isPermissionsLoaded) {
-        if (hasViewPermission) {
-          fetchSolicitudes();
-        } else {
-          checkPermission('Ver solicitudes de talonarios', 'No tienes permisos para ver solicitudes de talonarios');
-        }
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchSolicitudes();
+      } else {
+        checkPermission('Ver solicitudes de talonarios', 'No tienes permisos para ver solicitudes de talonarios');
       }
-    }, [isPermissionsLoaded, hasViewPermission]);
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -151,10 +151,10 @@ function AutorizacionTalonarios() {
           const idPersona = voluntario.persona.idPersona;
 
           // Log de bitácora y obtener idBitacora
-        const idBitacora = await logBitacora(
-          `Solicitud del talonario #${codigoTalonario} actualizada`, // Usar codigoTalonario en lugar de idSolicitud
-          21
-        );
+          const idBitacora = await logBitacora(
+            `Solicitud del talonario #${codigoTalonario} actualizada`, // Usar codigoTalonario en lugar de idSolicitud
+            21
+          );
 
           // Verifica que todos los campos necesarios estén presentes
           if (idBitacora && idPersona) {
@@ -244,7 +244,10 @@ function AutorizacionTalonarios() {
   );
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4" style={{
+      maxWidth: "100%",
+      margin: "0 auto",
+    }}>
       <h3 className="text-center mb-4" style={{ fontWeight: "bold", color: "#007abf" }}>
         AUTORIZACIÓN DE SOLICITUDES DE TALONARIOS
       </h3>

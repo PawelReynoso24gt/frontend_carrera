@@ -55,10 +55,10 @@ function Publicaciones() {
         setPermissions(response.data.permisos || {});
 
         const hasPermission =
-        response.data.permisos['Ver publicaciones']
+          response.data.permisos['Ver publicaciones']
 
-      setHasViewPermission(hasPermission);
-      setIsPermissionsLoaded(true);
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -70,16 +70,16 @@ function Publicaciones() {
     fetchRifas(); // Cargar rifas
   }, [photoToConfirm]);
 
-   useEffect(() => {
-        if (isPermissionsLoaded) {
-          if (hasViewPermission) {
-            fetchPublicaciones();
-          } else {
-            checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones');
-          }
-        }
-      }, [isPermissionsLoaded, hasViewPermission]);
-  
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchPublicaciones();
+      } else {
+        checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
 
   // Obtener el idPersona desde localStorage
   const idSede = getUserDataFromToken(localStorage.getItem("token"))?.idSede; // ! USO DE LA FUNCIÓN getUserDataFromToken
@@ -163,11 +163,11 @@ function Publicaciones() {
   const fetchActivePublicaciones = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/activos");
-      setFilteredPublicaciones(response.data);
-    } else {
-      checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/activos");
+        setFilteredPublicaciones(response.data);
+      } else {
+        checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
+      }
     } catch (error) {
       console.error("Error fetching active publicaciones:", error);
     }
@@ -176,11 +176,11 @@ function Publicaciones() {
   const fetchInactivePublicaciones = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/inactivos");
-      setFilteredPublicaciones(response.data);
-    } else {
-      checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
-    }
+        const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/inactivos");
+        setFilteredPublicaciones(response.data);
+      } else {
+        checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
+      }
     } catch (error) {
       console.error("Error fetching inactive publicaciones:", error);
     }
@@ -291,7 +291,7 @@ function Publicaciones() {
       ...prevNewPublicacion,
       [name]: value,
     }));
-  
+
     // Ajustar la altura del textarea automáticamente
     e.target.style.height = 'auto';
     e.target.style.height = `${e.target.scrollHeight}px`;
@@ -317,7 +317,7 @@ function Publicaciones() {
     } catch (error) {
       console.error("Error fetching rifas:", error);
     }
-  };  
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -364,9 +364,9 @@ function Publicaciones() {
       files.forEach((file) => formData.append("fotos", file));
 
       // Log para inspeccionar los datos que se están enviando
-    for (let pair of formData.entries()) {
-      //console.log(`${pair[0]}: ${pair[1]}`);
-    }
+      for (let pair of formData.entries()) {
+        //console.log(`${pair[0]}: ${pair[1]}`);
+      }
 
       const endpoint = editingPublicacion
         ? `https://api.voluntariadoayuvi.com/publicaciones/completa/update/${editingPublicacion.idPublicacion}`
@@ -499,6 +499,8 @@ function Publicaciones() {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+          maxWidth: "100%",
+          margin: "0 auto",
         }}
       >
         <InputGroup className="mb-3">
