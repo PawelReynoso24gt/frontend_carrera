@@ -94,38 +94,39 @@ import DetalleProductos from "./pages/detalleProductos/detalleProductos";
 import ReporteTraslados from "./pages/reporteTraslados/reporteTraslados";
 import ReportePedidos from "./pages/reportePedidos/reportePedidos";
 import Bitacoras from "./pages/bitacoras/bitacoras";
+import ReporteContabilidad from "./pages/reporteContabilidad/reporteContabilidad";
 
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    Component: LoginLayout,
-    children: [
-      {
-        path: "/login",
-        element: <Login />,
-      },
-      {
-        path: "/create-account",
-        element: <CreateAccount />,
-      },
-      {
-        path: "/forget-password",
-        element: <ForgetPassword />,
-      },
-      {
-        path: "/confirm-password",
-        element: <ConfirmPassword />,
-      },
-      {
-        path: "/verificaiton",
-        element: <Verification />,
-      },
-      {
-        path: "/password-success",
-        element: <PasswordSuccess />,
-      },
-    ],
+    path: "/login",
+    element: <LoginLayout />,
+    // children: [
+    //   {
+    //     index: true, 
+    //     element: <LoginLayout />, 
+    //   },
+    //   {
+    //     path: "/create-account",
+    //     element: <CreateAccount />,
+    //   },
+    //   {
+    //     path: "/forget-password",
+    //     element: <ForgetPassword />,
+    //   },
+    //   {
+    //     path: "/confirm-password",
+    //     element: <ConfirmPassword />,
+    //   },
+    //   {
+    //     path: "/verificaiton",
+    //     element: <Verification />,
+    //   },
+    //   {
+    //     path: "/password-success",
+    //     element: <PasswordSuccess />,
+    //   },
+    // ],
   },
   {
     path: "/",
@@ -359,6 +360,10 @@ const router = createBrowserRouter([
       {
         path: "/reporteStands",
         element: <ReporteStands/>,
+      },
+      {
+        path: "/reporteContabilidad",
+        element: <ReporteContabilidad/>,
       },
       {
         path: "/reporteMercanciaVoluntarios",

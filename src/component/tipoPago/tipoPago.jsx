@@ -19,6 +19,8 @@ function TipoPago() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filteredTiposPago, setFilteredTiposPago] = useState([]);
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -29,14 +31,30 @@ function TipoPago() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver tipo pagos']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchTiposPago();
+
   }, []);
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchTiposPago();
+        } else {
+          checkPermission('Ver tipo pagos', 'No tienes permisos para ver tipo pagos');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -59,8 +77,13 @@ function TipoPago() {
 
   const fetchActiveTiposPago = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/tipopago/activas");
       setTiposPago(response.data);
+      setFilteredTiposPago(response.data);
+    } else {
+      checkPermission('Ver tipo pagos', 'No tienes permisos para ver tipo pagos')
+    }
     } catch (error) {
       console.error("Error fetching active tipos de pago:", error);
     }
@@ -68,8 +91,13 @@ function TipoPago() {
 
   const fetchInactiveTiposPago = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/tipopago/inactivas");
       setTiposPago(response.data);
+      setFilteredTiposPago(response.data);
+    } else {
+      checkPermission('Ver tipo pagos', 'No tienes permisos para ver tipo pagos')
+    }
     } catch (error) {
       console.error("Error fetching inactive tipos de pago:", error);
     }
@@ -131,7 +159,7 @@ function TipoPago() {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    const filtered = tiposPago.filter((tipoPago) => 
+    const filtered = tiposPago.filter((tipoPago) =>
       tipoPago.tipo.toLowerCase().includes(value)
     );
     setFilteredTiposPago(filtered);
@@ -261,7 +289,7 @@ function TipoPago() {
               color: "#fff",
               width: "100px",
             }}
-            onClick={fetchActiveTiposPago}
+           onClick={fetchActiveTiposPago}
           >
             Activos
           </Button>

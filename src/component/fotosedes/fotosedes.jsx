@@ -17,6 +17,8 @@ function FotosSedesComponent() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
   
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario;
@@ -30,15 +32,31 @@ function FotosSedesComponent() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver fotos sedes']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
   
     fetchPermissions();
-    fetchActiveFotos();
     fetchSedes();
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchActiveFotos();
+          } else {
+            checkPermission('Ver fotos sedes', 'No tienes permisos para ver fotos sedes');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+  
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -51,12 +69,16 @@ function FotosSedesComponent() {
 
   const fetchActiveFotos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/fotos_sedes/activos');
       const fotosWithFullPath = response.data.map(foto => ({
         ...foto,
         foto: foto.foto !== "sin foto" ? `http://localhost:5000/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
       }));
       setFotos(fotosWithFullPath);
+    } else {
+      checkPermission('Ver fotos sedes', 'No tienes permisos para ver fotos sedes')
+    }
     } catch (error) {
       console.error('Error fetching active fotos:', error);
     }
@@ -64,6 +86,7 @@ function FotosSedesComponent() {
 
   const fetchInactiveFotos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get('http://localhost:5000/fotos_sedes', {
         params: { estado: 0 }
       });
@@ -72,6 +95,9 @@ function FotosSedesComponent() {
         foto: foto.foto !== "sin foto" ? `http://localhost:5000/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
       }));
       setFotos(inactiveFotos);
+    } else {
+      checkPermission('Ver fotos sedes', 'No tienes permisos para ver fotos sedes')
+    }
     } catch (error) {
       console.error('Error fetching inactive fotos:', error);
     }
@@ -129,11 +155,11 @@ function FotosSedesComponent() {
     formData.append('idSede', Number(newFoto.idSede)); // Convertir idSede a número
     formData.append('estado', Number(newFoto.estado)); // Convertir estado a número
 
-    console.log("Datos enviados al backend:", {
+    /*console.log("Datos enviados al backend:", {
       foto: newFoto.foto,
       idSede: Number(newFoto.idSede),
       estado: Number(newFoto.estado)
-    });
+    });*/
 
     try {
       if (editingFoto) {
@@ -374,7 +400,11 @@ function FotosSedesComponent() {
                         fontSize: "20px",
                       }}
                       title="Inactivar"
-                      onClick={() => toggleFotoEstado(foto.idFotoSede, foto.estado)}
+                      onClick={() => {
+                        if (checkPermission('Desactivar foto sede', 'No tienes permisos para desactivar voluntario')) {
+                          toggleFotoEstado(foto.idFotoSede, foto.estado);
+                        }
+                    }}
                     />
                   ) : (
                     <FaToggleOff
@@ -386,14 +416,9 @@ function FotosSedesComponent() {
                       }}
                       title="Activar"
                       onClick={() => {
-                      const actionPermission = foto.estado ? 'Activar foto sede' : 'Desactivar foto sede';
-                      const actionMessage = foto.estado
-                        ? 'No tienes permisos para desactivar fotos sedes'
-                        : 'No tienes permisos para activar foto sedes';
-  
-                      if (checkPermission(actionPermission, actionMessage)) {
-                        toggleFotoEstado(foto.idFotoSede, foto.estado);
-                      }
+                        if (checkPermission('Activar foto sede', 'No tienes permisos para activar voluntario')) {
+                          toggleFotoEstado(foto.idFotoSede, foto.estado);
+                        }
                     }}
                     />
                   )}

@@ -48,6 +48,10 @@ function Traslados() {
   const [detallesProductos, setDetallesProductos] = useState([]);
   const [productos, setProductos] = useState([]);
   const [modalAlertMessage, setModalAlertMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; // Obtener el ID del usuario desde el token
 
@@ -60,25 +64,41 @@ function Traslados() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver traslados']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchTraslados();
+
     fetchTipoTraslados();
-    fetchProductos(); 
+    fetchProductos();
   }, []);
+
+  useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchTraslados();
+          } else {
+            checkPermission('Ver traslados', 'No tienes permisos para ver traslados');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
 
   const fetchProductos = async () => {
     try {
-        const response = await axios.get("http://localhost:5000/productos");
-        setProductos(response.data);
+      const response = await axios.get("http://localhost:5000/productos");
+      setProductos(response.data);
     } catch (error) {
-        console.error("Error fetching productos:", error);
+      console.error("Error fetching productos:", error);
     }
-};
+  };
 
 
   const checkPermission = (permission, message) => {
@@ -102,9 +122,13 @@ function Traslados() {
 
   const fetchActiveTraslados = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/traslados/activas");
       setTraslados(response.data);
       setFilteredTraslados(response.data);
+    } else {
+      checkPermission('Ver traslados', 'No tienes permisos para ver traslados')
+    }
     } catch (error) {
       console.error("Error fetching active traslados:", error);
     }
@@ -112,9 +136,13 @@ function Traslados() {
 
   const fetchInactiveTraslados = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/traslados/inactivas");
       setTraslados(response.data);
       setFilteredTraslados(response.data);
+    } else {
+      checkPermission('Ver traslados', 'No tienes permisos para ver traslados')
+    }
     } catch (error) {
       console.error("Error fetching inactive traslados:", error);
     }
@@ -139,23 +167,23 @@ function Traslados() {
     }
   };
 
- const handleAddDetalle = () => {
+  const handleAddDetalle = () => {
     setDetallesProductos([
-        ...detallesProductos,
-        { idProducto: "", cantidad: "" },
+      ...detallesProductos,
+      { idProducto: "", cantidad: "" },
     ]);
-};
+  };
 
-const handleDetalleChange = (index, field, value) => {
+  const handleDetalleChange = (index, field, value) => {
     const nuevosDetalles = [...detallesProductos];
     nuevosDetalles[index][field] = value;
     setDetallesProductos(nuevosDetalles);
-};
+  };
 
-const handleRemoveDetalle = (index) => {
+  const handleRemoveDetalle = (index) => {
     const nuevosDetalles = detallesProductos.filter((_, i) => i !== index);
     setDetallesProductos(nuevosDetalles);
-};
+  };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
@@ -175,40 +203,40 @@ const handleRemoveDetalle = (index) => {
 
   const handleShowModal = async (traslado = null) => {
     if (traslado) {
-        try {
-            // Cargar detalles del traslado desde el backend
-            const response = await axios.get(`http://localhost:5000/trasladosCompletos/${traslado.idTraslado}`);
-            const detalles = response.data.traslado.detalle_traslados || [];
+      try {
+        // Cargar detalles del traslado desde el backend
+        const response = await axios.get(`http://localhost:5000/trasladosCompletos/${traslado.idTraslado}`);
+        const detalles = response.data.traslado.detalle_traslados || [];
 
-            setNewTraslado({
-                ...traslado,
-                fecha: traslado.fecha ? traslado.fecha.split("T")[0] : "",
-            });
+        setNewTraslado({
+          ...traslado,
+          fecha: traslado.fecha ? traslado.fecha.split("T")[0] : "",
+        });
 
-            setDetallesProductos(
-                detalles.map((detalle) => ({
-                    idProducto: detalle.idProducto,
-                    cantidad: detalle.cantidad,
-                }))
-            );
-        } catch (error) {
-            console.error("Error fetching traslado details:", error);
-        }
+        setDetallesProductos(
+          detalles.map((detalle) => ({
+            idProducto: detalle.idProducto,
+            cantidad: detalle.cantidad,
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching traslado details:", error);
+      }
     } else {
-        // Si es un nuevo traslado, inicializar los valores vacíos
-        setNewTraslado({ fecha: "", descripcion: "", estado: 1, idTipoTraslado: "" });
-        setDetallesProductos([]);
+      // Si es un nuevo traslado, inicializar los valores vacíos
+      setNewTraslado({ fecha: "", descripcion: "", estado: 1, idTipoTraslado: "" });
+      setDetallesProductos([]);
     }
 
     setEditingTraslado(traslado);
     setShowModal(true);
-};
+  };
 
 
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingTraslado(null);
-    setModalAlertMessage(""); 
+    setModalAlertMessage("");
   };
 
   const handleChange = (e) => {
@@ -223,7 +251,7 @@ const handleRemoveDetalle = (index) => {
       idUsuario,
       fechaHora: new Date()
     };
-  
+
     try {
       await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
@@ -233,7 +261,7 @@ const handleRemoveDetalle = (index) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const regexDescripcion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
     if (!regexDescripcion.test(newTraslado.descripcion)) {
       setModalAlertMessage(
@@ -241,7 +269,7 @@ const handleRemoveDetalle = (index) => {
       );
       return;
     }
-  
+
     try {
       const trasladoConDetalle = {
         ...newTraslado,
@@ -250,7 +278,7 @@ const handleRemoveDetalle = (index) => {
           cantidad: detalle.cantidad,
         })),
       };
-  
+
       if (editingTraslado) {
         await axios.put(
           `http://localhost:5000/trasladosCompletos/${editingTraslado.idTraslado}`,
@@ -263,13 +291,13 @@ const handleRemoveDetalle = (index) => {
         setAlertMessage("Traslado creado con éxito");
         logBitacora("Creó un nuevo traslado", 11);
       }
-  
+
       fetchTraslados();
       setShowAlert(true);
       handleCloseModal();
     } catch (error) {
       console.error("Error submitting traslado:", error);
-  
+
       // Mostrar el error específico de inventario insuficiente en el modal
       if (
         error.response &&
@@ -278,7 +306,7 @@ const handleRemoveDetalle = (index) => {
       ) {
         const regex = /ID (\d+)/;
         const match = error.response.data.message.match(regex);
-        
+
         if (match) {
           const idProducto = parseInt(match[1], 10);
           const producto = productos.find((p) => p.idProducto === idProducto);
@@ -307,6 +335,70 @@ const handleRemoveDetalle = (index) => {
       console.error("Error toggling estado:", error);
     }
   };
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentTraslados = filteredTraslados.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(filteredTraslados.length / rowsPerPage);
+
+  const renderPagination = () => (
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+        }}
+        style={{
+          color: currentPage === 1 ? "gray" : "#007AC3",
+          cursor: currentPage === 1 ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Anterior
+      </a>
+
+      <div className="d-flex align-items-center">
+        <span style={{ marginRight: "10px", fontWeight: "bold" }}>Filas</span>
+        <Form.Control
+          as="select"
+          value={rowsPerPage}
+          onChange={(e) => {
+            setRowsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          style={{
+            width: "100px",
+            height: "40px",
+          }}
+        >
+          {[5, 10, 20, 50].map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </div>
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+        }}
+        style={{
+          color: currentPage === totalPages ? "gray" : "#007AC3",
+          cursor: currentPage === totalPages ? "default" : "pointer",
+          textDecoration: "none",
+          fontWeight: "bold",
+        }}
+      >
+        Siguiente
+      </a>
+    </div>
+  );
 
   return (
     <>
@@ -419,11 +511,11 @@ const handleRemoveDetalle = (index) => {
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {filteredTraslados.map((traslado) => (
+          <tbody style={{ textAlign: "center" }}>
+            {currentTraslados.map((traslado) => (
               <tr key={traslado.idTraslado}>
                 <td>{traslado.idTraslado}</td>
-                <td>{traslado.fecha}</td>
+                <td>{traslado.fecha ? format(parseISO(traslado.fecha ), "dd-MM-yyyy") : "Sin fecha"}</td>
                 <td>{traslado.descripcion}</td>
                 <td>
                   {tipoTraslados.find(
@@ -494,130 +586,132 @@ const handleRemoveDetalle = (index) => {
           </tbody>
         </Table>
 
+        {renderPagination()}
+
         <Modal show={showModal} onHide={handleCloseModal}>
-    <Modal.Header
-        closeButton
-        style={{ backgroundColor: "#007AC3", color: "#fff" }}
-    >
-        <Modal.Title>
-            {editingTraslado ? "Editar Traslado" : "Agregar Traslado"}
-        </Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-    {modalAlertMessage && (
-          <Alert variant="danger" onClose={() => setModalAlertMessage("")} dismissible>
-            {modalAlertMessage}
-          </Alert>
-        )}
-        <Form onSubmit={handleSubmit}>
-            <Form.Group controlId="fecha">
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: "#007AC3", color: "#fff" }}
+          >
+            <Modal.Title>
+              {editingTraslado ? "Editar Traslado" : "Agregar Traslado"}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {modalAlertMessage && (
+              <Alert variant="danger" onClose={() => setModalAlertMessage("")} dismissible>
+                {modalAlertMessage}
+              </Alert>
+            )}
+            <Form onSubmit={handleSubmit}>
+              <Form.Group controlId="fecha">
                 <Form.Label>Fecha</Form.Label>
                 <Form.Control
-                    type="date"
-                    name="fecha"
-                    value={newTraslado.fecha}
-                    onChange={handleChange}
-                    required
+                  type="date"
+                  name="fecha"
+                  value={newTraslado.fecha}
+                  onChange={handleChange}
+                  required
                 />
-            </Form.Group>
-            <Form.Group controlId="descripcion">
+              </Form.Group>
+              <Form.Group controlId="descripcion">
                 <Form.Label>Descripción</Form.Label>
                 <Form.Control
-                    type="text"
-                    name="descripcion"
-                    value={newTraslado.descripcion}
-                    onChange={handleChange}
-                    required
+                  type="text"
+                  name="descripcion"
+                  value={newTraslado.descripcion}
+                  onChange={handleChange}
+                  required
                 />
-            </Form.Group>
-            <Form.Group controlId="idTipoTraslado">
+              </Form.Group>
+              <Form.Group controlId="idTipoTraslado">
                 <Form.Label>Tipo de Traslado</Form.Label>
                 <Form.Control
-                    as="select"
-                    name="idTipoTraslado"
-                    value={newTraslado.idTipoTraslado}
-                    onChange={handleChange}
-                    required
+                  as="select"
+                  name="idTipoTraslado"
+                  value={newTraslado.idTipoTraslado}
+                  onChange={handleChange}
+                  required
                 >
-                    <option value="">Seleccionar</option>
-                    {tipoTraslados.map((tipo) => (
-                        <option key={tipo.idTipoTraslado} value={tipo.idTipoTraslado}>
-                            {tipo.tipo}
-                        </option>
-                    ))}
+                  <option value="">Seleccionar</option>
+                  {tipoTraslados.map((tipo) => (
+                    <option key={tipo.idTipoTraslado} value={tipo.idTipoTraslado}>
+                      {tipo.tipo}
+                    </option>
+                  ))}
                 </Form.Control>
-            </Form.Group>
+              </Form.Group>
 
-            <hr />
-            <h5>Detalles de Productos</h5>
-            {detallesProductos.map((detalle, index) => (
+              <hr />
+              <h5>Detalles de Productos</h5>
+              {detallesProductos.map((detalle, index) => (
                 <div key={index} className="mb-3">
-                    <Form.Group controlId={`idProducto-${index}`}>
-                        <Form.Label>Producto</Form.Label>
-                      {productos.length > 0 ? (
+                  <Form.Group controlId={`idProducto-${index}`}>
+                    <Form.Label>Producto</Form.Label>
+                    {productos.length > 0 ? (
                       <Form.Control
-                          as="select"
-                          value={detalle.idProducto}
-                          onChange={(e) =>
-                              handleDetalleChange(index, "idProducto", e.target.value)
-                          }
-                          required
+                        as="select"
+                        value={detalle.idProducto}
+                        onChange={(e) =>
+                          handleDetalleChange(index, "idProducto", e.target.value)
+                        }
+                        required
                       >
-                          <option value="">Seleccionar Producto</option>
-                          {productos.map((producto) => (
-                              <option key={producto.idProducto} value={producto.idProducto}>
-                                  {producto.nombreProducto}
-                              </option>
-                          ))}
+                        <option value="">Seleccionar Producto</option>
+                        {productos.map((producto) => (
+                          <option key={producto.idProducto} value={producto.idProducto}>
+                            {producto.nombreProducto}
+                          </option>
+                        ))}
                       </Form.Control>
-                  ) : (
+                    ) : (
                       <p>Cargando productos...</p>
-                  )}
-                    </Form.Group>
-                    <Form.Group controlId={`cantidad-${index}`}>
-                        <Form.Label>Cantidad</Form.Label>
-                        <Form.Control
-                            type="number"
-                            min="1"
-                            value={detalle.cantidad}
-                            onChange={(e) =>
-                                handleDetalleChange(index, "cantidad", e.target.value)
-                            }
-                            required
-                        />
-                    </Form.Group>
-                    <Button
-                        variant="danger"
-                        onClick={() => handleRemoveDetalle(index)}
-                        className="mt-2"
-                    >
-                        Eliminar Detalle
-                    </Button>
-                    <hr />
+                    )}
+                  </Form.Group>
+                  <Form.Group controlId={`cantidad-${index}`}>
+                    <Form.Label>Cantidad</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="1"
+                      value={detalle.cantidad}
+                      onChange={(e) =>
+                        handleDetalleChange(index, "cantidad", e.target.value)
+                      }
+                      required
+                    />
+                  </Form.Group>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleRemoveDetalle(index)}
+                    className="mt-2"
+                  >
+                    Eliminar Detalle
+                  </Button>
+                  <hr />
                 </div>
-            ))}
+              ))}
 
-            <Button variant="secondary" onClick={handleAddDetalle} className="mb-3">
+              <Button variant="secondary" onClick={handleAddDetalle} className="mb-3">
                 Agregar Detalle
-            </Button>
+              </Button>
 
-            <Button
+              <Button
                 style={{
-                    backgroundColor: "#007AC3",
-                    borderColor: "#007AC3",
-                    padding: "5px 10px",
-                    width: "100%",
-                    fontWeight: "bold",
-                    color: "#fff",
-                    marginTop: "10px",
+                  backgroundColor: "#007AC3",
+                  borderColor: "#007AC3",
+                  padding: "5px 10px",
+                  width: "100%",
+                  fontWeight: "bold",
+                  color: "#fff",
+                  marginTop: "10px",
                 }}
                 type="submit"
-            >
+              >
                 {editingTraslado ? "Actualizar" : "Crear"}
-            </Button>
-        </Form>
-    </Modal.Body>
-</Modal>
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
 
         <Modal show={showDetalleModal} onHide={() => setShowDetalleModal(false)}>
           <Modal.Header closeButton>

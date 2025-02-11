@@ -14,9 +14,11 @@ function Departamentos() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [messageModalContent, setMessageModalContent] = useState("");
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -27,14 +29,30 @@ function Departamentos() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver departamentos']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
   
     fetchPermissions();
-    fetchDepartamentos();
+
   }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchDepartamentos();
+          } else {
+            checkPermission('Ver departamentos', 'No tienes permisos para ver departamentos');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -57,9 +75,13 @@ function Departamentos() {
 
   const fetchActiveDepartamentos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/departamentos/activas");
       setDepartamentos(response.data);
       setFilteredDepartamentos(response.data);
+    } else {
+      checkPermission('Ver departamentos', 'No tienes permisos para ver departamentos')
+    }
     } catch (error) {
       console.error("Error fetching active departamentos:", error);
     }
@@ -67,9 +89,13 @@ function Departamentos() {
 
   const fetchInactiveDepartamentos = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/departamentos/inactivas");
       setDepartamentos(response.data);
       setFilteredDepartamentos(response.data);
+    } else {
+      checkPermission('Ver departamentos', 'No tienes permisos para ver departamentos')
+    }
     } catch (error) {
       console.error("Error fetching inactive departamentos:", error);
     }

@@ -37,3 +37,7 @@ Currently, two official plugins are available:
 ```bash
 npm install @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons --legacy-peer-deps
 ```
+
+```bash
+npm install jsqr --legacy-peer-deps
+```

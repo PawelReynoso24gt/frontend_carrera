@@ -17,6 +17,8 @@ function CategoriaBitacoras() {
     const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
     const [permissionMessage, setPermissionMessage] = useState('');
     const [permissions, setPermissions] = useState({});
+      const [hasViewPermission, setHasViewPermission] = useState(false);
+      const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -27,14 +29,30 @@ function CategoriaBitacoras() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver categoria bitacoras']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
   
     fetchPermissions();
-    fetchCategorias();
+
   }, []);
+  
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchCategorias();
+        } else {
+          checkPermission('Ver categoria bitacoras', 'No tienes permisos para ver categoria bitacoras');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const checkPermission = (permission, message) => {
     if (!permissions[permission]) {
@@ -277,7 +295,7 @@ function CategoriaBitacoras() {
                       }
                     }}
                   />
-                  <FaTrashAlt
+                  {/* <FaTrashAlt
                     style={{
                       color: "#e10f0f",
                       cursor: "pointer",
@@ -289,7 +307,7 @@ function CategoriaBitacoras() {
                         handleDelete(categoria.idCategoriaBitacora);
                       }
                     }}
-                  />
+                  /> */}
                 </td>
               </tr>
             ))}

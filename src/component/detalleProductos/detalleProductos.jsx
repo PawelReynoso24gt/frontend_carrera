@@ -17,6 +17,11 @@ function DetalleProductosComponent() {
   const [filteredDetalles, setFilteredDetalles] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   const sedeId = getUserDataFromToken(localStorage.getItem("token"))?.idSede;
 
@@ -24,10 +29,48 @@ function DetalleProductosComponent() {
 
 
   useEffect(() => {
-    fetchDetalles();
-    fetchProductos();
-    fetchSedes();
+    const fetchPermissions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+          response.data.permisos['Ver detalles de productos']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
+
+    fetchPermissions();
   }, []);
+
+  useEffect(() => {
+    if (isPermissionsLoaded) {
+      if (hasViewPermission) {
+        fetchDetalles();
+        fetchProductos();
+        fetchSedes();
+      } else {
+        checkPermission('Ver detalles de productos', 'No tienes permisos para ver detalles de productos');
+      }
+    }
+  }, [isPermissionsLoaded, hasViewPermission]);
+
+  const checkPermission = (permission, message) => {
+    if (!permissions[permission]) {
+      setPermissionMessage(message);
+      setShowPermissionModal(true);
+      return false;
+    }
+    return true;
+  };
 
   const fetchDetalles = async () => {
     try {
@@ -60,47 +103,55 @@ function DetalleProductosComponent() {
 
   const fetchActiveDetalleProductos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/detalle_productos/activos");
-      setDetalles(response.data || []); // Aquí se usa setDetalles
-      setFilteredDetalles(response.data || []); // Aquí se usa setFilteredDetalles
+      if (hasViewPermission) {
+        const response = await axios.get("http://localhost:5000/detalle_productos/activos");
+        setDetalles(response.data || []); // Aquí se usa setDetalles
+        setFilteredDetalles(response.data || []); // Aquí se usa setFilteredDetalles
+      } else {
+        checkPermission('Ver detalles de productos', 'No tienes permisos para ver detalles de productos')
+      }
     } catch (error) {
       console.error("Error fetching active productos:", error);
     }
   };
-  
+
   const fetchInactiveDetalleProductos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/detalle_productos/inactivos");
-      setDetalles(response.data || []); // Aquí se usa setDetalles
-      setFilteredDetalles(response.data || []); // Aquí se usa setFilteredDetalles
+      if (hasViewPermission) {
+        const response = await axios.get("http://localhost:5000/detalle_productos/inactivos");
+        setDetalles(response.data || []); // Aquí se usa setDetalles
+        setFilteredDetalles(response.data || []); // Aquí se usa setFilteredDetalles
+      } else {
+        checkPermission('Ver detalles de productos', 'No tienes permisos para ver detalles de productos')
+      }
     } catch (error) {
       console.error("Error fetching inactive productos:", error);
     }
   };
-  
+
 
   const handleSearch = (e) => {
-  const value = e.target.value.toLowerCase();
-  setSearchTerm(value);
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
 
-  const filtered = detalles.filter((detalle) => {
-    const nombreProducto = detalle.producto?.nombreProducto?.toLowerCase() || "";
-    const nombreSede = detalle.sede?.nombreSede?.toLowerCase() || "";
+    const filtered = detalles.filter((detalle) => {
+      const nombreProducto = detalle.producto?.nombreProducto?.toLowerCase() || "";
+      const nombreSede = detalle.sede?.nombreSede?.toLowerCase() || "";
 
-    // Busca en el nombre del producto o de la sede
-    return (
-      nombreProducto.includes(value) || 
-      nombreSede.includes(value)
-    );
-  });
+      // Busca en el nombre del producto o de la sede
+      return (
+        nombreProducto.includes(value) ||
+        nombreSede.includes(value)
+      );
+    });
 
-  setFilteredDetalles(filtered);
-  setCurrentPage(1); // Reinicia a la primera página
-};
+    setFilteredDetalles(filtered);
+    setCurrentPage(1); // Reinicia a la primera página
+  };
 
   const handleShowModal = (detalle = null) => {
     setEditingDetalle(detalle);
-    setNewDetalle(detalle || { nombreProducto: "", cantidad: "", idSede: sedeId || "", estado: 1,  descripcion: "" });
+    setNewDetalle(detalle || { nombreProducto: "", cantidad: "", idSede: sedeId || "", estado: 1, descripcion: "" });
     setShowModal(true);
   };
 
@@ -121,7 +172,7 @@ function DetalleProductosComponent() {
       idUsuario,
       fechaHora: new Date()
     };
-  
+
     try {
       await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
@@ -167,7 +218,7 @@ function DetalleProductosComponent() {
 
   const totalPages = Math.ceil(filteredDetalles.length / rowsPerPage);
 
-const renderPagination = () => (
+  const renderPagination = () => (
     <div className="d-flex justify-content-between align-items-center mt-3">
       <a
         href="#"
@@ -226,7 +277,7 @@ const renderPagination = () => (
   );
 
 
-  
+
   return (
     <div className="container mt-4" style={{ maxWidth: "100%", margin: "0 auto"}}>
      <div className="row justify-content-center" style={{marginBottom: "20px" }}>
@@ -257,37 +308,41 @@ const renderPagination = () => (
             fontWeight: "bold",
             color: "#fff",
           }}
-          onClick={() => handleShowModal()}
+          onClick={() => {
+            if (checkPermission('Crear detalle de producto', 'No tienes permisos para crear detalle de producto')) {
+              handleShowModal();
+            }
+          }}
         >
           Agregar Detalle
         </Button>
-          <Button
-            style={{
-              backgroundColor: "#009B85",
-              borderColor: "#007AC3",
-              padding: "5px 10px",
-              width: "100px",
-              marginRight: "10px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-              onClick={fetchActiveDetalleProductos}
-            >
-              Activos
-          </Button>
-          <Button
-            style={{
-              backgroundColor: "#bf2200",
-              borderColor: "#007AC3",
-              padding: "5px 10px",
-              width: "100px",
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-              onClick={fetchInactiveDetalleProductos}
-            >
-              Inactivos
-            </Button>
+        <Button
+          style={{
+            backgroundColor: "#009B85",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            marginRight: "10px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchActiveDetalleProductos}
+        >
+          Activos
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#bf2200",
+            borderColor: "#007AC3",
+            padding: "5px 10px",
+            width: "100px",
+            fontWeight: "bold",
+            color: "#fff",
+          }}
+          onClick={fetchInactiveDetalleProductos}
+        >
+          Inactivos
+        </Button>
       </div>
 
       <Alert variant="success" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
@@ -295,16 +350,16 @@ const renderPagination = () => (
       </Alert>
 
       <Table sstriped
-          bordered
-          hover
-          responsive
-          className="mt-3"
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "20px",
-            overflow: "hidden",
-            marginTop: "20px",
-          }}>
+        bordered
+        hover
+        responsive
+        className="mt-3"
+        style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "20px",
+          overflow: "hidden",
+          marginTop: "20px",
+        }}>
         <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
           <tr>
             <th>ID</th>
@@ -326,19 +381,31 @@ const renderPagination = () => (
               <td>
                 <FaPencilAlt
                   style={{ cursor: "pointer", color: "#007AC3", marginRight: "10px" }}
-                  onClick={() => handleShowModal(detalle)}
+                  onClick={() => {
+                    if (checkPermission('Editar detalle de producto', 'No tienes permisos para editar detalle de producto')) {
+                      handleShowModal(detalle);
+                    }
+                  }}
                   title="Editar"
                 />
                 {detalle.estado ? (
                   <FaToggleOn
                     style={{ cursor: "pointer", color: "#30c10c" }}
-                    onClick={() => toggleEstado(detalle.idDetalleProductos, detalle.estado)}
+                    onClick={() => {
+                      if (checkPermission('Desactivar detalle de producto', 'No tienes permisos para desactivar detalle de producto')) {
+                        toggleEstado(detalle.idDetalleProductos, detalle.estado);
+                      }
+                    }}
                     title="Inactivar"
                   />
                 ) : (
                   <FaToggleOff
                     style={{ cursor: "pointer", color: "#e10f0f" }}
-                    onClick={() => toggleEstado(detalle.idDetalleProductos, detalle.estado)}
+                    onClick={() => {
+                      if (checkPermission('Activar detalle de producto', 'No tienes permisos para activar detalle de producto')) {
+                        toggleEstado(detalle.idDetalleProductos, detalle.estado);
+                      }
+                    }}
                     title="Activar"
                   />
                 )}
@@ -348,8 +415,8 @@ const renderPagination = () => (
         </tbody>
       </Table>
 
-     
-      
+
+
       {renderPagination()}
 
       <Modal show={showModal} onHide={handleCloseModal}>
@@ -358,7 +425,7 @@ const renderPagination = () => (
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-          <Form.Group>
+            <Form.Group>
               <Form.Label>Producto</Form.Label>
               <Form.Control
                 as="select"
@@ -401,19 +468,19 @@ const renderPagination = () => (
                   </option>
                 ))}
               </Form.Control>
+            </Form.Group>
+            {editingDetalle && (
+              <Form.Group controlId="descripcion">
+                <Form.Label>Razón del Cambio</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  name="descripcion"
+                  value={newDetalle.descripcion}
+                  onChange={handleChange}
+                  required
+                />
               </Form.Group>
-              {editingDetalle && (
-                <Form.Group controlId="descripcion">
-                  <Form.Label>Razón del Cambio</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    name="descripcion"
-                    value={newDetalle.descripcion}
-                    onChange={handleChange}
-                    required
-                  />
-                </Form.Group>
-              )}
+            )}
             <Form.Group>
               <Form.Label>Estado</Form.Label>
               <Form.Control
@@ -431,6 +498,17 @@ const renderPagination = () => (
             </Button>
           </Form>
         </Modal.Body>
+      </Modal>
+      <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Permiso Denegado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{permissionMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+            Aceptar
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );

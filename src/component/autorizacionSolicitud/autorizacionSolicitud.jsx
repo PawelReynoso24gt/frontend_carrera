@@ -3,6 +3,9 @@ import axios from "axios";
 import { Button, Modal, Card, Row, Col, Pagination } from "react-bootstrap";
 import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
+
 const formatDate = (date) => {
   const options = { day: "2-digit", month: "2-digit", year: "numeric" };
   return new Date(date).toLocaleDateString("es-ES", options);
@@ -16,9 +19,11 @@ function SolicitudesVoluntariado() {
   const [modalContent, setModalContent] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-  const [permissionMessage, setPermissionMessage] = useState('');
-  const [permissions, setPermissions] = useState({});
+    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+    const [permissionMessage, setPermissionMessage] = useState('');
+    const [permissions, setPermissions] = useState({});
+      const [hasViewPermission, setHasViewPermission] = useState(false);
+      const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   // Estados para la paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,15 +38,31 @@ function SolicitudesVoluntariado() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        
+        const hasPermission =
+          response.data.permisos['Ver aspirantes']
+
+        setHasViewPermission(hasPermission);
+        setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
 
     fetchPermissions();
-    fetchAspirantes();
     fetchPersonas();
   }, []);
+
+   useEffect(() => {
+      if (isPermissionsLoaded) {
+        if (hasViewPermission) {
+          fetchAspirantes();
+        } else {
+          checkPermission('Ver aspirantes', 'No tienes permisos para ver aspirantes');
+        }
+      }
+    }, [isPermissionsLoaded, hasViewPermission]);
 
   const idUsuario = getUserDataFromToken(localStorage.getItem("token"))?.idUsuario; //! usuario del token
 
@@ -100,7 +121,9 @@ function SolicitudesVoluntariado() {
   const fetchAspirantes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/aspirantes");
-      setAspirantes(response.data);
+      
+      const activos = response.data.filter((aspirante) => aspirante.estado === 1);
+      setAspirantes(activos);
     } catch (error) {
       console.error("Error fetching aspirantes:", error);
     }
@@ -139,21 +162,30 @@ function SolicitudesVoluntariado() {
   };
 
   const acceptSolicitud = async (idAspirante) => {
-    try {
-      // Actualizar estado del aspirante
-      await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
-      fetchAspirantes();
-      setShowConfirmationModal(false);
+  try {
+    // Actualizar estado del aspirante
+    await axios.put(`http://localhost:5000/aspirantes/aceptar/${idAspirante}`);
+    fetchAspirantes();
+    setShowConfirmationModal(false);
 
-      // Obtener la información del aspirante
-      const aspirante = await getAspirante(idAspirante);
+    // Obtener la información del aspirante
+    const aspirante = await getAspirante(idAspirante);
 
-      // Verificar que aspirante y persona existan
-      if (aspirante && aspirante.idPersona) {
-        const idPersona = aspirante.idPersona;
+    // Verificar que aspirante y persona existan
+    if (aspirante && aspirante.idPersona) {
+      const idPersona = aspirante.idPersona;
+
+      // Buscar la persona correspondiente en la lista de personas
+      const persona = personas.find((p) => p.idPersona === idPersona);
+
+      if (persona) {
+        const nombrePersona = persona.nombre; // Obtener el nombre de la persona
 
         // Log de bitácora y obtener idBitacora
-        const idBitacora = await logBitacora(`Solicitud de aspirante ${idAspirante} aceptada`, 20);
+        const idBitacora = await logBitacora(
+          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) aceptada`, // Incluir el nombre en el mensaje
+          20
+        );
 
         // Crear la notificación
         if (idBitacora && idPersona) {
@@ -163,44 +195,59 @@ function SolicitudesVoluntariado() {
           console.error("Faltan datos necesarios para crear la notificación");
         }
       } else {
-        console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
+        console.error("No se encontró la persona asociada al aspirante");
       }
-    } catch (error) {
-      console.error("Error accepting solicitud:", error);
+    } else {
+      console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
     }
-  };
+  } catch (error) {
+    console.error("Error accepting solicitud:", error);
+  }
+};
+  
+const denySolicitud = async (idAspirante) => {
+  try {
+    // Actualizar estado del aspirante
+    await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
+    fetchAspirantes();
+    setShowConfirmationModal(false);
 
-  const denySolicitud = async (idAspirante) => {
-    try {
-      // Actualizar estado del aspirante
-      await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
-      fetchAspirantes();
-      setShowConfirmationModal(false);
+    // Obtener la información del aspirante
+    const aspirante = await getAspirante(idAspirante);
 
-      // Obtener la información del aspirante
-      const aspirante = await getAspirante(idAspirante);
+    // Verificar que aspirante y persona existan
+    if (aspirante && aspirante.idPersona) {
+      const idPersona = aspirante.idPersona;
 
-      // Verificar que aspirante y persona existan
-      if (aspirante && aspirante.idPersona) {
-        const idPersona = aspirante.idPersona;
+      // Buscar la persona correspondiente en la lista de personas
+      const persona = personas.find((p) => p.idPersona === idPersona);
+
+      if (persona) {
+        const nombrePersona = persona.nombre; // Obtener el nombre de la persona
 
         // Log de bitácora y obtener idBitacora
-        const idBitacora = await logBitacora(`Solicitud de aspirante ${idAspirante} denegada`, 26);
+        const idBitacora = await logBitacora(
+          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) denegada`, // Incluir el nombre en el mensaje
+          26
+        );
 
         // Crear la notificación
         if (idBitacora && idPersona) {
-          const idTipoNotificacion = 4;
+          const idTipoNotificacion = 4; // Ajusta según tu lógica de tipos de notificaciones
           await createNotification(idBitacora, idTipoNotificacion, idPersona);
         } else {
           console.error("Faltan datos necesarios para crear la notificación");
         }
       } else {
-        console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
+        console.error("No se encontró la persona asociada al aspirante");
       }
-    } catch (error) {
-      console.error("Error denying solicitud:", error);
+    } else {
+      console.error("La estructura de la respuesta del aspirante no contiene los datos esperados");
     }
-  };
+  } catch (error) {
+    console.error("Error denying solicitud:", error);
+  }
+};
 
   // Paginación
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -231,7 +278,7 @@ function SolicitudesVoluntariado() {
               <Card.Body style={{ position: "relative", paddingBottom: "40px" }}>
                 <Card.Title>Aspirante ID: {aspirante.idAspirante}</Card.Title>
                 <Card.Text>Estado: {aspirante.estado === 1 ? "Activo" : "Inactivo"}</Card.Text>
-                <Card.Text>Fecha de Registro: {formatDate(aspirante.fechaRegistro)}</Card.Text>
+                <Card.Text>Fecha de Registro: {format(parseISO(aspirante.fechaRegistro), "dd-MM-yyyy")}</Card.Text>
                 <div style={{ display: "flex", gap: "5px", justifyContent: "center" }}>
                   <Button
                     variant="success"
@@ -304,7 +351,7 @@ function SolicitudesVoluntariado() {
               <p style={{ color: "#000000" }}><strong>Teléfono:</strong> {selectedPersona.telefono}</p>
               <p style={{ color: "#000000" }}><strong>Domicilio:</strong> {selectedPersona.domicilio}</p>
               <p style={{ color: "#000000" }}><strong>CUI:</strong> {selectedPersona.CUI}</p>
-              <p style={{ color: "#000000" }}><strong>Fecha de Nacimiento:</strong> {formatDate(selectedPersona.fechaNacimiento)}</p>
+              <p style={{ color: "#000000" }}><strong>Fecha de Nacimiento:</strong> {format(parseISO(selectedPersona.fechaNacimiento), "dd-MM-yyyy")}</p>
               <p style={{ color: "#000000" }}><strong>Estado:</strong> {selectedPersona.estado === 1 ? "Activo" : "Inactivo"}</p>
             </>
           ) : (

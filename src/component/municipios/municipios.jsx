@@ -19,9 +19,11 @@ function Municipio() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [departamentos, setDepartamentos] = useState([]);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -32,15 +34,30 @@ function Municipio() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver municipios']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchMunicipios();
     fetchDepartamentos();
   }, []);
+
+    useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchMunicipios();
+          } else {
+            checkPermission('Ver municipios', 'No tienes permisos para ver municipios');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
 
   const fetchMunicipios = async () => {
     try {
@@ -83,10 +100,14 @@ function Municipio() {
 
   const fetchActiveMunicipios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/municipios/activas");
       const data = Array.isArray(response.data) ? response.data : [];
       setMunicipios(data);
       setFilteredMunicipios(data);
+    } else {
+      checkPermission('Ver municipios', 'No tienes permisos para ver municipios')
+    }
     } catch (error) {
       console.error("Error fetching active municipios:", error);
     }
@@ -94,10 +115,14 @@ function Municipio() {
 
   const fetchInactiveMunicipios = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/municipios/inactivas");
       const data = Array.isArray(response.data) ? response.data : [];
       setMunicipios(data);
       setFilteredMunicipios(data);
+    } else {
+      checkPermission('Ver municipios', 'No tienes permisos para ver municipios')
+    }
     } catch (error) {
       console.error("Error fetching inactive municipios:", error);
     }
@@ -344,71 +369,71 @@ function Municipio() {
             </tr>
           </thead>
           <tbody>
-              {currentMunicipios.map((municipio) => (
-                <tr key={municipio.idMunicipio}>
-                  <td style={{ textAlign: "center" }}>{municipio.idMunicipio}</td>
-                  <td style={{ textAlign: "center" }}>{municipio.municipio}</td>
-                  <td style={{ textAlign: "center" }}>
-                    {departamentos.find(
-                      (d) => d.idDepartamento === municipio.idDepartamento
-                    )?.departamento || "Desconocido"}
-                  </td>
-                  <td style={{ textAlign: "center" }}>
-                    {municipio.estado === 1 ? "Activo" : "Inactivo"}
-                  </td>
-                  <td style={{ textAlign: "center" }}>
-                    {/* Botón de Editar */}
-                    <FaPencilAlt
+            {currentMunicipios.map((municipio) => (
+              <tr key={municipio.idMunicipio}>
+                <td style={{ textAlign: "center" }}>{municipio.idMunicipio}</td>
+                <td style={{ textAlign: "center" }}>{municipio.municipio}</td>
+                <td style={{ textAlign: "center" }}>
+                  {departamentos.find(
+                    (d) => d.idDepartamento === municipio.idDepartamento
+                  )?.departamento || "Desconocido"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {municipio.estado === 1 ? "Activo" : "Inactivo"}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {/* Botón de Editar */}
+                  <FaPencilAlt
+                    style={{
+                      color: "#007AC3",
+                      cursor: "pointer",
+                      marginRight: "10px",
+                      fontSize: "20px",
+                    }}
+                    title="Editar"
+                    onClick={() => {
+                      if (checkPermission('Editar municipio', 'No tienes permisos para editar municipio')) {
+                        handleShowModal(municipio);
+                      }
+                    }}
+                  />
+
+                  {/* Botón de Activar/Inactivar */}
+                  {municipio.estado ? (
+                    <FaToggleOn
                       style={{
-                        color: "#007AC3",
+                        color: "#30c10c",
                         cursor: "pointer",
-                        marginRight: "10px",
+                        marginLeft: "10px",
                         fontSize: "20px",
                       }}
-                      title="Editar"
+                      title="Inactivar"
                       onClick={() => {
-                        if (checkPermission('Editar municipio', 'No tienes permisos para editar municipio')) {
-                          handleShowModal(municipio);
+                        if (checkPermission('Desactivar municipio', 'No tienes permisos para desactivar municipio')) {
+                          toggleEstado(municipio.idMunicipio, municipio.estado);
                         }
                       }}
                     />
-
-                    {/* Botón de Activar/Inactivar */}
-                    {municipio.estado ? (
-                      <FaToggleOn
-                        style={{
-                          color: "#30c10c",
-                          cursor: "pointer",
-                          marginLeft: "10px",
-                          fontSize: "20px",
-                        }}
-                        title="Inactivar"
-                        onClick={() => {
-                          if (checkPermission('Desactivar municipio', 'No tienes permisos para desactivar municipio')) {
-                            toggleEstado(municipio.idMunicipio, municipio.estado);
-                          }
-                        }}
-                      />
-                    ) : (
-                      <FaToggleOff
-                        style={{
-                          color: "#e10f0f",
-                          cursor: "pointer",
-                          marginLeft: "10px",
-                          fontSize: "20px",
-                        }}
-                        title="Activar"
-                        onClick={() => {
-                          if (checkPermission('Activar municipio', 'No tienes permisos para activar municipio')) {
-                            toggleEstado(municipio.idMunicipio, municipio.estado);
-                          }
-                        }}
-                      />
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                  ) : (
+                    <FaToggleOff
+                      style={{
+                        color: "#e10f0f",
+                        cursor: "pointer",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                      title="Activar"
+                      onClick={() => {
+                        if (checkPermission('Activar municipio', 'No tienes permisos para activar municipio')) {
+                          toggleEstado(municipio.idMunicipio, municipio.estado);
+                        }
+                      }}
+                    />
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
 
         </Table>
 
@@ -437,20 +462,6 @@ function Municipio() {
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="estado">
-                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
-                  Estado
-                </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="estado"
-                  value={newMunicipio.estado}
-                  onChange={handleChange}
-                >
-                  <option value={1}>Activo</option>
-                  <option value={0}>Inactivo</option>
-                </Form.Control>
-              </Form.Group>
               <Form.Group controlId="idDepartamento">
                 <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
                   Departamento
@@ -473,6 +484,20 @@ function Municipio() {
                   ))}
                 </Form.Control>
               </Form.Group>
+              <Form.Group controlId="estado">
+                <Form.Label style={{ fontWeight: "bold", color: "#333" }}>
+                  Estado
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="estado"
+                  value={newMunicipio.estado}
+                  onChange={handleChange}
+                >
+                  <option value={1}>Activo</option>
+                  <option value={0}>Inactivo</option>
+                </Form.Control>
+              </Form.Group>
               <Button
                 style={{
                   backgroundColor: "#007AC3",
@@ -489,17 +514,17 @@ function Municipio() {
             </Form>
           </Modal.Body>
         </Modal>
-         <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                 <Modal.Header closeButton>
-                  <Modal.Title>Permiso Denegado</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>{permissionMessage}</Modal.Body>
-                  <Modal.Footer>
-                  <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                    Aceptar
-                  </Button>
-                 </Modal.Footer>
-              </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );

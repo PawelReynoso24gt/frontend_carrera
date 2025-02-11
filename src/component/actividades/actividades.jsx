@@ -8,6 +8,9 @@ function Actividades() {
   const [filteredActividades, setFilteredActividades] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [comisiones, setComisiones] = useState([]);
+  const [eventos, setEventos] = useState([]); // Estado para almacenar los eventos
+  const [selectedEvento, setSelectedEvento] = useState(null); // Estado para el evento seleccionado
+  const [comisionesPorEvento, setComisionesPorEvento] = useState([]); // Estado para almacenar las comisiones por evento
   const [showModal, setShowModal] = useState(false);
   const [editingActividad, setEditingActividad] = useState(null);
   const [newActividad, setNewActividad] = useState({
@@ -24,6 +27,8 @@ function Actividades() {
   const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
   const [permissionMessage, setPermissionMessage] = useState('');
   const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
@@ -34,14 +39,42 @@ function Actividades() {
           },
         });
         setPermissions(response.data.permisos || {});
+
+        const hasPermission =
+        response.data.permisos['Ver actividades']
+
+      setHasViewPermission(hasPermission);
+      setIsPermissionsLoaded(true);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
     };
-  
+
     fetchPermissions();
-    fetchActividades();
     fetchComisiones();
+  }, []);
+
+   useEffect(() => {
+        if (isPermissionsLoaded) {
+          if (hasViewPermission) {
+            fetchActividades();
+          } else {
+            checkPermission('Ver actividades', 'No tienes permisos para ver actividades');
+          }
+        }
+      }, [isPermissionsLoaded, hasViewPermission]);
+
+  useEffect(() => {
+    const fetchEventos = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/eventos");
+        setEventos(response.data);
+      } catch (error) {
+        console.error("Error fetching eventos:", error);
+      }
+    };
+  
+    fetchEventos();
   }, []);
 
   const checkPermission = (permission, message) => {
@@ -51,6 +84,19 @@ function Actividades() {
       return false;
     }
     return true;
+  };
+
+  const fetchComisionesPorEvento = async (eventoId) => {
+    try {
+      setComisionesPorEvento([]); // Resetear las comisiones antes de hacer la solicitud
+      const response = await axios.get("http://localhost:5000/comisiones/poreventoFr", {
+        params: { eventoId }
+      });
+      setComisionesPorEvento(response.data);
+    } catch (error) {
+      console.error("Error fetching comisiones por evento:", error);
+      setComisionesPorEvento([]); // Asegurarse de que no haya comisiones en caso de error
+    }
   };
 
   const fetchActividades = async () => {
@@ -74,8 +120,12 @@ function Actividades() {
 
   const fetchActiveActividades = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/actividades/activos");
       setFilteredActividades(response.data);
+    } else {
+      checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
+    }
     } catch (error) {
       console.error("Error fetching active actividades:", error);
     }
@@ -83,8 +133,12 @@ function Actividades() {
 
   const fetchInactiveActividades = async () => {
     try {
+      if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/actividades/inactivos");
       setFilteredActividades(response.data);
+    } else {
+      checkPermission('Ver actividades', 'No tienes permisos para ver actividades')
+    }
     } catch (error) {
       console.error("Error fetching inactive actividades:", error);
     }
@@ -103,23 +157,47 @@ function Actividades() {
     setCurrentPage(1);
   };
 
-  const handleShowModal = (actividad = null) => {
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingActividad(null);
+    setSelectedEvento(null); // Resetear el evento seleccionado
+    setComisionesPorEvento([]); // Resetear las comisiones
+  };
+
+  const handleShowModal = async (actividad = null) => {
     setEditingActividad(actividad);
+  
+    if (actividad) {
+      //console.log("Actividad seleccionada para editar:", actividad);
+  
+      // Usar directamente el idEvento de la comisión asociada a la actividad
+      const idEvento = actividad.comision.idEvento;
+      //console.log("ID del evento asociado a la actividad:", idEvento);
+  
+      // Guardar solo el idEvento (sin buscar en la lista de eventos)
+      setSelectedEvento({ idEvento });
+  
+      // Cargar las comisiones asociadas al evento
+      await fetchComisionesPorEvento(idEvento);
+    } else {
+      // Si es una nueva actividad, resetear el evento seleccionado y las comisiones
+      setSelectedEvento(null);
+      setComisionesPorEvento([]);
+    }
+  
+    // Establecer los datos de la actividad en el formulario
     setNewActividad(
       actividad || {
         actividad: "",
         descripcion: "",
         estado: 1,
         idComision: "",
+        idEvento: "",
       }
     );
+  
     setShowModal(true);
     setShowValidationError(false);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingActividad(null);
   };
 
   const handleChange = (e) => {
@@ -453,22 +531,50 @@ function Actividades() {
                   required
                 />
               </Form.Group>
-              <Form.Group controlId="idComision">
-                <Form.Label>Comisión</Form.Label>
+              <Form.Group controlId="evento">
+                <Form.Label>Evento</Form.Label>
                 <Form.Control
                   as="select"
-                  name="idComision"
-                  value={newActividad.idComision}
-                  onChange={handleChange}
+                  name="evento"
+                  value={selectedEvento ? selectedEvento.idEvento : ""}
+                  onChange={(e) => {
+                    const eventoId = e.target.value;
+                    const eventoSeleccionado = eventos.find((evento) => evento.idEvento === parseInt(eventoId));
+                    setSelectedEvento(eventoSeleccionado);
+                    fetchComisionesPorEvento(eventoId);
+                  }}
                   required
                 >
-                  <option value="">Seleccionar Comisión</option>
-                  {comisiones.map((comision) => (
-                    <option key={comision.idComision} value={comision.idComision}>
-                      {comision.comision}
+                  <option value="">Seleccionar Evento</option>
+                  {eventos.map((evento) => (
+                    <option key={evento.idEvento} value={evento.idEvento}>
+                      {evento.nombreEvento}
                     </option>
                   ))}
                 </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="comision">
+                <Form.Label>Comisión</Form.Label>
+                {comisionesPorEvento.length > 0 ? (
+                  <Form.Control
+                    as="select"
+                    name="idComision"
+                    value={newActividad.idComision}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccionar Comisión</option>
+                    {comisionesPorEvento.map((comision) => (
+                      <option key={comision.idComision} value={comision.idComision}>
+                        {comision.comision}
+                      </option>
+                    ))}
+                  </Form.Control>
+                ) : (
+                  <Alert variant="info" style={{ marginTop: "10px", fontWeight: "bold" }}>
+                    No hay comisiones disponibles para este evento.
+                  </Alert>
+                )}
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
@@ -498,17 +604,17 @@ function Actividades() {
             </Form>
           </Modal.Body>
         </Modal>
-           <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
-                         <Modal.Header closeButton>
-                          <Modal.Title>Permiso Denegado</Modal.Title>
-                          </Modal.Header>
-                          <Modal.Body>{permissionMessage}</Modal.Body>
-                          <Modal.Footer>
-                          <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
-                            Aceptar
-                          </Button>
-                         </Modal.Footer>
-                      </Modal>
+        <Modal show={showPermissionModal} onHide={() => setShowPermissionModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Permiso Denegado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{permissionMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setShowPermissionModal(false)}>
+              Aceptar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );
