@@ -170,6 +170,11 @@ function AutorizacionTalonarios() {
         console.error("La estructura de la respuesta de la solicitud no contiene los datos esperados");
       }
 
+      // Si la solicitud es denegada, actualizar el campo solicitado en el talonario
+      if (estado === 0) {
+        await axios.put(`http://localhost:5000/talonarios/${solicitud.idTalonario}`, { solicitado: 0 });
+      }
+
       // Actualizamos la lista de solicitudes después de cambiar el estado
       fetchSolicitudes();
       setShowConfirmationModal(false);
