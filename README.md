@@ -41,3 +41,7 @@ npm install @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons --l
 ```bash
 npm install jsqr --legacy-peer-deps
 ```
+
+```bash
+npm install browser-image-compression --legacy-peer-deps
+```

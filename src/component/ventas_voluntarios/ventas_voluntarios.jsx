@@ -5,6 +5,7 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
 import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
 import { format } from "date-fns";
 import { parseISO } from "date-fns";
+import imageCompression from "browser-image-compression";
 
 function Ventas() {
   const [ventas, setVentas] = useState([]);
@@ -279,18 +280,95 @@ function Ventas() {
     setTiposPagos(nuevosPagos);
   };
 
-  const handleFileUpload = (e, index) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const nuevosPagos = [...tiposPagos];
-        nuevosPagos[index].imagenTransferencia = reader.result.split(",")[1];
-        setTiposPagos(nuevosPagos);
-      };
-      reader.readAsDataURL(file);
+  const hexToBlobUrl = (hexString) => {
+    if (!hexString) return "";
+
+    try {
+        // Convertir HEX en un array de bytes
+        const byteArray = new Uint8Array(
+            hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16))
+        );
+
+        // Crear un Blob con los datos binarios de la imagen
+        const blob = new Blob([byteArray], { type: "image/png" });
+
+        // Generar una URL temporal para mostrar la imagen
+        return URL.createObjectURL(blob);
+    } catch (error) {
+        console.error("Error al convertir HEX a imagen:", error);
+        return "";
     }
-  };
+}; 
+
+const compressImageTo50KB = async (file) => {
+        try {
+            // **Opciones de compresión**
+            const options = {
+                maxSizeMB: 0.05, // 50KB = 0.05MB
+                maxWidthOrHeight: 800, // Mantener un tamaño decente
+                useWebWorker: true, // Usar proceso en segundo plano
+                alwaysKeepResolution: true, // Evita distorsión
+            };
+    
+            let compressedFile = await imageCompression(file, options);
+    
+            console.log(`Comenzando compresión: ${file.size / 1024} KB`);
+    
+            // **Si la imagen sigue siendo mayor a 50KB, reducir calidad dinámicamente**
+            let attempts = 0;
+            while (compressedFile.size > 51200 && attempts < 3) { // 50KB = 51200 bytes
+                options.maxSizeMB *= 0.9; // Reduce calidad en cada iteración
+                compressedFile = await imageCompression(compressedFile, options);
+                attempts++;
+            }
+    
+            console.log(`Tamaño final: ${(compressedFile.size / 1024).toFixed(2)} KB`);
+            return compressedFile;
+        } catch (error) {
+            console.error("Error al comprimir la imagen:", error);
+            return file; // Devuelve el archivo original si hay error
+        }
+    };
+
+    const handleFileUpload = (e, index) => {
+      const file = e.target.files[0];
+      if (!file) return;
+  
+      const reader = new FileReader();
+  
+      reader.onloadend = async () => {
+          try {
+              console.log(`Imagen capturada: ${file.name}`);
+              console.log(`Tamaño original: ${(file.size / 1024).toFixed(2)} KB`);
+  
+              // **Comprimir imagen a 50KB**
+              const compressedFile = await compressImageTo50KB(file);
+  
+              console.log(`Tamaño después de compresión: ${(compressedFile.size / 1024).toFixed(2)} KB`);
+  
+              // **Convertir a HEX**
+              const arrayBuffer = await compressedFile.arrayBuffer();
+              const byteArray = new Uint8Array(arrayBuffer);
+              const hexString = Array.from(byteArray)
+                  .map(byte => byte.toString(16).padStart(2, "0"))
+                  .join("");
+  
+              console.log(`Longitud del HEX: ${hexString.length} caracteres`);
+  
+              // **Guardar en el estado**
+              const nuevosPagos = [...tiposPagos];
+              nuevosPagos[index].imagenTransferencia = hexString;
+              setTiposPagos(nuevosPagos);
+  
+              alert("Imagen comprimida y subida con éxito.");
+          } catch (error) {
+              console.error("Error al procesar la imagen:", error);
+              alert("Error al cargar la imagen.");
+          }
+      };
+  
+      reader.readAsDataURL(file);
+  };  
 
   const handleCreateVenta = async () => {
     try {
@@ -819,7 +897,7 @@ function Ventas() {
                             "Efectivo"
                           ) : (
                             <img
-                              src={`data:image/png;base64,${pago.imagenTransferencia}`}
+                              src={hexToBlobUrl(pago.imagenTransferencia)}
                               alt="Comprobante de Pago"
                               style={{ width: "100%", maxWidth: "150px", marginTop: "10px", borderRadius: "8px" }}
                             />
@@ -1060,8 +1138,8 @@ function Ventas() {
                   />
                 </Form.Group>
                 <Form.Group>
-                  <Form.Label>Imagen</Form.Label>
-                  <Form.Control type="file" onChange={(e) => handleFileUpload(e, idx)} />
+                    <Form.Label>Comprobante</Form.Label>
+                    <Form.Control type="file" accept="image/*" onChange={(e) => handleFileUpload(e, idx)} />
                 </Form.Group>
                 <Button
                   variant="danger"

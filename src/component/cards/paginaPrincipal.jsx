@@ -116,7 +116,12 @@ function HomePage() {
             })),
           ];
         });
-        setFotosPublicaciones(fotosPublicaciones); // Aquí se asigna correctamente
+        // Ordenar las publicaciones por fecha (de más reciente a más antigua)
+        const fotosOrdenadas = fotosPublicaciones.sort(
+          (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
+        );
+
+        setFotosPublicaciones(fotosOrdenadas);
       } catch (error) {
         console.error("Error fetching photos:", error);
       }

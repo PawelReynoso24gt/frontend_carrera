@@ -98,8 +98,13 @@ function Publicaciones() {
   const fetchPublicaciones = async () => {
     try {
       const response = await axios.get("http://localhost:5000/publicaciones/completas");
-      setPublicaciones(response.data);
-      setFilteredPublicaciones(response.data);
+
+      // Ordenar las publicaciones de más reciente a más antigua
+      const publicacionesOrdenadas = response.data.sort(
+        (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
+      );
+      setPublicaciones(publicacionesOrdenadas);
+      setFilteredPublicaciones(publicacionesOrdenadas);
     } catch (error) {
       console.error("Error fetching publicaciones:", error);
     }
@@ -164,7 +169,13 @@ function Publicaciones() {
     try {
       if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/publicaciones/activos");
-      setFilteredPublicaciones(response.data);
+
+      // Ordenar de más reciente a más antigua
+      const publicacionesOrdenadas = response.data.sort(
+        (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
+      );
+
+      setFilteredPublicaciones(publicacionesOrdenadas);
     } else {
       checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
     }
@@ -177,7 +188,12 @@ function Publicaciones() {
     try {
       if (hasViewPermission) {
       const response = await axios.get("http://localhost:5000/publicaciones/inactivos");
-      setFilteredPublicaciones(response.data);
+      // Ordenar de más reciente a más antigua
+      const publicacionesOrdenadas = response.data.sort(
+        (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
+      );
+
+      setFilteredPublicaciones(publicacionesOrdenadas);
     } else {
       checkPermission('Ver publicaciones', 'No tienes permisos para ver publicaciones')
     }

@@ -19,11 +19,15 @@ function SolicitudesVoluntariado() {
   const [modalContent, setModalContent] = useState("");
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-    const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
-    const [permissionMessage, setPermissionMessage] = useState('');
-    const [permissions, setPermissions] = useState({});
-      const [hasViewPermission, setHasViewPermission] = useState(false);
-      const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false); // Nuevo estado
+  const [permissionMessage, setPermissionMessage] = useState('');
+  const [permissions, setPermissions] = useState({});
+  const [hasViewPermission, setHasViewPermission] = useState(false);
+  const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
+
+  const [showDenialModal, setShowDenialModal] = useState(false);
+  const [denialDescription, setDenialDescription] = useState("");
+  const [denyingAspiranteId, setDenyingAspiranteId] = useState(null);
 
   // Estados para la paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -100,6 +104,11 @@ function SolicitudesVoluntariado() {
   };
 
   const getAspirante = async (idAspirante) => {
+    if (!idAspirante || typeof idAspirante !== "number") {
+      console.error(`ID de aspirante inválido: ${JSON.stringify(idAspirante)}`);
+      return;
+    }  
+   
     try {
       const response = await axios.get(`http://localhost:5000/aspirantes/${idAspirante}`);
       return response.data;
@@ -156,11 +165,15 @@ function SolicitudesVoluntariado() {
   };
 
   const handleDeny = (idAspirante) => {
-    setConfirmationAction(() => () => denySolicitud(idAspirante));
-    setModalContent("¿Está seguro de denegar la solicitud?");
-    setShowConfirmationModal(true);
+    if (!idAspirante || typeof idAspirante !== "number") {
+      console.error(`Error: ID de aspirante inválido ${JSON.stringify(idAspirante)}`);
+      return;
+    }
+  
+    setDenyingAspiranteId(idAspirante);
+    setShowDenialModal(true);
   };
-
+  
   const acceptSolicitud = async (idAspirante) => {
   try {
     // Actualizar estado del aspirante
@@ -206,12 +219,19 @@ function SolicitudesVoluntariado() {
 };
   
 const denySolicitud = async (idAspirante) => {
+  if (!idAspirante || typeof idAspirante !== "number") {
+    console.error(`Error: ID de aspirante inválido ${JSON.stringify(idAspirante)}`);
+    return;
+  }
+  
   try {
     // Actualizar estado del aspirante
-    await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
-    fetchAspirantes();
-    setShowConfirmationModal(false);
-
+    await axios.put(`http://localhost:5000/aspirantes/denegar/${denyingAspiranteId  }`, {
+      descripcion: denialDescription, });
+     fetchAspirantes();
+      setShowDenialModal(false);
+      setDenialDescription("");
+      setDenyingAspiranteId(null);
     // Obtener la información del aspirante
     const aspirante = await getAspirante(idAspirante);
 
@@ -284,7 +304,7 @@ const denySolicitud = async (idAspirante) => {
                     }}
                     style={{ minWidth: "70px" , width: "100px"}}
                   >
-                    Aceptar
+                    Aceptar 
                   </Button>
                   <Button
                     variant="danger"
@@ -318,6 +338,32 @@ const denySolicitud = async (idAspirante) => {
           </Col>
         ))}
       </Row>
+
+
+      <Modal show={showDenialModal} onHide={() => setShowDenialModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Denegar Solicitud</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <label htmlFor="denialDescription">Razón de denegación:</label>
+          <textarea
+            id="denialDescription"
+            className="form-control mt-2"
+            rows="3"
+            value={denialDescription}
+            onChange={(e) => setDenialDescription(e.target.value)}
+          ></textarea>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDenialModal(false)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={() => denySolicitud(denyingAspiranteId)}>
+            Confirmar Denegación
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
 
       {/* Barra de paginación */}
       <Pagination className="justify-content-center mt-4">
