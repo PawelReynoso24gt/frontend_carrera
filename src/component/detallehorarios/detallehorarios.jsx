@@ -26,7 +26,7 @@ function DetalleHorariosComponent() {
 
   const fetchCategorias = async () => {
     try {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/categoriaHorarios');
+      const response = await axios.get('http://localhost:5000/categoriaHorarios');
       const data = Array.isArray(response.data) ? response.data : Object.values(response.data); // Si es objeto, convierte en array
       setCategorias(data);
     } catch (error) {
@@ -38,7 +38,7 @@ function DetalleHorariosComponent() {
   // Cargar los horarios
   const fetchHorarios = async () => {
     try {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/horarios'); // Cambiar al endpoint real
+      const response = await axios.get('http://localhost:5000/horarios'); // Cambiar al endpoint real
       setHorarios(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching horarios:', error);
@@ -49,7 +49,7 @@ function DetalleHorariosComponent() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -93,7 +93,7 @@ function DetalleHorariosComponent() {
 
   const fetchDetalleHorarios = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_horarios");
+      const response = await axios.get("http://localhost:5000/detalle_horarios");
       setDetalles(response.data);
       setFilter(response.data);
     } catch (error) {
@@ -104,7 +104,7 @@ function DetalleHorariosComponent() {
   const fetchActiveDetalles = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/detalle_horarios/activos');
+        const response = await axios.get('http://localhost:5000/detalle_horarios/activos');
         setDetalles(response.data);
         setFilteredDetalleHorarios(response.data);
       } else {
@@ -118,7 +118,7 @@ function DetalleHorariosComponent() {
   const fetchInactiveDetalles = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/detalle_horarios/inactivos', {
+        const response = await axios.get('http://localhost:5000/detalle_horarios/inactivos', {
           params: { estado: 0 }
         });
         setDetalles(response.data.filter(detalle => detalle.estado === 0));
@@ -151,10 +151,10 @@ function DetalleHorariosComponent() {
     e.preventDefault();
     try {
       if (editingDetalle) {
-        await axios.put(`https://api.voluntariadoayuvi.com/detalle_horarios/${editingDetalle.idDetalleHorario}`, newDetalle);
+        await axios.put(`http://localhost:5000/detalle_horarios/${editingDetalle.idDetalleHorario}`, newDetalle);
         setAlertMessage('Detalle de horario actualizado con éxito');
       } else {
-        await axios.post('https://api.voluntariadoayuvi.com/detalle_horarios', newDetalle);
+        await axios.post('http://localhost:5000/detalle_horarios', newDetalle);
         setAlertMessage('Detalle de horario creado con éxito');
       }
       filter === 'activos' ? fetchActiveDetalles() : fetchInactiveDetalles();
@@ -168,7 +168,7 @@ function DetalleHorariosComponent() {
   const toggleDetalleEstado = async (id, currentEstado) => {
     try {
       const newEstado = currentEstado === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/detalle_horarios/${id}`, { estado: newEstado });
+      await axios.put(`http://localhost:5000/detalle_horarios/${id}`, { estado: newEstado });
       setAlertMessage(`Detalle de horario ${newEstado === 1 ? 'activado' : 'desactivado'} con éxito`);
       setShowAlert(true);
       filter === 'activos' ? fetchActiveDetalles() : fetchInactiveDetalles();

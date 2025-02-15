@@ -58,7 +58,7 @@ function Traslados() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -93,7 +93,7 @@ function Traslados() {
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/productos");
+      const response = await axios.get("http://localhost:5000/productos");
       setProductos(response.data);
     } catch (error) {
       console.error("Error fetching productos:", error);
@@ -112,7 +112,7 @@ function Traslados() {
 
   const fetchTraslados = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/traslados");
+      const response = await axios.get("http://localhost:5000/traslados");
       setTraslados(response.data);
       setFilteredTraslados(response.data);
     } catch (error) {
@@ -123,7 +123,7 @@ function Traslados() {
   const fetchActiveTraslados = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/traslados/activas");
+      const response = await axios.get("http://localhost:5000/traslados/activas");
       setTraslados(response.data);
       setFilteredTraslados(response.data);
     } else {
@@ -137,7 +137,7 @@ function Traslados() {
   const fetchInactiveTraslados = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/traslados/inactivas");
+      const response = await axios.get("http://localhost:5000/traslados/inactivas");
       setTraslados(response.data);
       setFilteredTraslados(response.data);
     } else {
@@ -150,7 +150,7 @@ function Traslados() {
 
   const fetchTipoTraslados = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipoTraslados");
+      const response = await axios.get("http://localhost:5000/tipoTraslados");
       setTipoTraslados(response.data);
     } catch (error) {
       console.error("Error fetching tipo traslados:", error);
@@ -159,7 +159,7 @@ function Traslados() {
 
   const fetchDetalleTraslado = async (idTraslado) => {
     try {
-      const response = await axios.get(`https://api.voluntariadoayuvi.com/trasladosCompletos/${idTraslado}`);
+      const response = await axios.get(`http://localhost:5000/trasladosCompletos/${idTraslado}`);
       setDetalleTraslado(response.data.traslado);
       setShowDetalleModal(true);
     } catch (error) {
@@ -205,7 +205,7 @@ function Traslados() {
     if (traslado) {
       try {
         // Cargar detalles del traslado desde el backend
-        const response = await axios.get(`https://api.voluntariadoayuvi.com/trasladosCompletos/${traslado.idTraslado}`);
+        const response = await axios.get(`http://localhost:5000/trasladosCompletos/${traslado.idTraslado}`);
         const detalles = response.data.traslado.detalle_traslados || [];
 
         setNewTraslado({
@@ -253,7 +253,7 @@ function Traslados() {
     };
 
     try {
-      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
@@ -281,13 +281,13 @@ function Traslados() {
 
       if (editingTraslado) {
         await axios.put(
-          `https://api.voluntariadoayuvi.com/trasladosCompletos/${editingTraslado.idTraslado}`,
+          `http://localhost:5000/trasladosCompletos/${editingTraslado.idTraslado}`,
           trasladoConDetalle
         );
         setAlertMessage("Traslado actualizado con éxito");
         logBitacora(`Actualizó el traslado #${editingTraslado.idTraslado}`, 15);
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/trasladosCompletos", trasladoConDetalle);
+        await axios.post("http://localhost:5000/trasladosCompletos", trasladoConDetalle);
         setAlertMessage("Traslado creado con éxito");
         logBitacora("Creó un nuevo traslado", 11);
       }
@@ -325,7 +325,7 @@ function Traslados() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/traslados/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/traslados/${id}`, { estado: nuevoEstado });
       fetchTraslados();
       setAlertMessage(
         `Traslado ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

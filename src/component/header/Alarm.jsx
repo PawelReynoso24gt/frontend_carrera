@@ -18,7 +18,7 @@ function Alarm() {
 
       try {
         const response = await axios.get(
-          `https://api.voluntariadoayuvi.com/notificaciones?idPersona=${personId}`
+          `http://localhost:5000/notificaciones?idPersona=${personId}`
         );
 
         // Verificar si hay notificaciones no leídas

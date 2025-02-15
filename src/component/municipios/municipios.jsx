@@ -28,7 +28,7 @@ function Municipio() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -61,7 +61,7 @@ function Municipio() {
 
   const fetchMunicipios = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/municipios");
+      const response = await axios.get("http://localhost:5000/municipios");
       const data = Array.isArray(response.data) ? response.data : [];
       setMunicipios(data);
       setFilteredMunicipios(data);
@@ -91,7 +91,7 @@ function Municipio() {
 
   const fetchDepartamentos = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/departamentos");
+      const response = await axios.get("http://localhost:5000/departamentos");
       setDepartamentos(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching departamentos:", error);
@@ -101,7 +101,7 @@ function Municipio() {
   const fetchActiveMunicipios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/municipios/activas");
+      const response = await axios.get("http://localhost:5000/municipios/activas");
       const data = Array.isArray(response.data) ? response.data : [];
       setMunicipios(data);
       setFilteredMunicipios(data);
@@ -116,7 +116,7 @@ function Municipio() {
   const fetchInactiveMunicipios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/municipios/inactivas");
+      const response = await axios.get("http://localhost:5000/municipios/inactivas");
       const data = Array.isArray(response.data) ? response.data : [];
       setMunicipios(data);
       setFilteredMunicipios(data);
@@ -155,12 +155,12 @@ function Municipio() {
     try {
       if (editingMunicipio) {
         await axios.put(
-          `https://api.voluntariadoayuvi.com/municipios/update/${editingMunicipio.idMunicipio}`,
+          `http://localhost:5000/municipios/update/${editingMunicipio.idMunicipio}`,
           newMunicipio
         );
         setAlertMessage("Municipio actualizado con éxito");
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/municipios/create", newMunicipio);
+        await axios.post("http://localhost:5000/municipios/create", newMunicipio);
         setAlertMessage("Municipio creado con éxito");
       }
       fetchMunicipios();
@@ -174,7 +174,7 @@ function Municipio() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/municipios/update/${id}`, {
+      await axios.put(`http://localhost:5000/municipios/update/${id}`, {
         estado: nuevoEstado,
       });
       fetchMunicipios();

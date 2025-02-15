@@ -61,7 +61,7 @@ function Ventas() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -169,7 +169,7 @@ function Ventas() {
 
   const fetchVentas = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/stands");
+      const response = await axios.get("http://localhost:5000/ventas/stands");
       setVentas(response.data);
       setFilteredVentas(response.data);
     } catch (error) {
@@ -180,7 +180,7 @@ function Ventas() {
   // Fetch de los stands
   const fetchStands = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/stand");
+      const response = await axios.get("http://localhost:5000/stand");
       const standsActivos = response.data.filter((stand) => stand.estado === 1);
       setStands(standsActivos);
     } catch (error) {
@@ -195,7 +195,7 @@ function Ventas() {
         console.warn("ID de Stand inválido:", idStand);
         return;
       }
-      const response = await axios.get(`https://api.voluntariadoayuvi.com/stands/voluntarios/${idStand}`);
+      const response = await axios.get(`http://localhost:5000/stands/voluntarios/${idStand}`);
       if (response.status === 200) {
         setVoluntarios(response.data); // Asignados al stand
       } else {
@@ -210,7 +210,7 @@ function Ventas() {
 
   const fetchVoluntarios = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/voluntarios");
+      const response = await axios.get("http://localhost:5000/voluntarios");
       if (response.status === 200) {
         setVoluntarioVirtual(response.data); // Solo para el stand especial
       } else {
@@ -226,7 +226,7 @@ function Ventas() {
   const handleEditVenta = async (idVenta) => {
     try {
       const response = await axios.get(
-        `https://api.voluntariadoayuvi.com/detalle_ventas_stands/ventaCompleta/${idVenta}`
+        `http://localhost:5000/detalle_ventas_stands/ventaCompleta/${idVenta}`
       );
       const detalles = response.data;
   
@@ -425,7 +425,7 @@ function Ventas() {
   
       // Enviar los datos al backend
       const response = await axios.put(
-        `https://api.voluntariadoayuvi.com/ventas/update/stands/completa/${ventaEditada.venta.idVenta}`,
+        `http://localhost:5000/ventas/update/stands/completa/${ventaEditada.venta.idVenta}`,
         ventaData
       );
   
@@ -436,7 +436,7 @@ function Ventas() {
           idUsuario: idUsuario,
           fechaHora: new Date()
         };
-        await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+        await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
   
         alert("Venta actualizada con éxito");
         setShowDetailsModal(false); // Cerrar el modal
@@ -466,7 +466,7 @@ function Ventas() {
 
   const fetchTiposPagos = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipospagos");
+      const response = await axios.get("http://localhost:5000/tipospagos");
       setTiposPagosOptions(response.data); // Ahora esto se usará en el select
     } catch (error) {
       console.error("Error fetching tipos pagos:", error);
@@ -475,7 +475,7 @@ function Ventas() {
 
   const fetchTiposPublico = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_publicos");
+      const response = await axios.get("http://localhost:5000/tipo_publicos");
       setTiposPublico(response.data);
     } catch (error) {
       console.error("Error fetching tipos publico:", error);
@@ -497,7 +497,7 @@ function Ventas() {
   const handleViewDetails = async (idVenta) => {
     try {
         const response = await axios.get(
-            `https://api.voluntariadoayuvi.com/detalle_ventas_stands/ventaCompleta/${idVenta}`
+            `http://localhost:5000/detalle_ventas_stands/ventaCompleta/${idVenta}`
         );
 
       if (response.data && response.data.length > 0) {
@@ -524,7 +524,7 @@ function Ventas() {
   const fetchActiveVentas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/stands/activas");
+      const response = await axios.get("http://localhost:5000/ventas/stands/activas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
     } else {
@@ -538,7 +538,7 @@ function Ventas() {
   const fetchInactiveVentas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/stands/inactivas");
+      const response = await axios.get("http://localhost:5000/ventas/stands/inactivas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
     } else {
@@ -729,7 +729,7 @@ function Ventas() {
       };
   
       // Enviar los datos al backend
-      const response = await axios.post("https://api.voluntariadoayuvi.com/ventas/create/stands/completa", ventaData);
+      const response = await axios.post("http://localhost:5000/ventas/create/stands/completa", ventaData);
       if (response.status === 201) {
         const bitacoraData = {
           descripcion: "Nueva venta de stands creada",
@@ -737,7 +737,7 @@ function Ventas() {
           idUsuario: idUsuario,
           fechaHora: new Date()
       };
-      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
         alert("Venta creada con éxito");
         setShowDetailsModal(false); // Cerrar el modal
         fetchVentas(); // Actualizar la lista de ventas
@@ -764,7 +764,7 @@ function Ventas() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/ventas/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/ventas/update/${id}`, { estado: nuevoEstado });
       fetchVentas();
       setAlertMessage(`Venta ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
       setShowAlert(true);

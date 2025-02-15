@@ -22,7 +22,7 @@ function ReporteTraslados() {
           const fechaFinFormato = fechaFin.split("-").reverse().join("-");
       
           const response = await axios.get(
-            `https://api.voluntariadoayuvi.com/reporteTraslados?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
+            `http://localhost:5000/reporteTraslados?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
           );
           setTraslados(response.data.reporte);
           setAlerta("");
@@ -34,7 +34,7 @@ function ReporteTraslados() {
     
       const fetchLoggedUser = async () => {
         try {
-          const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
+          const response = await axios.get("http://localhost:5000/usuarios/me", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },

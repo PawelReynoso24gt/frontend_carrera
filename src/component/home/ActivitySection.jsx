@@ -12,8 +12,8 @@ function ActivitySection({ className }) {
   const fetchData = async () => {
     try {
       const [asistenciasResponse, voluntarioDelMesResponse] = await Promise.all([
-        axios.get("https://api.voluntariadoayuvi.com/asistencia_eventos"),
-        axios.get("https://api.voluntariadoayuvi.com/voluntarioDelMes"),
+        axios.get("http://localhost:5000/asistencia_eventos"),
+        axios.get("http://localhost:5000/voluntarioDelMes"),
       ]);
 
       const asistenciasData = asistenciasResponse.data || [];

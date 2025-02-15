@@ -52,7 +52,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -79,7 +79,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
 
   const fetchTiposSituaciones = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_situaciones");
+      const response = await axios.get("http://localhost:5000/tipo_situaciones");
       setTiposSituaciones(response.data);
     } catch (error) {
       console.error("Error fetching tipos de situaciones:", error);
@@ -98,7 +98,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
   const fetchSituacionesByEstado = async (estado) => {
     setIsLoading(true);
     try {
-      let url = "https://api.voluntariadoayuvi.com/situaciones";
+      let url = "http://localhost:5000/situaciones";
       switch (estado) {
         case "Reportada":
           url += "/reportadas";
@@ -176,7 +176,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
     };
   
     try {
-        const response = await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+        const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
         return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
         console.error("Error logging bitacora:", error);
@@ -192,7 +192,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
     };
   
     try {
-      await axios.post("https://api.voluntariadoayuvi.com/notificaciones/create", notificationData);
+      await axios.post("http://localhost:5000/notificaciones/create", notificationData);
     } catch (error) {
       console.error("Error creating notification:", error);
     }
@@ -204,7 +204,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
       if (editMode) {
         // Actualizar situación usando la ruta de actualización de respuesta
         response = await axios.put(
-          `https://api.voluntariadoayuvi.com/situaciones/update/respuesta/${selectedSituacion.idSituacion}`,
+          `http://localhost:5000/situaciones/update/respuesta/${selectedSituacion.idSituacion}`,
           {
             idTipoSituacion: formData.idTipoSituacion,
             estado: formData.estado,
@@ -227,7 +227,7 @@ const [itemsPerPage] = useState(6); // Número de elementos por página
         }
       } else {
         // Crear una nueva situación con el estado "Reportada" por defecto
-        response = await axios.post("https://api.voluntariadoayuvi.com/situaciones/create", {
+        response = await axios.post("http://localhost:5000/situaciones/create", {
           ...formData,
           estado: "Reportada",
           idUsuario: formData.idUsuario,

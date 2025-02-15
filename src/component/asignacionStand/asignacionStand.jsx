@@ -17,7 +17,7 @@ function AsignacionStands() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -58,7 +58,7 @@ function AsignacionStands() {
 
   const fetchAsignaciones = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/asignacion_stands/voluntarios_por_stand");
+      const response = await axios.get("http://localhost:5000/asignacion_stands/voluntarios_por_stand");
       if (Array.isArray(response.data)) {
         //console.log("Asignaciones recibidas:", response.data); 
         setAsignaciones(response.data);
@@ -77,7 +77,7 @@ function AsignacionStands() {
     try {
       if (hasViewPermission) {
       const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/asignacion_stands/voluntarios_por_stand/activos"
+        "http://localhost:5000/asignacion_stands/voluntarios_por_stand/activos"
       );
       if (Array.isArray(response.data)) {
         setAsignaciones(response.data);
@@ -97,7 +97,7 @@ function AsignacionStands() {
     try {
       if (hasViewPermission) {
       const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/asignacion_stands/voluntarios_por_stand/inactivos"
+        "http://localhost:5000/asignacion_stands/voluntarios_por_stand/inactivos"
       );
       if (Array.isArray(response.data)) {
         setAsignaciones(response.data);

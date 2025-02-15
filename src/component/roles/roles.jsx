@@ -24,7 +24,7 @@ function Roles() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -67,7 +67,7 @@ function Roles() {
 
   const fetchRoles = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/roles");
+      const response = await axios.get("http://localhost:5000/roles");
       setRoles(response.data);
       setFilteredRoles(response.data); 
     } catch (error) {
@@ -78,7 +78,7 @@ function Roles() {
   const fetchActiveRoles = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/roles/activos");
+      const response = await axios.get("http://localhost:5000/roles/activos");
       setRoles(response.data);
       setFilteredRoles(response.data);
     } else {
@@ -92,7 +92,7 @@ function Roles() {
   const fetchInactiveRoles = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/roles/inactivos");
+      const response = await axios.get("http://localhost:5000/roles/inactivos");
       setRoles(response.data);
       setFilteredRoles(response.data);
     } else {
@@ -141,12 +141,12 @@ function Roles() {
     try {
       if (editingRole) {
         await axios.put(
-          `https://api.voluntariadoayuvi.com/roles/update/${editingRole.idRol}`,
+          `http://localhost:5000/roles/update/${editingRole.idRol}`,
           newRole
         );
         setAlertMessage("Rol actualizado con éxito");
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/roles/create", newRole);
+        await axios.post("http://localhost:5000/roles/create", newRole);
         setAlertMessage("Rol creado con éxito");
       }
       fetchRoles();
@@ -160,7 +160,7 @@ function Roles() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/roles/update/${id}`, {
+      await axios.put(`http://localhost:5000/roles/update/${id}`, {
         estado: nuevoEstado,
       });
       fetchRoles();

@@ -30,7 +30,7 @@ function DetalleProductoVoluntario() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, 
           },
@@ -74,7 +74,7 @@ function DetalleProductoVoluntario() {
 
   const fetchDetalles = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos_voluntarios");
+      const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios");
       const data = Array.isArray(response.data) ? response.data : []; // Asegurarse de que sea un array
       setDetalles(data);
       setFilteredDetalles(data);
@@ -88,7 +88,7 @@ function DetalleProductoVoluntario() {
   const fetchActiveProductosVol = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos_voluntarios/activos");
+      const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios/activos");
       setDetalles(response.data);
       setFilteredDetalles(response.data);
     } else {
@@ -102,7 +102,7 @@ function DetalleProductoVoluntario() {
   const fetchInactiveProductosVol = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos_voluntarios/inactivos");
+      const response = await axios.get("http://localhost:5000/detalle_productos_voluntarios/inactivos");
       setDetalles(response.data);
       setFilteredDetalles(response.data);
     } else {
@@ -115,7 +115,7 @@ function DetalleProductoVoluntario() {
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/productos");
+      const response = await axios.get("http://localhost:5000/productos");
       setProductos(response.data);
     } catch (error) {
       console.error("Error fetching productos:", error);
@@ -124,7 +124,7 @@ function DetalleProductoVoluntario() {
 
   const fetchVoluntarios = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/voluntarios"); // Ajusta tu endpoint si es necesario
+      const response = await axios.get("http://localhost:5000/voluntarios"); // Ajusta tu endpoint si es necesario
       // Aseguramos que cada voluntario tenga acceso a su nombre desde la tabla de personas
       const data = response.data.map((voluntario) => ({
         ...voluntario,
@@ -187,12 +187,12 @@ function DetalleProductoVoluntario() {
     try {
       if (editingDetalle) {
         await axios.put(
-          `https://api.voluntariadoayuvi.com/detalle_productos_voluntarios/update/${editingDetalle.idDetalleProductoVoluntario}`,
+          `http://localhost:5000/detalle_productos_voluntarios/update/${editingDetalle.idDetalleProductoVoluntario}`,
           newDetalle
         );
         setAlertMessage("Detalle actualizado con éxito");
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/detalle_productos_voluntarios/create", newDetalle);
+        await axios.post("http://localhost:5000/detalle_productos_voluntarios/create", newDetalle);
         setAlertMessage("Detalle creado con éxito");
       }
       fetchDetalles();
@@ -206,7 +206,7 @@ function DetalleProductoVoluntario() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/detalle_productos_voluntarios/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/detalle_productos_voluntarios/update/${id}`, { estado: nuevoEstado });
       fetchDetalles();
       setAlertMessage(
         `Detalle ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

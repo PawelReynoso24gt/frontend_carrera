@@ -92,7 +92,7 @@ function HomePage() {
   useEffect(() => {
     const fetchFotos = async () => {
       try {
-        const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/completas");
+        const response = await axios.get("http://localhost:5000/publicaciones/completas");
         const fotosPublicaciones = response.data.flatMap((publicacion) => {
           // Aquí el array está correctamente definido dentro del contexto
           return [
@@ -255,7 +255,7 @@ function HomePage() {
           {fotosPublicaciones.map((publicacion, index) => (
             <div key={index}>
               <img
-                src={`https://api.voluntariadoayuvi.com/${publicacion.foto}`}
+                src={`http://localhost:5000/${publicacion.foto}`}
                 alt={`Slide ${index + 1}`}
                 style={styles.image}
               />

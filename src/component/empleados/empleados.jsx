@@ -36,7 +36,7 @@ function Empleados() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -79,7 +79,7 @@ function Empleados() {
 
   const fetchEmpleados = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/empleados");
+      const response = await axios.get("http://localhost:5000/empleados");
       setEmpleados(response.data);
       setFilteredEmpleados(response.data);
     } catch (error) {
@@ -89,7 +89,7 @@ function Empleados() {
 
   const fetchPersonas = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/personas");
+      const response = await axios.get("http://localhost:5000/personas");
       setPersonas(response.data);
     } catch (error) {
       console.error("Error fetching personas:", error);
@@ -99,7 +99,7 @@ function Empleados() {
   const fetchActiveEmpleados = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("https://api.voluntariadoayuvi.com/empleados/activos");
+        const response = await axios.get("http://localhost:5000/empleados/activos");
         setEmpleados(response.data);
         setFilteredEmpleados(response.data);
       } else {
@@ -113,7 +113,7 @@ function Empleados() {
   const fetchInactiveEmpleados = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("https://api.voluntariadoayuvi.com/empleados/inactivos");
+        const response = await axios.get("http://localhost:5000/empleados/inactivos");
         setEmpleados(response.data);
         setFilteredEmpleados(response.data);
       } else {
@@ -168,12 +168,12 @@ function Empleados() {
     try {
       if (editingEmpleado) {
         await axios.put(
-          `https://api.voluntariadoayuvi.com/empleados/update/${editingEmpleado.idEmpleado}`,
+          `http://localhost:5000/empleados/update/${editingEmpleado.idEmpleado}`,
           newEmpleado
         );
         setAlertMessage("Empleado actualizado con éxito");
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/empleados/create", newEmpleado);
+        await axios.post("http://localhost:5000/empleados/create", newEmpleado);
         setAlertMessage("Empleado creado con éxito");
       }
       fetchEmpleados();
@@ -187,7 +187,7 @@ function Empleados() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/empleados/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/empleados/update/${id}`, { estado: nuevoEstado });
       fetchEmpleados();
       setAlertMessage(
         `Empleado ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

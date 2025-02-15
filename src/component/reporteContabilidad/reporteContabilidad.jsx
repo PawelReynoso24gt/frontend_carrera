@@ -31,7 +31,7 @@ const ReporteContabilidad = () => {
         // console.log('Fecha inicio (React):', fechaInicio);
         // console.log('Fecha fin (React):', fechaFin);
 
-        const response = await axios.get("https://api.voluntariadoayuvi.com/reporteContabilidad", {
+        const response = await axios.get("http://localhost:5000/reporteContabilidad", {
           params: {
             fechaInicio,
             fechaFin,
@@ -57,7 +57,7 @@ const ReporteContabilidad = () => {
 
     const fetchLoggedUser = async () => {
         try {
-          const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
+          const response = await axios.get("http://localhost:5000/usuarios/me", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
@@ -597,7 +597,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
               <td>
                 {producto.foto ? (
                   <img
-                    src={`https://api.voluntariadoayuvi.com/${producto.foto}`}
+                    src={`http://localhost:5000/${producto.foto}`}
                     alt={producto.nombreProducto}
                     style={{ width: "100px", height: "100px", objectFit: 'cover' }}
                   />

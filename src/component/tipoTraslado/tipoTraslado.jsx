@@ -35,7 +35,7 @@ function TipoTraslado() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -76,7 +76,7 @@ function TipoTraslado() {
 
   const fetchTipoTraslados = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipoTraslados");
+      const response = await axios.get("http://localhost:5000/tipoTraslados");
       setTipoTraslados(response.data);
       setFilteredTipoTraslados(response.data);
     } catch (error) {
@@ -87,7 +87,7 @@ function TipoTraslado() {
   const fetchActiveTipoTraslados = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipoTraslados/activas");
+      const response = await axios.get("http://localhost:5000/tipoTraslados/activas");
       setFilteredTipoTraslados(response.data);
     } else {
       checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados')
@@ -100,7 +100,7 @@ function TipoTraslado() {
   const fetchInactiveTipoTraslados = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipoTraslados/inactivas");
+      const response = await axios.get("http://localhost:5000/tipoTraslados/inactivas");
       setFilteredTipoTraslados(response.data);
     } else {
       checkPermission('Ver tipo traslados', 'No tienes permisos para ver tipo traslados')
@@ -151,12 +151,12 @@ function TipoTraslado() {
     try {
       if (editingTipoTraslado) {
         await axios.put(
-          `https://api.voluntariadoayuvi.com/tipoTraslados/${editingTipoTraslado.idTipoTraslado}`,
+          `http://localhost:5000/tipoTraslados/${editingTipoTraslado.idTipoTraslado}`,
           newTipoTraslado
         );
         setAlertMessage("Tipo de traslado actualizado con éxito");
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/tipoTraslados", newTipoTraslado);
+        await axios.post("http://localhost:5000/tipoTraslados", newTipoTraslado);
         setAlertMessage("Tipo de traslado creado con éxito");
       }
       fetchTipoTraslados();
@@ -170,7 +170,7 @@ function TipoTraslado() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/tipoTraslados/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/tipoTraslados/${id}`, { estado: nuevoEstado });
       fetchTipoTraslados();
       setAlertMessage(
         `Tipo de traslado ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

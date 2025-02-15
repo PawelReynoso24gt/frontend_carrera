@@ -17,7 +17,7 @@ function Bitacoras() {
 
   const fetchBitacoras = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/bitacora");
+      const response = await axios.get("http://localhost:5000/bitacora");
       setBitacoras(response.data);
       setFilteredBitacoras(response.data);
     } catch (error) {
