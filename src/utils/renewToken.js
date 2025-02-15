@@ -21,7 +21,7 @@ async function renewToken() {
         }
 
         localStorage.setItem("token", response.data.token);
-        console.log("Token renovado y almacenado en localStorage:", response.data.token);
+        //console.log("Token renovado y almacenado en localStorage:", response.data.token);
     } catch (error) {
         console.error("Error al renovar el token:", error);
         throw error;

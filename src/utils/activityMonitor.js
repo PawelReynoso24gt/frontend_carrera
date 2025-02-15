@@ -5,7 +5,7 @@ let lastActivityTime = Date.now();
 
 function updateLastActivityTime() {
     lastActivityTime = Date.now();
-    console.log("Actividad detectada, actualizando lastActivityTime:", lastActivityTime);
+    //console.log("Actividad detectada, actualizando lastActivityTime:", lastActivityTime);
 }
 
 function setupActivityListeners() {
@@ -23,7 +23,7 @@ function startActivityCheckInterval() {
         const currentTime = Date.now();
         const timeSinceLastActivity = currentTime - lastActivityTime;
 
-        console.log("Tiempo desde la última actividad:", timeSinceLastActivity);
+        //console.log("Tiempo desde la última actividad:", timeSinceLastActivity);
 
         if (timeSinceLastActivity >= ACTIVITY_CHECK_INTERVAL) {
             console.log("Tiempo de inactividad excedido, cerrando sesión.");
