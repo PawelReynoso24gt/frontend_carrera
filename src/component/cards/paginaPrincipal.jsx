@@ -214,7 +214,7 @@ function HomePage() {
   };
 
   const sliderSettings = {
-    dots: true,
+    //dots: true,
     infinite: true,
     speed: 1000,
     slidesToShow: 1,
