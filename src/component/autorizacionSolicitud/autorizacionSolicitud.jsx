@@ -196,7 +196,8 @@ function SolicitudesVoluntariado() {
 
         // Log de bitácora y obtener idBitacora
         const idBitacora = await logBitacora(
-          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) aceptada`, // Incluir el nombre en el mensaje
+          // Incluir el nombre en el mensaje con un agradecimiento
+          `Solicitud de aspirante ID: ${idAspirante} aceptada, ¡Bienvenido(a) ${nombrePersona}! 🎉 Muchas gracias por formar parte de AYUVI 💙`,
           20
         );
 

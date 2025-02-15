@@ -78,15 +78,27 @@ const ReporteContabilidad = () => {
   }, [fechaInicio, fechaFin]);
 
   const renderPago = (pago) => {
-    // Verificar si la imagen de transferencia es una cadena en base64
-    if (/^[A-Za-z0-9+/]+={0,2}$/.test(pago.imagenTransferencia)) {
-        return <div style={{ width: '150px', height: '150px', overflow: 'hidden' }}>
-            <img src={`data:image/png;base64,${pago.imagenTransferencia}`} alt="Imagen de Transferencia" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>;
-    } else {
-      return <span>{pago.imagenTransferencia}</span>;
+    if (!pago.imagenTransferencia || !/^[0-9A-Fa-f]+$/.test(pago.imagenTransferencia)) {
+      return <span>Sin imagen</span>;
     }
-  };
+  
+    // Convertir HEX a Blob URL para mostrarlo en <img>
+    const hexToBlobUrl = (hexString) => {
+      const bytes = new Uint8Array(
+        hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16))
+      );
+      const blob = new Blob([bytes], { type: "image/png" });
+      return URL.createObjectURL(blob);
+    };
+  
+    const imageUrl = hexToBlobUrl(pago.imagenTransferencia);
+  
+    return (
+      <div style={{ width: "150px", height: "150px", overflow: "hidden" }}>
+        <img src={imageUrl} alt="Imagen de Transferencia" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+    );
+  };  
 
   const generarPDF = () => {
     const doc = new jsPDF('landscape'); // Cambia la orientación a horizontal
@@ -471,13 +483,15 @@ if (eventoMenorRecaudacion) {
     doc.text(`Evento Menor Recaudación: N/A`, 14, currentY);
 }
 
-// Firma
-currentY = verificarEspacio(currentY, 30);
-doc.setFont("helvetica", "normal");
-doc.setFontSize(10);
-doc.text("_______________________________", 147, currentY, { align: "center" });
-doc.text(revisor || "Sin nombre", 147, currentY + 10, { align: "center" });
-doc.text(cargo || "Sin cargo", 147, currentY + 20, { align: "center" });
+// Solo agregar firma si ambos campos están llenos
+if (revisor.trim() !== "" && cargo.trim() !== "") {
+  currentY = verificarEspacio(currentY, 30);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("_______________________________", 147, currentY, { align: "center" });
+  doc.text(revisor, 147, currentY + 10, { align: "center" });
+  doc.text(cargo, 147, currentY + 20, { align: "center" });
+}
 
 // Guarda el PDF
 doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
