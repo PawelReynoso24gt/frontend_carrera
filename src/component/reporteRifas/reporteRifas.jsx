@@ -121,11 +121,13 @@ function ReporteRifas() {
             theme: "grid",
         });
 
+        if (revisor.trim() || cargo.trim()) {
         const firmaStartY = doc.previousAutoTable.finalY + 40;
         doc.text("_______________________________", 148.5, firmaStartY, { align: "center" });
         doc.text(revisor || "Sin nombre", 148.5, firmaStartY + 10, { align: "center" });
         doc.text(cargo || "Sin cargo", 148.5, firmaStartY + 15, { align: "center" });
-
+        }
+        
         doc.save(`Reporte_Rifas_${fechaInicio}_${fechaFin}.pdf`);
     };
 

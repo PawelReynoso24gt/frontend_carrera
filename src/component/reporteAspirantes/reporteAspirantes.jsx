@@ -122,10 +122,12 @@ function ReporteAspirantes() {
     doc.setFont("helvetica", "normal");
     doc.text(`• Total de Aspirantes: ${totales.totalAspirantes}`, 14, subtotalesStartY + 10);
 
+    if (revisor.trim() || cargo.trim()) {
     const firmaStartY = subtotalesStartY + 40;
     doc.text("_______________________________", 148.5, firmaStartY, { align: "center" });
     doc.text(revisor || "Sin nombre", 148.5, firmaStartY + 10, { align: "center" });
     doc.text(cargo || "Sin cargo", 148.5, firmaStartY + 15, { align: "center" });
+    }
 
     doc.save(`Reporte_Aspirantes_${fechaInicio}_${fechaFin}.pdf`);
   };
