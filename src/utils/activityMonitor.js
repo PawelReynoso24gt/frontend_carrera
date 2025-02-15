@@ -1,12 +1,11 @@
-// src/utils/activityMonitor.js
-
 import renewToken from './renewToken';
 
-const ACTIVITY_CHECK_INTERVAL = 15 * 60 * 1000; // 15 minutos
+const ACTIVITY_CHECK_INTERVAL = 5 * 60 * 1000; // 1 minuto
 let lastActivityTime = Date.now();
 
 function updateLastActivityTime() {
     lastActivityTime = Date.now();
+    console.log("Actividad detectada, actualizando lastActivityTime:", lastActivityTime);
 }
 
 function setupActivityListeners() {
@@ -24,13 +23,18 @@ function startActivityCheckInterval() {
         const currentTime = Date.now();
         const timeSinceLastActivity = currentTime - lastActivityTime;
 
+        console.log("Tiempo desde la última actividad:", timeSinceLastActivity);
+
         if (timeSinceLastActivity >= ACTIVITY_CHECK_INTERVAL) {
+            console.log("Tiempo de inactividad excedido, cerrando sesión.");
             localStorage.clear();
             window.location.href = "/login";
         } else {
             try {
                 await renewToken();
+                console.log("Token renovado exitosamente.");
             } catch (error) {
+                console.log("Error al renovar el token, cerrando sesión.");
                 localStorage.clear();
                 window.location.href = "/login";
             }
@@ -38,6 +42,13 @@ function startActivityCheckInterval() {
     }, ACTIVITY_CHECK_INTERVAL);
 }
 
-// Inicializar el monitor de actividad
-setupActivityListeners();
-startActivityCheckInterval();
+// Inicializar el monitor de actividad solo si no estamos en la página de login
+function initializeActivityMonitor() {
+    if (window.location.pathname !== '/login') {
+        setupActivityListeners();
+        startActivityCheckInterval();
+    }
+}
+
+// Llamar a la función para inicializar el monitor de actividad
+initializeActivityMonitor();
