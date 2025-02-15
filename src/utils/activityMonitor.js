@@ -1,6 +1,6 @@
 import renewToken from './renewToken';
 
-const ACTIVITY_CHECK_INTERVAL = 5 * 60 * 1000; // 1 minuto
+const ACTIVITY_CHECK_INTERVAL = 1 * 60 * 1000; // 1 minuto
 let lastActivityTime = Date.now();
 
 function updateLastActivityTime() {
@@ -42,13 +42,6 @@ function startActivityCheckInterval() {
     }, ACTIVITY_CHECK_INTERVAL);
 }
 
-// Inicializar el monitor de actividad solo si no estamos en la página de login
-function initializeActivityMonitor() {
-    if (window.location.pathname !== '/login') {
-        setupActivityListeners();
-        startActivityCheckInterval();
-    }
-}
-
-// Llamar a la función para inicializar el monitor de actividad
-initializeActivityMonitor();
+// Inicializar el monitor de actividad
+setupActivityListeners();
+startActivityCheckInterval();
