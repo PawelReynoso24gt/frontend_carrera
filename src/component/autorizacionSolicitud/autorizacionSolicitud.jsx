@@ -248,7 +248,7 @@ const denySolicitud = async (idAspirante) => {
 
         // Log de bitácora y obtener idBitacora
         const idBitacora = await logBitacora(
-          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) denegada`, // Incluir el nombre en el mensaje
+          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) denegada. Motivo: "${denialDescription}"`, // Incluir el nombre en el mensaje
           26
         );
 
