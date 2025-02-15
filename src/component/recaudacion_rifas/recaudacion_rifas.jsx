@@ -3,6 +3,7 @@ import axios from "axios";
 import { Table, Alert, InputGroup, FormControl, Button, Modal, Form } from "react-bootstrap";
 import { FaPencilAlt, FaEye, FaToggleOn, FaToggleOff } from "react-icons/fa";
 import { getUserDataFromToken } from "../../utils/jwtUtils"; // token
+import imageCompression from "browser-image-compression";
 
 function Recaudaciones() {
     const [recaudaciones, setRecaudaciones] = useState([]);
@@ -189,6 +190,26 @@ function Recaudaciones() {
         }
     };
 
+    const hexToBlobUrl = (hexString) => {
+        if (!hexString) return "";
+    
+        try {
+            // Convertir HEX en un array de bytes
+            const byteArray = new Uint8Array(
+                hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16))
+            );
+    
+            // Crear un Blob con los datos binarios de la imagen
+            const blob = new Blob([byteArray], { type: "image/png" });
+    
+            // Generar una URL temporal para mostrar la imagen
+            return URL.createObjectURL(blob);
+        } catch (error) {
+            console.error("Error al convertir HEX a imagen:", error);
+            return "";
+        }
+    };        
+
     const handleViewDetail = async (idRecaudacionRifa) => {
         try {
             const response = await axios.get(
@@ -216,8 +237,8 @@ function Recaudaciones() {
              const idTalonario = recaudacion.solicitudTalonario?.talonario?.idTalonario || "";
              const precio = parseFloat(recaudacion.solicitudTalonario?.talonario?.rifa?.precioBoleto) || 0;
      
-             console.log("ID de la Rifa seleccionado:", idRifa);
-             console.log("ID del Talonario seleccionado:", idTalonario);
+             //console.log("ID de la Rifa seleccionado:", idRifa);
+             //console.log("ID del Talonario seleccionado:", idTalonario);
 
             setSelectedRifa(idRifa);
             setSelectedTalonario(idTalonario);
@@ -231,7 +252,7 @@ function Recaudaciones() {
             })));
 
              // Agregar console.log para ver el JSON de la recaudación antes de abrir el modal
-            console.log("Datos de la recaudación a actualizar:", JSON.stringify(response.data, null, 2));
+            //console.log("Datos de la recaudación a actualizar:", JSON.stringify(response.data, null, 2));
             await fetchRifas(); // Cargar rifas disponibles
             await fetchTalonarios(idRifa); // Cargar talonarios para la rifa seleccionada
             setShowUpdateModal(true);
@@ -397,18 +418,69 @@ function Recaudaciones() {
         setPagos(updatedPagos);
     };
 
-    const handleFileUpload = (e, index) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const updatedPagos = [...pagos];
-                updatedPagos[index].imagenTransferencia = reader.result.split(",")[1];
-                setPagos(updatedPagos);
+    const compressImageTo50KB = async (file) => {
+        try {
+            // **Opciones de compresión**
+            const options = {
+                maxSizeMB: 0.05, // 50KB = 0.05MB
+                maxWidthOrHeight: 800, // Mantener un tamaño decente
+                useWebWorker: true, // Usar proceso en segundo plano
+                alwaysKeepResolution: true, // Evita distorsión
             };
-            reader.readAsDataURL(file);
+    
+            let compressedFile = await imageCompression(file, options);
+    
+            console.log(`Comenzando compresión: ${file.size / 1024} KB`);
+    
+            // **Si la imagen sigue siendo mayor a 50KB, reducir calidad dinámicamente**
+            let attempts = 0;
+            while (compressedFile.size > 51200 && attempts < 3) { // 50KB = 51200 bytes
+                options.maxSizeMB *= 0.9; // Reduce calidad en cada iteración
+                compressedFile = await imageCompression(compressedFile, options);
+                attempts++;
+            }
+    
+            console.log(`Tamaño final: ${(compressedFile.size / 1024).toFixed(2)} KB`);
+            return compressedFile;
+        } catch (error) {
+            console.error("Error al comprimir la imagen:", error);
+            return file; // Devuelve el archivo original si hay error
         }
     };
+
+    const handleFileUpload = async (e, index) => {
+        const file = e.target.files[0];
+        if (!file) return;
+    
+        try {
+            console.log(`Imagen capturada: ${file.name}`);
+            console.log(`Tamaño original: ${(file.size / 1024).toFixed(2)} KB`);
+    
+            // **Comprimir imagen a 50KB**
+            const compressedFile = await compressImageTo50KB(file);
+    
+            console.log(`Tamaño después de compresión: ${(compressedFile.size / 1024).toFixed(2)} KB`);
+    
+            // **Convertir a HEX**
+            const arrayBuffer = await compressedFile.arrayBuffer();
+            const byteArray = new Uint8Array(arrayBuffer);
+            const hexString = Array.from(byteArray)
+                .map(byte => byte.toString(16).padStart(2, "0"))
+                .join("");
+    
+            console.log(`Longitud del HEX: ${hexString.length} caracteres`);
+    
+            // **Guardar en el estado**
+            const updatedPagos = [...pagos];
+            updatedPagos[index].imagenTransferencia = hexString;
+            setPagos(updatedPagos);
+    
+            alert("Imagen comprimida y subida con éxito.");
+        } catch (error) {
+            console.error("Error al procesar la imagen:", error);
+            alert("Error al cargar la imagen.");
+        }
+    };    
 
     const handleRemovePago = (index) => {
         const updatedPagos = pagos.filter((_, i) => i !== index);
@@ -717,7 +789,7 @@ function Recaudaciones() {
                                                 "Efectivo"
                                             ) : (
                                                 <img
-                                                    src={`data:image/png;base64,${pago.imagenTransferencia}`}
+                                                    src={hexToBlobUrl(pago.imagenTransferencia)} // Convertir HEX a URL
                                                     alt="Comprobante de Pago"
                                                     style={{ width: "150px", marginTop: "10px", borderRadius: "8px" }}
                                                 />
@@ -854,7 +926,7 @@ function Recaudaciones() {
 
                             <Form.Group>
                                 <Form.Label>Comprobante</Form.Label>
-                                <Form.Control type="file" onChange={(e) => handleFileUpload(e, idx)} />
+                                <Form.Control type="file" accept="image/*" onChange={(e) => handleFileUpload(e, idx)} />
                             </Form.Group>
 
                             <Button variant="danger" onClick={() => handleRemovePago(idx)}>
@@ -995,7 +1067,7 @@ function Recaudaciones() {
 
                             <Form.Group>
                                 <Form.Label>Comprobante</Form.Label>
-                                <Form.Control type="file" onChange={(e) => handleFileUpload(e, idx)} />
+                                <Form.Control type="file" accept="image/*" onChange={(e) => handleFileUpload(e, idx)} />
                             </Form.Group>
 
                             <Button variant="danger" onClick={() => handleRemovePago(idx)}>
