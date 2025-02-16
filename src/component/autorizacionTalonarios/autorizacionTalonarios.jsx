@@ -172,7 +172,7 @@ function AutorizacionTalonarios() {
 
       // Si la solicitud es denegada, actualizar el campo solicitado en el talonario
       if (estado === 0) {
-        await axios.put(`http://localhost:5000/talonarios/${solicitud.idTalonario}`, { solicitado: 0 });
+        await axios.put(`http://localhost:5000/talonarios/update/${solicitud.idTalonario}`, { solicitado: 0 });
       }
 
       // Actualizamos la lista de solicitudes después de cambiar el estado
