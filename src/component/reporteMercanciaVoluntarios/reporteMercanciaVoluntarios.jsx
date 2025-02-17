@@ -116,11 +116,13 @@ function ReporteMercanciaVoluntarios() {
     doc.text(`• Total Subtotal: Q ${totales.totalSubTotal.toFixed(2)}`, 14, subtotalesStartY + 10);
     doc.text(`• Total Donaciones: Q ${totales.totalDonaciones.toFixed(2)}`, 14, subtotalesStartY + 20);
 
+    if (revisor.trim() || cargo.trim()) {
     const firmaStartY = subtotalesStartY + 40;
     doc.text("_______________________________", 105, firmaStartY, { align: "center" });
     doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
     doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
-
+    }
+    
     doc.save(`Reporte_Voluntarios_${fechaInicio}_${fechaFin}.pdf`);
   };
 

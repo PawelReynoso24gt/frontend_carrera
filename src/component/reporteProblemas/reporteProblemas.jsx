@@ -213,12 +213,14 @@ function ReporteTecnico() {
     }
     
     // Espacio para la firma
+    if (revisor.trim() || cargo.trim()) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.text("_______________________________", 105, startY + 15, { align: "center" });
     doc.text(revisor || "Sin nombre", 105, startY + 20, { align: "center" });
     doc.text(cargo || "Sin cargo", 105, startY + 25, { align: "center" });
-
+    }
+    
     doc.save(`Reporte_Soporte_Tecnico_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
   };
 

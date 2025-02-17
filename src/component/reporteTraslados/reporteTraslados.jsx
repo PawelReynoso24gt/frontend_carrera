@@ -139,13 +139,13 @@ function ReporteTraslados() {
        startY = 10;
    }
 
-  
+   if (revisor.trim() || cargo.trim()) {
    doc.setFontSize(12);
    doc.setFont("helvetica", "normal");
    doc.text("_______________________________", 105, firmaStartY, { align: "center" });
    doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
    doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
-
+   }
 
     doc.save(`Reporte_Traslados_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
   };

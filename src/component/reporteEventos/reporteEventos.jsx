@@ -159,13 +159,14 @@ function ReporteEventos() {
       subtotalesStartY + 60
     );
 
+    if (revisor.trim() || cargo.trim()) {
     const firmaStartY = doc.previousAutoTable.finalY + 90;
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.text("_______________________________", 105, firmaStartY, { align: "center" });
     doc.text(revisor || "Sin nombre", 105, firmaStartY + 10, { align: "center" });
     doc.text(cargo || "Sin cargo", 105, firmaStartY + 15, { align: "center" });
-
+    }
 
     doc.save(`Reporte_Eventos_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
   };

@@ -472,13 +472,14 @@ if (eventoMenorRecaudacion) {
 }
 
 // Firma
+if (revisor.trim() || cargo.trim()) {
 currentY = verificarEspacio(currentY, 30);
 doc.setFont("helvetica", "normal");
 doc.setFontSize(10);
 doc.text("_______________________________", 147, currentY, { align: "center" });
 doc.text(revisor || "Sin nombre", 147, currentY + 10, { align: "center" });
 doc.text(cargo || "Sin cargo", 147, currentY + 20, { align: "center" });
-
+}
 // Guarda el PDF
 doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`);
 };

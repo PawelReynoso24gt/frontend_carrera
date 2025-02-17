@@ -119,11 +119,11 @@ function EventosActivos() {
 
   const handleOpenQRScanner = (inscripcion) => {
     setSelectedInscripcion(inscripcion);
-    
+
     // Simular el escaneo del código QR "ABC123"
     //const scannedCode = "ABC123"; // Código QR quemado
     //handleScan(scannedCode); // Llamar directamente a handleScan con el código quemado
-  
+
     // No abrir el modal del escáner
     setShowQRScannerModal(true);
     setHasScanned(false);
@@ -173,7 +173,7 @@ function EventosActivos() {
       setHasScanned(true); // Marcar que ya se ha escaneado
       handleCompareQRCode(scannedData);
     }
-  };  
+  };
 
   const handleCompareQRCode = async (scannedCode) => {
     if (selectedInscripcion) {
@@ -188,7 +188,7 @@ function EventosActivos() {
             idEmpleado: idEmpleado,
           });
 
-            // Cerrar el modal del escáner
+          // Cerrar el modal del escáner
           handleCloseQRScannerModal();
 
           // Mostrar el modal de éxito
@@ -214,7 +214,11 @@ function EventosActivos() {
   };
 
   return (
-    <Container className="mt-5" style={{ backgroundColor: "#CEECF2" }}>
+    <Container className="mt-5" style={{
+      backgroundColor: "#CEECF2",
+      maxWidth: "100%",
+      margin: "0 auto"
+       }}>
       <h2 className="text-center mb-4" style={{ fontWeight: "bold" }}>
         Eventos Activos
       </h2>
@@ -226,7 +230,7 @@ function EventosActivos() {
                 <Card.Body>
                   <Card.Title>{evento.nombreEvento}</Card.Title>
                   <Card.Text>
-                  <strong>Fecha Inicio:</strong>{" "}
+                    <strong>Fecha Inicio:</strong>{" "}
                     {evento.fechaHoraInicio ? format(parseISO(evento.fechaHoraInicio), "dd-MM-yyyy hh:mm a") : "Sin fecha"} <br />
                     <strong>Fecha Fin:</strong>{" "}
                     {evento.fechaHoraFin ? format(parseISO(evento.fechaHoraFin), "dd-MM-yyyy hh:mm a") : "Sin fecha"} <br />
