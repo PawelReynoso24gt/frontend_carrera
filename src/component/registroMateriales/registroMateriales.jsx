@@ -14,7 +14,7 @@ function InscripcionesMateriales() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -60,7 +60,7 @@ function InscripcionesMateriales() {
       setIsLoading(true);
 
       // Hacer la solicitud al backend
-      const response = await axios.get("http://localhost:5000/detalle_inscripcion_materiales");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_inscripcion_materiales");
 
 
       // Procesar los datos

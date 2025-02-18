@@ -44,7 +44,7 @@ function RecaudacionesEventos() {
     useEffect(() => {
         const fetchPermissions = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+                const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
                     },
@@ -83,7 +83,7 @@ function RecaudacionesEventos() {
 
     const fetchRecaudaciones = async () => {
         try {
-            const response = await axios.get("http://localhost:5000/recaudacion_evento");
+            const response = await axios.get("https://api.voluntariadoayuvi.com/recaudacion_evento");
             setRecaudaciones(response.data);
             setFilteredRecaudaciones(response.data);
         } catch (error) {
@@ -103,7 +103,7 @@ function RecaudacionesEventos() {
     const fetchActiveRecaudaciones = async () => {
         try {
             if (hasViewPermission) {
-            const response = await axios.get("http://localhost:5000/recaudacion_evento/activas");
+            const response = await axios.get("https://api.voluntariadoayuvi.com/recaudacion_evento/activas");
             setFilteredRecaudaciones(response.data); // Actualiza la lista de recaudaciones filtradas
             //setAlertMessage("Se han cargado las recaudaciones activas.");
             //setShowAlert(true);
@@ -120,7 +120,7 @@ function RecaudacionesEventos() {
     const fetchInactiveRecaudaciones = async () => {
         try {
             if (hasViewPermission) {
-            const response = await axios.get("http://localhost:5000/recaudacion_evento/inactivas");
+            const response = await axios.get("https://api.voluntariadoayuvi.com/recaudacion_evento/inactivas");
             setFilteredRecaudaciones(response.data); // Actualiza la lista de recaudaciones filtradas
             //setAlertMessage("Se han cargado las recaudaciones inactivas.");
             //setShowAlert(true);
@@ -136,7 +136,7 @@ function RecaudacionesEventos() {
 
     const fetchEventos = async () => {
         try {
-            const response = await axios.get("http://localhost:5000/eventos");
+            const response = await axios.get("https://api.voluntariadoayuvi.com/eventos");
             setEventos(response.data);
         } catch (error) {
             console.error("Error fetching eventos:", error);
@@ -145,7 +145,7 @@ function RecaudacionesEventos() {
 
     const fetchEmpleados = async () => {
         try {
-            const response = await axios.get("http://localhost:5000/empleados");
+            const response = await axios.get("https://api.voluntariadoayuvi.com/empleados");
             setEmpleados(response.data);
         } catch (error) {
             console.error("Error fetching empleados:", error);
@@ -199,7 +199,7 @@ function RecaudacionesEventos() {
             };
 
             const response = await axios.post(
-                "http://localhost:5000/recaudacion_evento/create",
+                "https://api.voluntariadoayuvi.com/recaudacion_evento/create",
                 recaudacionData
             );
 
@@ -216,7 +216,7 @@ function RecaudacionesEventos() {
                     fechaHora: new Date()
                 };
 
-                await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+                await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
             }
         } catch (error) {
             console.error("Error creando recaudación:", error);
@@ -237,7 +237,7 @@ function RecaudacionesEventos() {
             };
 
             const response = await axios.put(
-                `http://localhost:5000/recaudacion_evento/update/${editingRecaudacion.idRecaudacionEvento}`,
+                `https://api.voluntariadoayuvi.com/recaudacion_evento/update/${editingRecaudacion.idRecaudacionEvento}`,
                 updatedData
             );
 
@@ -250,7 +250,7 @@ function RecaudacionesEventos() {
                     fechaHora: new Date()
                 };
 
-                await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+                await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
                 setAlertMessage("Recaudación actualizada con éxito.");
                 setShowAlert(true);
                 fetchRecaudaciones();
@@ -275,7 +275,7 @@ function RecaudacionesEventos() {
     const toggleEstado = async (id, estadoActual) => {
         try {
             const nuevoEstado = estadoActual === 1 ? 0 : 1;
-            await axios.put(`http://localhost:5000/recaudacion_evento/update/${id}`, { estado: nuevoEstado });
+            await axios.put(`https://api.voluntariadoayuvi.com/recaudacion_evento/update/${id}`, { estado: nuevoEstado });
             fetchRecaudaciones();
             setAlertMessage(
                 `Recaudación ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`

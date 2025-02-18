@@ -28,7 +28,7 @@ function MaterialesComponent() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -62,7 +62,7 @@ function MaterialesComponent() {
   useEffect(() => {
     const fetchEventos = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/eventos"); // URL para obtener los eventos
+        const response = await axios.get("https://api.voluntariadoayuvi.com/eventos"); // URL para obtener los eventos
         setEventos(response.data);
       } catch (error) {
         console.error("Error fetching eventos:", error);
@@ -84,7 +84,7 @@ function MaterialesComponent() {
   const fetchComisionesPorEvento = async (eventoId) => {
     try {
       setComisionesPorEvento([]); // Resetear las comisiones antes de hacer la solicitud
-      const response = await axios.get("http://localhost:5000/comisiones/poreventoFr", {
+      const response = await axios.get("https://api.voluntariadoayuvi.com/comisiones/poreventoFr", {
         params: { eventoId },
       });
       setComisionesPorEvento(response.data);
@@ -97,7 +97,7 @@ function MaterialesComponent() {
   const fetchActiveMateriales = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('http://localhost:5000/materiales/all');
+      const response = await axios.get('https://api.voluntariadoayuvi.com/materiales/all');
       const activeMateriales = response.data.filter(material => material.estado === 1);
       setMateriales(activeMateriales);
       setFilteredMateriales(activeMateriales);
@@ -113,7 +113,7 @@ function MaterialesComponent() {
   const fetchInactiveMateriales = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('http://localhost:5000/materiales/all');
+      const response = await axios.get('https://api.voluntariadoayuvi.com/materiales/all');
       const inactiveMateriales = response.data.filter(material => material.estado === 0);
       setMateriales(inactiveMateriales);
       setFilteredMateriales(inactiveMateriales);
@@ -188,10 +188,10 @@ function MaterialesComponent() {
     e.preventDefault();
     try {
       if (editingMaterial) {
-        await axios.put(`http://localhost:5000/materiales/${editingMaterial.idMaterial}`, newMaterial);
+        await axios.put(`https://api.voluntariadoayuvi.com/materiales/${editingMaterial.idMaterial}`, newMaterial);
         setAlertMessage('Material actualizado con éxito');
       } else {
-        await axios.post('http://localhost:5000/materiales', newMaterial);
+        await axios.post('https://api.voluntariadoayuvi.com/materiales', newMaterial);
         setAlertMessage('Material creado con éxito');
       }
       filter === 'activos' ? fetchActiveMateriales() : fetchInactiveMateriales();
@@ -205,7 +205,7 @@ function MaterialesComponent() {
   const toggleMaterialEstado = async (id, currentEstado) => {
     try {
       const newEstado = currentEstado === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/materiales/${id}`, { estado: newEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/materiales/${id}`, { estado: newEstado });
       setAlertMessage(`Material ${newEstado === 1 ? 'activado' : 'desactivado'} con éxito`);
       setShowAlert(true);
       filter === 'activos' ? fetchActiveMateriales() : fetchInactiveMateriales();

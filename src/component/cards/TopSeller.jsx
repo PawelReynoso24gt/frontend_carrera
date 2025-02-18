@@ -11,13 +11,13 @@ function TopSeller() {
   const fetchAsistencias = async () => {
     try {
       const asistenciasResponse = await axios.get(
-        "http://localhost:5000/asistencia_eventos"
+        "https://api.voluntariadoayuvi.com/asistencia_eventos"
       );
       const empleadosResponse = await axios.get(
-        "http://localhost:5000/empleados"
+        "https://api.voluntariadoayuvi.com/empleados"
       );
       const personasResponse = await axios.get(
-        "http://localhost:5000/personas"
+        "https://api.voluntariadoayuvi.com/personas"
       );
 
       const asistencias = asistenciasResponse.data;

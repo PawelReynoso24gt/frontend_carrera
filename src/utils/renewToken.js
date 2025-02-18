@@ -9,7 +9,7 @@ async function renewToken() {
     }
 
     try {
-        const response = await axios.post("http://localhost:5000/renew", null, {
+        const response = await axios.post("https://api.voluntariadoayuvi.com/renew", null, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

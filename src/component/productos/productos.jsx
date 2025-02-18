@@ -37,7 +37,7 @@ function Productos() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -81,7 +81,7 @@ function Productos() {
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/productos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/productos");
       setProductos(response.data);
       setFilteredProductos(response.data);
     } catch (error) {
@@ -91,7 +91,7 @@ function Productos() {
 
   const fetchCategorias = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/categorias");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/categorias");
       setCategorias(response.data);
     } catch (error) {
       console.error("Error fetching categorias:", error);
@@ -101,7 +101,7 @@ function Productos() {
   const fetchActiveProductos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/productos/activos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/productos/activos");
       setProductos(response.data);
       setFilteredProductos(response.data);
     } else {
@@ -115,7 +115,7 @@ function Productos() {
   const fetchInactiveProductos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/productos/inactivos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/productos/inactivos");
       setProductos(response.data);
       setFilteredProductos(response.data);
     } else {
@@ -205,7 +205,7 @@ function Productos() {
     };
 
     try {
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
@@ -233,7 +233,7 @@ function Productos() {
       }
 
       if (editingProducto) {
-        await axios.put(`http://localhost:5000/productos/${editingProducto.idProducto}`, formData, {
+        await axios.put(`https://api.voluntariadoayuvi.com/productos/${editingProducto.idProducto}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -241,7 +241,7 @@ function Productos() {
         setAlertMessage("Producto actualizado con éxito");
         await logBitacora(`Producto ${newProducto.nombreProducto} actualizado`, 12);
       } else {
-        await axios.post("http://localhost:5000/productos", formData, {
+        await axios.post("https://api.voluntariadoayuvi.com/productos", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -261,7 +261,7 @@ function Productos() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/productos/estado/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/productos/estado/${id}`, { estado: nuevoEstado });
       fetchProductos();
       setAlertMessage(
         `Producto ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`
@@ -462,7 +462,7 @@ function Productos() {
                 <td>{producto.descripcion}</td>
                 <td>
                   <img
-                    src={`http://localhost:5000/${producto.foto}`}
+                    src={`https://api.voluntariadoayuvi.com/${producto.foto}`}
                     alt={producto.nombreProducto}
                     style={{ width: "100px", height: "auto", objectFit: "cover", borderRadius: "8px" }}
                   />

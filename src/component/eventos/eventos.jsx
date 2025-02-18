@@ -52,7 +52,7 @@ function Eventos() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -92,7 +92,7 @@ function Eventos() {
     };
 
     try {
-      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
@@ -109,7 +109,7 @@ function Eventos() {
 
   const fetchEventos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/eventos");
       setEventos(response.data);
       setFilteredEventos(response.data);
     } catch (error) {
@@ -120,7 +120,7 @@ function Eventos() {
   const fetchActiveEventos = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("http://localhost:5000/eventos/activas");
+        const response = await axios.get("https://api.voluntariadoayuvi.com/eventos/activas");
         setEventos(response.data);
         setFilteredEventos(response.data);
       } else {
@@ -134,7 +134,7 @@ function Eventos() {
   const fetchInactiveEventos = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("http://localhost:5000/eventos/inactivas");
+        const response = await axios.get("https://api.voluntariadoayuvi.com/eventos/inactivas");
         setEventos(response.data);
         setFilteredEventos(response.data);
       } else {
@@ -147,7 +147,7 @@ function Eventos() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/sedes");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes");
       setSedes(response.data);
     } catch (error) {
       console.error("Error fetching sedes:", error);
@@ -235,14 +235,14 @@ function Eventos() {
       };
       if (editingEvento) {
         await axios.put(
-          `http://localhost:5000/eventos/${editingEvento.idEvento}`,
+          `https://api.voluntariadoayuvi.com/eventos/${editingEvento.idEvento}`,
           newEvento
         );
         setAlertMessage("Evento actualizado con éxito");
         // Log the update action in the bitacora
         await logBitacora(`Evento ${newEvento.nombreEvento} actualizado`, 27);
       } else {
-        await axios.post("http://localhost:5000/eventos", newEvento);
+        await axios.post("https://api.voluntariadoayuvi.com/eventos", newEvento);
         setAlertMessage("Evento creado con éxito");
         // Log the create action in the bitacora
         await logBitacora(`Evento ${newEvento.nombreEvento} creado`, 23);
@@ -259,7 +259,7 @@ function Eventos() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/eventos/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/eventos/${id}`, { estado: nuevoEstado });
       fetchEventos();
       setAlertMessage(
         `Evento ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

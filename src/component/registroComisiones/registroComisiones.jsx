@@ -28,7 +28,7 @@ function EventosActivos() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -69,7 +69,7 @@ function EventosActivos() {
 
   const fetchEventosActivos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/eventos/activas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/eventos/activas");
       setEventos(response.data);
     } catch (error) {
       console.error("Error fetching eventos activos:", error);
@@ -82,11 +82,11 @@ function EventosActivos() {
     setIsVoluntariosLoaded(false);
     try {
       const responseComisiones = await axios.get(
-        `http://localhost:5000/comisiones/poreventoFr?eventoId=${idEvento}`
+        `https://api.voluntariadoayuvi.com/comisiones/poreventoFr?eventoId=${idEvento}`
       );
 
       const responseInscripciones = await axios.get(
-        `http://localhost:5000/inscripcion_comisiones/activos?eventoId=${idEvento}`
+        `https://api.voluntariadoayuvi.com/inscripcion_comisiones/activos?eventoId=${idEvento}`
       );
 
       const comisionesConVoluntarios = responseComisiones.data.map((comision) => {
@@ -118,7 +118,7 @@ function EventosActivos() {
       // console.log("ID de la comisión:", idComision);
 
       const response = await axios.get(
-        `http://localhost:5000/inscripcion_comisiones/activos?eventoId=${idEvento}`
+        `https://api.voluntariadoayuvi.com/inscripcion_comisiones/activos?eventoId=${idEvento}`
       );
 
       //console.log("Respuesta completa de la API:", response.data);
@@ -135,7 +135,7 @@ function EventosActivos() {
           nombre: inscripcion.voluntario?.persona?.nombre || "Nombre no disponible", // Extraer nombre desde persona
         }));
 
-      console.log("Voluntarios filtrados:", voluntarios);
+      //console.log("Voluntarios filtrados:", voluntarios);
 
       setSelectedVoluntarios(voluntarios);
       setIsVoluntariosLoaded(true);

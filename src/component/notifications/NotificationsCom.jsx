@@ -17,7 +17,7 @@ function NotificationsCom() {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/notificaciones?idPersona=${personId}`
+        `https://api.voluntariadoayuvi.com/notificaciones?idPersona=${personId}`
       );
       setNotifications(response.data);
     } catch (error) {
@@ -33,7 +33,7 @@ function NotificationsCom() {
   const handleCheckNotification = async (idNotificacion) => {
     try {
       // Cambiar el estado de la notificación a 0 (marcar como revisada)
-      await axios.put(`http://localhost:5000/notificaciones/${idNotificacion}`, {
+      await axios.put(`https://api.voluntariadoayuvi.com/notificaciones/${idNotificacion}`, {
         estado: 0, // Cambiar el estado a 0 (marcar como revisada)
       });
 

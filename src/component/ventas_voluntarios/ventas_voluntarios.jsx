@@ -48,7 +48,7 @@ function Ventas() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -97,7 +97,7 @@ function Ventas() {
 
   const fetchVentas = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/ventas/voluntarios");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/voluntarios");
       setVentas(response.data);
       setFilteredVentas(response.data);
     } catch (error) {
@@ -107,7 +107,7 @@ function Ventas() {
 
   const fetchVoluntarios = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/voluntarios/conProductos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/voluntarios/conProductos");
       setVoluntarios(response.data); // Almacena los voluntarios con productos asignados
     } catch (error) {
       console.error("Error fetching voluntarios con productos asignados:", error);
@@ -117,7 +117,7 @@ function Ventas() {
 
   const fetchTiposPagos = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipospagos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/tipospagos");
       setTiposPagosOptions(response.data); // Ahora esto se usará en el select
     } catch (error) {
       console.error("Error fetching tipos pagos:", error);
@@ -135,7 +135,7 @@ function Ventas() {
 
   const fetchTiposPublico = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipo_publicos");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_publicos");
       setTiposPublico(response.data);
     } catch (error) {
       console.error("Error fetching tipos publico:", error);
@@ -202,7 +202,7 @@ function Ventas() {
   const handleViewDetails = async (idVenta) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`
+        `https://api.voluntariadoayuvi.com/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`
       );
 
       if (response.data && response.data.length > 0) {
@@ -228,7 +228,7 @@ function Ventas() {
   const fetchActiveVentas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/ventas/voluntarios/activas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/voluntarios/activas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
     } else {
@@ -242,7 +242,7 @@ function Ventas() {
   const fetchInactiveVentas = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("http://localhost:5000/ventas/voluntarios/inactivas");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/ventas/voluntarios/inactivas");
       setFilteredVentas(response.data);
       setCurrentPage(1); // Reinicia la paginación al cargar nuevos datos
     } else {
@@ -312,7 +312,7 @@ const compressImageTo50KB = async (file) => {
     
             let compressedFile = await imageCompression(file, options);
     
-            console.log(`Comenzando compresión: ${file.size / 1024} KB`);
+            //console.log(`Comenzando compresión: ${file.size / 1024} KB`);
     
             // **Si la imagen sigue siendo mayor a 50KB, reducir calidad dinámicamente**
             let attempts = 0;
@@ -322,7 +322,7 @@ const compressImageTo50KB = async (file) => {
                 attempts++;
             }
     
-            console.log(`Tamaño final: ${(compressedFile.size / 1024).toFixed(2)} KB`);
+            //(`Tamaño final: ${(compressedFile.size / 1024).toFixed(2)} KB`);
             return compressedFile;
         } catch (error) {
             console.error("Error al comprimir la imagen:", error);
@@ -338,13 +338,13 @@ const compressImageTo50KB = async (file) => {
   
       reader.onloadend = async () => {
           try {
-              console.log(`Imagen capturada: ${file.name}`);
-              console.log(`Tamaño original: ${(file.size / 1024).toFixed(2)} KB`);
+              //console.log(`Imagen capturada: ${file.name}`);
+              //console.log(`Tamaño original: ${(file.size / 1024).toFixed(2)} KB`);
   
               // **Comprimir imagen a 50KB**
               const compressedFile = await compressImageTo50KB(file);
   
-              console.log(`Tamaño después de compresión: ${(compressedFile.size / 1024).toFixed(2)} KB`);
+              //console.log(`Tamaño después de compresión: ${(compressedFile.size / 1024).toFixed(2)} KB`);
   
               // **Convertir a HEX**
               const arrayBuffer = await compressedFile.arrayBuffer();
@@ -353,7 +353,7 @@ const compressImageTo50KB = async (file) => {
                   .map(byte => byte.toString(16).padStart(2, "0"))
                   .join("");
   
-              console.log(`Longitud del HEX: ${hexString.length} caracteres`);
+              //console.log(`Longitud del HEX: ${hexString.length} caracteres`);
   
               // **Guardar en el estado**
               const nuevosPagos = [...tiposPagos];
@@ -437,7 +437,7 @@ const compressImageTo50KB = async (file) => {
       };
 
       // Enviar los datos al backend
-      const response = await axios.post("http://localhost:5000/ventas/create/completa", ventaData);
+      const response = await axios.post("https://api.voluntariadoayuvi.com/ventas/create/completa", ventaData);
       if (response.status === 201) {
 
         const bitacoraData = {
@@ -446,7 +446,7 @@ const compressImageTo50KB = async (file) => {
           idUsuario: idUsuario,
           fechaHora: new Date()
         };
-        await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
         alert("Venta creada con éxito");
         setShowDetailsModal(false); // Cerrar el modal
         fetchVentas(); // Actualizar la lista de ventas
@@ -519,7 +519,7 @@ const compressImageTo50KB = async (file) => {
     //console.log("JSON enviado al backend:", JSON.stringify(ventaData, null, 2));
 
       const response = await axios.put(
-        `http://localhost:5000/ventas/update/completa/${ventaEditada.venta.idVenta}`,
+        `https://api.voluntariadoayuvi.com/ventas/update/completa/${ventaEditada.venta.idVenta}`,
         ventaData
       );
 
@@ -533,7 +533,7 @@ const compressImageTo50KB = async (file) => {
           fechaHora: new Date()
         };
 
-        await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
 
         alert("Venta actualizada con éxito");
         fetchVentas(); // Actualizar la lista de ventas
@@ -546,7 +546,7 @@ const compressImageTo50KB = async (file) => {
 
   const handleLoadVentaForEdit = async (idVenta) => {
     try {
-      const response = await axios.get(`http://localhost:5000/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`);
+      const response = await axios.get(`https://api.voluntariadoayuvi.com/detalle_ventas_voluntarios/ventaCompleta/${idVenta}`);
       if (response.data) {
         // Extraer datos de la venta, detalles y pagos
         const detalles = response.data.map((detalle) => ({
@@ -635,7 +635,7 @@ const compressImageTo50KB = async (file) => {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5000/ventas/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`https://api.voluntariadoayuvi.com/ventas/update/${id}`, { estado: nuevoEstado });
       fetchVentas();
       setAlertMessage(`Venta ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`);
       setShowAlert(true);

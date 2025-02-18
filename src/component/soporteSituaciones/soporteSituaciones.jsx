@@ -53,7 +53,7 @@ function SituacionesPorEstado() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
+        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -137,7 +137,7 @@ function SituacionesPorEstado() {
 
   const fetchTiposSituaciones = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/tipo_situaciones");
+      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_situaciones");
       setTiposSituaciones(response.data);
     } catch (error) {
       console.error("Error fetching tipos de situaciones:", error);
@@ -156,7 +156,7 @@ function SituacionesPorEstado() {
   const fetchSituacionesByEstado = async (estado) => {
     setIsLoading(true);
     try {
-      let url = "http://localhost:5000/situaciones";
+      let url = "https://api.voluntariadoayuvi.com/situaciones";
       switch (estado) {
         case "Reportada":
           url += "/reportadas";
@@ -234,7 +234,7 @@ function SituacionesPorEstado() {
     };
 
     try {
-        const response = await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
+        const response = await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
         return response.data.idBitacora; // Asegúrate de que la API devuelve idBitacora
     } catch (error) {
       console.error("Error logging bitacora:", error);
@@ -250,7 +250,7 @@ function SituacionesPorEstado() {
     };
 
     try {
-      await axios.post("http://localhost:5000/notificaciones/create", notificationData);
+      await axios.post("https://api.voluntariadoayuvi.com/notificaciones/create", notificationData);
     } catch (error) {
       console.error("Error creating notification:", error);
     }
@@ -262,7 +262,7 @@ function SituacionesPorEstado() {
       if (editMode) {
         // Actualizar situación usando la ruta de actualización de respuesta
         response = await axios.put(
-          `http://localhost:5000/situaciones/update/respuesta/${selectedSituacion.idSituacion}`,
+          `https://api.voluntariadoayuvi.com/situaciones/update/respuesta/${selectedSituacion.idSituacion}`,
           {
             idTipoSituacion: formData.idTipoSituacion,
             estado: formData.estado,
@@ -285,7 +285,7 @@ function SituacionesPorEstado() {
         }
       } else {
         // Crear una nueva situación con el estado "Reportada" por defecto
-        response = await axios.post("http://localhost:5000/situaciones/create", {
+        response = await axios.post("https://api.voluntariadoayuvi.com/situaciones/create", {
           ...formData,
           estado: "Reportada",
           idUsuario: formData.idUsuario,

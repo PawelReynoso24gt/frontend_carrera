@@ -26,15 +26,15 @@ function startActivityCheckInterval() {
         //console.log("Tiempo desde la última actividad:", timeSinceLastActivity);
 
         if (timeSinceLastActivity >= ACTIVITY_CHECK_INTERVAL) {
-            console.log("Tiempo de inactividad excedido, cerrando sesión.");
+            //console.log("Tiempo de inactividad excedido, cerrando sesión.");
             localStorage.clear();
             window.location.href = "/login";
         } else {
             try {
                 await renewToken();
-                console.log("Token renovado exitosamente.");
+                //console.log("Token renovado exitosamente.");
             } catch (error) {
-                console.log("Error al renovar el token, cerrando sesión.");
+                //console.log("Error al renovar el token, cerrando sesión.");
                 localStorage.clear();
                 window.location.href = "/login";
             }
