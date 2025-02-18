@@ -25,6 +25,10 @@ function SolicitudesVoluntariado() {
   const [hasViewPermission, setHasViewPermission] = useState(false);
   const [isPermissionsLoaded, setIsPermissionsLoaded] = useState(false);
 
+  const [showDenialModal, setShowDenialModal] = useState(false);
+  const [denialDescription, setDenialDescription] = useState("");
+  const [denyingAspiranteId, setDenyingAspiranteId] = useState(null);
+
   // Estados para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [cardsPerPage, setCardsPerPage] = useState(6);
@@ -100,6 +104,11 @@ function SolicitudesVoluntariado() {
   };
 
   const getAspirante = async (idAspirante) => {
+    if (!idAspirante || typeof idAspirante !== "number") {
+      console.error(`ID de aspirante inválido: ${JSON.stringify(idAspirante)}`);
+      return;
+    }  
+   
     try {
       const response = await axios.get(`http://localhost:5000/aspirantes/${idAspirante}`);
       return response.data;
@@ -156,11 +165,15 @@ function SolicitudesVoluntariado() {
   };
 
   const handleDeny = (idAspirante) => {
-    setConfirmationAction(() => () => denySolicitud(idAspirante));
-    setModalContent("¿Está seguro de denegar la solicitud?");
-    setShowConfirmationModal(true);
+    if (!idAspirante || typeof idAspirante !== "number") {
+      console.error(`Error: ID de aspirante inválido ${JSON.stringify(idAspirante)}`);
+      return;
+    }
+  
+    setDenyingAspiranteId(idAspirante);
+    setShowDenialModal(true);
   };
-
+  
   const acceptSolicitud = async (idAspirante) => {
   try {
     // Actualizar estado del aspirante
@@ -181,11 +194,12 @@ function SolicitudesVoluntariado() {
         if (persona) {
           const nombrePersona = persona.nombre; // Obtener el nombre de la persona
 
-          // Log de bitácora y obtener idBitacora
-          const idBitacora = await logBitacora(
-            `Solicitud de aspirante ${idAspirante} (${nombrePersona}) aceptada`, // Incluir el nombre en el mensaje
-            20
-          );
+        // Log de bitácora y obtener idBitacora
+        const idBitacora = await logBitacora(
+          // Incluir el nombre en el mensaje con un agradecimiento
+          `Solicitud de aspirante ID: ${idAspirante} aceptada, ¡Bienvenido(a) ${nombrePersona}! 🎉 Muchas gracias por formar parte de AYUVI 💙`,
+          20
+        );
 
         // Crear la notificación
         if (idBitacora && idPersona) {
@@ -206,14 +220,21 @@ function SolicitudesVoluntariado() {
 };
   
 const denySolicitud = async (idAspirante) => {
+  if (!idAspirante || typeof idAspirante !== "number") {
+    console.error(`Error: ID de aspirante inválido ${JSON.stringify(idAspirante)}`);
+    return;
+  }
+  
   try {
     // Actualizar estado del aspirante
-    await axios.put(`http://localhost:5000/aspirantes/denegar/${idAspirante}`);
-    fetchAspirantes();
-    setShowConfirmationModal(false);
-
-      // Obtener la información del aspirante
-      const aspirante = await getAspirante(idAspirante);
+    await axios.put(`http://localhost:5000/aspirantes/denegar/${denyingAspiranteId  }`, {
+      descripcion: denialDescription, });
+     fetchAspirantes();
+      setShowDenialModal(false);
+      setDenialDescription("");
+      setDenyingAspiranteId(null);
+    // Obtener la información del aspirante
+    const aspirante = await getAspirante(idAspirante);
 
       // Verificar que aspirante y persona existan
       if (aspirante && aspirante.idPersona) {
@@ -225,11 +246,11 @@ const denySolicitud = async (idAspirante) => {
         if (persona) {
           const nombrePersona = persona.nombre; // Obtener el nombre de la persona
 
-          // Log de bitácora y obtener idBitacora
-          const idBitacora = await logBitacora(
-            `Solicitud de aspirante ${idAspirante} (${nombrePersona}) denegada`, // Incluir el nombre en el mensaje
-            26
-          );
+        // Log de bitácora y obtener idBitacora
+        const idBitacora = await logBitacora(
+          `Solicitud de aspirante ${idAspirante} (${nombrePersona}) denegada. Motivo: "${denialDescription}"`, // Incluir el nombre en el mensaje
+          26
+        );
 
           // Crear la notificación
           if (idBitacora && idPersona) {
@@ -348,7 +369,7 @@ const denySolicitud = async (idAspirante) => {
                     }}
                     style={{ minWidth: "70px", width: "100px" }}
                   >
-                    Aceptar
+                    Aceptar 
                   </Button>
                   <Button
                     variant="danger"
@@ -384,6 +405,30 @@ const denySolicitud = async (idAspirante) => {
       </Row>
 
       {renderPagination()}
+
+      <Modal show={showDenialModal} onHide={() => setShowDenialModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Denegar Solicitud</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <label htmlFor="denialDescription">Razón de denegación:</label>
+          <textarea
+            id="denialDescription"
+            className="form-control mt-2"
+            rows="3"
+            value={denialDescription}
+            onChange={(e) => setDenialDescription(e.target.value)}
+          ></textarea>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDenialModal(false)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={() => denySolicitud(denyingAspiranteId)}>
+            Confirmar Denegación
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Modal para mostrar más información */}
       <Modal show={showModal} onHide={handleCloseModal}>

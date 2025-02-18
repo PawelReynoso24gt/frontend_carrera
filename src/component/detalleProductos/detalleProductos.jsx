@@ -182,15 +182,58 @@ function DetalleProductosComponent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    console.log("▶ Iniciando creación/actualización de detalle de producto...");
+    console.log("newDetalle recibido:", newDetalle);
+
+    // Convertir idProducto a número para la búsqueda
+    const idProductoNumber = Number(newDetalle.idProducto);
+    console.log("🔍 ID del producto convertido:", idProductoNumber);
+
+
+    let nombreProducto = "Producto desconocido"; // Valor por defecto
+
+    // Buscar el producto por ID
+    console.log("📦 Lista de productos disponibles:", productos);
+    const productoEncontrado = productos.find(p => p.idProducto == idProductoNumber);
+    if (productoEncontrado) {
+      nombreProducto = productoEncontrado.nombreProducto;
+    }
+
+    console.log("🔍 Producto encontrado:", productoEncontrado);
+    console.log("📌 Nombre del Producto asignado:", nombreProducto);
+
     try {
       if (editingDetalle) {
+
+        console.log("✏ Actualizando detalle existente...");
+
+        // Obtener la cantidad actual antes de la actualización
+        const cantidadAnterior = editingDetalle.cantidad;
+        const cantidadNueva = Number(newDetalle.cantidad);
+        const diferenciaCantidad = cantidadNueva - cantidadAnterior;
+
+        console.log(`🔢 Cantidad anterior: ${cantidadAnterior}, Nueva cantidad: ${cantidadNueva}, Diferencia: ${diferenciaCantidad}`);
+
+        const descripcionBitacora = `Detalle de producto "${nombreProducto}" (ID de Registro: ${editingDetalle.idDetalleProductos}) actualizado. 
+        - Cantidad anterior: ${cantidadAnterior}, Nueva cantidad: ${cantidadNueva} (Cambio: ${diferenciaCantidad > 0 ? '+' : ''}${diferenciaCantidad}) 
+        - Razón: ${newDetalle.descripcion}`;
+
+        console.log("📜 Descripción de bitácora:", descripcionBitacora);
+
+        console.log("JSON enviado para UPDATE:", JSON.stringify(newDetalle, null, 2));
+
         await axios.put(`http://localhost:5000/detalle_productos/update/${editingDetalle.idDetalleProductos}`, newDetalle);
         setAlertMessage("Detalle actualizado con éxito");
-        logBitacora(`Detalle de producto ${editingDetalle.idDetalleProductos} actualizado: ${newDetalle.descripcion}`, 3);
+        logBitacora(descripcionBitacora, 3);
       } else {
+
+        console.log("➕ Creando nuevo detalle de producto...");
+        console.log("JSON enviado para POST:", JSON.stringify(newDetalle, null, 2));
+
         await axios.post("http://localhost:5000/detalle_productos/create", newDetalle);
         setAlertMessage("Detalle creado con éxito");
-        logBitacora(`Detalle de producto creado`, 40);
+        logBitacora(`Se ha creado un nuevo detalle de producto: "${nombreProducto}"`, 40);
       }
       fetchDetalles();
       setShowAlert(true);
