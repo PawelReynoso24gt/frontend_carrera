@@ -498,7 +498,7 @@ doc.save(`Reporte_Contabilidad_${fechaInicioFormatted}_${fechaFinFormatted}.pdf`
 };
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4" style={{ maxWidth: "100%", margin: "0 auto" }}>
       <div className="row mb-3">
         <div className="col text-center">
           <h3>Reporte de Contabilidad</h3>
