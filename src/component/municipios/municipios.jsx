@@ -80,11 +80,11 @@ function Municipio() {
   };
 
   const handleSearch = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.toLowerCase();
     setSearchTerm(value);
 
     const filtered = municipios.filter((municipio) =>
-      municipio.includes(value)
+      municipio.municipio.toLowerCase().includes(value)
     );
     setFilteredMunicipios(filtered);
   };

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl, Pagination } from "react-bootstrap";
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 function Comisiones() {
   const [comisiones, setComisiones] = useState([]);
@@ -392,7 +394,7 @@ function Comisiones() {
                       <div>{comision.detalleHorario.cantidadPersonas} personas</div>
                       <div>
                         {comision.detalleHorario.horario
-                          ? `${new Date(`1970-01-01T${comision.detalleHorario.horario.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${comision.detalleHorario.horario.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`
+                          ? `${format(new Date(`1970-01-01T${comision.detalleHorario.horario.horarioInicio}`), "hh:mm a")} - ${format(new Date(`1970-01-01T${comision.detalleHorario.horario.horarioFinal}`), "hh:mm a")}`
                           : "Sin horario"}
                       </div>
                     </>
@@ -515,7 +517,7 @@ function Comisiones() {
                     <option value="">Seleccionar Detalle Horario</option>
                     {detallesHorarios.map((detalle) => (
                       <option key={detalle.idDetalleHorario} value={detalle.idDetalleHorario}>
-                        {`${detalle.cantidadPersonas} personas - ${new Date(`1970-01-01T${detalle.horario.horarioInicio}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(`1970-01-01T${detalle.horario.horarioFinal}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}
+                        {`${detalle.cantidadPersonas} personas - ${format(new Date(`1970-01-01T${detalle.horario.horarioInicio}`), "hh:mm a")} - ${format(new Date(`1970-01-01T${detalle.horario.horarioFinal}`), "hh:mm a")}`}
                       </option>
                     ))}
                   </Form.Control>

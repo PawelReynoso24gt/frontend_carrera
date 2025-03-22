@@ -280,18 +280,7 @@ function CategoriasHorarios() {
   return (
 
 
-    <div className="container mt-4">
-      {/* Título y Breadcrumb */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-          .
-        </h3>
-        <Breadcrumb>
-          <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
-          <Breadcrumb.Item active>Categoría Horarios</Breadcrumb.Item>
-        </Breadcrumb>
-      </div>
-
+    <div className="container mt-4" style={{ maxWidth: "100%", margin: "0 auto"}}>
 
       {/* Contenedor Principal */}
       <div
@@ -305,13 +294,13 @@ function CategoriasHorarios() {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <div className="row" style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
-            <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-              Categoría Horarios
-            </h3>
-          </div>
+        <div className="row justify-content-center" style={{marginBottom: "20px" }}>
+        <div className="col-12 text-center">
+          <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
+            Categoría de Horarios
+          </h3>
         </div>
+      </div>
 
 
         <InputGroup className="mb-3">

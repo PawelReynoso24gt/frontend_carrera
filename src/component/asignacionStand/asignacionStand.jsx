@@ -127,16 +127,6 @@ function AsignacionStands() {
 
   return (
     <div className="container mt-4" style={{ maxWidth: "100%", margin: "0 auto" }}>
-      {/* Título y Breadcrumb */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>
-          .
-        </h3>
-        <Breadcrumb>
-          <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
-          <Breadcrumb.Item active>Asignación de Voluntarios a Stands</Breadcrumb.Item>
-        </Breadcrumb>
-      </div>
 
       {/* Contenedor Principal */}
       <div
@@ -216,7 +206,20 @@ function AsignacionStands() {
               <h5 style={{ color: "#007AC3", fontWeight: "bold", marginBottom: "15px" }}>
                 {stand.standNombre}
               </h5>
-              <Table striped bordered hover responsive>
+              <Table
+                striped
+                bordered
+                hover
+                responsive
+                className="mt-3"
+                style={{
+                  backgroundColor: "#ffffff",
+                  borderRadius: "20px",
+                  overflow: "hidden",
+                  marginTop: "20px",
+                  textAlign: "center"
+                }}
+              >
                 <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center" }}>
                   <tr>
                     <th>ID Voluntario</th>
@@ -233,12 +236,12 @@ function AsignacionStands() {
                       <td>{voluntario.telefonoVoluntario}</td>
                       <td>
                       {voluntario.horarioInicio
-    ? format(parseISO(`1970-01-01T${voluntario.horarioInicio}`), "hh:mm a")
-    : "Sin hora"}{" "}
-  -{" "}
-  {voluntario.horarioFinal
-    ? format(parseISO(`1970-01-01T${voluntario.horarioFinal}`), "hh:mm a")
-    : "Sin hora"}
+                          ? format(parseISO(`1970-01-01T${voluntario.horarioInicio}`), "hh:mm a")
+                          : "Sin hora"}{" "}
+                        -{" "}
+                        {voluntario.horarioFinal
+                          ? format(parseISO(`1970-01-01T${voluntario.horarioFinal}`), "hh:mm a")
+                          : "Sin hora"}
                       </td>
                     </tr>
                   ))}

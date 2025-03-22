@@ -274,7 +274,7 @@ const renderPermisosPorModulo = () => {
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
- <div className="row justify-content-center" style={{marginBottom: "20px" }}>
+      <div className="row justify-content-center" style={{marginBottom: "20px" }}>
         <div className="col-12 text-center">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
             Gestión de Roles y Permisos
@@ -299,6 +299,7 @@ const renderPermisosPorModulo = () => {
             borderRadius: "20px",
             overflow: "hidden",
             marginTop: "20px",
+            textAlign: "center",
           }}>
           <thead style={{ backgroundColor: "#007AC3", color: "#fff", textAlign: "center",  }}>
             <tr>

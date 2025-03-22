@@ -222,8 +222,14 @@ function ReportePedidos() {
         </button>
       </div>
       
-      <table className="table table-bordered">
-        <thead>
+      <table
+        className="table mt-4"
+        style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "8px",
+        }}
+      >
+        <thead className="thead-dark">
           <tr>
             <th>ID Pedido</th>
             <th>Fecha</th>

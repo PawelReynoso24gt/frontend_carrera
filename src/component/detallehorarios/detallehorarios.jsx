@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Form, Table, Modal, Alert, InputGroup, FormControl } from 'react-bootstrap';
 import { FaPencilAlt, FaToggleOn, FaToggleOff } from "react-icons/fa";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 function DetalleHorariosComponent() {
   const [detalles, setDetalles] = useState([]);
@@ -180,16 +182,24 @@ function DetalleHorariosComponent() {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-
-    // Filtrar los datos por cantidadPersonas
+  
     const filtered = detalles.filter((detalle) => {
-      const cantidadPersonas = detalle.cantidadPersonas?.toString().toLowerCase() || "";
-      return cantidadPersonas.includes(value);
+      const categoria = detalle.categoriaHorario?.categoria?.toLowerCase() || "";
+  
+      const horarioEncontrado = horarios.find((h) => h.idHorario === detalle.idHorario);
+      const horarioTexto = horarioEncontrado
+        ? `inicio: ${format(new Date(`1970-01-01T${horarioEncontrado.horarioInicio}`), "hh:mm a")} - fin: ${format(new Date(`1970-01-01T${horarioEncontrado.horarioFinal}`), "hh:mm a")}`
+        : "";
+  
+      return (
+        categoria.includes(value) ||
+        horarioTexto.toLowerCase().includes(value)
+      );
     });
-
+  
     setFilteredDetalleHorarios(filtered);
     setCurrentPage(1);
-  };
+  };  
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
@@ -279,7 +289,7 @@ function DetalleHorariosComponent() {
       >
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Buscar detalle por categoria..."
+            placeholder="Buscar detalle por categoria u horario..."
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -373,9 +383,8 @@ function DetalleHorariosComponent() {
                   <td>{detalle.cantidadPersonas}</td>
                   <td>
                     {horarioEncontrado
-                      ? `Inicio: ${horarioEncontrado.horarioInicio} - Fin: ${horarioEncontrado.horarioFinal}`
-                      : detalle.idHorario
-                    }
+                      ? `Inicio: ${format(new Date(`1970-01-01T${horarioEncontrado.horarioInicio}`), "hh:mm a")} - Fin: ${format(new Date(`1970-01-01T${horarioEncontrado.horarioFinal}`), "hh:mm a")}`
+                      : detalle.idHorario}
                   </td>
                   <td>{detalle.categoriaHorario?.categoria || 'Sin categoría'}</td>
                   <td>{detalle.estado ? "Activo" : "Inactivo"}</td>
@@ -472,7 +481,7 @@ function DetalleHorariosComponent() {
                   <option value="">Seleccione un horario</option>
                   {horarios.map((horario) => (
                     <option key={horario.idHorario} value={horario.idHorario}>
-                      {`Inicio: ${horario.horarioInicio} - Fin: ${horario.horarioFinal}`}
+                      {`Inicio: ${format(new Date(`1970-01-01T${horario.horarioInicio}`), "hh:mm a")} - Fin: ${format(new Date(`1970-01-01T${horario.horarioFinal}`), "hh:mm a")}`}
                     </option>
                   ))}
                 </Form.Control>

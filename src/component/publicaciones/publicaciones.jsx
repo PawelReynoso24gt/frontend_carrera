@@ -594,7 +594,7 @@ function Publicaciones() {
           className="mt-3"
           style={{
             backgroundColor: "#ffffff",
-            borderRadius: "8px",
+            borderRadius: "20px",
             marginTop: "20px",
             overflow: "hidden",
             textAlign: "center"

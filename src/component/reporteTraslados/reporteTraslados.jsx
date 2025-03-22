@@ -155,7 +155,7 @@ function ReporteTraslados() {
        <div className="row justify-content-center" style={{marginBottom: "20px" }}>
         <div className="col-12 text-center">
           <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#333", textAlign: "center" }}>
-           Reporte de traslados
+           Reporte de Traslados
           </h3>
         </div>
       </div>
@@ -233,8 +233,14 @@ function ReporteTraslados() {
         </button>
       </div>
       
-      <table className="table table-bordered">
-        <thead>
+      <table
+        className="table mt-4"
+        style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "8px",
+        }}
+      >
+        <thead className="thead-dark">
           <tr>
             <th>ID Traslado</th>
             <th>Fecha</th>
