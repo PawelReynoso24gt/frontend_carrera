@@ -39,12 +39,12 @@ function HomePage() {
         transition: "background 0.3s ease, transform 0.3s ease", // Animación para el hover
       }}
       onMouseEnter={(e) => {
-        e.target.style.background = "rgb(255, 238, 0)"; // Cambia el fondo al hacer hover
-        e.target.style.transform = "translateY(-50%) scale(1.1)"; // Aumenta ligeramente el tamaño
+        e.currentTarget.style.background = "rgb(255, 238, 0)"; // Cambia el fondo al hacer hover
+        e.currentTarget.style.transform = "translateY(-50%) scale(1.1)"; // Aumenta ligeramente el tamaño
       }}
       onMouseLeave={(e) => {
-        e.target.style.background = "rgba(255, 255, 255, 0.35)"; // Regresa al color original
-        e.target.style.transform = "translateY(-50%) scale(1)"; // Regresa al tamaño original
+        e.currentTarget.style.background = "rgba(255, 255, 255, 0.35)"; // Regresa al color original
+        e.currentTarget.style.transform = "translateY(-50%) scale(1)"; // Regresa al tamaño original
       }}
     >
       <FaChevronLeft /> {/* Ícono de flecha izquierda */}
@@ -76,12 +76,12 @@ function HomePage() {
         transition: "background 0.3s ease, transform 0.3s ease", // Animación para el hover
       }}
       onMouseEnter={(e) => {
-        e.target.style.background = "rgb(255, 238, 0)"; // Cambia el fondo al hacer hover
-        e.target.style.transform = "translateY(-50%) scale(1.1)"; // Aumenta ligeramente el tamaño
+        e.currentTarget.style.background = "rgb(255, 238, 0)"; // Cambia el fondo al hacer hover
+        e.currentTarget.style.transform = "translateY(-50%) scale(1.1)"; // Aumenta ligeramente el tamaño
       }}
       onMouseLeave={(e) => {
-        e.target.style.background = "rgba(255, 255, 255, 0.35)"; // Regresa al color original
-        e.target.style.transform = "translateY(-50%) scale(1)"; // Regresa al tamaño original
+        e.currentTarget.style.background = "rgba(255, 255, 255, 0.35)"; // Regresa al color original
+        e.currentTarget.style.transform = "translateY(-50%) scale(1)"; // Regresa al tamaño original
       }}
     >
       <FaChevronRight /> {/* Ícono de flecha derecha */}
@@ -220,14 +220,14 @@ function HomePage() {
 
   const sliderSettings = {
     //dots: true,
-    infinite: true,
+    infinite: fotosPublicaciones.length > 1,
     speed: 1000,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: fotosPublicaciones.length > 1,
     autoplaySpeed: 4000,
-    prevArrow: <PrevArrow />, // Botón anterior personalizado
-    nextArrow: <NextArrow />, // Botón siguiente personalizado
+    prevArrow: fotosPublicaciones.length > 1 ? <PrevArrow /> : null,
+    nextArrow: fotosPublicaciones.length > 1 ? <NextArrow /> : null,
     beforeChange: (oldIndex, newIndex) => setActiveIndex(newIndex), // Actualiza el índice activo
   };
 

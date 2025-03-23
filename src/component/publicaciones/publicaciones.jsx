@@ -5,9 +5,11 @@ import { FaPencilAlt, FaToggleOn, FaToggleOff, FaEye } from "react-icons/fa";
 import { getUserDataFromToken } from "../../utils/jwtUtils";
 import { format } from "date-fns";
 import { parseISO } from "date-fns";
+import imageCompression from 'browser-image-compression';
 
 function Publicaciones() {
   const [publicaciones, setPublicaciones] = useState([]);
+  const [uploadMessage, setUploadMessage] = useState("");
   const [filteredPublicaciones, setFilteredPublicaciones] = useState([]);
   const [showDetailsModal, setShowDetailsModal] = useState(false); // modal para detalles
   const [searchTerm, setSearchTerm] = useState("");
@@ -170,8 +172,21 @@ function Publicaciones() {
       if (hasViewPermission) {
       const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/activos");
 
+      console.log("📘 Publicaciones Activas:", response.data); // 🔍 Aquí lo imprime
+
+      const publicacionesConTipo = response.data.map((pub) => ({
+        ...pub,
+        tipoPublicacion: pub.publicacionesGenerales?.length > 0
+          ? "generales"
+          : pub.publicacionesEventos?.length > 0
+          ? "eventos"
+          : pub.publicacionesRifas?.length > 0
+          ? "rifas"
+          : "",
+      }));
+
       // Ordenar de más reciente a más antigua
-      const publicacionesOrdenadas = response.data.sort(
+      const publicacionesOrdenadas = publicacionesConTipo.sort(
         (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
       );
 
@@ -188,8 +203,22 @@ function Publicaciones() {
     try {
       if (hasViewPermission) {
       const response = await axios.get("https://api.voluntariadoayuvi.com/publicaciones/inactivos");
+
+      console.log("📕 Publicaciones Inactivas:", response.data); // 🔍 Aquí lo imprime
+
+      const publicacionesConTipo = response.data.map((pub) => ({
+        ...pub,
+        tipoPublicacion: pub.publicacionesGenerales?.length > 0
+          ? "generales"
+          : pub.publicacionesEventos?.length > 0
+          ? "eventos"
+          : pub.publicacionesRifas?.length > 0
+          ? "rifas"
+          : "",
+      }));
+
       // Ordenar de más reciente a más antigua
-      const publicacionesOrdenadas = response.data.sort(
+      const publicacionesOrdenadas = publicacionesConTipo.sort(
         (a, b) => new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
       );
 
@@ -313,9 +342,32 @@ function Publicaciones() {
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
-  const handleFileChange = (e) => {
-    setFiles([...e.target.files]);
-  };
+  const handleFileChange = async (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    const compressedFiles = [];
+  
+    setUploadMessage("Subiendo y comprimiendo fotos...");
+  
+    for (let file of selectedFiles) {
+      try {
+        const options = {
+          maxSizeMB: 0.1,
+          maxWidthOrHeight: 1024,
+          useWebWorker: true,
+        };
+  
+        const compressedFile = await imageCompression(file, options);
+        console.log(`Original: ${(file.size / 1024).toFixed(2)} KB`);
+        console.log(`Comprimido: ${(compressedFile.size / 1024).toFixed(2)} KB`);
+        compressedFiles.push(compressedFile);
+      } catch (error) {
+        console.error("Error al comprimir imagen:", error);
+      }
+    }
+  
+    setFiles(compressedFiles);
+    setUploadMessage("✅ Fotos listas para subir!");
+  };    
 
   const fetchEventos = async () => {
     try {
@@ -968,6 +1020,11 @@ function Publicaciones() {
               {/* Nuevas fotos */}
               <Form.Group controlId="fotos">
                 <Form.Label>Nuevas Fotos</Form.Label>
+                {uploadMessage && (
+                  <Alert variant="info" style={{ fontWeight: "bold" }}>
+                    {uploadMessage}
+                  </Alert>
+                )}
                 <Form.Control type="file" multiple onChange={handleFileChange} />
               </Form.Group>
               <Form.Group controlId="estado">
