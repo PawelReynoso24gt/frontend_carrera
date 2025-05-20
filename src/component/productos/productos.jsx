@@ -185,16 +185,10 @@ function Productos() {
     setNewProducto({ ...newProducto, [name]: value });
   };
 
-  const handleKeyPressOnlyLetters = (e) => {
-    const regex = /^[A-Za-záéíóúÁÉÍÓÚÑñ\s]*$/;
-
-    if (!regex.test(e.key)) {
-      e.preventDefault();
-      setShowValidationError(true);
-    } else {
-      setShowValidationError(false);
-    }
-  };
+const handleKeyPressOnlyLetters = (e) => {
+  // No se bloquea ninguna tecla
+  setShowValidationError(false);
+};
 
   const logBitacora = async (descripcion, idCategoriaBitacora) => {
     const bitacoraData = {

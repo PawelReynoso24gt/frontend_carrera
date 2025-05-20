@@ -204,9 +204,9 @@ function Eventos() {
     const { nombreEvento, fechaHoraInicio, fechaHoraFin, descripcion, direccion, idSede } = newEvento;
 
     // Expresiones regulares basadas en el backend
-    const regexNombreEvento = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/; // Solo letras y espacios
-    const regexDescripcion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/; // Letras, números, espacios y signos .,-
-    const regexDireccion = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,#/-]+$/; // Dirección con signos comunes
+    const regexNombreEvento = /^.+$/; 
+    const regexDescripcion = /^.+$/; 
+    const regexDireccion = /^.+$/;
 
     // **Validaciones**
 
