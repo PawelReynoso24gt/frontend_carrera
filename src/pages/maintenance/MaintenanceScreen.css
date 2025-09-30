@@ -1,0 +1,40 @@
+.maintenance-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.maintenance-container {
+  display: flex;
+  align-items: center;
+}
+
+.maintenance-container img {
+  display: flex;
+  max-width: 850px;
+  margin-right: 0px;
+}
+
+.maintenance-container h1 {
+  font-size: 300px;
+  margin: 0;
+  text-align: left;
+}
+
+.maintenance-container h2 {
+  display: flex;
+  margin: 0;
+  text-align: left;
+  line-height: 1;
+  font-size: 60px;
+}
+
+.maintenance-container h3 {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 30px;
+}

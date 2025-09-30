@@ -95,12 +95,14 @@ import ReporteTraslados from "./pages/reporteTraslados/reporteTraslados";
 import ReportePedidos from "./pages/reportePedidos/reportePedidos";
 import Bitacoras from "./pages/bitacoras/bitacoras";
 import ReporteContabilidad from "./pages/reporteContabilidad/reporteContabilidad";
+import MaintenanceScreen from "./pages/maintenance/MaintenanceScreen";
 
 
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <LoginLayout />,
+    element: <MaintenanceScreen />, // Cambio a MaintenanceScreen para mostrar la pantalla de mantenimiento SOLO SE CAMBIA ESO NO MAS
+    // element: <LoginLayout />, Este se debe descomentar para que se vea el login y no la pantalla de mantenimiento
     // children: [
     //   {
     //     index: true, 
