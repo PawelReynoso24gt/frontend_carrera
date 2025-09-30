@@ -37,7 +37,7 @@ function Sedes() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -80,7 +80,7 @@ function Sedes() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes");
+      const response = await axios.get("http://localhost:5000/sedes");
       setSedes(response.data);
       setFilteredSedes(response.data);
     } catch (error) {
@@ -91,7 +91,7 @@ function Sedes() {
   const fetchActiveSedes = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes/activas");
+      const response = await axios.get("http://localhost:5000/sedes/activas");
       setFilteredSedes(response.data);
     } else {
       checkPermission('Ver sedes', 'No tienes permisos para ver sedes')
@@ -104,7 +104,7 @@ function Sedes() {
   const fetchInactiveSedes = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes/inactivas");
+      const response = await axios.get("http://localhost:5000/sedes/inactivas");
       setFilteredSedes(response.data);
     } else {
       checkPermission('Ver sedes', 'No tienes permisos para ver sedes')
@@ -151,7 +151,7 @@ function Sedes() {
     };
 
     try {
-      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
@@ -169,12 +169,12 @@ function Sedes() {
 
     try {
       if (editingSede) {
-        await axios.put(`https://api.voluntariadoayuvi.com/sedes/${editingSede.idSede}`, newSede);
+        await axios.put(`http://localhost:5000/sedes/${editingSede.idSede}`, newSede);
         setAlertMessage("Sede actualizada con éxito");
         // Log the update action in the bitacora
         await logBitacora(`Sede ${newSede.nombreSede} actualizada`, 35);
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/sedes", newSede);
+        await axios.post("http://localhost:5000/sedes", newSede);
         setAlertMessage("Sede creada con éxito");
 
         // Log the create action in the bitacora
@@ -191,7 +191,7 @@ function Sedes() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/sedes/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/sedes/${id}`, { estado: nuevoEstado });
       fetchSedes();
       setAlertMessage(
         `Sede ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`

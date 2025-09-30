@@ -22,7 +22,7 @@ function TipoStandsComponent() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -66,7 +66,7 @@ function TipoStandsComponent() {
   const fetchActiveTipoStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/tipo_stands/activos');
+      const response = await axios.get('http://localhost:5000/tipo_stands/activos');
       setTipoStands(response.data);
       setFilter('activos');
     } else {
@@ -80,7 +80,7 @@ function TipoStandsComponent() {
   const fetchInactiveTipoStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/tipo_stands', {
+      const response = await axios.get('http://localhost:5000/tipo_stands', {
         params: { estado: 0 }
       });
       setTipoStands(response.data.filter(tipoStand => tipoStand.estado === 0));
@@ -113,10 +113,10 @@ function TipoStandsComponent() {
     e.preventDefault();
     try {
       if (editingTipoStand) {
-        await axios.put(`https://api.voluntariadoayuvi.com/tipo_stands/${editingTipoStand.idTipoStands}`, newTipoStand);
+        await axios.put(`http://localhost:5000/tipo_stands/${editingTipoStand.idTipoStands}`, newTipoStand);
         setAlertMessage('Tipo de stand actualizado con éxito');
       } else {
-        await axios.post('https://api.voluntariadoayuvi.com/tipo_stands', newTipoStand);
+        await axios.post('http://localhost:5000/tipo_stands', newTipoStand);
         setAlertMessage('Tipo de stand creado con éxito');
       }
       filter === 'activos' ? fetchActiveTipoStands() : fetchInactiveTipoStands();
@@ -130,7 +130,7 @@ function TipoStandsComponent() {
   const toggleTipoStandEstado = async (id, currentEstado) => {
     try {
       const newEstado = currentEstado === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/tipo_stands/${id}`, { estado: newEstado });
+      await axios.put(`http://localhost:5000/tipo_stands/${id}`, { estado: newEstado });
       setAlertMessage(`Tipo de stand ${newEstado === 1 ? 'activado' : 'desactivado'} con éxito`);
       setShowAlert(true);
       filter === 'activos' ? fetchActiveTipoStands() : fetchInactiveTipoStands();

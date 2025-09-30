@@ -23,12 +23,12 @@ function SidebarProfile() {
           return;
         }
 
-        const response = await axios.get(`https://api.voluntariadoayuvi.com/usuarios/activos`);
+        const response = await axios.get(`http://localhost:5000/usuarios/activos`);
         const loggedUser = response.data.find((user) => user.idUsuario === idUsuario);
 
         if (loggedUser) {
           setUserData(loggedUser);
-          const photoPath = loggedUser.persona.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${loggedUser.persona.foto.replace(/\\/g, '/')}` : profileImg;
+          const photoPath = loggedUser.persona.foto !== "sin foto" ? `http://localhost:5000/${loggedUser.persona.foto.replace(/\\/g, '/')}` : profileImg;
           setPreview(photoPath);
         } else {
           setError("Usuario no encontrado.");
@@ -60,14 +60,14 @@ function SidebarProfile() {
       formData.append('foto', selectedFile);
 
       try {
-        const response = await axios.put(`https://api.voluntariadoayuvi.com/personasFoto/${userData.idPersona}/foto`, formData, {
+        const response = await axios.put(`http://localhost:5000/personasFoto/${userData.idPersona}/foto`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         });
         setSuccessMessage("Se han guardado los cambios correctamente.");
         setSelectedFile(null);
-        const photoPath = response.data.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${response.data.foto.replace(/\\/g, '/')}` : profileImg;
+        const photoPath = response.data.foto !== "sin foto" ? `http://localhost:5000/${response.data.foto.replace(/\\/g, '/')}` : profileImg;
         setPreview(photoPath);
       } catch (err) {
         console.error("Error al actualizar la foto:", err);
@@ -77,7 +77,7 @@ function SidebarProfile() {
 
   const handleDiscardChanges = () => {
     setSelectedFile(null);
-    const photoPath = userData.persona.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${userData.persona.foto.replace(/\\/g, '/')}` : profileImg;
+    const photoPath = userData.persona.foto !== "sin foto" ? `http://localhost:5000/${userData.persona.foto.replace(/\\/g, '/')}` : profileImg;
     setPreview(photoPath);
   };
 

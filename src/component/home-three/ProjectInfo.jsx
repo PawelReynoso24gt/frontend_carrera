@@ -20,7 +20,7 @@ function RecaudacionDashboard() {
 
   const fetchRecaudaciones = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/recaudacion_evento");
+      const response = await axios.get("http://localhost:5000/recaudacion_evento");
       const data = response.data;
       if (data && data.length > 0) generateChartDataRecaudaciones(data);
       setRecaudaciones(data);
@@ -31,7 +31,7 @@ function RecaudacionDashboard() {
 
   const fetchVentas = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/ventas");
+      const response = await axios.get("http://localhost:5000/ventas");
       const data = response.data;
       if (data && data.length > 0) generateChartDataVentas(data);
       setVentas(data);
@@ -42,7 +42,7 @@ function RecaudacionDashboard() {
 
   const fetchRifas = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/recaudaciones");
+      const response = await axios.get("http://localhost:5000/recaudaciones");
       const data = response.data;
       if (data && data.length > 0) {
         generateChartDataRifasBoletos(data);

@@ -36,7 +36,7 @@ function Categorias() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -78,7 +78,7 @@ function Categorias() {
 
   const fetchCategorias = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/categorias");
+      const response = await axios.get("http://localhost:5000/categorias");
       setCategorias(response.data);
       setFilteredCategorias(response.data);
     } catch (error) {
@@ -90,7 +90,7 @@ function Categorias() {
     try {
       if (hasViewPermission) {
       const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/categorias/activas"
+        "http://localhost:5000/categorias/activas"
       );
       setCategorias(response.data);
       setFilteredCategorias(response.data);
@@ -106,7 +106,7 @@ function Categorias() {
     try {
       if (hasViewPermission) {
       const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/categorias/inactivas"
+        "http://localhost:5000/categorias/inactivas"
       );
       setCategorias(response.data);
       setFilteredCategorias(response.data);
@@ -161,12 +161,12 @@ function Categorias() {
     try {
       if (editingCategoria) {
         await axios.put(
-          `https://api.voluntariadoayuvi.com/categorias/${editingCategoria.idCategoria}`,
+          `http://localhost:5000/categorias/${editingCategoria.idCategoria}`,
           newCategoria
         );
         setAlertMessage("Categoría actualizada con éxito");
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/categorias", newCategoria);
+        await axios.post("http://localhost:5000/categorias", newCategoria);
         setAlertMessage("Categoría creada con éxito");
       }
       fetchCategorias();
@@ -180,7 +180,7 @@ function Categorias() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/categorias/${id}`, {
+      await axios.put(`http://localhost:5000/categorias/${id}`, {
         estado: nuevoEstado,
       });
       fetchCategorias();

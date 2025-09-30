@@ -31,7 +31,7 @@ function DetalleProductosComponent() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -74,7 +74,7 @@ function DetalleProductosComponent() {
 
   const fetchDetalles = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos");
+      const response = await axios.get("http://localhost:5000/detalle_productos");
       setDetalles(response.data || []);
       setFilteredDetalles(response.data || []);
     } catch (error) {
@@ -84,7 +84,7 @@ function DetalleProductosComponent() {
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/productos");
+      const response = await axios.get("http://localhost:5000/productos");
       setProductos(response.data || []);
     } catch (error) {
       console.error("Error fetching productos:", error);
@@ -93,7 +93,7 @@ function DetalleProductosComponent() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes");
+      const response = await axios.get("http://localhost:5000/sedes");
       setSedes(response.data || []);
     } catch (error) {
       console.error("Error fetching sedes:", error);
@@ -104,7 +104,7 @@ function DetalleProductosComponent() {
   const fetchActiveDetalleProductos = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos/activos");
+        const response = await axios.get("http://localhost:5000/detalle_productos/activos");
         setDetalles(response.data || []); // Aquí se usa setDetalles
         setFilteredDetalles(response.data || []); // Aquí se usa setFilteredDetalles
       } else {
@@ -118,7 +118,7 @@ function DetalleProductosComponent() {
   const fetchInactiveDetalleProductos = async () => {
     try {
       if (hasViewPermission) {
-        const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_productos/inactivos");
+        const response = await axios.get("http://localhost:5000/detalle_productos/inactivos");
         setDetalles(response.data || []); // Aquí se usa setDetalles
         setFilteredDetalles(response.data || []); // Aquí se usa setFilteredDetalles
       } else {
@@ -174,7 +174,7 @@ function DetalleProductosComponent() {
     };
 
     try {
-      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
@@ -223,7 +223,7 @@ function DetalleProductosComponent() {
 
         //console.log("JSON enviado para UPDATE:", JSON.stringify(newDetalle, null, 2));
 
-        await axios.put(`https://api.voluntariadoayuvi.com/detalle_productos/update/${editingDetalle.idDetalleProductos}`, newDetalle);
+        await axios.put(`http://localhost:5000/detalle_productos/update/${editingDetalle.idDetalleProductos}`, newDetalle);
         setAlertMessage("Detalle actualizado con éxito");
         logBitacora(descripcionBitacora, 3);
       } else {
@@ -231,7 +231,7 @@ function DetalleProductosComponent() {
         //console.log("➕ Creando nuevo detalle de producto...");
         //console.log("JSON enviado para POST:", JSON.stringify(newDetalle, null, 2));
 
-        await axios.post("https://api.voluntariadoayuvi.com/detalle_productos/create", newDetalle);
+        await axios.post("http://localhost:5000/detalle_productos/create", newDetalle);
         setAlertMessage("Detalle creado con éxito");
         logBitacora(`Se ha creado un nuevo detalle de producto: "${nombreProducto}"`, 40);
       }
@@ -246,7 +246,7 @@ function DetalleProductosComponent() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/detalle_productos/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/detalle_productos/update/${id}`, { estado: nuevoEstado });
       setAlertMessage(`Detalle ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`);
       setShowAlert(true);
       fetchDetalles();

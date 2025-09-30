@@ -41,7 +41,7 @@ function Stand() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -88,7 +88,7 @@ function Stand() {
 
   const fetchHorarios = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/detalle_horarios/activos");
+      const response = await axios.get("http://localhost:5000/detalle_horarios/activos");
 
       // Filtrar horarios cuya categoría sea "Stands"
       const horariosFiltrados = response.data.filter(
@@ -103,7 +103,7 @@ function Stand() {
 
   const fetchStands = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/stand");
+      const response = await axios.get("http://localhost:5000/stand");
       setStands(response.data);
     } catch (error) {
       console.error("Error fetching stands:", error);
@@ -112,7 +112,7 @@ function Stand() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/sedes");
+      const response = await axios.get("http://localhost:5000/sedes");
       setSedes(response.data);
     } catch (error) {
       console.error("Error fetching sedes:", error);
@@ -121,7 +121,7 @@ function Stand() {
 
   const fetchTiposStands = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_stands");
+      const response = await axios.get("http://localhost:5000/tipo_stands");
       setTiposStands(response.data);
     } catch (error) {
       console.error("Error fetching tipos de stands:", error);
@@ -130,7 +130,7 @@ function Stand() {
 
   const fetchEventos = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/eventos/activas");
+      const response = await axios.get("http://localhost:5000/eventos/activas");
       setEventos(response.data);
     } catch (error) {
       console.error("Error fetching eventos:", error);
@@ -141,7 +141,7 @@ function Stand() {
     if (!idStand) return;
 
     try {
-      const response = await axios.get(`https://api.voluntariadoayuvi.com/standHorario/${idStand}`);
+      const response = await axios.get(`http://localhost:5000/standHorario/${idStand}`);
       setStandHorarios(response.data); // Guardar los horarios del stand
       setShowDetailsModal(true); // Mostrar el modal
     } catch (error) {
@@ -165,7 +165,7 @@ function Stand() {
     if (stand) {
       try {
         // Obtener horarios asociados al stand
-        const response = await axios.get(`https://api.voluntariadoayuvi.com/standHorario/${stand.idStand}`);
+        const response = await axios.get(`http://localhost:5000/standHorario/${stand.idStand}`);
         setSelectedHorarios(response.data.map((h) => h.idDetalleHorario)); // Extraer IDs de horarios asociados
       } catch (error) {
         console.error("Error fetching stand horarios:", error);
@@ -207,7 +207,7 @@ function Stand() {
     };
 
     try {
-      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
@@ -233,14 +233,14 @@ function Stand() {
       }));
 
       if (editingStand) {
-        await axios.put(`https://api.voluntariadoayuvi.com/stand/update/${editingStand.idStand}`, {
+        await axios.put(`http://localhost:5000/stand/update/${editingStand.idStand}`, {
           standData,
           horarios,
         });
         setAlertMessage("Stand actualizado con éxito");
         await logBitacora(`Stand ${newStand.nombreStand} actualizado`, 17);
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/stand/createHorarios", {
+        await axios.post("http://localhost:5000/stand/createHorarios", {
           standData,
           horarios,
         });
@@ -260,7 +260,7 @@ function Stand() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/stand/update/${id}`, {
+      await axios.put(`http://localhost:5000/stand/update/${id}`, {
         estado: nuevoEstado,
       });
       fetchStands();
@@ -276,7 +276,7 @@ function Stand() {
   const fetchActiveStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/stand/activas");
+      const response = await axios.get("http://localhost:5000/stand/activas");
       const data = Array.isArray(response.data) ? response.data : []; // Validación
       setStands(data);
     } else {
@@ -291,7 +291,7 @@ function Stand() {
   const fetchInactiveStands = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/stand/inactivas");
+      const response = await axios.get("http://localhost:5000/stand/inactivas");
       const data = Array.isArray(response.data) ? response.data : []; // Validación
       setStands(data);
     } else {

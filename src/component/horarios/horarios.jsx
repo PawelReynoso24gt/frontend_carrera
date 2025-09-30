@@ -29,7 +29,7 @@ function HorariosComponent() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           
@@ -79,7 +79,7 @@ function HorariosComponent() {
   const fetchActiveHorarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/horarios/activos");
+      const response = await axios.get("http://localhost:5000/horarios/activos");
       setHorarios(formatDates(response.data));
       setFilter("activos");
     } else {
@@ -93,7 +93,7 @@ function HorariosComponent() {
   const fetchInactiveHorarios = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/horarios");
+      const response = await axios.get("http://localhost:5000/horarios");
       //console.log(response.data);
       // Filtrar horarios con estado 0
       const inactiveHorarios = response.data.filter((horario) => horario.estado === 0);
@@ -170,11 +170,11 @@ function HorariosComponent() {
   
       if (editingHorario) {
         //console.log("Modo: Editar horario. ID:", editingHorario.idHorario);
-        await axios.put(`https://api.voluntariadoayuvi.com/horarios/${editingHorario.idHorario}`, formattedHorario);
+        await axios.put(`http://localhost:5000/horarios/${editingHorario.idHorario}`, formattedHorario);
         setAlertMessage("Horario actualizado con éxito");
       } else {
         //console.log("Modo: Crear horario");
-        await axios.post("https://api.voluntariadoayuvi.com/horarios", formattedHorario);
+        await axios.post("http://localhost:5000/horarios", formattedHorario);
         setAlertMessage("Horario creado con éxito");
       }
   
@@ -191,7 +191,7 @@ function HorariosComponent() {
   const toggleHorarioEstado = async (id, currentEstado) => {
     try {
       const newEstado = currentEstado === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/horarios/${id}`, { estado: newEstado });
+      await axios.put(`http://localhost:5000/horarios/${id}`, { estado: newEstado });
       setAlertMessage(`Horario ${newEstado === 1 ? "activado" : "desactivado"} con éxito`);
       setShowAlert(true);
       filter === "activos" ? fetchActiveHorarios() : fetchInactiveHorarios();

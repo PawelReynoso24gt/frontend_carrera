@@ -25,7 +25,7 @@ function TipoPublicos() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -66,7 +66,7 @@ function TipoPublicos() {
 
   const fetchTipoPublicos = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_publicos");
+      const response = await axios.get("http://localhost:5000/tipo_publicos");
       setTipoPublicos(response.data);
       setFilteredTipoPublicos(response.data);
     } catch (error) {
@@ -77,7 +77,7 @@ function TipoPublicos() {
   const fetchActiveTipoPublicos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_publicos/activos");
+      const response = await axios.get("http://localhost:5000/tipo_publicos/activos");
       setFilteredTipoPublicos(response.data);
     } else {
       checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos')
@@ -90,7 +90,7 @@ function TipoPublicos() {
   const fetchInactiveTipoPublicos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/tipo_publicos/inactivos");
+      const response = await axios.get("http://localhost:5000/tipo_publicos/inactivos");
       setFilteredTipoPublicos(response.data);
     } else {
       checkPermission('Ver tipo publicos', 'No tienes permisos para ver tipo publicos')
@@ -138,12 +138,12 @@ function TipoPublicos() {
     try {
       if (editingTipoPublico) {
         await axios.put(
-          `https://api.voluntariadoayuvi.com/tipo_publicos/update/${editingTipoPublico.idTipoPublico}`,
+          `http://localhost:5000/tipo_publicos/update/${editingTipoPublico.idTipoPublico}`,
           newTipoPublico
         );
         setAlertMessage("Tipo de público actualizado con éxito");
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/tipo_publicos/create", newTipoPublico);
+        await axios.post("http://localhost:5000/tipo_publicos/create", newTipoPublico);
         setAlertMessage("Tipo de público creado con éxito");
       }
       fetchTipoPublicos();
@@ -169,7 +169,7 @@ function TipoPublicos() {
   const toggleEstado = async (id, estadoActual) => {
     try {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/tipo_publicos/update/${id}`, { estado: nuevoEstado });
+      await axios.put(`http://localhost:5000/tipo_publicos/update/${id}`, { estado: nuevoEstado });
       fetchTipoPublicos();
       setAlertMessage(
         `Tipo de público ${nuevoEstado === 1 ? "activado" : "inactivado"} con éxito`

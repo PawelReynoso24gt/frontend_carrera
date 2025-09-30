@@ -26,7 +26,7 @@ function FotosSedesComponent() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -70,10 +70,10 @@ function FotosSedesComponent() {
   const fetchActiveFotos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/fotos_sedes/activos');
+      const response = await axios.get('http://localhost:5000/fotos_sedes/activos');
       const fotosWithFullPath = response.data.map(foto => ({
         ...foto,
-        foto: foto.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
+        foto: foto.foto !== "sin foto" ? `http://localhost:5000/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
       }));
       setFotos(fotosWithFullPath);
     } else {
@@ -87,12 +87,12 @@ function FotosSedesComponent() {
   const fetchInactiveFotos = async () => {
     try {
       if (hasViewPermission) {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/fotos_sedes', {
+      const response = await axios.get('http://localhost:5000/fotos_sedes', {
         params: { estado: 0 }
       });
       const inactiveFotos = response.data.filter(foto => foto.estado === 0).map(foto => ({
         ...foto,
-        foto: foto.foto !== "sin foto" ? `https://api.voluntariadoayuvi.com/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
+        foto: foto.foto !== "sin foto" ? `http://localhost:5000/${foto.foto.replace(/\\/g, '/')}` : 'path/to/default/image.png'
       }));
       setFotos(inactiveFotos);
     } else {
@@ -105,7 +105,7 @@ function FotosSedesComponent() {
 
   const fetchSedes = async () => {
     try {
-      const response = await axios.get('https://api.voluntariadoayuvi.com/sedes');
+      const response = await axios.get('http://localhost:5000/sedes');
       setSedes(response.data);
     } catch (error) {
       console.error('Error fetching sedes:', error);
@@ -142,7 +142,7 @@ function FotosSedesComponent() {
     };
   
     try {
-      await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+      await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
     } catch (error) {
       console.error("Error logging bitacora:", error);
     }
@@ -163,7 +163,7 @@ function FotosSedesComponent() {
 
     try {
       if (editingFoto) {
-        await axios.put(`https://api.voluntariadoayuvi.com/fotos_sedes/${editingFoto.idFotoSede}`, formData, {
+        await axios.put(`http://localhost:5000/fotos_sedes/${editingFoto.idFotoSede}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -171,7 +171,7 @@ function FotosSedesComponent() {
         setAlertMessage('Foto de sede actualizada con éxito');
         await logBitacora(`Foto de sede ${editingFoto.idFotoSede} actualizada`, 37);
       } else {
-        await axios.post('https://api.voluntariadoayuvi.com/fotos_sedes', formData, {
+        await axios.post('http://localhost:5000/fotos_sedes', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -190,7 +190,7 @@ function FotosSedesComponent() {
   const toggleFotoEstado = async (id, currentEstado) => {
     try {
       const newEstado = currentEstado === 1 ? 0 : 1;
-      await axios.put(`https://api.voluntariadoayuvi.com/fotos_sedes/${id}`, { estado: newEstado });
+      await axios.put(`http://localhost:5000/fotos_sedes/${id}`, { estado: newEstado });
       setAlertMessage(`Foto de sede ${newEstado === 1 ? 'activada' : 'desactivada'} con éxito`);
       setShowAlert(true);
       fetchActiveFotos();

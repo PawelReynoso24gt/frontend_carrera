@@ -36,7 +36,7 @@ function CategoriasHorarios() {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+        const response = await axios.get('http://localhost:5000/usuarios/permisos', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
           },
@@ -77,7 +77,7 @@ function CategoriasHorarios() {
 
   const fetchCategoriasHorarios = async () => {
     try {
-      const response = await axios.get("https://api.voluntariadoayuvi.com/categoriaHorarios");
+      const response = await axios.get("http://localhost:5000/categoriaHorarios");
       setCategoriasHorarios(response.data);
       setFilteredCategoriasHorarios(response.data);
     } catch (error) {
@@ -89,7 +89,7 @@ function CategoriasHorarios() {
     try {
       if (hasViewPermission) {
       const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/categoriaHorarios/activas"
+        "http://localhost:5000/categoriaHorarios/activas"
       );
       setCategoriasHorarios(response.data);
       setFilteredCategoriasHorarios(response.data);
@@ -105,7 +105,7 @@ function CategoriasHorarios() {
     try {
       if (hasViewPermission) {
       const response = await axios.get(
-        "https://api.voluntariadoayuvi.com/categoriaHorarios/inactivas"
+        "http://localhost:5000/categoriaHorarios/inactivas"
       );
       setCategoriasHorarios(response.data);
       setFilteredCategoriasHorarios(response.data);
@@ -158,12 +158,12 @@ function CategoriasHorarios() {
     try {
       if (editingCategoriaHorario) {
         await axios.put(
-          `https://api.voluntariadoayuvi.com/categoriaHorarios/${editingCategoriaHorario.idCategoriaHorario}`,
+          `http://localhost:5000/categoriaHorarios/${editingCategoriaHorario.idCategoriaHorario}`,
           newCategoriaHorario
         );
         setAlertMessage("Categoría de horario actualizada con éxito");
       } else {
-        await axios.post("https://api.voluntariadoayuvi.com/categoriaHorarios", newCategoriaHorario);
+        await axios.post("http://localhost:5000/categoriaHorarios", newCategoriaHorario);
         setAlertMessage("Categoría de horario creada con éxito");
       }
       fetchCategoriasHorarios();
@@ -179,7 +179,7 @@ function CategoriasHorarios() {
       const nuevoEstado = estadoActual === 1 ? 0 : 1;
 
       // Realiza la solicitud para cambiar el estado
-      await axios.put(`https://api.voluntariadoayuvi.com/categoriaHorarios/${id}`, {
+      await axios.put(`http://localhost:5000/categoriaHorarios/${id}`, {
         estado: nuevoEstado,
       });
 

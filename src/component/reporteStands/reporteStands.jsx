@@ -16,7 +16,7 @@ function ReportePlayeras() {
   useEffect(() => {
     const fetchLoggedUser = async () => {
       try {
-        const response = await axios.get("https://api.voluntariadoayuvi.com/usuarios/me", {
+        const response = await axios.get("http://localhost:5000/usuarios/me", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`, // Asegúrate de tener el token en localStorage
           },
@@ -35,7 +35,7 @@ function ReportePlayeras() {
         const fechaFinFormato = fechaFin.split("-").reverse().join("-"); // Convierte de DD-MM-YYYY a YYYY-MM-DD
 
         const response = await axios.get(
-          `https://api.voluntariadoayuvi.com/reporte/playeras?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
+          `http://localhost:5000/reporte/playeras?fechaInicio=${fechaInicioFormato}&fechaFin=${fechaFinFormato}`
         );
         setReportes(response.data.reporte);
       } catch (error) {

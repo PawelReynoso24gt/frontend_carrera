@@ -37,7 +37,7 @@ function Recaudaciones() {
     useEffect(() => {
         const fetchPermissions = async () => {
             try {
-                const response = await axios.get('https://api.voluntariadoayuvi.com/usuarios/permisos', {
+                const response = await axios.get('http://localhost:5000/usuarios/permisos', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`, // Ajusta según dónde guardes el token
                     },
@@ -82,7 +82,7 @@ function Recaudaciones() {
 
     const fetchRecaudaciones = async () => {
         try {
-            const response = await axios.get("https://api.voluntariadoayuvi.com/recaudaciones/todas");
+            const response = await axios.get("http://localhost:5000/recaudaciones/todas");
             if (Array.isArray(response.data)) {
                 setRecaudaciones(response.data);
                 setFilteredRecaudaciones(response.data);
@@ -98,7 +98,7 @@ function Recaudaciones() {
 
     const fetchTiposPagos = async () => {
         try {
-            const response = await axios.get("https://api.voluntariadoayuvi.com/tipospagos");
+            const response = await axios.get("http://localhost:5000/tipospagos");
             setTiposPagosOptions(response.data); // Almacena los tipos de pago en el estado
         } catch (error) {
             console.error("Error fetching tipos pagos:", error);
@@ -107,7 +107,7 @@ function Recaudaciones() {
 
     const fetchRifas = async () => {
         try {
-            const response = await axios.get("https://api.voluntariadoayuvi.com/rifas");
+            const response = await axios.get("http://localhost:5000/rifas");
             setRifas(response.data);
         } catch (error) {
             console.error("Error fetching rifas:", error);
@@ -116,7 +116,7 @@ function Recaudaciones() {
 
     const fetchTalonarios = async (idRifa) => {
         try {
-            const response = await axios.get(`https://api.voluntariadoayuvi.com/rifas/talonarios/${idRifa}`);
+            const response = await axios.get(`http://localhost:5000/rifas/talonarios/${idRifa}`);
             setTalonarios(response.data);
         } catch (error) {
             console.error("Error fetching talonarios:", error);
@@ -135,7 +135,7 @@ function Recaudaciones() {
     const fetchActiveRecaudaciones = async () => {
         try {
             if (hasViewPermission) {
-                const response = await axios.get("https://api.voluntariadoayuvi.com/recaudaciones/todas");
+                const response = await axios.get("http://localhost:5000/recaudaciones/todas");
                 if (Array.isArray(response.data)) {
                     setFilteredRecaudaciones(response.data);
                 } else {
@@ -156,7 +156,7 @@ function Recaudaciones() {
     const fetchInactiveRecaudaciones = async () => {
         try {
             if (hasViewPermission) {
-                const response = await axios.get("https://api.voluntariadoayuvi.com/recaudaciones/todas/inactivas");
+                const response = await axios.get("http://localhost:5000/recaudaciones/todas/inactivas");
                 if (Array.isArray(response.data)) {
                     setFilteredRecaudaciones(response.data);
                 } else {
@@ -177,7 +177,7 @@ function Recaudaciones() {
     const toggleEstado = async (id, estadoActual) => {
         try {
             const nuevoEstado = estadoActual === 1 ? 0 : 1;
-            await axios.put(`https://api.voluntariadoayuvi.com/recaudaciones/${id}`, { estado: nuevoEstado });
+            await axios.put(`http://localhost:5000/recaudaciones/${id}`, { estado: nuevoEstado });
             fetchRecaudaciones();
             setAlertMessage(
                 `Recaudación ${nuevoEstado === 1 ? "activada" : "inactivada"} con éxito`
@@ -213,7 +213,7 @@ function Recaudaciones() {
     const handleViewDetail = async (idRecaudacionRifa) => {
         try {
             const response = await axios.get(
-                `https://api.voluntariadoayuvi.com/recaudaciones/detalle/${idRecaudacionRifa}`
+                `http://localhost:5000/recaudaciones/detalle/${idRecaudacionRifa}`
             );
             setDetalleRecaudacion(response.data);
             setShowModal(true);
@@ -226,7 +226,7 @@ function Recaudaciones() {
 
     const handleOpenUpdateModal = async (idRecaudacionRifa) => {
         try {
-            const response = await axios.get(`https://api.voluntariadoayuvi.com/recaudaciones/detalle/${idRecaudacionRifa}`);
+            const response = await axios.get(`http://localhost:5000/recaudaciones/detalle/${idRecaudacionRifa}`);
 
             const recaudacion = response.data;
 
@@ -318,7 +318,7 @@ function Recaudaciones() {
             };
 
             const response = await axios.put(
-                "https://api.voluntariadoayuvi.com/recaudaciones/rifa/completa/update/${recaudacionToUpdate.idRecaudacionRifa}",
+                "http://localhost:5000/recaudaciones/rifa/completa/update/${recaudacionToUpdate.idRecaudacionRifa}",
                 recaudacionData
             );
 
@@ -329,7 +329,7 @@ function Recaudaciones() {
                     idUsuario: idUsuario,
                     fechaHora: new Date()
                 };
-                await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+                await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
 
                 alert("Recaudación actualizada con éxito.");
                 setShowUpdateModal(false); // Cierra el modal
@@ -383,7 +383,7 @@ function Recaudaciones() {
             //console.log("Datos enviados al backend:", JSON.stringify(recaudacionData, null, 2));
 
             const response = await axios.post(
-                "https://api.voluntariadoayuvi.com/recaudaciones/rifa/completa",
+                "http://localhost:5000/recaudaciones/rifa/completa",
                 recaudacionData
             );
 
@@ -395,7 +395,7 @@ function Recaudaciones() {
                     idUsuario: idUsuario,
                     fechaHora: new Date()
                 };
-                await axios.post("https://api.voluntariadoayuvi.com/bitacora/create", bitacoraData);
+                await axios.post("http://localhost:5000/bitacora/create", bitacoraData);
 
                 alert("Recaudación creada con éxito.");
                 resetCreateModalState(); // Reinicia el estado del modal
