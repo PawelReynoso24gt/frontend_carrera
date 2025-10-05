@@ -23,6 +23,7 @@ function Personas() {
     correo: "",
     idDepartamento: "",
     idMunicipio: "",
+    talla: "",
     estado: 1,
   });
   const [showAlert, setShowAlert] = useState(false);
@@ -185,6 +186,7 @@ function Personas() {
         correo: "",
         idDepartamento: "",
         idMunicipio: "",
+        talla: "",
         estado: 1,
       });
     }
@@ -436,6 +438,7 @@ function Personas() {
               <th>CUI</th>
               <th>Correo</th>
               <th>Municipio</th>
+              <th>Talla</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -451,6 +454,7 @@ function Personas() {
                 <td>{persona.CUI}</td>
                 <td>{persona.correo}</td>
                 <td>{persona.municipio ? persona.municipio.municipio : "Sin municipio"}</td>
+                <td>{persona.talla}</td>
                 <td>{persona.estado === 1 ? "Activo" : "Inactivo"}</td>
                 <td>
                   <FaPencilAlt
@@ -611,6 +615,16 @@ function Personas() {
                     </option>
                   ))}
                 </Form.Control>
+             <Form.Group controlId="talla">
+                <Form.Label>Talla</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="talla"
+                  value={formData.talla}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
               </Form.Group>
               <Form.Group controlId="estado">
                 <Form.Label>Estado</Form.Label>
