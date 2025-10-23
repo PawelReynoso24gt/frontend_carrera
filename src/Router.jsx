@@ -101,8 +101,8 @@ import MaintenanceScreen from "./pages/maintenance/MaintenanceScreen";
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <MaintenanceScreen />, // Cambio a MaintenanceScreen para mostrar la pantalla de mantenimiento SOLO SE CAMBIA ESO NO MAS
-    //element: <LoginLayout />, //Este se debe descomentar para que se vea el login y no la pantalla de mantenimiento
+    //element: <MaintenanceScreen />, // Cambio a MaintenanceScreen para mostrar la pantalla de mantenimiento SOLO SE CAMBIA ESO NO MAS
+    element: <LoginLayout />, //Este se debe descomentar para que se vea el login y no la pantalla de mantenimiento
     // children: [
     //   {
     //     index: true, 
