@@ -17,7 +17,7 @@ git clone https://github.com/PawelReynoso24gt/frontend_carrera.git
 
 2. Instala las dependencias necesarias para el proyecto:
 ```bash
-nmp install
+npm install
 ```
 
 ## Uso del proyecto
